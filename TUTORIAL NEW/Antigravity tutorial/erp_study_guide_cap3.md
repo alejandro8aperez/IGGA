@@ -1,0 +1,32 @@
+# 📘 Tutorial ERP 8Amperios - Capítulo 3: Módulos de Operación Extendida
+
+*(Por cierto, la respuesta a la pregunta del capítulo anterior era **`models.py`**, ya que ahí es donde le damos la instrucción directa a la base de datos para que asigne un nuevo espacio físico y cree la columna "Número de RUC").*
+
+Ahora que ya recordamos cómo tu ERP controla a los Clientes (CRM) y a tu Inventario, pasemos a la acción: cómo la empresa planifica, ensambla y ejecuta el trabajo diario.
+
+## 1. Operaciones (`operaciones/`)
+Este es el módulo donde se ejecuta y monitorea el trabajo físico o los servicios que vendió el CRM. 
+*   **Proyectos:** Aquí se crean las carpetas maestras del servicio asignado a un cliente. (¿Recuerdas cuando arreglamos este módulo en la sección de Reportes? Un proyecto puede estar en estado *'planificacion'* o *'ejecucion'*).
+*   **Tareas:** Un proyecto inmenso se divide en tareas pequeñas. Estas tareas se le van asignando a tu personal, permitiéndote medir desde el Dashboard el progreso real frente al tiempo estimado.
+
+## 2. Producción (`produccion/`)
+Mientras "Operaciones" gestiona servicios o instalaciones, "Producción" **transforma o fabrica cosas**. Este módulo habla directamente todo el tiempo con *Inventarios*.
+*   **Listas de Materiales / Recetas (BOM):** Si la empresa ensambla un "Tablero Eléctrico de Control", el módulo sabe por defecto que fabricar ese tablero requiere sacar 5 metros de cable y 2 breakers del inventario.
+*   **Órdenes de Producción (Work Orders):** Cuando se envía la orden de armar 10 tableros, el sistema registra quién en el taller lo armó, aparta automáticamente los materiales del inventario, y cuando termina, inyecta esos 10 tableros al stock de productos listos para vender.
+
+## 3. Recursos Humanos (`rrhh/`)
+La gestión de tu equipo, sueldos y control de acceso.
+*   **Personal:** La base de datos interna de tus profesionales, perfiles y contratos.
+*   **Nómina:** Si cruzas la asistencia y los bonos por los Proyectos completados en Operaciones, este módulo le indica a Finanzas cuánto dinero hay que emitir a cada empleado al final de la quincena.
+
+## Arquitectura de Intercomunicación
+El éxito de un ERP a nivel de código (`Django`) radica en que estos módulos no están ciegos el uno con el otro. 
+
+Por ejemplo, desarrollamos la arquitectura de modo que cuando el operario en el Frontend da clic en "Completar Ensamblaje" en **Producción**, internamente Django:
+1. Llama silenciosamente al código de **Inventarios** para deducir la materia prima usada.
+2. Suma al **Inventario** el producto recién ensamblado para que el módulo de Facturación sepa que ahora sí lo puede vender.
+
+> [!NOTE]
+> Con esto ya tienes casi toda la lógica interna de la empresa dominada. Solo nos queda el paso final logístico: Facturación, Compras y cómo todo esto se agrupa en un bonito Dashboard gerencial.
+> 
+> ***¿Listo para el Capítulo Final (Capítulo 4)?***

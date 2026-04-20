@@ -1,0 +1,149 @@
+{
+  "components": [
+    {
+      "id": "v1",
+      "type": "LABEL",
+      "x": 50,
+      "y": 30,
+      "text": "ORDEN DE VENTA (SISTEMA)",
+      "width": 400,
+      "height": 40,
+      "fontSize": 24,
+      "color": "#1e293b",
+      "fontWeight": "700"
+    },
+    {
+      "id": "v2",
+      "type": "SECTION",
+      "x": 40,
+      "y": 80,
+      "width": 920,
+      "height": 300,
+      "backgroundColor": "#f8fafc",
+      "borderRadius": 12,
+      "borderStyle": "solid",
+      "borderColor": "#e2e8f0"
+    },
+    {
+      "id": "v3",
+      "type": "LABEL",
+      "x": 70,
+      "y": 110,
+      "text": "ID Cliente:",
+      "width": 150,
+      "height": 30,
+      "fontSize": 14,
+      "color": "#64748b"
+    },
+    {
+      "id": "v4",
+      "type": "INPUT",
+      "x": 70,
+      "y": 140,
+      "fieldName": "cliente",
+      "placeholder": "Ej: 123",
+      "width": 250,
+      "height": 45,
+      "borderRadius": 8
+    },
+    {
+      "id": "v5",
+      "type": "LABEL",
+      "x": 350,
+      "y": 110,
+      "text": "Fecha Entrega:",
+      "width": 200,
+      "height": 30,
+      "fontSize": 14,
+      "color": "#64748b"
+    },
+    {
+      "id": "v6",
+      "type": "DATE",
+      "x": 350,
+      "y": 140,
+      "fieldName": "fecha_entrega_esperada",
+      "width": 250,
+      "height": 45,
+      "borderRadius": 8
+    },
+    {
+      "id": "v7",
+      "type": "LABEL",
+      "x": 70,
+      "y": 210,
+      "text": "Total Orden ($):",
+      "width": 150,
+      "height": 30,
+      "fontSize": 14,
+      "color": "#64748b"
+    },
+    {
+      "id": "v8",
+      "type": "INPUT",
+      "x": 70,
+      "y": 240,
+      "fieldName": "total",
+      "placeholder": "0.00",
+      "width": 250,
+      "height": 45,
+      "borderRadius": 8
+    },
+    {
+      "id": "v9",
+      "type": "LABEL",
+      "x": 350,
+      "y": 210,
+      "text": "Estado Actual:",
+      "width": 150,
+      "height": 30,
+      "fontSize": 14,
+      "color": "#64748b"
+    },
+    {
+      "id": "v10",
+      "type": "SELECT",
+      "x": 350,
+      "y": 240,
+      "fieldName": "estado",
+      "placeholder": "Seleccione estado",
+      "width": 250,
+      "height": 45,
+      "borderRadius": 8
+    },
+    {
+      "id": "v11",
+      "type": "DIVIDER",
+      "x": 40, "y": 400, "width": 920, "height": 2, "backgroundColor": "#e2e8f0"},
+    {
+      "id": "v12",
+      "type": "BUTTON",
+      "x": 710,
+      "y": 430,
+      "text": "GUARDAR CAMBIOS",
+      "buttonType": "submit",
+      "width": 250,
+      "height": 55,
+      "backgroundColor": "#10b981",
+      "color": "#ffffff",
+      "borderRadius": 10,
+      "fontWeight": "700"
+    },
+    {
+      "id": "v13",
+      "type": "BUTTON",
+      "x": 450,
+      "y": 430,
+      "text": "CANCELAR",
+      "buttonType": "cancel",
+      "width": 250,
+      "height": 55,
+      "backgroundColor": "#ffffff",
+      "color": "#64748b",
+      "borderRadius": 10,
+      "fontWeight": "600"
+    }
+  ],
+  "timestamp": "2026-04-12T00:00:00.000Z",
+  "version": "1.0"
+}

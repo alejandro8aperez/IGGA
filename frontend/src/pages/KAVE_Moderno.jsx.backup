@@ -1,0 +1,1157 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  FolderKanban, CheckSquare, Clock, DollarSign, Search, Plus, Edit, Trash2, Zap, 
+  Calculator, ChevronLeft, AlertTriangle, CheckCircle, FileText, Activity, 
+  Thermometer, Wind, ZapOff, TrendingUp, BarChart3, Info, Settings, RefreshCw,
+  Save, Download, Eye, X, Zap as Bolt
+} from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = 'http://127.0.0.1:8000/api/kave/';
+
+export default function KAVE() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('calculadora');
+  const [form, setForm] = useState({
+    potencia_kva: 25,
+    voltaje_primario: 7620,
+    voltaje_secundario: 240,
+    frecuencia: 60,
+    forma_nucleo: 'ei',
+    material_nucleo: 'si',
+    tipo_refrigeracion: 'aceite',
+    tipo_montaje: 'interior',
+    clase_aislamiento: 'f',
+    elevacion_temperatura: 55,
+    impedancia: 4,
+    eficiencia: 97,
+    ancho_ventana: 100,
+    altura_ventana: 200,
+    ancho_pierna: 50,
+    longitud_nucleo: 150,
+    numero_espiras_primario: 1000,
+    numero_espiras_secundario: 32,
+    area_conductor_primario: 2.5,
+    area_conductor_secundario: 10,
+    densidad_corriente_primario: 2.5,
+    densidad_corriente_secundario: 2.5,
+    peso_nucleo: 150,
+    peso_cobre_primario: 50,
+    peso_cobre_secundario: 20,
+    perdidas_vacio: 100,
+    perdidas_carga: 200,
+    perdidas_totales: 300,
+    corriente_excitacion: 0.5,
+    regulacion: 3,
+    costo_material: 5000,
+    costo_fabricacion: 2000,
+    costo_total: 7000,
+    precio_venta: 8500,
+    margen_ganancia: 21.4,
+    tiempo_fabricacion: 15,
+    fecha_entrega: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  });
+
+  const [calculations, setCalculations] = useState(null);
+  const [savedDesigns, setSavedDesigns] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  useEffect(() => {
+    fetchSavedDesigns();
+  }, []);
+
+  const fetchSavedDesigns = async () => {
+    try {
+      const response = await axios.get(`${API_URL}disenos/`);
+      setSavedDesigns(response.data);
+    } catch (err) {
+      console.error('Error fetching designs:', err);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const calculateDesign = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`${API_URL}calcular/`, form);
+      setCalculations(response.data);
+      setSuccess('Cálculo realizado exitosamente');
+    } catch (err) {
+      console.error('Error calculating design:', err);
+      setError('Error al realizar el cálculo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveDesign = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const designData = {
+        ...form,
+        calculos: calculations,
+        nombre: `Transformador ${form.potencia_kva}kVA`,
+        fecha_creacion: new Date().toISOString()
+      };
+      await axios.post(`${API_URL}disenos/`, designData);
+      setSuccess('Diseño guardado exitosamente');
+      fetchSavedDesigns();
+    } catch (err) {
+      console.error('Error saving design:', err);
+      setError('Error al guardar el diseño');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteDesign = async (id) => {
+    if (!window.confirm('¿Está seguro de eliminar este diseño?')) return;
+    
+    try {
+      await axios.delete(`${API_URL}disenos/${id}/`);
+      setSuccess('Diseño eliminado exitosamente');
+      fetchSavedDesigns();
+    } catch (err) {
+      console.error('Error deleting design:', err);
+      setError('Error al eliminar el diseño');
+    }
+  };
+
+  const loadDesign = (design) => {
+    setForm({
+      ...design,
+      id: undefined,
+      fecha_creacion: undefined
+    });
+    setCalculations(design.calculos);
+    setActiveTab('calculadora');
+  };
+
+  const exportDesign = () => {
+    const dataStr = JSON.stringify({ form, calculations }, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `transformador_${form.potencia_kva}kVA_${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  // Componente para visualización del transformador
+  function TransformadorSVG({ form, calc }) {
+    if (!calc) return null;
+
+    const esEi = form.forma_nucleo === 'ei';
+    
+    if (esEi) {
+      const anVentana = parseFloat(form.ancho_ventana) || 100;
+      const alVentana = parseFloat(form.altura_ventana) || 200;
+      const anPierna = parseFloat(form.ancho_pierna) || 50;
+
+      const widthTotal = (anPierna * 3) + (anVentana * 2);
+      const heightTotal = alVentana + (anPierna * 2);
+      
+      const maxDim = Math.max(widthTotal, heightTotal);
+      const scale = 220 / (maxDim || 1);
+
+      const dPi = anPierna * scale;
+      const dVeX = anVentana * scale;
+      const dVeY = alVentana * scale;
+
+      return (
+        <div style={{ 
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', 
+          border: '1px solid #e2e8f0', 
+          borderRadius: '12px', 
+          padding: '1rem', 
+          marginBottom: '1rem' 
+        }}>
+          <div style={{ 
+            fontSize: '0.85rem', 
+            fontWeight: '600', 
+            color: '#667eea', 
+            textAlign: 'center',
+            marginBottom: '1rem' 
+          }}>
+            Vista Transversal (Núcleo y Devanado)
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <svg width="100%" height="250" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet">
+              <g transform="translate(200, 125)">
+                {/* Núcleo Completo */}
+                <rect 
+                  x={(-dPi*1.5) - dVeX} 
+                  y={(-dVeY/2) - dPi} 
+                  width={(dPi*3) + (dVeX*2)} 
+                  height={dVeY + (dPi*2)} 
+                  fill="#94a3b8" 
+                  rx="2" 
+                />
+                
+                {/* Hueco Ventana Izquierda */}
+                <rect 
+                  x={(-dPi/2) - dVeX} 
+                  y={-dVeY/2} 
+                  width={dVeX} 
+                  height={dVeY} 
+                  fill="#f8fafc" 
+                />
+                
+                {/* Hueco Ventana Derecha */}
+                <rect 
+                  x={(dPi/2)} 
+                  y={-dVeY/2} 
+                  width={dVeX} 
+                  height={dVeY} 
+                  fill="#f8fafc" 
+                />
+
+                {/* Pierna Central del Núcleo */}
+                <rect 
+                  x={-dPi/2} 
+                  y={(-dVeY/2) - dPi} 
+                  width={dPi} 
+                  height={dVeY + (dPi*2)} 
+                  fill="#64748b" 
+                />
+
+                {/* Bobinas en la pierna central */}
+                <g>
+                  {/* Bobina Primario */}
+                  <rect 
+                    x={(-dPi/2) + 5} 
+                    y={(-dVeY/2) + 5} 
+                    width={dPi - 10} 
+                    height={(dVeY/2) - 10} 
+                    fill="url(#gradPrimary)" 
+                    stroke="#667eea" 
+                    strokeWidth="2" 
+                  />
+                  
+                  {/* Bobina Secundario */}
+                  <rect 
+                    x={(-dPi/2) + 5} 
+                    y={5} 
+                    width={dPi - 10} 
+                    height={(dVeY/2) - 10} 
+                    fill="url(#gradSecondary)" 
+                    stroke="#10b981" 
+                    strokeWidth="2" 
+                  />
+                </g>
+
+                {/* Definiciones de gradiente */}
+                <defs>
+                  <linearGradient id="gradPrimary" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#667eea', stopOpacity: 0.8 }} />
+                    <stop offset="100%" style={{ stopColor: '#764ba2', stopOpacity: 0.8 }} />
+                  </linearGradient>
+                  <linearGradient id="gradSecondary" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#10b981', stopOpacity: 0.8 }} />
+                    <stop offset="100%" style={{ stopColor: '#059669', stopOpacity: 0.8 }} />
+                  </linearGradient>
+                </defs>
+
+                {/* Etiquetas */}
+                <text x={-dPi/2} y={-dVeY/2 - 10} fill="#475569" fontSize="12" textAnchor="middle">
+                  Primario
+                </text>
+                <text x={-dPi/2} y={dVeY/2 + 25} fill="#475569" fontSize="12" textAnchor="middle">
+                  Secundario
+                </text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
+  }
+
+  return (
+    <div style={{ 
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      minHeight: '100vh',
+      padding: '1rem'
+    }}>
+      {/* Header */}
+      <div style={{
+        background: 'white',
+        borderRadius: '16px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: '50px',
+              height: '50px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}>
+              <Zap size={24} />
+            </div>
+            <div>
+              <h2 style={{ 
+                fontSize: '1.8rem', 
+                fontWeight: '700', 
+                color: '#1a202c',
+                margin: '0 0 0.5rem 0'
+              }}>
+                KAVE - Diseño de Transformadores
+              </h2>
+              <p style={{ color: '#718096', margin: 0, fontSize: '1rem' }}>
+                Sistema de cálculo y diseño avanzado
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '12px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)'
+            }}
+          >
+            <ChevronLeft size={20} />
+            Volver
+          </button>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      {error && (
+        <div style={{
+          background: '#fee2e2',
+          border: '1px solid #ef4444',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '2rem',
+          color: '#991b1b',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          <AlertTriangle size={20} />
+          <div style={{ flex: 1 }}>
+            <strong>Error:</strong> {error}
+          </div>
+          <button 
+            onClick={() => setError(null)}
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {success && (
+        <div style={{
+          background: '#d1fae5',
+          border: '1px solid #10b981',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '2rem',
+          color: '#065f46',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          <CheckCircle size={20} />
+          <div style={{ flex: 1 }}>
+            <strong>Éxito:</strong> {success}
+          </div>
+          <button 
+            onClick={() => setSuccess(null)}
+            style={{
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {/* Navigation Tabs */}
+      <div style={{
+        background: 'white',
+        borderRadius: '16px',
+        padding: '1rem',
+        marginBottom: '2rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {[
+            { id: 'calculadora', name: 'Calculadora', icon: Calculator },
+            { id: 'disenos', name: 'Diseños Guardados', icon: FolderKanban },
+            { id: 'resultados', name: 'Resultados', icon: BarChart3 }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                background: activeTab === tab.id 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'transparent',
+                color: activeTab === tab.id ? 'white' : '#64748b',
+                border: activeTab === tab.id 
+                  ? 'none' 
+                  : '1px solid #e2e8f0',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => {
+                if (activeTab !== tab.id) {
+                  e.target.style.background = '#f8fafc';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (activeTab !== tab.id) {
+                  e.target.style.background = 'transparent';
+                }
+              }}
+            >
+              <tab.icon size={18} />
+              {tab.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{
+        background: 'white',
+        borderRadius: '16px',
+        padding: '2rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        border: '1px solid #e2e8f0'
+      }}>
+        {activeTab === 'calculadora' && (
+          <div>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr', 
+              gap: '2rem' 
+            }}>
+              {/* Formulario */}
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.3rem', 
+                  fontWeight: '700', 
+                  color: '#1a202c',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <Settings size={24} style={{ color: '#667eea' }} />
+                  Parámetros del Transformador
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {/* Datos Básicos */}
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <h4 style={{ 
+                      fontSize: '1.1rem', 
+                      fontWeight: '600', 
+                      color: '#374151',
+                      marginBottom: '1rem' 
+                    }}>
+                      Datos Básicos
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '0.5rem', 
+                          fontWeight: '600', 
+                          color: '#4b5563',
+                          fontSize: '0.9rem'
+                        }}>
+                          Potencia (kVA)
+                        </label>
+                        <input
+                          type="number"
+                          value={form.potencia_kva}
+                          onChange={(e) => handleInputChange('potencia_kva', parseFloat(e.target.value))}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '0.5rem', 
+                          fontWeight: '600', 
+                          color: '#4b5563',
+                          fontSize: '0.9rem'
+                        }}>
+                          Frecuencia (Hz)
+                        </label>
+                        <input
+                          type="number"
+                          value={form.frecuencia}
+                          onChange={(e) => handleInputChange('frecuencia', parseFloat(e.target.value))}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '0.5rem', 
+                          fontWeight: '600', 
+                          color: '#4b5563',
+                          fontSize: '0.9rem'
+                        }}>
+                          Voltaje Primario (V)
+                        </label>
+                        <input
+                          type="number"
+                          value={form.voltaje_primario}
+                          onChange={(e) => handleInputChange('voltaje_primario', parseFloat(e.target.value))}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '0.5rem', 
+                          fontWeight: '600', 
+                          color: '#4b5563',
+                          fontSize: '0.9rem'
+                        }}>
+                          Voltaje Secundario (V)
+                        </label>
+                        <input
+                          type="number"
+                          value={form.voltaje_secundario}
+                          onChange={(e) => handleInputChange('voltaje_secundario', parseFloat(e.target.value))}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Características del Núcleo */}
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <h4 style={{ 
+                      fontSize: '1.1rem', 
+                      fontWeight: '600', 
+                      color: '#374151',
+                      marginBottom: '1rem' 
+                    }}>
+                      Características del Núcleo
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '0.5rem', 
+                          fontWeight: '600', 
+                          color: '#4b5563',
+                          fontSize: '0.9rem'
+                        }}>
+                          Forma del Núcleo
+                        </label>
+                        <select
+                          value={form.forma_nucleo}
+                          onChange={(e) => handleInputChange('forma_nucleo', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            outline: 'none',
+                            background: 'white'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                          }}
+                        >
+                          <option value="ei">EI</option>
+                          <option value="c">C</option>
+                          <option value="toroidal">Toroidal</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '0.5rem', 
+                          fontWeight: '600', 
+                          color: '#4b5563',
+                          fontSize: '0.9rem'
+                        }}>
+                          Material del Núcleo
+                        </label>
+                        <select
+                          value={form.material_nucleo}
+                          onChange={(e) => handleInputChange('material_nucleo', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            outline: 'none',
+                            background: 'white'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                          }}
+                        >
+                          <option value="si">Silicio</option>
+                          <option value="fe">Hierro</option>
+                          <option value="amorphous">Amorfo</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Acciones */}
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <button
+                      onClick={calculateDesign}
+                      disabled={loading}
+                      style={{
+                        background: loading 
+                          ? '#9ca3af' 
+                          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '12px',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        boxShadow: loading 
+                          ? 'none' 
+                          : '0 4px 15px rgba(102, 126, 234, 0.3)'
+                      }}
+                    >
+                      <Calculator size={20} />
+                      {loading ? 'Calculando...' : 'Calcular Diseño'}
+                    </button>
+                    <button
+                      onClick={saveDesign}
+                      disabled={!calculations || loading}
+                      style={{
+                        background: !calculations || loading 
+                          ? '#9ca3af' 
+                          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '12px',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: !calculations || loading ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        boxShadow: !calculations || loading 
+                          ? 'none' 
+                          : '0 4px 15px rgba(16, 185, 129, 0.3)'
+                      }}
+                    >
+                      <Save size={20} />
+                      {loading ? 'Guardando...' : 'Guardar Diseño'}
+                    </button>
+                    <button
+                      onClick={exportDesign}
+                      disabled={!calculations}
+                      style={{
+                        background: !calculations 
+                          ? '#9ca3af' 
+                          : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '12px',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: !calculations ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        boxShadow: !calculations 
+                          ? 'none' 
+                          : '0 4px 15px rgba(245, 158, 11, 0.3)'
+                      }}
+                    >
+                      <Download size={20} />
+                      Exportar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Visualización y Resultados */}
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.3rem', 
+                  fontWeight: '700', 
+                  color: '#1a202c',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <Eye size={24} style={{ color: '#667eea' }} />
+                  Visualización y Resultados
+                </h3>
+
+                {calculations ? (
+                  <div>
+                    <TransformadorSVG form={form} calc={calculations} />
+                    
+                    {/* Resultados del Cálculo */}
+                    <div style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '1.5rem',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <h4 style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '600', 
+                        color: '#374151',
+                        marginBottom: '1rem' 
+                      }}>
+                        Resultados del Cálculo
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{
+                          background: 'white',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                            Temperatura Operación
+                          </div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#667eea' }}>
+                            {calculations.temperatura_operacion || 85}°C
+                          </div>
+                        </div>
+                        <div style={{
+                          background: 'white',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                            Eficiencia
+                          </div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#10b981' }}>
+                            {calculations.eficiencia || 97}%
+                          </div>
+                        </div>
+                        <div style={{
+                          background: 'white',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                            Peso Total
+                          </div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#f59e0b' }}>
+                            {calculations.peso_total || 220} kg
+                          </div>
+                        </div>
+                        <div style={{
+                          background: 'white',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                            Costo Estimado
+                          </div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#8b5cf6' }}>
+                            ${calculations.costo_total || 7000}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    padding: '3rem',
+                    textAlign: 'center',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <Calculator size={48} style={{ color: '#9ca3af', marginBottom: '1rem' }} />
+                    <p style={{ color: '#6b7280', fontSize: '1.1rem', margin: 0 }}>
+                      Complete los parámetros y haga clic en "Calcular Diseño"
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'disenos' && (
+          <div>
+            <h3 style={{ 
+              fontSize: '1.3rem', 
+              fontWeight: '700', 
+              color: '#1a202c',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <FolderKanban size={24} style={{ color: '#667eea' }} />
+              Bóveda de Diseños
+            </h3>
+
+            {savedDesigns.length > 0 ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                gap: '1rem'
+              }}>
+                {savedDesigns.map((design) => (
+                  <div key={design.id} style={{
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    border: '1px solid #e2e8f0',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'flex-start',
+                      marginBottom: '1rem' 
+                    }}>
+                      <div>
+                        <h4 style={{ 
+                          fontSize: '1.1rem', 
+                          fontWeight: '700', 
+                          color: '#1a202c',
+                          margin: '0 0 0.5rem 0' 
+                        }}>
+                          {design.nombre}
+                        </h4>
+                        <p style={{ 
+                          fontSize: '0.9rem', 
+                          color: '#6b7280', 
+                          margin: 0 
+                        }}>
+                          {design.potencia_kva} kVA • {design.voltaje_primario}V/{design.voltaje_secundario}V
+                        </p>
+                      </div>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white'
+                      }}>
+                        <Zap size={20} />
+                      </div>
+                    </div>
+                    
+                    <div style={{ 
+                      fontSize: '0.85rem', 
+                      color: '#6b7280', 
+                      marginBottom: '1rem' 
+                    }}>
+                      Creado: {new Date(design.fecha_creacion).toLocaleDateString()}
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => loadDesign(design)}
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          color: 'white',
+                          border: 'none',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '8px',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem'
+                        }}
+                      >
+                        <Eye size={16} />
+                        Cargar
+                      </button>
+                      <button
+                        onClick={() => deleteDesign(design.id)}
+                        style={{
+                          background: '#fee2e2',
+                          color: '#dc2626',
+                          border: '1px solid #fecaca',
+                          padding: '0.5rem',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '3rem',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0'
+              }}>
+                <FolderKanban size={48} style={{ color: '#9ca3af', marginBottom: '1rem' }} />
+                <p style={{ color: '#6b7280', fontSize: '1.1rem', margin: 0 }}>
+                  No hay diseños guardados aún
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'resultados' && (
+          <div>
+            <h3 style={{ 
+              fontSize: '1.3rem', 
+              fontWeight: '700', 
+              color: '#1a202c',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <BarChart3 size={24} style={{ color: '#667eea' }} />
+              Análisis de Resultados
+            </h3>
+
+            {calculations ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1rem'
+              }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                    {calculations.eficiencia || 97}%
+                  </div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    Eficiencia Total
+                  </div>
+                </div>
+                <div style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                    {calculations.temperatura_operacion || 85}°C
+                  </div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    Temperatura Operación
+                  </div>
+                </div>
+                <div style={{
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: 'white',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                    {calculations.peso_total || 220} kg
+                  </div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    Peso Total
+                  </div>
+                </div>
+                <div style={{
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                  color: 'white',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                    ${calculations.costo_total || 7000}
+                  </div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    Costo Estimado
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '3rem',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0'
+              }}>
+                <BarChart3 size={48} style={{ color: '#9ca3af', marginBottom: '1rem' }} />
+                <p style={{ color: '#6b7280', fontSize: '1.1rem', margin: 0 }}>
+                  Realice un cálculo primero para ver los resultados
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

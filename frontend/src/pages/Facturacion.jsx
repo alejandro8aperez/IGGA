@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FileText, Plus, Save, Send, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000/api/';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
 
 function Facturacion() {
     const [facturas, setFacturas] = useState([]);
@@ -125,7 +125,42 @@ function Facturacion() {
         } catch (e) { console.error(e); }
     };
 
-    if (loading) return <div className="container"><div className="spinner"></div></div>;
+    if (loading) return <div className="container" style={{ position: 'relative' }}>
+                <button 
+                    onClick={() => window.location.href = '/'} 
+                    className="btn btn-ghost modal-close-btn" 
+                    title="Cerrar Módulo"
+                    style={{ 
+                        position: 'absolute', 
+                        top: '1rem', 
+                        right: '1rem',
+                        background: '#ff0000',
+                        backgroundColor: '#ff0000',
+                        color: '#ffffff',
+                        fontSize: '2rem',
+                        padding: '0.75rem',
+                        border: '2px solid #ff0000',
+                        borderRadius: '8px',
+                        zIndex: 999999999,
+                        width: '60px',
+                        height: '60px',
+                        minWidth: '60px',
+                        minHeight: '60px',
+                        maxWidth: '60px',
+                        maxHeight: '60px',
+                        visibility: 'visible',
+                        opacity: 1,
+                        display: 'block',
+                        pointerEvents: 'auto',
+                        transform: 'none',
+                        transition: 'none',
+                        animation: 'none',
+                        textAlign: 'center',
+                        lineHeight: '60px'
+                    }}
+                >
+                    X
+                </button><p>Cargando Facturación...</p></div>;
 
     return (
         <div className="container">

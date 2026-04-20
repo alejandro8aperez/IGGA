@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cuenta, Transaccion
+from .models import Cuenta, Transaccion, ActivoFijo
 
 class CuentaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,3 +13,13 @@ class TransaccionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaccion
         fields = '__all__'
+
+class ActivoFijoSerializer(serializers.ModelSerializer):
+    valor_neto = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ActivoFijo
+        fields = '__all__'
+
+    def get_valor_neto(self, obj):
+        return obj.valor_neto()

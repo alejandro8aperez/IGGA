@@ -23,7 +23,7 @@ class ReporteGeneralView(APIView):
             valor_oportunidades = Oportunidad.objects.aggregate(Sum('valor_estimado'))['valor_estimado__sum'] or 0
             
             # Active Projects
-            proyectos_activos = Proyecto.objects.filter(estado_del_proyecto='pendiente').count()
+            proyectos_activos = Proyecto.objects.filter(estado__in=['planificacion', 'ejecucion']).count()
             
             # Create a more detailed break down if needed, but for now just general stats
             data = {

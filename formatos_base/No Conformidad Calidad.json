@@ -1,0 +1,19 @@
+{
+  "components": [
+    {"id": "q1", "type": "LABEL", "x": 50, "y": 30, "text": "REPORTE DE NO CONFORMIDAD (ISO 9001)", "width": 550, "height": 40, "fontSize": 24, "color": "#1e293b", "fontWeight": "700"},
+    {"id": "q2", "type": "SECTION", "x": 40, "y": 80, "width": 920, "height": 350, "backgroundColor": "#f8fafc", "borderRadius": 12, "borderStyle": "solid", "borderColor": "#e2e8f0"},
+    {"id": "q3", "type": "LABEL", "x": 70, "y": 110, "text": "Origen de la NC:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "q4", "type": "SELECT", "x": 70, "y": 140, "fieldName": "origen", "placeholder": "Seleccione Origen", "width": 300, "height": 45, "borderRadius": 8},
+    {"id": "q5", "type": "LABEL", "x": 400, "y": 110, "text": "Inspección Relacionada:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "q6", "type": "SELECT", "x": 400, "y": 140, "fieldName": "inspeccion_relacionada", "placeholder": "Seleccione Inspección", "width": 510, "height": 45, "borderRadius": 8},
+    {"id": "q7", "type": "LABEL", "x": 70, "y": 210, "text": "Descripción Detallada del Hallazgo:", "width": 350, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "q8", "type": "TEXTAREA", "x": 70, "y": 240, "fieldName": "descripcion", "placeholder": "Describa la evidencia objetiva del incumplimiento...", "width": 840, "height": 150, "borderRadius": 8},
+    {"id": "q9", "type": "LABEL", "x": 70, "y": 410, "text": "Estado Inicial:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "q10", "type": "SELECT", "x": 70, "y": 440, "fieldName": "estado", "placeholder": "Abierta", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "q11", "type": "DIVIDER", "x": 40, "y": 520, "width": 920, "height": 2, "backgroundColor": "#e2e8f0"},
+    {"id": "q12", "type": "BUTTON", "x": 710, "y": 550, "text": "REPORTAR NC", "buttonType": "submit", "width": 250, "height": 55, "backgroundColor": "#ef4444", "color": "#ffffff", "borderRadius": 10, "fontWeight": "700"},
+    {"id": "q13", "type": "BUTTON", "x": 450, "y": 550, "text": "CANCELAR", "buttonType": "cancel", "width": 250, "height": 55, "backgroundColor": "#ffffff", "color": "#64748b", "borderRadius": 10, "fontWeight": "600"}
+  ],
+  "timestamp": "2026-04-12T00:00:00.000Z",
+  "version": "1.0"
+}

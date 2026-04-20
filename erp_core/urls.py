@@ -28,8 +28,11 @@ router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/multi-empresa/', include('multi_empresa.urls')),
+    path('api/mrp/', include('mrp.urls')),
     path('api/crm/', include('crm.urls')),
     path('api/inventarios/', include('inventarios.urls')),
+    path('api/inventario/', include('inventarios.urls')),  # Alias para el frontend
     path('api/finanzas/', include('finanzas.urls')),
     path('api/compras/', include('compras.urls')),
     path('api/operaciones/', include('operaciones.urls')),
@@ -38,6 +41,21 @@ urlpatterns = [
     path('api/reportes/', include('reportes.urls')),
     path('api/facturacion/', include('facturacion.urls')),
     path('api/produccion/', include('produccion.urls')),
+    path('api/venta/', include('venta.urls')),
+    path('api/ventas/', include('venta.urls')),  # Alias para el frontend
+    path('api/contabilidad/', include('contabilidad.urls')),
+    path('api/proyectos/', include('proyectos.urls')),
+    path('api/logistica/', include('logistica.urls')),
+    path('api/calidad/', include('calidad.urls')),
+    path('api/marketing/', include('marketing.urls')),
+    path('api/empresa/', include('empresa.urls')),
+    path('api/workflow/', include('workflow.urls')),
+    path('api/reportes-avanzados/', include('reportes_avanzados.urls')),
+    path('api/planeacion/', include('planeacion.urls')),
+    path('api/mantenimiento/', include('mantenimiento.urls')),
+    path('api/kpis/', include('kpis.urls')),
+    path('api/customization/', include('customization.urls')),
+    path('api/kave/', include('kave.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include(router.urls)),

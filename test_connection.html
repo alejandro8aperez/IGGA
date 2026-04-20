@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test KAVE Connection</title>
+</head>
+<body>
+    <h1>🔧 Test de Conexión KAVE</h1>
+    <button onclick="testConnection()">Probar Conexión</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>🔄 Probando conexión...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/kave/quote/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        'potencia_kva': '25',
+                        'vp': '13200',
+                        'vs': '220',
+                        'tipo': 'monofasico',
+                        'material': 'silicio'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <h3>✅ Conexión Exitosa!</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>❌ Error de Conexión</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Stack:</strong> ${error.stack}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

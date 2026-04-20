@@ -1,0 +1,23 @@
+{
+  "components": [
+    {"id": "pv1", "type": "LABEL", "x": 50, "y": 30, "text": "REGISTRO DE PROVEEDOR", "width": 450, "height": 40, "fontSize": 24, "color": "#1e293b", "fontWeight": "700"},
+    {"id": "pv2", "type": "SECTION", "x": 40, "y": 80, "width": 920, "height": 350, "backgroundColor": "#f8fafc", "borderRadius": 12, "borderStyle": "solid", "borderColor": "#e2e8f0"},
+    {"id": "pv3", "type": "LABEL", "x": 70, "y": 110, "text": "Razón Social:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "pv4", "type": "INPUT", "x": 70, "y": 140, "fieldName": "razon_social", "placeholder": "Ej: Aceros S.A.S.", "width": 550, "height": 45, "borderRadius": 8},
+    {"id": "pv5", "type": "LABEL", "x": 650, "y": 110, "text": "NIT / Tax ID:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "pv6", "type": "INPUT", "x": 650, "y": 140, "fieldName": "nit", "placeholder": "900.000.000-1", "width": 260, "height": 45, "borderRadius": 8},
+    {"id": "pv7", "type": "LABEL", "x": 70, "y": 210, "text": "Contacto Nombre:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "pv8", "type": "INPUT", "x": 70, "y": 240, "fieldName": "contacto_nombre", "placeholder": "Ej: Maria Gomez", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "pv9", "type": "LABEL", "x": 350, "y": 210, "text": "Email de Contacto:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "pv10", "type": "INPUT", "x": 350, "y": 240, "fieldName": "contacto_email", "placeholder": "ventas@empresa.com", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "pv11", "type": "LABEL", "x": 630, "y": 210, "text": "Teléfono:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "pv12", "type": "INPUT", "x": 630, "y": 240, "fieldName": "contacto_telefono", "placeholder": "+57 300...", "width": 280, "height": 45, "borderRadius": 8},
+    {"id": "pv13", "type": "LABEL", "x": 70, "y": 310, "text": "Dirección Principal:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "pv14", "type": "INPUT", "x": 70, "y": 340, "fieldName": "direccion", "placeholder": "Ej: Calle 123 #45-67", "width": 840, "height": 45, "borderRadius": 8},
+    {"id": "pv15", "type": "DIVIDER", "x": 40, "y": 450, "width": 920, "height": 2, "backgroundColor": "#e2e8f0"},
+    {"id": "pv16", "type": "BUTTON", "x": 710, "y": 480, "text": "GUARDAR PROVEEDOR", "buttonType": "submit", "width": 250, "height": 55, "backgroundColor": "#10b981", "color": "#ffffff", "borderRadius": 10, "fontWeight": "700"},
+    {"id": "pv17", "type": "BUTTON", "x": 450, "y": 480, "text": "CANCELAR", "buttonType": "cancel", "width": 250, "height": 55, "backgroundColor": "#ffffff", "color": "#64748b", "borderRadius": 10, "fontWeight": "600"}
+  ],
+  "timestamp": "2026-04-12T00:00:00.000Z",
+  "version": "1.0"
+}

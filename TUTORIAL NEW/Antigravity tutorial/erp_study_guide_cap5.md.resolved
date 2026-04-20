@@ -1,0 +1,44 @@
+# 📘 Tutorial ERP 8Amperios - Capítulo 5: Tu Primer Desarrollo (Práctica)
+
+¡Excelente iniciativa! La teoría es genial, pero la mejor forma de consolidar cómo funciona un ERP es ensuciándonos las manos con código. Ahora vamos a hacer tu **primer cambio arquitectónico real**.
+
+## El Reto Práctico: Agregar un campo al CRM
+Actualmente, el módulo CRM guarda clientes de tu empresa. Supongamos que necesitamos una nueva característica urgente solicitada por Ventas: Guardar el **Teléfono Celular** del cliente. 
+
+Vamos a agregarlo siguiendo la arquitectura de Django que aprendimos en el Capítulo 2.
+
+### Paso 1: Modificar la Base de Datos ([models.py](file:///C:/Postgres/ERP-8AMPERIOS/operaciones/models.py))
+El archivo encargado es: [C:\Postgres\ERP-8AMPERIOS\crm\models.py](file:///Postgres/ERP-8AMPERIOS/crm/models.py)
+
+Dentro de ese archivo, existe una clase o molde llamado `Cliente`. Necesitamos agregar una línea de código indicando que PostgreSQL debe reservar espacio para un texto corto. Sería así:
+
+```python
+class Cliente(models.Model):
+    nombre = models.CharField(max_length=200)
+    email = models.EmailField(blank=True, null=True)
+    
+    # 👇 Esta es la nueva línea que el desarrollador agrega:
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+```
+
+### Paso 2: Crear la Migración (Preparar el SQL)
+Django no altera PostgreSQL mágicamente solo por darle a "Guardar archivo". Tienes que ordenarle a Django que construya las instrucciones internas para hacerlo. 
+En la terminal (con tu entorno virtual ejecutándose), se corre este comando:
+```bash
+python manage.py makemigrations crm
+```
+
+### Paso 3: Aplicar el Cambio a PostgreSQL (Migrate)
+Una vez preparadas las instrucciones, finalmente le ordenamos a la base de datos que modifique sus tablas reales conectándose al puerto de Postgres:
+```bash
+python manage.py migrate
+```
+
+¡Y listo! Con esos 3 pasos se altera la estructura central del ERP de forma segura.
+
+> [!TIP]
+> **Tu decisión como Jefe de Proyecto:**
+> Al ser Google Antigravity, tengo exactamente la misma capacidad de abrir ese archivo [models.py](file:///C:/Postgres/ERP-8AMPERIOS/operaciones/models.py) en tu disco duro, escribir el código de Python, y ejecutar las migraciones en tu terminal.
+> 
+> *Responde en el chat:* 
+> **"Hazlo tú"** si quieres ver mi autonomía en acción programando los archivos, o **"Lo haré yo"** si quieres abrir tu VS Code e intentarlo paso a paso mientras te guío.

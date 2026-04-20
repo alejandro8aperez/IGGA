@@ -1,0 +1,25 @@
+﻿{
+  "documento": "Matriz Maestra ISO 9001:2015 - Fabrica de Transformadores",
+  "version": "1.0",
+  "clausulas": [
+    {"clausula": "4.1-4.2", "requisito": "Contexto y partes interesadas", "evidencia": "Matriz de contexto y necesidades", "codigo": "MAT-CTX-001"},
+    {"clausula": "4.4", "requisito": "Mapa de procesos SGC", "evidencia": "Mapa e interaccion de procesos", "codigo": "MAP-PROC-001"},
+    {"clausula": "5.1-5.2", "requisito": "Liderazgo y politica", "evidencia": "Politica y objetivos de calidad", "codigo": "POL-001"},
+    {"clausula": "5.3", "requisito": "Roles y responsabilidades", "evidencia": "Matriz RACI del SGC", "codigo": "MAT-RACI-001"},
+    {"clausula": "6.1", "requisito": "Riesgos y oportunidades", "evidencia": "Matriz de riesgos por proceso", "codigo": "F-CAL-006"},
+    {"clausula": "6.2", "requisito": "Objetivos de calidad", "evidencia": "Plan de objetivos y seguimiento KPI", "codigo": "PLAN-OBJ-001"},
+    {"clausula": "7.1.5", "requisito": "Recursos de medicion", "evidencia": "Registro de calibracion de equipos", "codigo": "F-MNT-002"},
+    {"clausula": "7.2", "requisito": "Competencia", "evidencia": "Matriz de competencias y capacitacion", "codigo": "RH-COMP-001"},
+    {"clausula": "7.5", "requisito": "Control documental", "evidencia": "Procedimiento de control documental", "codigo": "PR-DC-001"},
+    {"clausula": "8.2", "requisito": "Requisitos del cliente", "evidencia": "Checklist de revision de pedido", "codigo": "F-VEN-001"},
+    {"clausula": "8.4", "requisito": "Control de proveedores", "evidencia": "Homologacion y evaluacion de proveedores", "codigo": "F-COM-001/F-COM-002"},
+    {"clausula": "8.5.1", "requisito": "Control de produccion", "evidencia": "Control de bobinado y ensamble", "codigo": "F-PRO-003/F-PRO-005"},
+    {"clausula": "8.5.2", "requisito": "Trazabilidad", "evidencia": "Registro de lote y serie", "codigo": "F-INV-001/F-INV-002"},
+    {"clausula": "8.6", "requisito": "Liberacion de productos", "evidencia": "Formato de liberacion", "codigo": "F-CAL-002"},
+    {"clausula": "8.7", "requisito": "Salidas no conformes", "evidencia": "Reporte de no conformidad", "codigo": "F-CAL-003"},
+    {"clausula": "9.2", "requisito": "Auditoria interna", "evidencia": "Programa y reporte de auditoria", "codigo": "PR-AU-001/F-CAL-004"},
+    {"clausula": "9.3", "requisito": "Revision por la direccion", "evidencia": "Acta de revision", "codigo": "ACT-RD-001"},
+    {"clausula": "10.2", "requisito": "Accion correctiva", "evidencia": "Formato CAPA", "codigo": "F-CAL-003"},
+    {"clausula": "10.3", "requisito": "Mejora continua", "evidencia": "Plan de mejora", "codigo": "PLAN-MC-001"}
+  ]
+}

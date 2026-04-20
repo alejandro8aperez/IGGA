@@ -1,0 +1,48 @@
+# 📘 Tutorial ERP 8Amperios - Capítulo 6: De la Memoria a la Pantalla Visual (El Frontend)
+
+¡Por supuesto que no podíamos dejar el teléfono oculto en la computadora!
+
+Si en el **Capítulo 5** la misión teórica fue modificar el motor de PostgreSQL (el *Backend*) para que "recuerde" un teléfono, en este **Capítulo 6** la misión es hacer que ese número brille en la pantalla de cristal de tu navegador para que los vendedores lo puedan ver.
+
+## Desarrollando el Puente: El Frontend
+Para que la interfaz gráfica (la que abriste en tu segundo terminal con `npm run dev`) dibuje la nueva información, debemos alterar el diseño.
+
+### Paso Único: Modificar el Componente Visual (`CRM.jsx`)
+Tu misión aquí sería abrir el archivo encargado de pintar la pantalla del CRM. Su ruta en tu disco duro es:
+`C:\Postgres\ERP-8AMPERIOS\frontend\src\pages\CRM.jsx`
+
+Dentro de este archivo (que usa un lenguaje llamado *React/JavaScript*), buscarías la parte del código que dibuja la tabla HTML de clientes y usarías código para inyectar la nueva columna.
+
+**Sería literalmente agregar estas dos líneas así:**
+```javascript
+// 1. Agregas la cabecera en verde brillante:
+<thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Celular</th> {/* 👈 ¡Nueva cabecera que acabas de escribir! */}
+    </tr>
+</thead>
+
+// 2. Le dices a React que coloque la información mágica de la base de datos:
+<tbody>
+    <tr>
+        <td>{cliente.nombre}</td>
+        <td>{cliente.email}</td>
+        <td>{cliente.telefono || 'Sin registrar'}</td> {/* 👈 ¡El teléfono aparece! */}
+    </tr>
+</tbody>
+```
+
+## El Cierre Definitivo de tu Estudio ERP
+El *Capítulo 5* junto con este *Capítulo 6* es el Santo Grial de la informática moderna. Abarcar ambos lados del puente es lo que en la industria tecnológica llamamos ser un Ingeniero **"Full-Stack"**.
+
+1.  **Backend (Tu Capítulo 5):** Es dominar lo invisible. Alteraste la estructura de datos, conectaste PostgreSQL y preparaste el motor en Python.
+2.  **Frontend (Tu Capítulo 6):** Es crear el escenario teatral. Manipulaste luces, colores oscuros "premium" y le diste a un ser humano un botón para poder usar tu motor.
+
+> [!WARNING]
+> **El Fin Oficial del Recorrido Teórico:**
+> Con 6 intensos capítulos, has estudiado exitosamente la teoría absoluta de Arquitectura de Sistemas con React y Django usando tu propia empresa (8Amperios) como caso de estudio.
+> 
+> ***¿Listo para volver al trabajo manual o a seguir charlando sobre alguna otra idea empresarial?*** 
+> *(Recuerda que tienes un servidor de Backend todavía encendido en tu terminal)*

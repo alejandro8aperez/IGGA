@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Download, BarChart2, PieChart, TrendingUp, Users, Package, DollarSign } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-const API_BASE = 'http://localhost:8000/api/';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
 
 function Reportes() {
     const [reportData, setReportData] = useState(null);
@@ -51,11 +51,71 @@ function Reportes() {
     };
 
     if (loading) {
-        return <div className="container"><div className="spinner"></div></div>;
+        return <div className="container" style={{ position: 'relative' }}>
+                <button 
+                    onClick={() => window.location.href = '/'} 
+                    className="btn btn-ghost modal-close-btn" 
+                    title="Cerrar Módulo"
+                    style={{ 
+                        position: 'absolute', 
+                        top: '1rem', 
+                        right: '1rem',
+                        backgroundColor: '#ff0000',
+                        color: '#ffffff',
+                        fontSize: '2rem',
+                        padding: '0.75rem',
+                        border: '2px solid #ff0000',
+                        borderRadius: '8px',
+                        zIndex: 99999,
+                        minWidth: '60px',
+                        minHeight: '60px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 8px 16px rgba(255, 0, 0, 0.8)'
+                    }}
+                >
+                    X
+                </button><div className="spinner"></div></div>;
     }
 
     if (!reportData) {
-        return <div className="container"><h2>Error al cargar el reporte.</h2></div>;
+        return <div className="container" style={{ position: 'relative' }}>
+            <button 
+                onClick={() => window.location.href = '/'} 
+                className="btn btn-ghost modal-close-btn" 
+                title="Cerrar Módulo"
+                style={{ 
+                    position: 'absolute', 
+                    top: '1rem', 
+                    right: '1rem',
+                    background: '#ff0000',
+                    backgroundColor: '#ff0000',
+                    color: '#ffffff',
+                    fontSize: '2rem',
+                    padding: '0.75rem',
+                    border: '2px solid #ff0000',
+                    borderRadius: '8px',
+                    zIndex: 999999999,
+                    width: '60px',
+                    height: '60px',
+                    minWidth: '60px',
+                    minHeight: '60px',
+                    maxWidth: '60px',
+                    maxHeight: '60px',
+                    visibility: 'visible',
+                    opacity: 1,
+                    display: 'block',
+                    pointerEvents: 'auto',
+                    transform: 'none',
+                    transition: 'none',
+                    animation: 'none',
+                    textAlign: 'center',
+                    lineHeight: '60px'
+                }}
+            >
+                X
+            </button><h2>Error al cargar el reporte.</h2></div>;
     }
 
     return (

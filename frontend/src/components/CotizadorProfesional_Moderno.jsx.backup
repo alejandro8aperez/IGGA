@@ -1,0 +1,1206 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { 
+    FileText, Plus, Trash2, Search, Download, Save, Send, 
+    User, Calendar, DollarSign, Package, Percent, Clock,
+    Shield, Building, Mail, Phone, MapPin, Eye, Printer,
+    ChevronLeft, ChevronRight, AlertCircle, CheckCircle, Gear,
+    X, Edit, ShoppingCart, TrendingUp, BarChart3, Star
+} from 'lucide-react';
+
+const API_URL = 'http://127.0.0.1:8000/api/crm/cotizaciones/';
+const CLIENTES_URL = 'http://127.0.0.1:8000/api/crm/clientes/';
+const PRODUCTOS_URL = 'http://127.0.0.1:8000/api/inventarios/productos/';
+
+export default function CotizadorProfesional() {
+    // Estados principales
+    const [cotizacion, setCotizacion] = useState({
+        numero: `COT-${Date.now().toString().slice(-6)}`,
+        fecha: new Date().toISOString().split('T')[0],
+        validez: '30 días',
+        forma_pago: '50% anticipo, 50% contraentrega',
+        garantia: '1 año',
+        entrega: '15 días hábiles',
+        cliente: null,
+        items: [],
+        subtotal: 0,
+        iva: 19,
+        total_iva: 0,
+        gran_total: 0,
+        notas: '',
+        estado: 'borrador'
+    });
+
+    const [clientes, setClientes] = useState([]);
+    const [productos, setProductos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [vistaPrevia, setVistaPrevia] = useState(false);
+    const [buscandoProducto, setBuscandoProducto] = useState('');
+    const [modalProducto, setModalProducto] = useState(false);
+
+    // Cargar datos iniciales
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
+    // Cálculos automáticos
+    useEffect(() => {
+        const subtotal = cotizacion.items.reduce((sum, item) => sum + (item.cantidad * item.precio_unitario), 0);
+        const total_iva = subtotal * (cotizacion.iva / 100);
+        const gran_total = subtotal + total_iva;
+        
+        setCotizacion(prev => ({
+            ...prev,
+            subtotal,
+            total_iva,
+            gran_total
+        }));
+    }, [cotizacion.items, cotizacion.iva]);
+
+    const cargarDatos = async () => {
+        try {
+            const [clientesRes, productosRes] = await Promise.all([
+                axios.get(CLIENTES_URL),
+                axios.get(PRODUCTOS_URL)
+            ]);
+            setClientes(clientesRes.data);
+            setProductos(productosRes.data);
+            setLoading(false);
+        } catch (err) {
+            console.error("Error al cargar datos:", err);
+            setError("Error al cargar los datos iniciales");
+            setLoading(false);
+        }
+    };
+
+    const seleccionarCliente = (clienteId) => {
+        const cliente = clientes.find(c => c.id === clienteId);
+        setCotizacion(prev => ({ ...prev, cliente }));
+    };
+
+    const agregarItem = (producto) => {
+        const nuevoItem = {
+            id: Date.now(),
+            producto: producto.nombre,
+            codigo: producto.codigo || '',
+            descripcion: producto.descripcion || '',
+            cantidad: 1,
+            unidad: producto.unidad || 'Und',
+            precio_unitario: producto.precio_venta || 0,
+            descuento: 0,
+            total: producto.precio_venta || 0
+        };
+        
+        setCotizacion(prev => ({
+            ...prev,
+            items: [...prev.items, nuevoItem]
+        }));
+        
+        setModalProducto(false);
+        setBuscandoProducto('');
+    };
+
+    const actualizarItem = (itemId, campo, valor) => {
+        setCotizacion(prev => ({
+            ...prev,
+            items: prev.items.map(item => {
+                if (item.id === itemId) {
+                    const itemActualizado = { ...item, [campo]: valor };
+                    if (campo === 'cantidad' || campo === 'precio_unitario' || campo === 'descuento') {
+                        const subtotal = itemActualizado.cantidad * itemActualizado.precio_unitario;
+                        const descuentoValor = subtotal * (itemActualizado.descuento / 100);
+                        itemActualizado.total = subtotal - descuentoValor;
+                    }
+                    return itemActualizado;
+                }
+                return item;
+            })
+        }));
+    };
+
+    const eliminarItem = (itemId) => {
+        setCotizacion(prev => ({
+            ...prev,
+            items: prev.items.filter(item => item.id !== itemId)
+        }));
+    };
+
+    const guardarCotizacion = async () => {
+        try {
+            setLoading(true);
+            await axios.post(API_URL, cotizacion);
+            setError(null);
+            alert('Cotización guardada exitosamente');
+        } catch (err) {
+            console.error("Error al guardar cotización:", err);
+            setError("Error al guardar la cotización");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const generarPDF = () => {
+        // Simulación de generación PDF
+        alert('Generando PDF de la cotización...');
+    };
+
+    const enviarCotizacion = () => {
+        // Simulación de envío por email
+        alert('Cotización enviada por email');
+    };
+
+    const productosFiltrados = productos.filter(producto =>
+        producto.nombre.toLowerCase().includes(buscandoProducto.toLowerCase()) ||
+        producto.codigo?.toLowerCase().includes(buscandoProducto.toLowerCase())
+    );
+
+    if (vistaPrevia) {
+        return (
+            <div style={{
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                minHeight: '100vh',
+                padding: '2rem'
+            }}>
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '2rem',
+                    maxWidth: '800px',
+                    margin: '0 auto',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid #e2e8f0'
+                }}>
+                    {/* Header de Vista Previa */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '2rem',
+                        borderBottom: '1px solid #e2e8f0',
+                        paddingBottom: '1rem'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{
+                                width: '50px',
+                                height: '50px',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white'
+                            }}>
+                                <FileText size={24} />
+                            </div>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
+                                    {cotizacion.numero}
+                                </h2>
+                                <p style={{ color: '#718096', margin: '0.25rem 0 0 0' }}>
+                                    Cotización Profesional
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                                onClick={() => setVistaPrevia(false)}
+                                style={{
+                                    background: '#f3f4f6',
+                                    color: '#374151',
+                                    border: '1px solid #d1d5db',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <ChevronLeft size={16} />
+                                Volver
+                            </button>
+                            <button
+                                onClick={generarPDF}
+                                style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <Download size={16} />
+                                PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Contenido de la Cotización */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+                        <div>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#374151', marginBottom: '1rem' }}>
+                                Información del Cliente
+                            </h3>
+                            {cotizacion.cliente ? (
+                                <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
+                                    <p style={{ margin: '0.5rem 0', color: '#374151' }}>
+                                        <strong>{cotizacion.cliente.nombre}</strong>
+                                    </p>
+                                    <p style={{ margin: '0.25rem 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                                        {cotizacion.cliente.email}
+                                    </p>
+                                    <p style={{ margin: '0.25rem 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                                        {cotizacion.cliente.telefono}
+                                    </p>
+                                    <p style={{ margin: '0.25rem 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                                        {cotizacion.cliente.direccion}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div style={{ background: '#fef2f2', borderRadius: '8px', padding: '1rem', color: '#991b1b' }}>
+                                    No se ha seleccionado un cliente
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#374151', marginBottom: '1rem' }}>
+                                Condiciones Comerciales
+                            </h3>
+                            <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
+                                <p style={{ margin: '0.5rem 0', color: '#374151' }}>
+                                    <strong>Fecha:</strong> {cotizacion.fecha}
+                                </p>
+                                <p style={{ margin: '0.5rem 0', color: '#374151' }}>
+                                    <strong>Validez:</strong> {cotizacion.validez}
+                                </p>
+                                <p style={{ margin: '0.5rem 0', color: '#374151' }}>
+                                    <strong>Forma de Pago:</strong> {cotizacion.forma_pago}
+                                </p>
+                                <p style={{ margin: '0.5rem 0', color: '#374151' }}>
+                                    <strong>Entrega:</strong> {cotizacion.entrega}
+                                </p>
+                                <p style={{ margin: '0.5rem 0', color: '#374151' }}>
+                                    <strong>Garantía:</strong> {cotizacion.garantia}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Items de la Cotización */}
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#374151', marginBottom: '1rem' }}>
+                            Detalle de Productos
+                        </h3>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                                    <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.9rem', color: '#6b7280' }}>Código</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.9rem', color: '#6b7280' }}>Producto</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.9rem', color: '#6b7280' }}>Cantidad</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.9rem', color: '#6b7280' }}>Precio</th>
+                                    <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.9rem', color: '#6b7280' }}>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {cotizacion.items.map((item, index) => (
+                                    <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                        <td style={{ padding: '0.75rem', fontSize: '0.9rem', color: '#374151' }}>
+                                            {item.codigo}
+                                        </td>
+                                        <td style={{ padding: '0.75rem', fontSize: '0.9rem', color: '#374151' }}>
+                                            {item.producto}
+                                        </td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.9rem', color: '#374151' }}>
+                                            {item.cantidad} {item.unidad}
+                                        </td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.9rem', color: '#374151' }}>
+                                            ${item.precio_unitario.toFixed(2)}
+                                        </td>
+                                        <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: '600', color: '#374151' }}>
+                                            ${item.total.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Resumen */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ width: '300px' }}>
+                            <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <span style={{ color: '#6b7280' }}>Subtotal:</span>
+                                    <span style={{ color: '#374151', fontWeight: '600' }}>${cotizacion.subtotal.toFixed(2)}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <span style={{ color: '#6b7280' }}>IVA ({cotizacion.iva}%):</span>
+                                    <span style={{ color: '#374151', fontWeight: '600' }}>${cotizacion.total_iva.toFixed(2)}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid #e5e7eb' }}>
+                                    <span style={{ color: '#374151', fontWeight: '700' }}>Total:</span>
+                                    <span style={{ color: '#667eea', fontWeight: '700', fontSize: '1.1rem' }}>${cotizacion.gran_total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{
+            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            minHeight: '100vh',
+            padding: '1rem'
+        }}>
+            {/* Header */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                marginBottom: '2rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                border: '1px solid #e2e8f0'
+            }}>
+                <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center' 
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <FileText size={24} />
+                        </div>
+                        <div>
+                            <h2 style={{ 
+                                fontSize: '1.8rem', 
+                                fontWeight: '700', 
+                                color: '#1a202c',
+                                margin: '0 0 0.5rem 0'
+                            }}>
+                                Cotizador Profesional
+                            </h2>
+                            <p style={{ color: '#718096', margin: 0, fontSize: '1rem' }}>
+                                Sistema de generación de cotizaciones
+                            </p>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                            onClick={setVistaPrevia}
+                            style={{
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '12px',
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+                            }}
+                        >
+                            <Eye size={20} />
+                            Vista Previa
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Alertas */}
+            {error && (
+                <div style={{
+                    background: '#fee2e2',
+                    border: '1px solid #ef4444',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    marginBottom: '2rem',
+                    color: '#991b1b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+                    <AlertCircle size={20} />
+                    <div style={{ flex: 1 }}>
+                        <strong>Error:</strong> {error}
+                    </div>
+                    <button 
+                        onClick={() => setError(null)}
+                        style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            )}
+
+            {/* Contenido Principal */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '2rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                border: '1px solid #e2e8f0'
+            }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <div style={{ color: '#6b7280', fontSize: '1.1rem' }}>
+                            Cargando datos...
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        {/* Columna Izquierda - Información General */}
+                        <div>
+                            <h3 style={{ 
+                                fontSize: '1.3rem', 
+                                fontWeight: '700', 
+                                color: '#1a202c',
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                <Settings size={24} style={{ color: '#667eea' }} />
+                                Información de la Cotización
+                            </h3>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {/* Datos Básicos */}
+                                <div style={{
+                                    background: '#f8fafc',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <h4 style={{ 
+                                        fontSize: '1.1rem', 
+                                        fontWeight: '600', 
+                                        color: '#374151',
+                                        marginBottom: '1rem' 
+                                    }}>
+                                        Datos Básicos
+                                    </h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '0.5rem', 
+                                                fontWeight: '600', 
+                                                color: '#4b5563',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                Número
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={cotizacion.numero}
+                                                onChange={(e) => setCotizacion(prev => ({ ...prev, numero: e.target.value }))}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: '8px',
+                                                    fontSize: '1rem',
+                                                    outline: 'none',
+                                                    background: 'white'
+                                                }}
+                                                readOnly
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '0.5rem', 
+                                                fontWeight: '600', 
+                                                color: '#4b5563',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                Fecha
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={cotizacion.fecha}
+                                                onChange={(e) => setCotizacion(prev => ({ ...prev, fecha: e.target.value }))}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: '8px',
+                                                    fontSize: '1rem',
+                                                    outline: 'none',
+                                                    background: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Selección de Cliente */}
+                                <div style={{
+                                    background: '#f8fafc',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <h4 style={{ 
+                                        fontSize: '1.1rem', 
+                                        fontWeight: '600', 
+                                        color: '#374151',
+                                        marginBottom: '1rem' 
+                                    }}>
+                                        Cliente
+                                    </h4>
+                                    <select
+                                        value={cotizacion.cliente?.id || ''}
+                                        onChange={(e) => seleccionarCliente(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            fontSize: '1rem',
+                                            outline: 'none',
+                                            background: 'white'
+                                        }}
+                                    >
+                                        <option value="">Seleccionar cliente...</option>
+                                        {clientes.map(cliente => (
+                                            <option key={cliente.id} value={cliente.id}>
+                                                {cliente.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    
+                                    {cotizacion.cliente && (
+                                        <div style={{
+                                            background: 'white',
+                                            borderRadius: '8px',
+                                            padding: '1rem',
+                                            marginTop: '1rem',
+                                            border: '1px solid #e5e7eb'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                                <User size={16} style={{ color: '#667eea' }} />
+                                                <strong style={{ color: '#374151' }}>{cotizacion.cliente.nombre}</strong>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                                <Mail size={14} style={{ color: '#6b7280' }} />
+                                                <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>{cotizacion.cliente.email}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                                <Phone size={14} style={{ color: '#6b7280' }} />
+                                                <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>{cotizacion.cliente.telefono}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <MapPin size={14} style={{ color: '#6b7280' }} />
+                                                <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>{cotizacion.cliente.direccion}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Condiciones Comerciales */}
+                                <div style={{
+                                    background: '#f8fafc',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <h4 style={{ 
+                                        fontSize: '1.1rem', 
+                                        fontWeight: '600', 
+                                        color: '#374151',
+                                        marginBottom: '1rem' 
+                                    }}>
+                                        Condiciones Comerciales
+                                    </h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '0.5rem', 
+                                                fontWeight: '600', 
+                                                color: '#4b5563',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                Validez
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={cotizacion.validez}
+                                                onChange={(e) => setCotizacion(prev => ({ ...prev, validez: e.target.value }))}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: '8px',
+                                                    fontSize: '1rem',
+                                                    outline: 'none',
+                                                    background: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '0.5rem', 
+                                                fontWeight: '600', 
+                                                color: '#4b5563',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                Forma de Pago
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={cotizacion.forma_pago}
+                                                onChange={(e) => setCotizacion(prev => ({ ...prev, forma_pago: e.target.value }))}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: '8px',
+                                                    fontSize: '1rem',
+                                                    outline: 'none',
+                                                    background: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '0.5rem', 
+                                                fontWeight: '600', 
+                                                color: '#4b5563',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                Entrega
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={cotizacion.entrega}
+                                                onChange={(e) => setCotizacion(prev => ({ ...prev, entrega: e.target.value }))}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: '8px',
+                                                    fontSize: '1rem',
+                                                    outline: 'none',
+                                                    background: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '0.5rem', 
+                                                fontWeight: '600', 
+                                                color: '#4b5563',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                Garantía
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={cotizacion.garantia}
+                                                onChange={(e) => setCotizacion(prev => ({ ...prev, garantia: e.target.value }))}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.75rem',
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: '8px',
+                                                    fontSize: '1rem',
+                                                    outline: 'none',
+                                                    background: 'white'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Columna Derecha - Items y Totales */}
+                        <div>
+                            <h3 style={{ 
+                                fontSize: '1.3rem', 
+                                fontWeight: '700', 
+                                color: '#1a202c',
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}>
+                                <ShoppingCart size={24} style={{ color: '#667eea' }} />
+                                Productos y Servicios
+                            </h3>
+
+                            {/* Botón Agregar Producto */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <button
+                                    onClick={() => setModalProducto(true)}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        width: '100%',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                                    }}
+                                >
+                                    <Plus size={20} />
+                                    Agregar Producto
+                                </button>
+                            </div>
+
+                            {/* Lista de Items */}
+                            <div style={{
+                                background: '#f8fafc',
+                                borderRadius: '12px',
+                                padding: '1rem',
+                                border: '1px solid #e2e8f0',
+                                maxHeight: '400px',
+                                overflowY: 'auto'
+                            }}>
+                                {cotizacion.items.length > 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        {cotizacion.items.map((item) => (
+                                            <div key={item.id} style={{
+                                                background: 'white',
+                                                borderRadius: '8px',
+                                                padding: '1rem',
+                                                border: '1px solid #e5e7eb'
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: '600', color: '#374151', marginBottom: '0.25rem' }}>
+                                                            {item.producto}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                                                            {item.descripcion}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
+                                                            Código: {item.codigo}
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => eliminarItem(item.id)}
+                                                        style={{
+                                                            background: '#fee2e2',
+                                                            color: '#dc2626',
+                                                            border: '1px solid #fecaca',
+                                                            padding: '0.25rem 0.5rem',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem', display: 'block' }}>
+                                                            Cantidad
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            value={item.cantidad}
+                                                            onChange={(e) => actualizarItem(item.id, 'cantidad', parseFloat(e.target.value))}
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '0.5rem',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '6px',
+                                                                fontSize: '0.9rem',
+                                                                outline: 'none'
+                                                            }}
+                                                            min="1"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem', display: 'block' }}>
+                                                            Precio Unitario
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            value={item.precio_unitario}
+                                                            onChange={(e) => actualizarItem(item.id, 'precio_unitario', parseFloat(e.target.value))}
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '0.5rem',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '6px',
+                                                                fontSize: '0.9rem',
+                                                                outline: 'none'
+                                                            }}
+                                                            min="0"
+                                                            step="0.01"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem', display: 'block' }}>
+                                                            Descuento %
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            value={item.descuento}
+                                                            onChange={(e) => actualizarItem(item.id, 'descuento', parseFloat(e.target.value))}
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '0.5rem',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '6px',
+                                                                fontSize: '0.9rem',
+                                                                outline: 'none'
+                                                            }}
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.1"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div style={{ 
+                                                    textAlign: 'right', 
+                                                    marginTop: '0.5rem', 
+                                                    paddingTop: '0.5rem', 
+                                                    borderTop: '1px solid #f3f4f6' 
+                                                }}>
+                                                    <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>Total: </span>
+                                                    <span style={{ fontSize: '1rem', fontWeight: '700', color: '#667eea' }}>
+                                                        ${item.total.toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                                        <ShoppingCart size={48} style={{ color: '#9ca3af', marginBottom: '1rem' }} />
+                                        <p>No hay productos agregados</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Resumen de Totales */}
+                            <div style={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                borderRadius: '12px',
+                                padding: '1.5rem',
+                                marginTop: '1rem',
+                                color: 'white'
+                            }}>
+                                <h4 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>
+                                    Resumen de Cotización
+                                </h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ opacity: 0.9 }}>Subtotal:</span>
+                                        <span style={{ fontWeight: '600' }}>${cotizacion.subtotal.toFixed(2)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ opacity: 0.9 }}>IVA ({cotizacion.iva}%):</span>
+                                        <span style={{ fontWeight: '600' }}>${cotizacion.total_iva.toFixed(2)}</span>
+                                    </div>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        paddingTop: '0.5rem', 
+                                        borderTop: '1px solid rgba(255,255,255,0.3)' 
+                                    }}>
+                                        <span style={{ fontWeight: '700', fontSize: '1.1rem' }}>Total:</span>
+                                        <span style={{ fontWeight: '700', fontSize: '1.3rem' }}>${cotizacion.gran_total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notas */}
+                            <div style={{
+                                background: '#f8fafc',
+                                borderRadius: '12px',
+                                padding: '1.5rem',
+                                border: '1px solid #e2e8f0',
+                                marginTop: '1rem'
+                            }}>
+                                <h4 style={{ 
+                                    fontSize: '1.1rem', 
+                                    fontWeight: '600', 
+                                    color: '#374151',
+                                    marginBottom: '1rem' 
+                                }}>
+                                    Notas Adicionales
+                                </h4>
+                                <textarea
+                                    value={cotizacion.notas}
+                                    onChange={(e) => setCotizacion(prev => ({ ...prev, notas: e.target.value }))}
+                                    placeholder="Notas adicionales para el cliente..."
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        outline: 'none',
+                                        background: 'white',
+                                        minHeight: '100px',
+                                        resize: 'vertical'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ 
+                        display: 'flex', 
+                        gap: '1rem', 
+                        justifyContent: 'flex-end',
+                        marginTop: '2rem',
+                        paddingTop: '2rem',
+                        borderTop: '1px solid #e2e8f0'
+                    }}>
+                        <button
+                            onClick={guardarCotizacion}
+                            disabled={loading || !cotizacion.cliente || cotizacion.items.length === 0}
+                            style={{
+                                background: loading || !cotizacion.cliente || cotizacion.items.length === 0
+                                    ? '#9ca3af' 
+                                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.75rem 2rem',
+                                borderRadius: '12px',
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                cursor: loading || !cotizacion.cliente || cotizacion.items.length === 0 ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: loading || !cotizacion.cliente || cotizacion.items.length === 0
+                                    ? 'none' 
+                                    : '0 4px 15px rgba(16, 185, 129, 0.3)'
+                            }}
+                        >
+                            <Save size={20} />
+                            {loading ? 'Guardando...' : 'Guardar Cotización'}
+                        </button>
+                        <button
+                            onClick={generarPDF}
+                            disabled={!cotizacion.cliente || cotizacion.items.length === 0}
+                            style={{
+                                background: !cotizacion.cliente || cotizacion.items.length === 0
+                                    ? '#9ca3af' 
+                                    : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.75rem 2rem',
+                                borderRadius: '12px',
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                cursor: !cotizacion.cliente || cotizacion.items.length === 0 ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: !cotizacion.cliente || cotizacion.items.length === 0
+                                    ? 'none' 
+                                    : '0 4px 15px rgba(245, 158, 11, 0.3)'
+                            }}
+                        >
+                            <Download size={20} />
+                            Generar PDF
+                        </button>
+                        <button
+                            onClick={enviarCotizacion}
+                            disabled={!cotizacion.cliente || cotizacion.items.length === 0}
+                            style={{
+                                background: !cotizacion.cliente || cotizacion.items.length === 0
+                                    ? '#9ca3af' 
+                                    : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.75rem 2rem',
+                                borderRadius: '12px',
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                cursor: !cotizacion.cliente || cotizacion.items.length === 0 ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: !cotizacion.cliente || cotizacion.items.length === 0
+                                    ? 'none' 
+                                    : '0 4px 15px rgba(59, 130, 246, 0.3)'
+                            }}
+                        >
+                            <Send size={20} />
+                            Enviar por Email
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Selección de Productos */}
+            {modalProducto && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '16px',
+                        padding: '2rem',
+                        width: '90%',
+                        maxWidth: '600px',
+                        maxHeight: '80vh',
+                        overflow: 'auto',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginBottom: '1.5rem'
+                        }}>
+                            <h3 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#1a202c' }}>
+                                Seleccionar Producto
+                            </h3>
+                            <button
+                                onClick={() => setModalProducto(false)}
+                                style={{
+                                    background: '#f3f4f6',
+                                    color: '#374151',
+                                    border: '1px solid #d1d5db',
+                                    padding: '0.5rem',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ position: 'relative' }}>
+                                <Search size={20} style={{ 
+                                    position: 'absolute', 
+                                    left: '1rem', 
+                                    top: '50%', 
+                                    transform: 'translateY(-50%)',
+                                    color: '#9ca3af'
+                                }} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar producto..."
+                                    value={buscandoProducto}
+                                    onChange={(e) => setBuscandoProducto(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem 1rem 0.75rem 3rem',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        outline: 'none'
+                                    }}
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {productosFiltrados.map((producto) => (
+                                <div
+                                    key={producto.id}
+                                    onClick={() => agregarItem(producto)}
+                                    style={{
+                                        background: '#f9fafb',
+                                        borderRadius: '8px',
+                                        padding: '1rem',
+                                        cursor: 'pointer',
+                                        border: '1px solid #e5e7eb',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.background = '#f3f4f6';
+                                        e.currentTarget.style.borderColor = '#667eea';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.background = '#f9fafb';
+                                        e.currentTarget.style.borderColor = '#e5e7eb';
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '600', color: '#374151', marginBottom: '0.25rem' }}>
+                                                {producto.nombre}
+                                            </div>
+                                            <div style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                                                {producto.descripcion}
+                                            </div>
+                                            <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
+                                                Código: {producto.codigo || 'N/A'} | Stock: {producto.stock || 0}
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#667eea' }}>
+                                                ${producto.precio_venta?.toFixed(2) || '0.00'}
+                                            </div>
+                                            <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                                                {producto.unidad || 'Und'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {productosFiltrados.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                                <Package size={48} style={{ color: '#9ca3af', marginBottom: '1rem' }} />
+                                <p>No se encontraron productos</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

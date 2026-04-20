@@ -1,0 +1,19 @@
+{
+  "components": [
+    {"id": "oc1", "type": "LABEL", "x": 50, "y": 30, "text": "ORDEN DE COMPRA (COMPRAS)", "width": 450, "height": 40, "fontSize": 24, "color": "#1e293b", "fontWeight": "700"},
+    {"id": "oc2", "type": "SECTION", "x": 40, "y": 80, "width": 920, "height": 300, "backgroundColor": "#f8fafc", "borderRadius": 12, "borderStyle": "solid", "borderColor": "#e2e8f0"},
+    {"id": "oc3", "type": "LABEL", "x": 70, "y": 110, "text": "Proveedor:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "oc4", "type": "SELECT", "x": 70, "y": 140, "fieldName": "proveedor", "placeholder": "Seleccione Proveedor", "width": 350, "height": 45, "borderRadius": 8},
+    {"id": "oc5", "type": "LABEL", "x": 450, "y": 110, "text": "Fecha Entrega Esperada:", "width": 250, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "oc6", "type": "DATE", "x": 450, "y": 140, "fieldName": "fecha_entrega_esperada", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "oc7", "type": "LABEL", "x": 70, "y": 210, "text": "Valor Total ($):", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "oc8", "type": "INPUT", "x": 70, "y": 240, "fieldName": "total", "placeholder": "0.00", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "oc9", "type": "LABEL", "x": 350, "y": 210, "text": "Estado OC:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "oc10", "type": "SELECT", "x": 350, "y": 240, "fieldName": "estado", "placeholder": "Seleccione Estado", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "oc11", "type": "DIVIDER", "x": 40, "y": 400, "width": 920, "height": 2, "backgroundColor": "#e2e8f0"},
+    {"id": "oc12", "type": "BUTTON", "x": 710, "y": 430, "text": "GENERAR OC", "buttonType": "submit", "width": 250, "height": 55, "backgroundColor": "#8b5cf6", "color": "#ffffff", "borderRadius": 10, "fontWeight": "700"},
+    {"id": "oc13", "type": "BUTTON", "x": 450, "y": 430, "text": "CANCELAR", "buttonType": "cancel", "width": 250, "height": 55, "backgroundColor": "#ffffff", "color": "#64748b", "borderRadius": 10, "fontWeight": "600"}
+  ],
+  "timestamp": "2026-04-12T00:00:00.000Z",
+  "version": "1.0"
+}

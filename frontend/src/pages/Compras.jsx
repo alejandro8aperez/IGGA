@@ -1,21 +1,39 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ShoppingCart, AlertCircle, Edit3, Trash2, Plus, X, Truck, FileText } from 'lucide-react';
+import { 
+    ShoppingCart, AlertCircle, Edit3, Trash2, Plus, X, Truck, FileText, Palette,
+    Users, DollarSign, Package, CheckCircle, Clock, TrendingUp,
+    Search, Filter, Calendar, CreditCard
+} from 'lucide-react';
 
-const API_PROV = 'http://localhost:8000/api/compras/proveedores/';
-const API_ORD = 'http://localhost:8000/api/compras/ordenes/';
+const API_PROV = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/proveedores/';
+const API_ORD = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/ordenes/';
+const API_RECEPCION = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/recepciones/';
+const API_PAGO = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/pagos/';
 
-function Compras() {
+export default function Compras() {
     const [proveedores, setProveedores] = useState([]);
     const [ordenes, setOrdenes] = useState([]);
+    const [recepciones, setRecepciones] = useState([]);
+    const [pagos, setPagos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [activeTab, setActiveTab] = useState('proveedores');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('todos');
 
     // Modal Proveedores
     const [isProvModalOpen, setIsProvModalOpen] = useState(false);
     const [currentProv, setCurrentProv] = useState(null);
     const [provForm, setProvForm] = useState({
-        razon_social: '', nit: '', contacto_nombre: '', contacto_email: '', contacto_telefono: '', direccion: ''
+        razon_social: '', 
+        nit: '', 
+        contacto_nombre: '', 
+        contacto_email: '', 
+        contacto_telefono: '', 
+        direccion: '',
+        tipo: 'nacional',
+        estado: 'activo'
     });
 
     useEffect(() => {
@@ -24,14 +42,19 @@ function Compras() {
 
     const fetchData = async () => {
         try {
-            const [resProv, resOrd] = await Promise.all([
+            const [resProv, resOrd, resRecep, resPagos] = await Promise.all([
                 axios.get(API_PROV),
-                axios.get(API_ORD)
+                axios.get(API_ORD),
+                axios.get(API_RECEPCION),
+                axios.get(API_PAGO)
             ]);
             setProveedores(resProv.data);
             setOrdenes(resOrd.data);
+            setRecepciones(resRecep.data);
+            setPagos(resPagos.data);
             setLoading(false);
         } catch (err) {
+            console.error('Error fetching data:', err);
             setError('Error al cargar datos de Compras.');
             setLoading(false);
         }
@@ -43,12 +66,21 @@ function Compras() {
             setProvForm(prov);
         } else {
             setCurrentProv(null);
-            setProvForm({ razon_social: '', nit: '', contacto_nombre: '', contacto_email: '', contacto_telefono: '', direccion: '' });
+            setProvForm({ 
+                razon_social: '', 
+                nit: '', 
+                contacto_nombre: '', 
+                contacto_email: '', 
+                contacto_telefono: '', 
+                direccion: '',
+                tipo: 'nacional',
+                estado: 'activo'
+            });
         }
         setIsProvModalOpen(true);
     };
 
-    const handlProvSubmit = async (e) => {
+    const handleProvSubmit = async (e) => {
         e.preventDefault();
         try {
             if (currentProv) {
@@ -59,7 +91,8 @@ function Compras() {
             setIsProvModalOpen(false);
             fetchData();
         } catch (err) {
-            alert("Error al guardar proveedor.");
+            console.error('Error al guardar proveedor:', err);
+            setError('Error al guardar proveedor');
         }
     };
 
@@ -69,163 +102,1219 @@ function Compras() {
                 await axios.delete(`${API_PROV}${id}/`);
                 fetchData();
             } catch (err) {
-                alert("Error al eliminar proveedor. Es probable que tenga órdenes de compra asociadas.");
+                console.error('Error al eliminar proveedor:', err);
+                setError('Error al eliminar proveedor. Es probable que tenga órdenes de compra asociadas.');
             }
         }
     };
 
+    const registrarRecepcion = async (orden) => {
+        if (orden.estado === 'cancelada') {
+            setError('No se puede recibir una orden cancelada.');
+            return;
+        }
+
+        const cantidad = Number(prompt('Cantidad recibida:', orden.cantidad || 0));
+        if (!cantidad || cantidad <= 0) return;
+
+        try {
+            await axios.post(API_RECEPCION, {
+                orden: orden.id,
+                cantidad_recibida: cantidad,
+                fecha_recepcion: new Date().toISOString().split('T')[0],
+                estado: 'recibida'
+            });
+            fetchData();
+        } catch (err) {
+            console.error('Error al registrar recepción:', err);
+            setError('Error al registrar recepción');
+        }
+    };
+
+    const filteredProveedores = proveedores.filter(prov => {
+        const matchesSearch = prov.razon_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            prov.nit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            prov.contacto_nombre?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = filterStatus === 'todos' || prov.estado === filterStatus;
+        return matchesSearch && matchesFilter;
+    });
+
+    const filteredOrdenes = ordenes.filter(ord => {
+        const matchesSearch = ord.numero_orden?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            ord.proveedor_razon_social?.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
+    });
+
+    const filteredRecepciones = recepciones.filter(rec => {
+        const matchesSearch = rec.orden_numero?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            rec.proveedor_razon_social?.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
+    });
+
+    // Calcular estadísticas
+    const totalProveedores = proveedores.length;
+    const proveedoresActivos = proveedores.filter(prov => prov.estado === 'activo').length;
+    const totalOrdenes = ordenes.length;
+    const ordenesPendientes = ordenes.filter(ord => ord.estado === 'pendiente').length;
+    const totalCompras = ordenes.reduce((sum, ord) => sum + (ord.total || 0), 0);
+    const recepcionesPendientes = recepciones.filter(rec => rec.estado === 'pendiente').length;
+
+    if (loading) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '50vh',
+                background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                borderRadius: '16px'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                        width: '50px', 
+                        height: '50px', 
+                        border: '4px solid rgba(102, 126, 234, 0.2)', 
+                        borderTop: '4px solid #667eea', 
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 1rem'
+                    }}></div>
+                    <div style={{ color: '#667eea', fontWeight: '600', fontSize: '1.1rem' }}>
+                        Cargando datos de Compras...
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '50vh',
+                background: '#f8fafc'
+            }}>
+                <div style={{
+                    background: '#fee2e2',
+                    border: '1px solid #ef4444',
+                    borderRadius: '12px',
+                    padding: '2rem',
+                    textAlign: 'center',
+                    maxWidth: '500px'
+                }}>
+                    <AlertCircle size={48} style={{ color: '#dc2626', marginBottom: '1rem' }} />
+                    <h3 style={{ color: '#dc2626', margin: '0 0 0.5rem 0' }}>
+                        Error en Compras
+                    </h3>
+                    <p style={{ color: '#991b1b', margin: 0 }}>
+                        {error}
+                    </p>
+                    <button 
+                        onClick={() => setError(null)}
+                        style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            marginTop: '1rem'
+                        }}
+                    >
+                        Reintentar
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ 
+            background: '#f8fafc',
+            minHeight: '100vh',
+            padding: '1rem'
+        }}>
+            {/* Header */}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '2rem' 
+            }}>
                 <div>
-                    <h1 className="header-title">Gestión de Compras</h1>
-                    <p className="header-subtitle" style={{ marginBottom: 0 }}>Proveedores y Órdenes de Compra</p>
+                    <h2 style={{ 
+                        fontSize: '1.8rem', 
+                        fontWeight: '700', 
+                        color: '#1a202c',
+                        margin: '0 0 0.5rem 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                    }}>
+                        <ShoppingCart size={32} style={{ color: '#667eea' }} />
+                        Gestión de Compras
+                    </h2>
+                    <p style={{ color: '#718096', margin: 0, fontSize: '1rem' }}>
+                        Proveedores y órdenes de compra
+                    </p>
+                </div>
+                <button
+                    onClick={() => openProvModal()}
+                    style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '12px',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+                    }}
+                >
+                    <Plus size={20} />
+                    Nuevo Proveedor
+                </button>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+                <div style={{ 
+                    background: '#fed7d7',
+                    border: '1px solid #feb2b2',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    marginBottom: '2rem',
+                    color: '#c53030',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+                    <AlertCircle size={20} />
+                    <div style={{ flex: 1 }}>
+                        <strong>Error:</strong> {error}
+                    </div>
+                    <button 
+                        onClick={() => setError(null)}
+                        style={{
+                            background: '#e53e3e',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            )}
+
+            {/* Stats Grid */}
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                gap: '1.5rem', 
+                marginBottom: '2rem' 
+            }}>
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <Users size={24} />
+                        </div>
+                        <div>
+                            <h3 style={{ 
+                                fontSize: '1.1rem', 
+                                fontWeight: '600', 
+                                color: '#2d3748',
+                                margin: '0 0 0.25rem 0'
+                            }}>
+                                Total Proveedores
+                            </h3>
+                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
+                                Registrados
+                            </p>
+                        </div>
+                    </div>
+                    <p style={{ 
+                        fontSize: '2rem', 
+                        fontWeight: '700', 
+                        color: '#667eea',
+                        margin: '0'
+                    }}>
+                        {totalProveedores}
+                    </p>
+                </div>
+
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <CheckCircle size={24} />
+                        </div>
+                        <div>
+                            <h3 style={{ 
+                                fontSize: '1.1rem', 
+                                fontWeight: '600', 
+                                color: '#2d3748',
+                                margin: '0 0 0.25rem 0'
+                            }}>
+                                Proveedores Activos
+                            </h3>
+                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
+                                Disponibles
+                            </p>
+                        </div>
+                    </div>
+                    <p style={{ 
+                        fontSize: '2rem', 
+                        fontWeight: '700', 
+                        color: '#48bb78',
+                        margin: '0'
+                    }}>
+                        {proveedoresActivos}
+                    </p>
+                </div>
+
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            background: 'linear-gradient(135deg, #ed8936 0%, #f59e0b 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <FileText size={24} />
+                        </div>
+                        <div>
+                            <h3 style={{ 
+                                fontSize: '1.1rem', 
+                                fontWeight: '600', 
+                                color: '#2d3748',
+                                margin: '0 0 0.25rem 0'
+                            }}>
+                                Órdenes Pendientes
+                            </h3>
+                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
+                                Por procesar
+                            </p>
+                        </div>
+                    </div>
+                    <p style={{ 
+                        fontSize: '2rem', 
+                        fontWeight: '700', 
+                        color: '#ed8936',
+                        margin: '0'
+                    }}>
+                        {ordenesPendientes}
+                    </p>
+                </div>
+
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{
+                            width: '50px',
+                            height: '50px',
+                            background: 'linear-gradient(135deg, #38b2ac 0%, #319795 100%)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <DollarSign size={24} />
+                        </div>
+                        <div>
+                            <h3 style={{ 
+                                fontSize: '1.1rem', 
+                                fontWeight: '600', 
+                                color: '#2d3748',
+                                margin: '0 0 0.25rem 0'
+                            }}>
+                                Total Compras
+                            </h3>
+                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
+                                Monto acumulado
+                            </p>
+                        </div>
+                    </div>
+                    <p style={{ 
+                        fontSize: '2rem', 
+                        fontWeight: '700', 
+                        color: '#38b2ac',
+                        margin: '0'
+                    }}>
+                        ${totalCompras.toLocaleString()}
+                    </p>
                 </div>
             </div>
 
-            {error && (
-                <div style={{ background: 'rgba(239, 68, 68, 0.2)', padding: '1rem', borderRadius: '8px', color: '#fca5a5', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <AlertCircle size={20} />
-                    {error}
+            {/* Search and Filter */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '1rem',
+                marginBottom: '2rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                display: 'flex',
+                gap: '1rem',
+                alignItems: 'center'
+            }}>
+                <div style={{ flex: 1, position: 'relative' }}>
+                    <Search size={20} style={{ 
+                        position: 'absolute', 
+                        left: '1rem', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)',
+                        color: '#718096'
+                    }} />
+                    <input
+                        type="text"
+                        placeholder="Buscar por proveedor, NIT, número de orden..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '0.75rem 1rem 0.75rem 3rem',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            outline: 'none',
+                            transition: 'border-color 0.2s'
+                        }}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#667eea';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = '#e2e8f0';
+                        }}
+                    />
+                </div>
+                {activeTab === 'proveedores' && (
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        style={{
+                            padding: '0.75rem 1rem',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            outline: 'none',
+                            background: 'white',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <option value="todos">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                        <option value="suspendido">Suspendido</option>
+                    </select>
+                )}
+            </div>
+
+            {/* Tab Navigation */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '1rem',
+                marginBottom: '2rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                        style={{
+                            background: activeTab === 'proveedores' 
+                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                : 'transparent',
+                            color: activeTab === 'proveedores' ? 'white' : '#4a5568',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (activeTab !== 'proveedores') {
+                                e.target.style.backgroundColor = '#f3f4f6';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (activeTab !== 'proveedores') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
+                        onClick={() => setActiveTab('proveedores')}
+                    >
+                        <Users size={16} />
+                        Proveedores
+                    </button>
+                    <button 
+                        style={{
+                            background: activeTab === 'ordenes' 
+                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                : 'transparent',
+                            color: activeTab === 'ordenes' ? 'white' : '#4a5568',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (activeTab !== 'ordenes') {
+                                e.target.style.backgroundColor = '#f3f4f6';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (activeTab !== 'ordenes') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
+                        onClick={() => setActiveTab('ordenes')}
+                    >
+                        <FileText size={16} />
+                        Órdenes de Compra
+                    </button>
+                    <button 
+                        style={{
+                            background: activeTab === 'recepciones' 
+                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                : 'transparent',
+                            color: activeTab === 'recepciones' ? 'white' : '#4a5568',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (activeTab !== 'recepciones') {
+                                e.target.style.backgroundColor = '#f3f4f6';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (activeTab !== 'recepciones') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
+                        onClick={() => setActiveTab('recepciones')}
+                    >
+                        <Package size={16} />
+                        Recepciones
+                    </button>
+                    <button 
+                        style={{
+                            background: activeTab === 'pagos' 
+                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                : 'transparent',
+                            color: activeTab === 'pagos' ? 'white' : '#4a5568',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (activeTab !== 'pagos') {
+                                e.target.style.backgroundColor = '#f3f4f6';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (activeTab !== 'pagos') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
+                        onClick={() => setActiveTab('pagos')}
+                    >
+                        <CreditCard size={16} />
+                        Pagos
+                    </button>
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'proveedores' && (
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: '#f8fafc' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Razón Social</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>NIT</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Contacto</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Email</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Teléfono</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Estado</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredProveedores.map((prov) => (
+                                    <tr key={prov.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>{prov.razon_social}</td>
+                                        <td style={{ padding: '1rem', color: '#4a5568' }}>{prov.nit}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Users size={16} style={{ color: '#718096' }} />
+                                                {prov.contacto_nombre}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem', color: '#4a5568' }}>{prov.contacto_email}</td>
+                                        <td style={{ padding: '1rem', color: '#4a5568' }}>{prov.contacto_telefono}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{
+                                                padding: '4px 12px',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '600',
+                                                ...(prov.estado === 'activo' 
+                                                    ? { background: '#d1fae5', color: '#065f46' }
+                                                    : prov.estado === 'inactivo' 
+                                                        ? { background: '#fee2e2', color: '#991b1b' }
+                                                        : { background: '#fbbf24', color: '#92400e' })
+                                            }}>
+                                                {prov.estado}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                <button 
+                                                    style={{
+                                                        background: '#e2e8f0',
+                                                        color: '#4a5568',
+                                                        border: 'none',
+                                                        padding: '0.5rem',
+                                                        borderRadius: '8px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.25rem',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => {
+                                                        e.target.style.backgroundColor = '#cbd5e0';
+                                                    }}
+                                                    onMouseOut={(e) => {
+                                                        e.target.style.backgroundColor = '#e2e8f0';
+                                                    }}
+                                                    onClick={() => openProvModal(prov)}
+                                                >
+                                                    <Edit3 size={16} />
+                                                </button>
+                                                <button 
+                                                    style={{
+                                                        background: '#fee2e2',
+                                                        color: '#991b1b',
+                                                        border: 'none',
+                                                        padding: '0.5rem',
+                                                        borderRadius: '8px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.25rem',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => {
+                                                        e.target.style.backgroundColor = '#fecaca';
+                                                    }}
+                                                    onMouseOut={(e) => {
+                                                        e.target.style.backgroundColor = '#fee2e2';
+                                                    }}
+                                                    onClick={() => handleProvDelete(prov.id)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
-            {loading ? (
-                <div className="spinner"></div>
-            ) : (
-                <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', gap: '2rem' }}>
-
-                        {/* PROVEEDORES LIST */}
-                        <div className="glass-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <Truck size={20} color="var(--primary)" />
-                                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Directorio de Proveedores</h2>
-                                </div>
-                                <button className="btn btn-primary" onClick={() => openProvModal()}>
-                                    <Plus size={16} /> Nuevo Proveedor
-                                </button>
-                            </div>
-
-                            <div style={{ overflowX: 'auto' }}>
-                                <table className="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Razón Social</th>
-                                            <th>NIT</th>
-                                            <th>Contacto</th>
-                                            <th style={{ textAlign: 'right' }}>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {proveedores.map(p => (
-                                            <tr key={p.id}>
-                                                <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{p.razon_social}</td>
-                                                <td>{p.nit}</td>
-                                                <td>
-                                                    <div>{p.contacto_nombre}</div>
-                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.contacto_email}</div>
-                                                </td>
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <button className="btn btn-ghost" style={{ padding: '0.25rem' }} onClick={() => openProvModal(p)}>
-                                                        <Edit3 size={18} />
-                                                    </button>
-                                                    <button className="btn btn-ghost" style={{ padding: '0.25rem' }} onClick={() => handleProvDelete(p.id)}
-                                                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--danger)'}
-                                                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* ORDENES DE COMPRA LIST */}
-                        <div className="glass-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <ShoppingCart size={20} color="var(--warning)" />
-                                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Órdenes de Compra</h2>
-                                </div>
-                                <button className="btn btn-ghost" style={{ padding: '0.5rem' }}>Ver todas</button>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {ordenes.slice(0, 5).map(ord => (
-                                    <div key={ord.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                            <div style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', padding: '0.5rem', borderRadius: '50%' }}>
-                                                <FileText size={18} />
+            {activeTab === 'ordenes' && (
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: '#f8fafc' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Número</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Proveedor</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Fecha</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Total</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Estado</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredOrdenes.map((ord) => (
+                                    <tr key={ord.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>{ord.numero_orden}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Users size={16} style={{ color: '#718096' }} />
+                                                {ord.proveedor_razon_social}
                                             </div>
-                                            <div>
-                                                <div style={{ fontWeight: 600 }}>OC-{ord.id} • {ord.proveedor_nombre}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                                    {new Date(ord.fecha_emision).toLocaleDateString()}
-                                                </div>
+                                        </td>
+                                        <td style={{ padding: '1rem', color: '#4a5568' }}>
+                                            {new Date(ord.fecha_orden).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', color: '#2d3748' }}>
+                                            ${ord.total?.toLocaleString() || 0}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{
+                                                padding: '4px 12px',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '600',
+                                                ...(ord.estado === 'recibida' 
+                                                    ? { background: '#d1fae5', color: '#065f46' }
+                                                    : ord.estado === 'pendiente' 
+                                                        ? { background: '#fbbf24', color: '#92400e' }
+                                                        : ord.estado === 'cancelada' 
+                                                            ? { background: '#fee2e2', color: '#991b1b' }
+                                                            : { background: '#f3f4f6', color: '#6b7280' })
+                                            }}>
+                                                {ord.estado}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                <button 
+                                                    style={{
+                                                        background: '#dbeafe',
+                                                        color: '#1e40af',
+                                                        border: 'none',
+                                                        padding: '0.5rem',
+                                                        borderRadius: '8px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.25rem',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => {
+                                                        e.target.style.backgroundColor = '#bfdbfe';
+                                                    }}
+                                                    onMouseOut={(e) => {
+                                                        e.target.style.backgroundColor = '#dbeafe';
+                                                    }}
+                                                    onClick={() => registrarRecepcion(ord)}
+                                                >
+                                                    <Package size={16} />
+                                                </button>
                                             </div>
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                                            <span style={{ fontWeight: 700 }}>${parseFloat(ord.total).toLocaleString()}</span>
-                                            <span className={`badge ${ord.estado === 'completada' ? 'badge-success' : 'badge-warning'}`}>{ord.estado.toUpperCase()}</span>
-                                        </div>
-                                    </div>
+                                        </td>
+                                    </tr>
                                 ))}
-                                {ordenes.length === 0 && (
-                                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No hay órdenes de compra recientes.</div>
-                                )}
-                            </div>
-                        </div>
-
+                            </tbody>
+                        </table>
                     </div>
-                </>
+                </div>
             )}
 
-            {/* Proveedor Modal */}
+            {activeTab === 'recepciones' && (
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: '#f8fafc' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Orden</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Proveedor</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Fecha Recepción</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Cantidad</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredRecepciones.map((rec) => (
+                                    <tr key={rec.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>{rec.orden_numero}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Users size={16} style={{ color: '#718096' }} />
+                                                {rec.proveedor_razon_social}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem', color: '#4a5568' }}>
+                                            {new Date(rec.fecha_recepcion).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center', color: '#4a5568' }}>
+                                            {rec.cantidad_recibida}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{
+                                                padding: '4px 12px',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '600',
+                                                ...(rec.estado === 'recibida' 
+                                                    ? { background: '#d1fae5', color: '#065f46' }
+                                                    : { background: '#fbbf24', color: '#92400e' })
+                                            }}>
+                                                {rec.estado}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'pagos' && (
+                <div style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '2rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        gap: '1rem',
+                        marginBottom: '1rem'
+                    }}>
+                        <CreditCard size={48} style={{ color: '#667eea' }} />
+                        <h3 style={{ 
+                            fontSize: '1.5rem', 
+                            fontWeight: '700', 
+                            color: '#2d3748',
+                            margin: 0
+                        }}>
+                            Gestión de Pagos
+                        </h3>
+                    </div>
+                    <p style={{ color: '#718096', fontSize: '1.1rem', marginBottom: '2rem' }}>
+                        Módulo de pagos en desarrollo
+                    </p>
+                    <div style={{
+                        background: '#f8fafc',
+                        border: '2px dashed #cbd5e0',
+                        borderRadius: '12px',
+                        padding: '2rem',
+                        maxWidth: '400px',
+                        margin: '0 auto'
+                    }}>
+                        <p style={{ color: '#4a5568', margin: 0 }}>
+                            Próximamente podrás gestionar pagos a proveedores, registrar facturas y controlar el flujo de caja de compras.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal */}
             {isProvModalOpen && (
-                <div className="modal-overlay" onClick={() => setIsProvModalOpen(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2 className="modal-title">{currentProv ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
-                            <button className="btn btn-ghost" style={{ padding: '0.25rem' }} onClick={() => setIsProvModalOpen(false)}>
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '16px',
+                        padding: '2rem',
+                        width: '90%',
+                        maxWidth: '600px',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            marginBottom: '1.5rem' 
+                        }}>
+                            <h3 style={{ 
+                                fontSize: '1.5rem', 
+                                fontWeight: '700', 
+                                color: '#1a202c',
+                                margin: 0
+                            }}>
+                                {currentProv ? 'Editar Proveedor' : 'Nuevo Proveedor'}
+                            </h3>
+                            <button
+                                onClick={() => setIsProvModalOpen(false)}
+                                style={{
+                                    background: '#f3f4f6',
+                                    color: '#4a5568',
+                                    border: 'none',
+                                    padding: '0.5rem',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem'
+                                }}
+                            >
                                 <X size={20} />
                             </button>
                         </div>
-
-                        <form onSubmit={handlProvSubmit}>
-                            <div className="form-group">
-                                <label className="form-label">Razón Social</label>
-                                <input type="text" value={provForm.razon_social} onChange={e => setProvForm({ ...provForm, razon_social: e.target.value })} className="form-input" required />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">NIT / ID Fiscal</label>
-                                <input type="text" value={provForm.nit} onChange={e => setProvForm({ ...provForm, nit: e.target.value })} className="form-input" required />
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div className="form-group">
-                                    <label className="form-label">Contacto (Nombre)</label>
-                                    <input type="text" value={provForm.contacto_nombre} onChange={e => setProvForm({ ...provForm, contacto_nombre: e.target.value })} className="form-input" required />
+                        <form onSubmit={handleProvSubmit}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ 
+                                            display: 'block', 
+                                            marginBottom: '0.5rem', 
+                                            fontWeight: '600', 
+                                            color: '#2d3748' 
+                                        }}>
+                                            Razón Social *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={provForm.razon_social}
+                                            onChange={(e) => setProvForm({...provForm, razon_social: e.target.value})}
+                                            required
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e2e8f0';
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ 
+                                            display: 'block', 
+                                            marginBottom: '0.5rem', 
+                                            fontWeight: '600', 
+                                            color: '#2d3748' 
+                                        }}>
+                                            NIT *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={provForm.nit}
+                                            onChange={(e) => setProvForm({...provForm, nit: e.target.value})}
+                                            required
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e2e8f0';
+                                            }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Teléfono</label>
-                                    <input type="text" value={provForm.contacto_telefono} onChange={e => setProvForm({ ...provForm, contacto_telefono: e.target.value })} className="form-input" />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ 
+                                            display: 'block', 
+                                            marginBottom: '0.5rem', 
+                                            fontWeight: '600', 
+                                            color: '#2d3748' 
+                                        }}>
+                                            Contacto
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={provForm.contacto_nombre}
+                                            onChange={(e) => setProvForm({...provForm, contacto_nombre: e.target.value})}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e2e8f0';
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ 
+                                            display: 'block', 
+                                            marginBottom: '0.5rem', 
+                                            fontWeight: '600', 
+                                            color: '#2d3748' 
+                                        }}>
+                                            Email
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={provForm.contacto_email}
+                                            onChange={(e) => setProvForm({...provForm, contacto_email: e.target.value})}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e2e8f0';
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ 
+                                            display: 'block', 
+                                            marginBottom: '0.5rem', 
+                                            fontWeight: '600', 
+                                            color: '#2d3748' 
+                                        }}>
+                                            Teléfono
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={provForm.contacto_telefono}
+                                            onChange={(e) => setProvForm({...provForm, contacto_telefono: e.target.value})}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e2e8f0';
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ 
+                                            display: 'block', 
+                                            marginBottom: '0.5rem', 
+                                            fontWeight: '600', 
+                                            color: '#2d3748' 
+                                        }}>
+                                            Estado
+                                        </label>
+                                        <select
+                                            value={provForm.estado}
+                                            onChange={(e) => setProvForm({...provForm, estado: e.target.value})}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '1rem',
+                                                outline: 'none',
+                                                background: 'white'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e2e8f0';
+                                            }}
+                                        >
+                                            <option value="activo">Activo</option>
+                                            <option value="inactivo">Inactivo</option>
+                                            <option value="suspendido">Suspendido</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ 
+                                        display: 'block', 
+                                        marginBottom: '0.5rem', 
+                                        fontWeight: '600', 
+                                        color: '#2d3748' 
+                                    }}>
+                                        Dirección
+                                    </label>
+                                    <textarea
+                                        value={provForm.direccion}
+                                        onChange={(e) => setProvForm({...provForm, direccion: e.target.value})}
+                                        rows={3}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: '8px',
+                                            fontSize: '1rem',
+                                            outline: 'none',
+                                            resize: 'vertical'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = '#667eea';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#e2e8f0';
+                                        }}
+                                    />
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label className="form-label">Email</label>
-                                <input type="email" value={provForm.contacto_email} onChange={e => setProvForm({ ...provForm, contacto_email: e.target.value })} className="form-input" required />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Dirección</label>
-                                <input type="text" value={provForm.direccion} onChange={e => setProvForm({ ...provForm, direccion: e.target.value })} className="form-input" />
-                            </div>
-
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-ghost" onClick={() => setIsProvModalOpen(false)}>Cancelar</button>
-                                <button type="submit" className="btn btn-primary">{currentProv ? 'Guardar Cambios' : 'Crear Proveedor'}</button>
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '1rem', 
+                                justifyContent: 'flex-end', 
+                                marginTop: '1.5rem' 
+                            }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsProvModalOpen(false)}
+                                    style={{
+                                        background: '#f3f4f6',
+                                        color: '#4a5568',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                                    }}
+                                >
+                                    {currentProv ? 'Actualizar' : 'Crear'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -234,5 +1323,3 @@ function Compras() {
         </div>
     );
 }
-
-export default Compras;

@@ -1,0 +1,8 @@
+# Plan de Estudio del Tutorial ERP
+
+- [/] Leer el contenido del tutorial original generado previamente.
+- [ ] Presentar Capítulo 1: Introducción y Arquitectura (Django, PostgreSQL, Frontend React/JS).
+- [ ] Presentar Capítulo 2: Módulos Core (Inventarios, CRM, Finanzas).
+- [ ] Presentar Capítulo 3: Módulos de Operación Extendida (RRHH, Producción, Operaciones).
+- [ ] Presentar Capítulo 4: Integración y Dashboard.
+- [ ] Sesión de preguntas y respuestas (Aclarar dudas de código y despliegue).

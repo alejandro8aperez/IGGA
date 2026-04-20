@@ -1,0 +1,23 @@
+{
+  "components": [
+    {"id": "cl1", "type": "LABEL", "x": 50, "y": 30, "text": "REGISTRO DE CLIENTE (CRM)", "width": 450, "height": 40, "fontSize": 24, "color": "#1e293b", "fontWeight": "700"},
+    {"id": "cl2", "type": "SECTION", "x": 40, "y": 80, "width": 920, "height": 350, "backgroundColor": "#f8fafc", "borderRadius": 12, "borderStyle": "solid", "borderColor": "#e2e8f0"},
+    {"id": "cl3", "type": "LABEL", "x": 70, "y": 110, "text": "Razón Social / Nombre:", "width": 250, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "cl4", "type": "INPUT", "x": 70, "y": 140, "fieldName": "nombre", "placeholder": "Ej: Distribuidora Eléctrica", "width": 550, "height": 45, "borderRadius": 8},
+    {"id": "cl5", "type": "LABEL", "x": 650, "y": 110, "text": "Cédula / NIT:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "cl6", "type": "INPUT", "x": 650, "y": 140, "fieldName": "cedula", "placeholder": "Ej: 1.000.000-0", "width": 260, "height": 45, "borderRadius": 8},
+    {"id": "cl7", "type": "LABEL", "x": 70, "y": 210, "text": "Representante Legal:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "cl8", "type": "INPUT", "x": 70, "y": 240, "fieldName": "representante", "placeholder": "Ej: Carlos Ruiz", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "cl9", "type": "LABEL", "x": 350, "y": 210, "text": "Email Principal:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "cl10", "type": "INPUT", "x": 350, "y": 240, "fieldName": "email", "placeholder": "cliente@correo.com", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "cl11", "type": "LABEL", "x": 630, "y": 210, "text": "Teléfono:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "cl12", "type": "INPUT", "x": 630, "y": 240, "fieldName": "telefono", "placeholder": "300 123 4567", "width": 280, "height": 45, "borderRadius": 8},
+    {"id": "cl13", "type": "LABEL", "x": 70, "y": 310, "text": "Dirección Fiscal:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "cl14", "type": "TEXTAREA", "x": 70, "y": 340, "fieldName": "direccion", "placeholder": "Ej: Av. Siempre Viva 123", "width": 840, "height": 60, "borderRadius": 8},
+    {"id": "cl15", "type": "DIVIDER", "x": 40, "y": 450, "width": 920, "height": 2, "backgroundColor": "#e2e8f0"},
+    {"id": "cl16", "type": "BUTTON", "x": 710, "y": 480, "text": "GUARDAR CLIENTE", "buttonType": "submit", "width": 250, "height": 55, "backgroundColor": "#3b82f6", "color": "#ffffff", "borderRadius": 10, "fontWeight": "700"},
+    {"id": "cl17", "type": "BUTTON", "x": 450, "y": 480, "text": "CANCELAR", "buttonType": "cancel", "width": 250, "height": 55, "backgroundColor": "#ffffff", "color": "#64748b", "borderRadius": 10, "fontWeight": "600"}
+  ],
+  "timestamp": "2026-04-12T00:00:00.000Z",
+  "version": "1.0"
+}

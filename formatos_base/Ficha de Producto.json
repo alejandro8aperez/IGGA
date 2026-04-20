@@ -1,0 +1,23 @@
+{
+  "components": [
+    {"id": "p1", "type": "LABEL", "x": 50, "y": 30, "text": "FICHA TÉCNICA DE PRODUCTO", "width": 450, "height": 40, "fontSize": 24, "color": "#1e293b", "fontWeight": "700"},
+    {"id": "p2", "type": "SECTION", "x": 40, "y": 80, "width": 920, "height": 350, "backgroundColor": "#f8fafc", "borderRadius": 12, "borderStyle": "solid", "borderColor": "#e2e8f0"},
+    {"id": "p3", "type": "LABEL", "x": 70, "y": 110, "text": "Nombre del Producto:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "p4", "type": "INPUT", "x": 70, "y": 140, "fieldName": "nombre", "placeholder": "Ej: Transformador 50kVA", "width": 550, "height": 45, "borderRadius": 8},
+    {"id": "p5", "type": "LABEL", "x": 650, "y": 110, "text": "Código SKU / Ref:", "width": 200, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "p6", "type": "INPUT", "x": 650, "y": 140, "fieldName": "codigo_sku", "placeholder": "Ej: TR-050", "width": 260, "height": 45, "borderRadius": 8},
+    {"id": "p7", "type": "LABEL", "x": 70, "y": 210, "text": "Categoría:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "p8", "type": "SELECT", "x": 70, "y": 240, "fieldName": "categoria", "placeholder": "Seleccione Categoría", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "p9", "type": "LABEL", "x": 350, "y": 210, "text": "Precio Venta ($):", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "p10", "type": "INPUT", "x": 350, "y": 240, "fieldName": "precio_venta", "placeholder": "0.00", "width": 250, "height": 45, "borderRadius": 8},
+    {"id": "p11", "type": "LABEL", "x": 630, "y": 210, "text": "Precio Compra ($):", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "p12", "type": "INPUT", "x": 630, "y": 240, "fieldName": "precio_compra", "placeholder": "0.00", "width": 280, "height": 45, "borderRadius": 8},
+    {"id": "p13", "type": "LABEL", "x": 70, "y": 310, "text": "Stock Mínimo:", "width": 150, "height": 30, "fontSize": 14, "color": "#64748b"},
+    {"id": "p14", "type": "INPUT", "x": 70, "y": 340, "fieldName": "stock_minimo", "placeholder": "Ej: 5", "width": 150, "height": 45, "borderRadius": 8},
+    {"id": "p15", "type": "DIVIDER", "x": 40, "y": 450, "width": 920, "height": 2, "backgroundColor": "#e2e8f0"},
+    {"id": "p16", "type": "BUTTON", "x": 710, "y": 480, "text": "GUARDAR PRODUCTO", "buttonType": "submit", "width": 250, "height": 55, "backgroundColor": "#f59e0b", "color": "#ffffff", "borderRadius": 10, "fontWeight": "700"},
+    {"id": "p17", "type": "BUTTON", "x": 450, "y": 480, "text": "CANCELAR", "buttonType": "cancel", "width": 250, "height": 55, "backgroundColor": "#ffffff", "color": "#64748b", "borderRadius": 10, "fontWeight": "600"}
+  ],
+  "timestamp": "2026-04-12T00:00:00.000Z",
+  "version": "1.0"
+}

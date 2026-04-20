@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DollarSign, AlertCircle, TrendingUp, TrendingDown, Wallet, ArrowRightLeft } from 'lucide-react';
 
-const API_CUENTAS = 'http://localhost:8000/api/finanzas/cuentas/';
-const API_TRANSACCIONES = 'http://localhost:8000/api/finanzas/transacciones/';
+const API_CUENTAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/finanzas/cuentas/';
+const API_TRANSACCIONES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/finanzas/transacciones/';
 
 function Finanzas() {
     const [cuentas, setCuentas] = useState([]);
@@ -32,7 +32,32 @@ function Finanzas() {
     const totalPasivos = cuentas.filter(c => c.tipo === 'pasivo').reduce((acc, curr) => acc + parseFloat(curr.balance), 0);
 
     return (
-        <div className="container">
+        <div className="container" style={{ position: 'relative' }}>
+                <button 
+                    onClick={() => window.location.href = '/'} 
+                    className="btn btn-ghost modal-close-btn" 
+                    title="Cerrar Módulo"
+                    style={{ 
+                        position: 'absolute', 
+                        top: '1rem', 
+                        right: '1rem',
+                        backgroundColor: '#ff0000',
+                        color: '#ffffff',
+                        fontSize: '2rem',
+                        padding: '0.75rem',
+                        border: '2px solid #ff0000',
+                        borderRadius: '8px',
+                        zIndex: 99999,
+                        minWidth: '60px',
+                        minHeight: '60px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 8px 16px rgba(255, 0, 0, 0.8)'
+                    }}
+                >
+                    X
+                </button>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
                     <h1 className="header-title">Módulo Financiero</h1>

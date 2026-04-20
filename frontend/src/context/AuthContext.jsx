@@ -1,90 +1,57 @@
-import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+
+export function useAuth() {
+    const ctx = useContext(AuthContext);
+    if (!ctx) {
+        throw new Error('useAuth debe usarse dentro de AuthProvider');
+    }
+    return ctx;
+}
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [authTokens, setAuthTokens] = useState(() => localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null);
     const [loading, setLoading] = useState(true);
 
-    const navigate = useNavigate();
-
-    const loginUser = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:8000/api/token/', {
-                username: e.target.username.value,
-                password: e.target.password.value
-            });
-
-            if (response.status === 200) {
-                setAuthTokens(response.data);
-
-                // Decode token manually for a simple setup, or fetch user info
-                // For simplicity, we just set a generic user object
-                setUser({ username: e.target.username.value });
-
-                localStorage.setItem('authTokens', JSON.stringify(response.data));
-                navigate('/');
+    useEffect(() => {
+        const savedUser = localStorage.getItem('erpUser');
+        if (savedUser) {
+            try {
+                const parsedUser = JSON.parse(savedUser);
+                console.log('Loading user from storage:', parsedUser);
+                setUser(parsedUser);
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                localStorage.removeItem('erpUser');
             }
-        } catch (error) {
-            alert("Usuario o contraseña incorrectos");
         }
+        setLoading(false);
+    }, []);
+
+    const loginUser = (userData) => {
+        console.log('Setting user in context:', userData);
+        setUser(userData);
+        localStorage.setItem('erpUser', JSON.stringify(userData));
     };
 
     const logoutUser = () => {
-        setAuthTokens(null);
+        console.log('Logging out user');
         setUser(null);
-        localStorage.removeItem('authTokens');
-        navigate('/login');
+        localStorage.removeItem('erpUser');
     };
 
-    const updateToken = async () => {
-        if (!authTokens) {
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const response = await axios.post('http://localhost:8000/api/token/refresh/', {
-                refresh: authTokens?.refresh
-            });
-
-            if (response.status === 200) {
-                setAuthTokens(response.data);
-                localStorage.setItem('authTokens', JSON.stringify(response.data));
-            } else {
-                logoutUser();
-            }
-        } catch (error) {
-            logoutUser();
-        }
-
-        if (loading) {
-            setLoading(false);
-        }
-    };
-
-    const contextData = {
+    const value = {
         user,
-        authTokens,
         loginUser,
         logoutUser,
+        isAuthenticated: !!user,
+        loading
     };
 
-    useEffect(() => {
-        if (loading && authTokens) {
-            // updateToken(); // Normally refresh on load, skipping for simplicity in this flow unless needed
-            setUser({ username: "Admin" }); // Mocking user decode
-        }
-        setLoading(false);
-    }, [authTokens, loading]);
-
     return (
-        <AuthContext.Provider value={contextData}>
-            {loading ? null : children}
+        <AuthContext.Provider value={value}>
+            {children}
         </AuthContext.Provider>
     );
 };

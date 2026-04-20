@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -46,20 +47,36 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     # Local apps
-    'finanzas',
+    'multi_empresa',
+    'mrp',
     'crm',
-    'compras',
     'inventarios',
+    'compras',
+    'logistica',
     'operaciones',
+    'mantenimiento',
+    'produccion',
+    'proyectos',
+    'calidad',
     'rrhh',
+    'marketing',
+    'facturacion',
+    'contabilidad',
+    'empresa',
+    'venta',
+    'workflow',
     'reportes',
     'configuracion',
-    'facturacion',
-    'produccion',
+    'planeacion',
+    'kpis',
+    'customization',
+    'finanzas',
+    'kave',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -69,7 +86,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True # For development. Can restrict in production to frontend url
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', str(DEBUG)) == 'True'
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'erp_core.urls'
@@ -96,7 +114,16 @@ WSGI_APPLICATION = 'erp_core.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# Fallback para desarrollo local si no hay DATABASE_URL en .env o el entorno de la nube
+if not DATABASES['default']:
+    DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME', 'erp_manufactura'),
         'USER': os.getenv('DB_USER', 'postgres'),
@@ -104,7 +131,6 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
-}
 
 
 # Password validation
@@ -142,6 +168,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media files
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
