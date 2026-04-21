@@ -90,7 +90,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 class CentroCostoViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de Centros de Costo"""
     serializer_class = CentroCostoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []  # AllowAny for local-auth ERP
     queryset = CentroCosto.objects.all()
     
     def get_queryset(self):
@@ -103,7 +103,7 @@ class CentroCostoViewSet(viewsets.ModelViewSet):
 class AlmacenViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de Almacenes"""
     serializer_class = AlmacenSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []  # AllowAny for local-auth ERP
     queryset = Almacen.objects.all()
     
     def get_queryset(self):
@@ -116,7 +116,7 @@ class AlmacenViewSet(viewsets.ModelViewSet):
 class ConfiguracionEmpresaViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de Configuraciones de Empresa"""
     serializer_class = ConfiguracionEmpresaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []  # AllowAny for local-auth ERP
     queryset = ConfiguracionEmpresa.objects.all()
     
     def get_queryset(self):
@@ -129,7 +129,7 @@ class ConfiguracionEmpresaViewSet(viewsets.ModelViewSet):
 class UsuarioEmpresaViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de asignaciones Usuario-Empresa"""
     serializer_class = UsuarioEmpresaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = []  # AllowAny for local-auth ERP
     queryset = UsuarioEmpresa.objects.all()
     
     def get_queryset(self):
