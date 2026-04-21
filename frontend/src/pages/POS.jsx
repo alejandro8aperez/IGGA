@@ -601,7 +601,7 @@ function Numpad({ onInput }) {
     const quickAmounts = [5000, 10000, 20000, 50000, 100000];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {/* Quick Amounts */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem' }}>
                 {quickAmounts.map(val => (
@@ -621,18 +621,18 @@ function Numpad({ onInput }) {
 
             {/* Main Numpad */}
             <div style={{ 
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem',
-                background: '#f1f5f9', padding: '0.75rem', borderRadius: '20px' 
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem',
+                background: '#f1f5f9', padding: '0.5rem', borderRadius: '16px' 
             }}>
                 {digits.map(d => (
                     <button 
                         key={d}
                         onClick={() => onInput(d === 'back' ? 'back' : d)}
                         style={{
-                            padding: '1.25rem', borderRadius: '14px', border: 'none',
+                            padding: '0.75rem', borderRadius: '10px', border: 'none',
                             background: d === 'C' ? '#fee2e2' : (d === 'back' ? '#f1f5f9' : 'white'),
                             color: d === 'C' ? '#ef4444' : '#1e293b',
-                            fontSize: '1.25rem', fontWeight: '800', cursor: 'pointer',
+                            fontSize: '1rem', fontWeight: '800', cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.1s'
                         }}
