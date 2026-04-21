@@ -57,6 +57,7 @@ urlpatterns = [
     path('api/kpis/', include('kpis.urls')),
     path('api/customization/', include('customization.urls')),
     path('api/kave/', include('kave.urls')),
+    path('api/pos/', include('pos.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include(router.urls)),

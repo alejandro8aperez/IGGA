@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, Menu, LogOut, X, FileText } from 'lucide-react';
+import { LayoutDashboard, Menu, LogOut, X, FileText, MonitorSmartphone } from 'lucide-react';
 
 // Importaciones de componentes modernos
 import Home from './pages/Home';

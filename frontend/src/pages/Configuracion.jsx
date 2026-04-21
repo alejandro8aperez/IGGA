@@ -403,7 +403,7 @@ function Configuracion() {
                 {/* Gestión de Departamentos */}
                 <div style={styles.card}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={styles.cardTitle} style={{ marginBottom: 0 }}>
+                        <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>
                             <Briefcase size={20} style={{ color: '#48bb78' }} />
                             Departamentos de la Empresa
                         </h2>

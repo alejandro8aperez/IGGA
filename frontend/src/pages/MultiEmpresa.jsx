@@ -223,7 +223,7 @@ function MultiEmpresa() {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
                                 <span style={{ color: '#718096', fontWeight: '500' }}>Moneda:</span>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#2d3748', fontWeight: '600', background: '#f0fff4', color: '#38a169', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600', background: '#f0fff4', color: '#38a169', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
                                     {empresa.moneda_base}
                                 </span>
                             </div>

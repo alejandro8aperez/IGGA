@@ -46,8 +46,8 @@ function POS() {
                 axios.get(`${API_BASE}/pos/sesiones/activa/`)
             ]);
             
-            if (prodRes.status === 'fulfilled') setProductos(prodRes.data);
-            if (catRes.status === 'fulfilled') setCategorias(catRes.data);
+            if (prodRes.status === 'fulfilled') setProductos(prodRes.value.data || []);
+            if (catRes.status === 'fulfilled') setCategorias(catRes.value.data || []);
             
             if (sesionRes.status === 'fulfilled') {
                 setSesionActiva(sesionRes.value.data);
