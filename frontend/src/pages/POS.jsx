@@ -151,7 +151,8 @@ function POS() {
                 monto_recibido: Number(montoRecibido) || grandTotal
             };
             
-            const response = await axios.post(`${API_BASE}/pos/ventas/`, payload);
+            console.log('Procesando venta:', payload);
+            const response = await axios.post(`${API_BASE}pos/ventas/`, payload);
             setLastSaleReceipt(response.data);
             setCart([]);
             setMontoRecibido('');
@@ -653,8 +654,8 @@ const searchContainerStyle = { background: '#f1f5f9', borderRadius: '12px', padd
 const searchInputStyle = { background: 'none', border: 'none', outline: 'none', fontSize: '0.9rem', width: '100%' };
 const summaryRowStyle = { display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.95rem' };
 const qtyBtnStyle = { background: 'white', border: 'none', borderRadius: '6px', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
-const modalOverlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 };
-const paymentModalStyle = { background: 'white', borderRadius: '24px', padding: '2rem', width: '90%', maxWidth: '800px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' };
+const modalOverlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' };
+const paymentModalStyle = { background: 'white', borderRadius: '24px', padding: '1.5rem', width: '95%', maxWidth: '720px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', maxHeight: '95vh', overflowY: 'auto' };
 const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: '700', color: '#475569', marginBottom: '0.75rem' };
 const paymentInputStyle = { width: '100%', padding: '1rem', background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '16px', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1e293b' };
 const formGroupStyle = { marginBottom: '1.5rem' };
