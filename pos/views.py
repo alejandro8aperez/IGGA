@@ -11,6 +11,65 @@ from inventarios.models import Producto
 import uuid
 from decimal import Decimal
 from django.db.models import Sum
+from rest_framework.decorators import api_view
+from inventarios.models import Categoria
+
+@api_view(['POST'])
+def seed_bakery_data(request):
+    """Siembre de datos iniciales para la panadería."""
+    # 1. Resolución de Facturación POS
+    ResolucionFacturacion.objects.get_or_create(
+        prefijo='POS',
+        activa=True,
+        defaults={
+            'numero_inicial': 1,
+            'numero_final': 999999,
+            'numero_actual': 1,
+            'fecha_fin': timezone.now().date() + timezone.timedelta(days=365)
+        }
+    )
+
+    # 2. Datos de la Panadería
+    data_panaderia = {
+        'Panadería': [
+            {'sku': 'PAN001', 'nombre': 'Pan Aliñado Grande', 'precio': 5000},
+            {'sku': 'PAN002', 'nombre': 'Pan de Bono (Ud)', 'precio': 2000},
+            {'sku': 'PAN003', 'nombre': 'Buñuelo Calientico', 'precio': 1500},
+            {'sku': 'PAN004', 'nombre': 'Croissant de Mantequilla', 'precio': 4500},
+            {'sku': 'PAN005', 'nombre': 'Pan de Queso', 'precio': 2500},
+        ],
+        'Pastelería': [
+            {'sku': 'PAS001', 'nombre': 'Pastel de Pollo', 'precio': 5500},
+            {'sku': 'PAS002', 'nombre': 'Milhoja de Arequipe', 'precio': 6500},
+            {'sku': 'PAS003', 'nombre': 'Torta de Chocolate (Porción)', 'precio': 8000},
+            {'sku': 'PAS004', 'nombre': 'Donas Variadas', 'precio': 4000},
+        ],
+        'Cafetería y Bebidas': [
+            {'sku': 'BEB001', 'nombre': 'Café Tinto', 'precio': 2500},
+            {'sku': 'BEB002', 'nombre': 'Café con Leche', 'precio': 4000},
+            {'sku': 'BEB003', 'nombre': 'Gaseosa Mini', 'precio': 2500},
+            {'sku': 'BEB004', 'nombre': 'Jugo Natural', 'precio': 6000},
+            {'sku': 'BEB005', 'nombre': 'Chocolate Santafereño', 'precio': 4500},
+        ]
+    }
+
+    results = []
+    for cat_name, productos in data_panaderia.items():
+        categoria, _ = Categoria.objects.get_or_create(nombre=cat_name)
+        for prod in productos:
+            obj, created = Producto.objects.update_or_create(
+                codigo_sku=prod['sku'],
+                defaults={
+                    'nombre': prod['nombre'],
+                    'categoria': categoria,
+                    'precio_venta': prod['precio'],
+                    'precio_compra': prod['precio'] * Decimal('0.6'),
+                    'stock_actual': 100
+                }
+            )
+            results.append(f"{'Creado' if created else 'Actualizado'}: {obj.nombre}")
+
+    return Response({"message": "Carga de datos completada", "details": results}, status=status.HTTP_201_CREATED)
 
 class SesionCajaViewSet(viewsets.ModelViewSet):
     queryset = SesionCaja.objects.all().order_by('-fecha_apertura')

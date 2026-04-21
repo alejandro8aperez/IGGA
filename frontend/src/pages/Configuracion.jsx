@@ -218,6 +218,7 @@ function Configuracion() {
     const [departamentos, setDepartamentos] = useState([]);
     const [showDeptoModal, setShowDeptoModal] = useState(false);
     const [currentDepto, setCurrentDepto] = useState({ id: null, nombre: '', descripcion: '' });
+    const [seeding, setSeeding] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -284,6 +285,22 @@ function Configuracion() {
             } catch (error) {
                 console.error('Error deleting department:', error);
             }
+        }
+    };
+
+    const handleSeedBakeryData = async () => {
+        if (!window.confirm('¿Deseas cargar los datos iniciales de la Panadería LA BOQUILLA? Esto creará categorías y productos base.')) return;
+        
+        setSeeding(true);
+        try {
+            await axios.post(`${API_BASE}pos/seed-bakery/`);
+            alert('¡Datos de panadería cargados con éxito! Ahora puedes ir al POS.');
+            fetchData();
+        } catch (error) {
+            console.error('Error seeding bakery data:', error);
+            alert('Error al cargar datos. Verifique la conexión.');
+        } finally {
+            setSeeding(false);
         }
     };
 
@@ -447,6 +464,34 @@ function Configuracion() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                {/* Mantenimiento del Sistema */}
+                <div style={{ ...styles.card, gridColumn: 'span 2' }}>
+                    <h2 style={styles.cardTitle}>
+                        <Settings size={20} style={{ color: '#6366f1' }} />
+                        Mantenimiento y Utilidades
+                    </h2>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ flex: 1 }}>
+                            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: '#1e293b' }}>Carga Inicial de Datos (Panadería)</h3>
+                            <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b' }}>
+                                Use esta opción para poblar su inventario con productos típicos de la panadería (Pan Aliñado, Buñuelos, Pasteles, etc.) si su base de datos está vacía en la nube.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={handleSeedBakeryData} 
+                            disabled={seeding}
+                            style={{ 
+                                ...styles.btnSuccess, 
+                                background: seeding ? '#94a3b8' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                boxShadow: seeding ? 'none' : '0 4px 15px rgba(99, 102, 241, 0.3)'
+                            }}
+                        >
+                            <Plus size={18} />
+                            {seeding ? 'Cargando...' : 'Cargar Datos Panadería'}
+                        </button>
                     </div>
                 </div>
             </div>
