@@ -29,6 +29,7 @@ import Contabilidad from './pages/Contabilidad';
 import Tesoreria from './pages/Tesoreria';
 import Facturacion from './pages/Facturacion';
 import Marketing from './pages/Marketing';
+import POS from './pages/POS';
 import DemoBanner from './components/DemoBanner';
 import { initializeDemoData } from './components/DemoDataSeeder';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -66,6 +67,7 @@ function Sidebar({ width, setWidth, isOpen, onClose }) {
         { path: '/tesoreria', name: 'Tesorería', icon: LayoutDashboard },
         { path: '/facturacion', name: 'Facturación', icon: LayoutDashboard },
         { path: '/marketing', name: 'Marketing', icon: LayoutDashboard },
+        { path: '/pos', name: 'POS Panadería', icon: MonitorSmartphone },
         { path: '/configuracion', name: 'Configuración', icon: LayoutDashboard }
     ];
 
@@ -412,6 +414,7 @@ function AppContent() {
                     <Route path="/tesoreria" element={<Tesoreria />} />
                     <Route path="/facturacion" element={<Facturacion />} />
                     <Route path="/marketing" element={<Marketing />} />
+                    <Route path="/pos" element={<POS />} />
                 </Routes>
             </main>
         </div>

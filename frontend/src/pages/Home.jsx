@@ -7,7 +7,7 @@ import {
     Menu, X, Plus, Edit3, Trash2, Search, Filter, Calendar,
     Clock, CheckCircle, AlertCircle, Activity, Target, Building2, FormInput,
     Factory, Shield, Users2, ClipboardList, Cog, Calculator as CalcIcon, 
-    CreditCard, Megaphone
+    CreditCard, Megaphone, MonitorSmartphone
 } from 'lucide-react';
 
 const API_CLIENTES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/crm/clientes/';
@@ -212,6 +212,14 @@ const modules = [
         color: '#f43f5e',
         path: '/marketing',
         stats: { total: 15, growth: '+25%' }
+    },
+    {
+        name: 'POS Panadería',
+        description: 'Punto de venta táctil rápido',
+        icon: MonitorSmartphone,
+        color: '#ec4899',
+        path: '/pos',
+        stats: { total: 0, growth: 'Nuevo' }
     }
 ];
 

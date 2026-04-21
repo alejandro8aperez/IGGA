@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'customization',
     'finanzas',
     'kave',
+    'pos',
 ]
 
 MIDDLEWARE = [

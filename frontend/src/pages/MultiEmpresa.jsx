@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Building2, Plus, Edit3, Trash2, X, Users, Settings, Globe, Shield } from 'lucide-react';
+import { Building2, Plus, Edit3, Trash2, X, Users, Settings, Globe, Shield, Edit, Eye } from 'lucide-react';
 
 function MultiEmpresa() {
     const [empresas, setEmpresas] = useState([]);
@@ -132,84 +132,116 @@ function MultiEmpresa() {
     }
 
     return (
-        <div className="container">
-            <div className="page-header">
-                <div className="page-title">
-                    <Building2 size={32} />
+        <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '2.5rem',
+                backgroundColor: '#ffffff',
+                padding: '1.5rem 2rem',
+                borderRadius: '16px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ padding: '1rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
+                        <Building2 size={28} />
+                    </div>
                     <div>
-                        <h1>Gestión Multi-Empresa</h1>
-                        <p>Administra múltiples empresas y sucursales</p>
+                        <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Gestión Multi-Empresa</h1>
+                        <p style={{ margin: '0.25rem 0 0 0', color: '#718096', fontSize: '0.95rem' }}>Administra múltiples empresas y sucursales en un solo lugar</p>
                     </div>
                 </div>
-                <button className="btn btn-primary" onClick={openModal}>
+                <button 
+                    style={{ 
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                        color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', 
+                        border: 'none', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+                        boxShadow: '0 4px 15px rgba(72, 187, 120, 0.4)'
+                    }} 
+                    onClick={openModal}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
                     <Plus size={20} />
                     Nueva Empresa
                 </button>
             </div>
 
-            <div className="grid">
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', 
+                gap: '2rem' 
+            }}>
                 {empresas.map((empresa) => (
-                    <div key={empresa.id} className="card">
-                        <div className="card-header">
-                            <div className="card-title">
-                                <Building2 size={24} />
+                    <div key={empresa.id} style={{
+                        background: '#ffffff',
+                        borderRadius: '16px',
+                        padding: '1.5rem',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+                        border: '1px solid #edf2f7',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.2s',
+                        cursor: 'default'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #edf2f7', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ background: '#ebf4ff', padding: '0.75rem', borderRadius: '10px', color: '#4299e1' }}>
+                                    <Building2 size={24} />
+                                </div>
                                 <div>
-                                    <h3>{empresa.razon_social}</h3>
-                                    <p className="text-muted">NIT: {empresa.nit}</p>
+                                    <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.1rem', color: '#2d3748', fontWeight: '700' }}>{empresa.razon_social}</h3>
+                                    <p style={{ margin: 0, color: '#a0aec0', fontSize: '0.85rem' }}>NIT: {empresa.nit}</p>
                                 </div>
                             </div>
-                            <div className="card-actions">
-                                <button className="btn btn-ghost btn-sm" onClick={() => handleEdit(empresa)}>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button style={{ background: '#edf2f7', border: 'none', padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', color: '#4a5568' }} onClick={() => handleEdit(empresa)}>
                                     <Edit size={16} />
                                 </button>
-                                <button className="btn btn-ghost btn-sm text-danger" onClick={() => handleDelete(empresa.id)}>
+                                <button style={{ background: '#fff5f5', border: 'none', padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', color: '#e53e3e' }} onClick={() => handleDelete(empresa.id)}>
                                     <Trash2 size={16} />
                                 </button>
                             </div>
                         </div>
-                        <div className="card-content">
-                            <div className="empresa-info">
-                                <div className="info-item">
-                                    <span className="label">Tipo:</span>
-                                    <span className={`badge ${empresa.tipo_empresa === 'matriz' ? 'badge-primary' : 'badge-secondary'}`}>
-                                        {empresa.tipo_empresa}
-                                    </span>
-                                </div>
-                                <div className="info-item">
-                                    <span className="label">Régimen:</span>
-                                    <span>{empresa.regimen_fiscal}</span>
-                                </div>
-                                <div className="info-item">
-                                    <span className="label">Ciudad:</span>
-                                    <span>{empresa.ciudad || 'No especificada'}</span>
-                                </div>
-                                <div className="info-item">
-                                    <span className="label">Moneda:</span>
-                                    <span>{empresa.moneda_base}</span>
-                                </div>
-                                {empresa.sucursales_count > 0 && (
-                                    <div className="info-item">
-                                        <span className="label">Sucursales:</span>
-                                        <span className="badge badge-info">{empresa.sucursales_count}</span>
-                                    </div>
-                                )}
+                        
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#718096', fontWeight: '500' }}>Tipo:</span>
+                                <span style={{ background: empresa.tipo_empresa === 'matriz' ? '#ebf8ff' : '#f7fafc', color: empresa.tipo_empresa === 'matriz' ? '#3182ce' : '#718096', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: '600' }}>
+                                    {empresa.tipo_empresa.toUpperCase()}
+                                </span>
                             </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#718096', fontWeight: '500' }}>Régimen:</span>
+                                <span style={{ color: '#2d3748', fontWeight: '600' }}>{empresa.regimen_fiscal}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#718096', fontWeight: '500' }}>Ubicación:</span>
+                                <span style={{ color: '#2d3748' }}>{empresa.ciudad || 'No especificada'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#718096', fontWeight: '500' }}>Moneda:</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#2d3748', fontWeight: '600', background: '#f0fff4', color: '#38a169', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                                    {empresa.moneda_base}
+                                </span>
+                            </div>
+                            {empresa.sucursales_count > 0 && (
+                                <div style={{ display: 'flex', justifyItems: 'space-between', alignItems: 'center', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                                    <span style={{ color: '#718096', fontWeight: '500' }}>Sucursales Integradas:</span>
+                                    <span style={{ background: '#faf5ff', color: '#805ad5', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: '700' }}>{empresa.sucursales_count} Sucursales</span>
+                                </div>
+                            )}
                         </div>
-                        <div className="card-footer">
-                            <div className="footer-actions">
-                                <button className="btn btn-sm btn-outline">
-                                    <Eye size={16} />
-                                    Ver Detalles
-                                </button>
-                                <button className="btn btn-sm btn-outline">
-                                    <Users size={16} />
-                                    Usuarios
-                                </button>
-                                <button className="btn btn-sm btn-outline">
-                                    <Settings size={16} />
-                                    Configurar
-                                </button>
-                            </div>
+                        
+                        <div style={{ display: 'flex', gap: '0.5rem', borderTop: '1px solid #edf2f7', paddingTop: '1rem' }}>
+                            <button style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', background: '#f7fafc', border: '1px solid #e2e8f0', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: '600', color: '#4a5568', cursor: 'pointer' }}>
+                                <Eye size={14} /> Detalles
+                            </button>
+                            <button style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', background: '#f7fafc', border: '1px solid #e2e8f0', padding: '0.5rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: '600', color: '#4a5568', cursor: 'pointer' }}>
+                                <Users size={14} /> Accesos
+                            </button>
                         </div>
                     </div>
                 ))}
