@@ -124,6 +124,20 @@ function POS() {
         return matchesCategory && matchesSearch;
     });
 
+    const handleNumpad = (val) => {
+        if (val === 'C') {
+            setMontoRecibido('');
+        } else if (val === 'back') {
+            setMontoRecibido(prev => prev.slice(0, -1));
+        } else if (typeof val === 'number') {
+            // Quick amount
+            setMontoRecibido(val.toString());
+        } else {
+            // Digit
+            setMontoRecibido(prev => prev + val);
+        }
+    };
+
     const handleProcessSale = async () => {
         if (cart.length === 0) return;
         setIsProcessing(true);
@@ -352,6 +366,11 @@ function POS() {
                                                 <div style={{ fontSize: '2rem', fontWeight: '900', color: '#047857' }}>${cambio.toLocaleString()}</div>
                                             </div>
                                         )}
+                                        
+                                        {/* Numpad Integration */}
+                                        <div style={{ marginTop: '1.5rem' }}>
+                                            <Numpad onInput={handleNumpad} />
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -577,6 +596,57 @@ function Smartphone(props) {
     )
 }
 
+function Numpad({ onInput }) {
+    const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', 'back'];
+    const quickAmounts = [5000, 10000, 20000, 50000, 100000];
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Quick Amounts */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem' }}>
+                {quickAmounts.map(val => (
+                    <button 
+                        key={val}
+                        onClick={() => onInput(val)}
+                        style={{
+                            padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
+                            background: '#f8fafc', color: '#64748b', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        ${(val/1000)}k
+                    </button>
+                ))}
+            </div>
+
+            {/* Main Numpad */}
+            <div style={{ 
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem',
+                background: '#f1f5f9', padding: '0.75rem', borderRadius: '20px' 
+            }}>
+                {digits.map(d => (
+                    <button 
+                        key={d}
+                        onClick={() => onInput(d === 'back' ? 'back' : d)}
+                        style={{
+                            padding: '1.25rem', borderRadius: '14px', border: 'none',
+                            background: d === 'C' ? '#fee2e2' : (d === 'back' ? '#f1f5f9' : 'white'),
+                            color: d === 'C' ? '#ef4444' : '#1e293b',
+                            fontSize: '1.25rem', fontWeight: '800', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.1s'
+                        }}
+                        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                        onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        {d === 'back' ? <Trash2 size={20} /> : d}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // Styles
 const iconBtnStyle = { background: '#f1f5f9', border: 'none', borderRadius: '10px', padding: '0.5rem', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const searchContainerStyle = { background: '#f1f5f9', borderRadius: '12px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', width: '35%', maxWidth: '500px' };
@@ -587,5 +657,6 @@ const modalOverlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 2
 const paymentModalStyle = { background: 'white', borderRadius: '24px', padding: '2rem', width: '90%', maxWidth: '800px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' };
 const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: '700', color: '#475569', marginBottom: '0.75rem' };
 const paymentInputStyle = { width: '100%', padding: '1rem', background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '16px', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1e293b' };
+const formGroupStyle = { marginBottom: '1.5rem' };
 
 export default POS;
