@@ -238,17 +238,7 @@ export default function Home() {
 
     const fetchStats = async () => {
         try {
-            const [
-                clientesRes,
-                cotizacionesRes,
-                pedidosRes,
-                facturasRes,
-                proveedoresRes,
-                ordenesRes,
-                productosRes,
-                proyectosRes,
-                diseñosRes
-            ] = await Promise.all([
+            const results = await Promise.allSettled([
                 axios.get(API_CLIENTES),
                 axios.get(API_COTIZACIONES),
                 axios.get(API_PEDIDOS),
@@ -260,16 +250,19 @@ export default function Home() {
                 axios.get(API_DISEÑOS)
             ]);
 
+            const getValue = (result) => 
+                result.status === 'fulfilled' ? (result.value.data.length || 0) : 0;
+
             setStats({
-                clientes: clientesRes.data.length || 0,
-                cotizaciones: cotizacionesRes.data.length || 0,
-                pedidos: pedidosRes.data.length || 0,
-                facturas: facturasRes.data.length || 0,
-                proveedores: proveedoresRes.data.length || 0,
-                ordenes: ordenesRes.data.length || 0,
-                productos: productosRes.data.length || 0,
-                proyectos: proyectosRes.data.length || 0,
-                diseños: diseñosRes.data.length || 0
+                clientes: getValue(results[0]),
+                cotizaciones: getValue(results[1]),
+                pedidos: getValue(results[2]),
+                facturas: getValue(results[3]),
+                proveedores: getValue(results[4]),
+                ordenes: getValue(results[5]),
+                productos: getValue(results[6]),
+                proyectos: getValue(results[7]),
+                diseños: getValue(results[8])
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
