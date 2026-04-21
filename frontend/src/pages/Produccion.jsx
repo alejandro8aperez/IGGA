@@ -274,20 +274,28 @@ function Produccion() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [resProd, resRec, resOrd, resDocs] = await Promise.all([
+            const [resProd, resRec, resOrd, resDocs] = await Promise.allSettled([
                 axios.get(`${API_BASE}inventarios/productos/`),
                 axios.get(`${API_BASE}produccion/recetas/`),
                 axios.get(`${API_BASE}produccion/ordenes/`),
                 axios.get(`${API_BASE}calidad/documentos-iso/`)
             ]);
-            setProductos(resProd.data);
-            setRecetas(resRec.data);
-            setOrdenes(resOrd.data);
-            setInstructivos(resDocs.data.filter(d => d.categoria === '3_instructivo'));
-            setLoading(false);
+
+            if (resProd.status === 'fulfilled') setProductos(resProd.value.data);
+            if (resRec.status === 'fulfilled') setRecetas(resRec.value.data);
+            if (resOrd.status === 'fulfilled') setOrdenes(resOrd.value.data);
+            if (resDocs.status === 'fulfilled') {
+                setInstructivos(resDocs.value.data.filter(d => d.categoria === '3_instructivo'));
+            }
+
+            // Solo mostrar error si los endpoints principales de producción fallaron
+            if (resRec.status === 'rejected' && resOrd.status === 'rejected') {
+                setError('No se pudo conectar con el servidor de producción. Verifica que el backend esté activo.');
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
-            setError('Error al cargar datos de producción');
+            setError('Error inesperado al cargar datos de producción');
+        } finally {
             setLoading(false);
         }
     };

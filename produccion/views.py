@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.permissions import AllowAny
 from django.db import transaction
 from .models import Receta, InsumoReceta, OrdenProduccion, CostoProduccion
 from .serializers import RecetaSerializer, InsumoRecetaSerializer, OrdenProduccionSerializer, CostoProduccionSerializer
@@ -9,17 +9,17 @@ from .serializers import RecetaSerializer, InsumoRecetaSerializer, OrdenProducci
 class RecetaViewSet(viewsets.ModelViewSet):
     queryset = Receta.objects.all()
     serializer_class = RecetaSerializer
-    permission_classes = [DjangoModelPermissions]
+    permission_classes = [AllowAny]
 
 class InsumoRecetaViewSet(viewsets.ModelViewSet):
     queryset = InsumoReceta.objects.all()
     serializer_class = InsumoRecetaSerializer
-    permission_classes = [DjangoModelPermissions]
+    permission_classes = [AllowAny]
 
 class OrdenProduccionViewSet(viewsets.ModelViewSet):
     queryset = OrdenProduccion.objects.all()
     serializer_class = OrdenProduccionSerializer
-    permission_classes = [DjangoModelPermissions]
+    permission_classes = [AllowAny]
 
     @action(detail=True, methods=['post'])
     @transaction.atomic
