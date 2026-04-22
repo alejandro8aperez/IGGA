@@ -118,7 +118,7 @@ export default function CotizadorProfesional() {
 
     const calcularTotales = (productos) => {
         const subtotal = productos.reduce((sum, prod) => sum + prod.total, 0);
-        const impuestos = subtotal * 0.16; // 16% IVA
+        const impuestos = subtotal * 0.19; // 19% IVA
         const total = subtotal + impuestos;
         
         setFormData(prev => ({
@@ -883,7 +883,7 @@ export default function CotizadorProfesional() {
                         </div>
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                Impuestos (16%):
+                                Impuestos (19%):
                             </label>
                             <div style={{
                                 padding: '0.75rem',
