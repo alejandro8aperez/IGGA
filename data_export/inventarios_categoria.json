@@ -1,0 +1,50 @@
+[
+{
+  "model": "inventarios.categoria",
+  "pk": 1,
+  "fields": {
+    "nombre": "Hardware",
+    "descripcion": "Equipos y componentes físicos"
+  }
+},
+{
+  "model": "inventarios.categoria",
+  "pk": 2,
+  "fields": {
+    "nombre": "Transformadores Terminados",
+    "descripcion": ""
+  }
+},
+{
+  "model": "inventarios.categoria",
+  "pk": 3,
+  "fields": {
+    "nombre": "Insumos Metálicos",
+    "descripcion": ""
+  }
+},
+{
+  "model": "inventarios.categoria",
+  "pk": 4,
+  "fields": {
+    "nombre": "Panadería",
+    "descripcion": ""
+  }
+},
+{
+  "model": "inventarios.categoria",
+  "pk": 5,
+  "fields": {
+    "nombre": "Pastelería",
+    "descripcion": ""
+  }
+},
+{
+  "model": "inventarios.categoria",
+  "pk": 6,
+  "fields": {
+    "nombre": "Cafetería y Bebidas",
+    "descripcion": ""
+  }
+}
+]

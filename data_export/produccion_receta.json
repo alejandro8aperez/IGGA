@@ -1,0 +1,14 @@
+[
+{
+  "model": "produccion.receta",
+  "pk": 1,
+  "fields": {
+    "producto_terminado": 1,
+    "tiempo_estimado_horas": "5.00",
+    "costo_adicional_fijo": "56555.00",
+    "instrucciones": "",
+    "fecha_creacion": "2026-04-21T15:12:24.905Z",
+    "instructivos_sgc": []
+  }
+}
+]

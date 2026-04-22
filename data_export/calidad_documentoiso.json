@@ -1,0 +1,353 @@
+[
+{
+  "model": "calidad.documentoiso",
+  "pk": 1,
+  "fields": {
+    "codigo": "MC-001",
+    "titulo": "Manual de Calidad SGC 8AMPERIOS",
+    "categoria": "1_base",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 2,
+  "fields": {
+    "codigo": "POL-001",
+    "titulo": "Politica de Calidad y Objetivos SGC",
+    "categoria": "1_base",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 3,
+  "fields": {
+    "codigo": "PR-DC-001",
+    "titulo": "Control de Documentos e Informacion Documentada",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 4,
+  "fields": {
+    "codigo": "PR-RA-001",
+    "titulo": "Gestion de Riesgos y Oportunidades",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 5,
+  "fields": {
+    "codigo": "PR-NC-001",
+    "titulo": "Tratamiento de No Conformidades y CAPA",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 6,
+  "fields": {
+    "codigo": "PR-AU-001",
+    "titulo": "Auditorias Internas del SGC",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 7,
+  "fields": {
+    "codigo": "IT-BB-001",
+    "titulo": "Instructivo de Bobinado Baja Tension",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 8,
+  "fields": {
+    "codigo": "IT-BM-001",
+    "titulo": "Instructivo de Bobinado Media Tension",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 9,
+  "fields": {
+    "codigo": "IT-EN-001",
+    "titulo": "Instructivo de Ensamble de Nucleo y Carcasa",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 10,
+  "fields": {
+    "codigo": "IT-PE-001",
+    "titulo": "Instructivo de Pruebas Electricas Finales",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 11,
+  "fields": {
+    "codigo": "FR-IN-001",
+    "titulo": "Formato de Inspeccion de Producto Terminado",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 12,
+  "fields": {
+    "codigo": "FR-NC-001",
+    "titulo": "Formato de Reporte de No Conformidad",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 13,
+  "fields": {
+    "codigo": "FR-CP-001",
+    "titulo": "Checklist de Proveedores Criticos",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 14,
+  "fields": {
+    "codigo": "FR-AU-001",
+    "titulo": "Formato de Hallazgos de Auditoria",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 15,
+  "fields": {
+    "codigo": "PR-CP-001",
+    "titulo": "Procedimiento de Compras y Evaluacion de Proveedores",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 16,
+  "fields": {
+    "codigo": "PR-PR-001",
+    "titulo": "Procedimiento de Produccion de Transformadores",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 17,
+  "fields": {
+    "codigo": "PR-TR-001",
+    "titulo": "Procedimiento de Trazabilidad de Lotes",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 18,
+  "fields": {
+    "codigo": "PR-LB-001",
+    "titulo": "Procedimiento de Liberacion y Entrega de Producto",
+    "categoria": "2_procedimiento",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 19,
+  "fields": {
+    "codigo": "IT-SEC-001",
+    "titulo": "Instructivo de Secado y Barnizado de Bobinas",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 20,
+  "fields": {
+    "codigo": "IT-TAN-001",
+    "titulo": "Instructivo de Armado de Tanque y Accesorios",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 21,
+  "fields": {
+    "codigo": "IT-PLA-001",
+    "titulo": "Instructivo de Conexionado de Placas y Bornes",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 22,
+  "fields": {
+    "codigo": "IT-EMP-001",
+    "titulo": "Instructivo de Embalaje y Despacho",
+    "categoria": "3_instructivo",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 23,
+  "fields": {
+    "codigo": "FR-PE-002",
+    "titulo": "Registro de Pruebas Electricas de Rutina",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 24,
+  "fields": {
+    "codigo": "FR-DIM-001",
+    "titulo": "Formato de Verificacion Dimensional",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 25,
+  "fields": {
+    "codigo": "FR-REC-001",
+    "titulo": "Formato de Recepcion de Materiales Criticos",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 26,
+  "fields": {
+    "codigo": "FR-DESP-001",
+    "titulo": "Checklist de Inspeccion Pre-Despacho",
+    "categoria": "4_registro",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+},
+{
+  "model": "calidad.documentoiso",
+  "pk": 27,
+  "fields": {
+    "codigo": "MAT-ISO-001",
+    "titulo": "Matriz Maestra de Cumplimiento ISO 9001 (Clausulas 4-10)",
+    "categoria": "1_base",
+    "version": "1.0",
+    "estado": "vigente",
+    "fecha_aprobacion": "2026-04-13",
+    "autor": null
+  }
+}
+]

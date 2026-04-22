@@ -1,0 +1,197 @@
+[
+{
+  "model": "inventarios.producto",
+  "pk": 1,
+  "fields": {
+    "nombre": "Laptop Dell XPS 15",
+    "codigo_sku": "HW-001",
+    "categoria": 1,
+    "precio_venta": "1500.00",
+    "precio_compra": "1200.00",
+    "stock_actual": 10,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 7,
+  "fields": {
+    "nombre": "Pan Aliñado Grande",
+    "codigo_sku": "PAN001",
+    "categoria": 4,
+    "precio_venta": "5000.00",
+    "precio_compra": "3000.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 8,
+  "fields": {
+    "nombre": "Pan de Bono (Ud)",
+    "codigo_sku": "PAN002",
+    "categoria": 4,
+    "precio_venta": "2000.00",
+    "precio_compra": "1200.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 9,
+  "fields": {
+    "nombre": "Buñuelo Calientico",
+    "codigo_sku": "PAN003",
+    "categoria": 4,
+    "precio_venta": "1500.00",
+    "precio_compra": "900.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 10,
+  "fields": {
+    "nombre": "Croissant de Mantequilla",
+    "codigo_sku": "PAN004",
+    "categoria": 4,
+    "precio_venta": "4500.00",
+    "precio_compra": "2700.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 11,
+  "fields": {
+    "nombre": "Pan de Queso",
+    "codigo_sku": "PAN005",
+    "categoria": 4,
+    "precio_venta": "2500.00",
+    "precio_compra": "1500.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 12,
+  "fields": {
+    "nombre": "Pastel de Pollo",
+    "codigo_sku": "PAS001",
+    "categoria": 5,
+    "precio_venta": "5500.00",
+    "precio_compra": "3300.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 13,
+  "fields": {
+    "nombre": "Milhoja de Arequipe",
+    "codigo_sku": "PAS002",
+    "categoria": 5,
+    "precio_venta": "6500.00",
+    "precio_compra": "3900.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 14,
+  "fields": {
+    "nombre": "Torta de Chocolate (Porción)",
+    "codigo_sku": "PAS003",
+    "categoria": 5,
+    "precio_venta": "8000.00",
+    "precio_compra": "4800.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 15,
+  "fields": {
+    "nombre": "Donas Variadas",
+    "codigo_sku": "PAS004",
+    "categoria": 5,
+    "precio_venta": "4000.00",
+    "precio_compra": "2400.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 16,
+  "fields": {
+    "nombre": "Café Tinto",
+    "codigo_sku": "BEB001",
+    "categoria": 6,
+    "precio_venta": "2500.00",
+    "precio_compra": "1500.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 17,
+  "fields": {
+    "nombre": "Café con Leche",
+    "codigo_sku": "BEB002",
+    "categoria": 6,
+    "precio_venta": "4000.00",
+    "precio_compra": "2400.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 18,
+  "fields": {
+    "nombre": "Gaseosa Mini",
+    "codigo_sku": "BEB003",
+    "categoria": 6,
+    "precio_venta": "2500.00",
+    "precio_compra": "1500.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 19,
+  "fields": {
+    "nombre": "Jugo Natural",
+    "codigo_sku": "BEB004",
+    "categoria": 6,
+    "precio_venta": "6000.00",
+    "precio_compra": "3600.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+},
+{
+  "model": "inventarios.producto",
+  "pk": 20,
+  "fields": {
+    "nombre": "Chocolate Santafereño",
+    "codigo_sku": "BEB005",
+    "categoria": 6,
+    "precio_venta": "4500.00",
+    "precio_compra": "2700.00",
+    "stock_actual": 100,
+    "stock_minimo": 5
+  }
+}
+]

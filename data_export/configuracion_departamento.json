@@ -1,0 +1,10 @@
+[
+{
+  "model": "configuracion.departamento",
+  "pk": 1,
+  "fields": {
+    "nombre": "Departamento Comercial",
+    "descripcion": "Encargado de la parte comercial"
+  }
+}
+]

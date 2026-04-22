@@ -1,0 +1,67 @@
+[
+{
+  "model": "crm.cliente",
+  "pk": 2,
+  "fields": {
+    "nombre": "Igga",
+    "representante": null,
+    "email": "elkin@igga",
+    "cedula": "44444",
+    "telefono": "44444444",
+    "direccion": "aguacatala",
+    "fecha_registro": "2027-05-06T05:00:00Z"
+  }
+},
+{
+  "model": "crm.cliente",
+  "pk": 3,
+  "fields": {
+    "nombre": "Proservi",
+    "representante": null,
+    "email": "director.negocios@proservis.com.co",
+    "cedula": null,
+    "telefono": "305-4303197",
+    "direccion": "Calle 34 #45-21 Medellin, Colombia",
+    "fecha_registro": "2026-03-28T19:09:50.410Z"
+  }
+},
+{
+  "model": "crm.cliente",
+  "pk": 4,
+  "fields": {
+    "nombre": "Neumatica del Caribe",
+    "representante": "Jorge Osorio",
+    "email": "jorge@neumatica.com",
+    "cedula": "4557436464",
+    "telefono": "314 7029830",
+    "direccion": "Calle 34 #45-23 Medellin",
+    "fecha_registro": "2026-03-29T16:56:41.805Z"
+  }
+},
+{
+  "model": "crm.cliente",
+  "pk": 1,
+  "fields": {
+    "nombre": "Panaderia y pasteleria La Boquilla",
+    "representante": "Nohemy Betancourt Muñoz",
+    "email": "ramirezjoanalexander@gmail.com",
+    "cedula": "79867452-4",
+    "telefono": "316 3563412",
+    "direccion": "VDA RIO FRIO OCCIDENTAL SECTOR EL BOTE CA LA ESTRELLA II",
+    "fecha_registro": "2026-03-07T21:39:16.054Z"
+  }
+},
+{
+  "model": "crm.cliente",
+  "pk": 5,
+  "fields": {
+    "nombre": "CONSUMIDOR FINAL",
+    "representante": null,
+    "email": "consumidor@final.com",
+    "cedula": "222222222222",
+    "telefono": "0000000",
+    "direccion": "Ciudad",
+    "fecha_registro": "2026-04-21T17:42:35.116Z"
+  }
+}
+]

@@ -1,0 +1,26 @@
+[
+{
+  "model": "compras.proveedor",
+  "pk": 1,
+  "fields": {
+    "razon_social": "Logistics & Parts Global",
+    "nit": "900123456-1",
+    "contacto_nombre": "Carlos Velez",
+    "contacto_email": "ventas@lpglobal.com",
+    "contacto_telefono": "3001234567",
+    "direccion": "Av. Principal #45-12, Bogotá"
+  }
+},
+{
+  "model": "compras.proveedor",
+  "pk": 2,
+  "fields": {
+    "razon_social": "Distribuidora Tech",
+    "nit": "800987654-2",
+    "contacto_nombre": "Ana Maria",
+    "contacto_email": "contacto@distritech.com",
+    "contacto_telefono": "3159876543",
+    "direccion": ""
+  }
+}
+]

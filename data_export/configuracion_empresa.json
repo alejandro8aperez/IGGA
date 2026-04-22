@@ -1,0 +1,15 @@
+[
+{
+  "model": "configuracion.empresa",
+  "pk": 1,
+  "fields": {
+    "nombre": "Transformadores KaVe",
+    "ruc": "901582636",
+    "direccion": "Calle 20 sur #35-120",
+    "telefono": "3007849624",
+    "email": "alejandro8ap@gmail.com",
+    "moneda_base": "COP",
+    "sitio_web": ""
+  }
+}
+]
