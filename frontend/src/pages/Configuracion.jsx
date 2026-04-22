@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Users, Building2, Plus, Edit3, Trash2, X, Save, AlertCircle, Briefcase } from 'lucide-react';
+import { API } from '../config/api';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
+const API_BASE = API.CONFIGURACION.EMPRESA.replace('empresa/', '');
 
 // ── Estilos CRM-style ─────────────────────────────────
 const styles = {

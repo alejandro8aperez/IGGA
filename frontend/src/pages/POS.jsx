@@ -7,8 +7,9 @@ import {
     ChevronRight, Wallet, Coffee, Cake, ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { API } from '../config/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE = API.BASE;
 
 function POS() {
     const navigate = useNavigate();

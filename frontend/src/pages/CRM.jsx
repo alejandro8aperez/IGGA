@@ -3,8 +3,9 @@ import axios from 'axios';
 import { Users, AlertCircle, Edit3, Trash2, Plus, X, FileText, Phone, Mail, Building2, Calendar, DollarSign, Palette } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CotizacionesCRM from '../components/CotizacionesCRM';
+import { API } from '../config/api';
 
-const API_URL = 'http://127.0.0.1:8000/api/crm/clientes/';
+const API_URL = API.CRM.CLIENTES;
 
 function CRM() {
     const navigate = useNavigate();

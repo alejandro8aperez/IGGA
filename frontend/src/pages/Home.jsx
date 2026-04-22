@@ -9,16 +9,17 @@ import {
     Factory, Shield, Users2, ClipboardList, Cog, Calculator as CalcIcon, 
     CreditCard, Megaphone, MonitorSmartphone
 } from 'lucide-react';
+import { API } from '../config/api';
 
-const API_CLIENTES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/crm/clientes/';
-const API_COTIZACIONES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/crm/cotizaciones/';
-const API_PEDIDOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/ventas/pedidos/';
-const API_FACTURAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/ventas/facturas/';
-const API_PROVEEDORES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/proveedores/';
-const API_ORDENES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/ordenes/';
-const API_PRODUCTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/inventario/productos/';
-const API_PROYECTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/operaciones/proyectos/';
-const API_DISEÑOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/kave/disenos/';
+const API_CLIENTES = API.CRM.CLIENTES;
+const API_COTIZACIONES = API.CRM.COTIZACIONES;
+const API_PEDIDOS = API.VENTAS.PEDIDOS;
+const API_FACTURAS = `${API.BASE}/ventas/facturas/`;
+const API_PROVEEDORES = API.COMPRAS.PROVEEDORES;
+const API_ORDENES = API.COMPRAS.ORDENES;
+const API_PRODUCTOS = API.INVENTARIOS.PRODUCTOS;
+const API_PROYECTOS = `${API.BASE}/operaciones/proyectos/`;
+const API_DISEÑOS = `${API.BASE}/kave/disenos/`;
 
 const modules = [
     {

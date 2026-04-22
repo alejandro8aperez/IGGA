@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API } from '../config/api';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/inventarios/';
+const API_BASE = API.INVENTARIOS.PRODUCTOS.replace('productos/', '');
 
 export default function Inventario() {
     const navigate = useNavigate();
