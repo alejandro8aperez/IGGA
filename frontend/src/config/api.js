@@ -27,6 +27,13 @@ export const API = {
         CLIENTES: `${cleanBaseUrl}/crm/clientes/`,
         COTIZACIONES: `${cleanBaseUrl}/crm/cotizaciones/`,
     },
+
+    // Facturación Electrónica
+    FACTURACION: {
+        FACTURAS: `${cleanBaseUrl}/facturacion/facturas/`,
+        RESOLUCIONES: `${cleanBaseUrl}/facturacion/resoluciones/`,
+        REPORTES: `${cleanBaseUrl}/facturacion/reportes/`,
+    },
     
     // Inventarios
     INVENTARIOS: {
