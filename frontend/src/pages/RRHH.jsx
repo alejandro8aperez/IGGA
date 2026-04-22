@@ -208,16 +208,23 @@ const EMPTY_FORM = {
 
 const S = {
     input: {
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.12)',
-        borderRadius: '8px', padding: '8px 12px',
-        color: 'var(--text)', fontSize: '0.9rem',
+        background: 'rgba(255,255,255,0.08)',
+        border: '2px solid rgba(255,255,255,0.25)',
+        borderRadius: '8px', padding: '10px 14px',
+        color: 'var(--text)', fontSize: '0.95rem',
         outline: 'none', width: '100%', boxSizing: 'border-box',
+        transition: 'all 0.2s ease',
+        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
+    },
+    inputFocus: {
+        border: '2px solid #ec4899',
+        background: 'rgba(255,255,255,0.12)',
+        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2), 0 0 0 3px rgba(236,72,153,0.15)',
     },
     label: {
-        fontSize: '0.75rem', fontWeight: 600,
-        color: 'var(--text-muted)', textTransform: 'uppercase',
-        letterSpacing: '0.06em', marginBottom: '4px', display: 'block',
+        fontSize: '0.8rem', fontWeight: 600,
+        color: 'var(--text)', textTransform: 'uppercase',
+        letterSpacing: '0.06em', marginBottom: '6px', display: 'block',
     },
     section: {
         background: 'rgba(255,255,255,0.03)',
@@ -234,10 +241,21 @@ const S = {
 // ── Componentes atómicos ──────────────────────────────
 
 function FInput({ label, name, type = 'text', value, onChange, required, span, ...p }) {
+    const [isFocused, setIsFocused] = useState(false);
     return (
         <div style={{ gridColumn: span ? `span ${span}` : undefined }}>
             <label style={S.label}>{label}{required && <span style={{ color: '#ef4444' }}> *</span>}</label>
-            <input type={type} name={name} value={value ?? ''} onChange={onChange} required={required} style={S.input} {...p} />
+            <input 
+                type={type} 
+                name={name} 
+                value={value ?? ''} 
+                onChange={onChange} 
+                required={required} 
+                style={{...S.input, ...(isFocused ? S.inputFocus : {})}} 
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                {...p} 
+            />
         </div>
     );
 }
