@@ -7,7 +7,8 @@ from .views import (
     ExperienciaLaboralViewSet, VacacionesViewSet, IncapacidadViewSet,
     DotacionViewSet, ExamenMedicoViewSet, EPPViewSet,
     DisciplinarioViewSet, EvaluacionDesempenoViewSet,
-    HistorialCargoViewSet, DocumentoEmpleadoViewSet
+    HistorialCargoViewSet, DocumentoEmpleadoViewSet,
+    ConceptoNominaViewSet, PeriodoNominaViewSet, NominaViewSet, DetalleNominaViewSet
 )
 
 router = DefaultRouter()
@@ -40,5 +41,11 @@ router.register(r'disciplinarios', DisciplinarioViewSet)
 router.register(r'evaluaciones-desempeno', EvaluacionDesempenoViewSet)
 router.register(r'historial-cargos', HistorialCargoViewSet)
 router.register(r'documentos-empleado', DocumentoEmpleadoViewSet)
+
+# Nómina Electrónica
+router.register(r'conceptos-nomina', ConceptoNominaViewSet)
+router.register(r'periodos-nomina', PeriodoNominaViewSet)
+router.register(r'nominas', NominaViewSet)
+router.register(r'detalles-nomina', DetalleNominaViewSet)
 
 urlpatterns = router.urls

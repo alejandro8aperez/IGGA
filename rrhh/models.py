@@ -99,6 +99,116 @@ class CentroCosto(models.Model):
 
 
 # ═══════════════════════════════════════════════════════
+# NÓMINA ELECTRÓNICA
+# ═══════════════════════════════════════════════════════
+
+class ConceptoNomina(models.Model):
+    """Conceptos de nómina: devengados, deducciones, etc."""
+    TIPO_CONCEPTO = [
+        ('DEV', 'Devengado'),
+        ('DED', 'Deducción'),
+        ('PROV', 'Provisiones'),
+    ]
+
+    codigo = models.CharField(max_length=10, unique=True)
+    nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=4, choices=TIPO_CONCEPTO)
+    descripcion = models.TextField(blank=True)
+    es_base_cotizacion = models.BooleanField(default=False)  # Para seguridad social
+    es_imponible = models.BooleanField(default=True)  # Para retención en la fuente
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'rrhh_concepto_nomina'
+        verbose_name = 'Concepto de Nómina'
+        verbose_name_plural = 'Conceptos de Nómina'
+        ordering = ['tipo', 'codigo']
+
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+
+
+class PeriodoNomina(models.Model):
+    """Períodos de nómina (semanal, quincenal, mensual)"""
+    TIPO_PERIODO = [
+        ('SEM', 'Semanal'),
+        ('QUI', 'Quincenal'),
+        ('MEN', 'Mensual'),
+        ('BIM', 'Bimensual'),
+    ]
+
+    nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=3, choices=TIPO_PERIODO, default='MEN')
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    fecha_pago = models.DateField()
+    cerrado = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'rrhh_periodo_nomina'
+        verbose_name = 'Período de Nómina'
+        verbose_name_plural = 'Períodos de Nómina'
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.fecha_inicio} - {self.fecha_fin})"
+
+
+class Nomina(models.Model):
+    """Encabezado de nómina"""
+    periodo = models.ForeignKey(PeriodoNomina, on_delete=models.CASCADE, related_name='nominas')
+    empleado = models.ForeignKey('Empleado', on_delete=models.CASCADE, related_name='nominas')
+    salario_base = models.DecimalField(max_digits=12, decimal_places=2)
+    dias_trabajados = models.DecimalField(max_digits=5, decimal_places=2, default=30)
+    total_devengados = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_deducciones = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_provisiones = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    neto_pagar = models.DecimalField(max_digits=12, decimal_places=2)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    procesada = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'rrhh_nomina'
+        verbose_name = 'Nómina'
+        verbose_name_plural = 'Nóminas'
+        unique_together = ['periodo', 'empleado']
+
+    def __str__(self):
+        return f"Nómina {self.periodo} - {self.empleado}"
+
+    def calcular_totales(self):
+        detalles = self.detalles.all()
+        self.total_devengados = sum(d.valor for d in detalles if d.concepto.tipo == 'DEV')
+        self.total_deducciones = sum(d.valor for d in detalles if d.concepto.tipo == 'DED')
+        self.total_provisiones = sum(d.valor for d in detalles if d.concepto.tipo == 'PROV')
+        self.neto_pagar = self.total_devengados - self.total_deducciones
+        self.save()
+
+
+class DetalleNomina(models.Model):
+    """Detalle de conceptos en la nómina"""
+    nomina = models.ForeignKey(Nomina, on_delete=models.CASCADE, related_name='detalles')
+    concepto = models.ForeignKey(ConceptoNomina, on_delete=models.CASCADE)
+    cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=1)
+    valor_unitario = models.DecimalField(max_digits=12, decimal_places=2)
+    valor = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = 'rrhh_detalle_nomina'
+        verbose_name = 'Detalle de Nómina'
+        verbose_name_plural = 'Detalles de Nómina'
+
+    def __str__(self):
+        return f"{self.concepto} - {self.valor}"
+
+    def save(self, *args, **kwargs):
+        self.valor = self.cantidad * self.valor_unitario
+        super().save(*args, **kwargs)
+        if self.nomina:
+            self.nomina.calcular_totales()
+
+
+# ═══════════════════════════════════════════════════════
 # MODELO PRINCIPAL: EMPLEADO
 # ═══════════════════════════════════════════════════════
 

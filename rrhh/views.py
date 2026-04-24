@@ -1,10 +1,17 @@
-from rest_framework import viewsets
+from io import BytesIO
+from datetime import date
+from django.http import HttpResponse
+from django.utils import timezone
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 from .models import (
     EPS, AFP, ARL, CajaCompensacion, Departamento, Cargo, CentroCosto,
     Empleado, ContactoEmergencia, Familiar, FormacionAcademica, Idioma,
     Certificacion, ExperienciaLaboral, Vacaciones, Incapacidad, Dotacion,
     ExamenMedico, EPP, Disciplinario, EvaluacionDesempeno, HistorialCargo,
-    DocumentoEmpleado
+    DocumentoEmpleado, ConceptoNomina, PeriodoNomina, Nomina, DetalleNomina
 )
 from .serializers import (
     EPSSerializer, AFPSerializer, ARLSerializer, CajaCompensacionSerializer,
@@ -14,7 +21,8 @@ from .serializers import (
     ExperienciaLaboralSerializer, VacacionesSerializer, IncapacidadSerializer,
     DotacionSerializer, ExamenMedicoSerializer, EPPSerializer,
     DisciplinarioSerializer, EvaluacionDesempenoSerializer,
-    HistorialCargoSerializer, DocumentoEmpleadoSerializer
+    HistorialCargoSerializer, DocumentoEmpleadoSerializer,
+    ConceptoNominaSerializer, PeriodoNominaSerializer, NominaSerializer, DetalleNominaSerializer
 )
 
 # ── Catálogos ──────────────────────────────────────────────
@@ -111,3 +119,76 @@ class DocumentoEmpleadoViewSet(viewsets.ModelViewSet):
 class EmpleadoViewSet(viewsets.ModelViewSet):
     queryset = Empleado.objects.all()
     serializer_class = EmpleadoSerializer
+
+
+# ── Nómina Electrónica ─────────────────────────────────────
+class ConceptoNominaViewSet(viewsets.ModelViewSet):
+    queryset = ConceptoNomina.objects.all()
+    serializer_class = ConceptoNominaSerializer
+
+
+class PeriodoNominaViewSet(viewsets.ModelViewSet):
+    queryset = PeriodoNomina.objects.all()
+    serializer_class = PeriodoNominaSerializer
+
+
+class NominaViewSet(viewsets.ModelViewSet):
+    queryset = Nomina.objects.all()
+    serializer_class = NominaSerializer
+
+    @action(detail=False, methods=['get'], url_path='exportar-electronica')
+    def exportar_electronica(self, request):
+        """Exportar nómina electrónica en formato XML para DIAN (Colombia)"""
+        periodo_id = request.query_params.get('periodo_id')
+        if not periodo_id:
+            return Response({'error': 'Se requiere periodo_id'}, status=400)
+
+        try:
+            periodo = PeriodoNomina.objects.get(id=periodo_id)
+        except PeriodoNomina.DoesNotExist:
+            return Response({'error': 'Período no encontrado'}, status=404)
+
+        nominas = Nomina.objects.filter(periodo=periodo, procesada=True)
+
+        # Crear XML básico para nómina electrónica
+        root = Element('NominaElectronica')
+        root.set('xmlns', 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2')
+        root.set('xmlns:cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2')
+        root.set('xmlns:cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2')
+
+        # Cabecera
+        id_elem = SubElement(root, 'cbc:ID')
+        id_elem.text = f"NE-{periodo.id}"
+
+        issue_date = SubElement(root, 'cbc:IssueDate')
+        issue_date.text = str(date.today())
+
+        # Empleados
+        for nomina in nominas:
+            employee = SubElement(root, 'cac:Employee')
+            
+            id_emp = SubElement(employee, 'cbc:ID')
+            id_emp.text = nomina.empleado.numero_documento
+            
+            name = SubElement(employee, 'cbc:Name')
+            name.text = nomina.empleado.nombre_completo
+            
+            salary = SubElement(employee, 'cbc:Salary')
+            salary.text = str(nomina.salario_base)
+            
+            net_pay = SubElement(employee, 'cbc:NetPay')
+            net_pay.text = str(nomina.neto_pagar)
+
+        # Formatear XML
+        rough_string = tostring(root, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        xml_str = reparsed.toprettyxml(indent="  ", encoding='utf-8')
+
+        response = HttpResponse(xml_str, content_type='application/xml')
+        response['Content-Disposition'] = f'attachment; filename=nomina_electronica_{periodo.nombre}.xml'
+        return response
+
+
+class DetalleNominaViewSet(viewsets.ModelViewSet):
+    queryset = DetalleNomina.objects.all()
+    serializer_class = DetalleNominaSerializer

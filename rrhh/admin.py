@@ -4,7 +4,7 @@ from .models import (
     Empleado, ContactoEmergencia, Familiar, FormacionAcademica, Idioma,
     Certificacion, ExperienciaLaboral, Vacaciones, Incapacidad, Dotacion,
     ExamenMedico, EPP, Disciplinario, EvaluacionDesempeno, HistorialCargo,
-    DocumentoEmpleado
+    DocumentoEmpleado, ConceptoNomina, PeriodoNomina, Nomina, DetalleNomina
 )
 
 # Registramos los catálogos
@@ -52,3 +52,24 @@ admin.site.register(Disciplinario)
 admin.site.register(EvaluacionDesempeno)
 admin.site.register(HistorialCargo)
 admin.site.register(DocumentoEmpleado)
+
+# Nómina Electrónica
+@admin.register(ConceptoNomina)
+class ConceptoNominaAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nombre', 'tipo', 'activo')
+    list_filter = ('tipo', 'activo')
+
+@admin.register(PeriodoNomina)
+class PeriodoNominaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'tipo', 'fecha_inicio', 'fecha_fin', 'cerrado')
+    list_filter = ('tipo', 'cerrado')
+
+@admin.register(Nomina)
+class NominaAdmin(admin.ModelAdmin):
+    list_display = ('periodo', 'empleado', 'salario_base', 'neto_pagar', 'procesada')
+    list_filter = ('procesada', 'periodo')
+
+@admin.register(DetalleNomina)
+class DetalleNominaAdmin(admin.ModelAdmin):
+    list_display = ('nomina', 'concepto', 'valor')
+    list_filter = ('concepto__tipo',)

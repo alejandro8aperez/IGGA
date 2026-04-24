@@ -4,7 +4,7 @@ from .models import (
     Empleado, ContactoEmergencia, Familiar, FormacionAcademica, Idioma,
     Certificacion, ExperienciaLaboral, Vacaciones, Incapacidad, Dotacion,
     ExamenMedico, EPP, Disciplinario, EvaluacionDesempeno, HistorialCargo,
-    DocumentoEmpleado
+    DocumentoEmpleado, ConceptoNomina, PeriodoNomina, Nomina, DetalleNomina
 )
 
 # ── Catálogos ──────────────────────────────────────────────
@@ -99,3 +99,35 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Empleado
         fields = '__all__'
+
+
+# ── Nómina Electrónica ─────────────────────────────────────
+class ConceptoNominaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConceptoNomina
+        fields = '__all__'
+
+
+class PeriodoNominaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PeriodoNomina
+        fields = '__all__'
+
+
+class DetalleNominaSerializer(serializers.ModelSerializer):
+    concepto_nombre = serializers.CharField(source='concepto.nombre', read_only=True)
+
+    class Meta:
+        model = DetalleNomina
+        fields = '__all__'
+
+
+class NominaSerializer(serializers.ModelSerializer):
+    empleado_nombre = serializers.CharField(source='empleado.nombre_completo', read_only=True)
+    periodo_nombre = serializers.CharField(source='periodo.nombre', read_only=True)
+    detalles = DetalleNominaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Nomina
+        fields = '__all__'
+        read_only_fields = ('total_devengados', 'total_deducciones', 'total_provisiones', 'neto_pagar')
