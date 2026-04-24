@@ -36,6 +36,15 @@ export default function Compras() {
         estado: 'activo'
     });
 
+    // Modal Pagos
+    const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
+    const [pagoForm, setPagoForm] = useState({
+        orden: '',
+        monto: '',
+        metodo: 'transferencia',
+        referencia: ''
+    });
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -131,6 +140,33 @@ export default function Compras() {
         }
     };
 
+    const openPagoModal = (ordenId = '') => {
+        setPagoForm({
+            orden: ordenId,
+            monto: '',
+            metodo: 'transferencia',
+            referencia: ''
+        });
+        setIsPagoModalOpen(true);
+    };
+
+    const handlePagoSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post(API_PAGO, {
+                orden: Number(pagoForm.orden),
+                monto: Number(pagoForm.monto),
+                metodo: pagoForm.metodo,
+                referencia: pagoForm.referencia
+            });
+            setIsPagoModalOpen(false);
+            fetchData();
+        } catch (err) {
+            console.error('Error al registrar pago:', err);
+            setError(err.response?.data?.error || 'Error al registrar pago');
+        }
+    };
+
     const filteredProveedores = proveedores.filter(prov => {
         const matchesSearch = prov.razon_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             prov.nit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -149,6 +185,13 @@ export default function Compras() {
         const matchesSearch = rec.orden_numero?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             rec.proveedor_razon_social?.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
+    });
+
+    const filteredPagos = pagos.filter(p => {
+        const orden = ordenes.find(o => o.id === p.orden);
+        const provName = orden?.proveedor_nombre || '';
+        return provName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               p.referencia?.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
     // Calcular estadísticas
@@ -963,44 +1006,229 @@ export default function Compras() {
             )}
 
             {activeTab === 'pagos' && (
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '2rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center', 
-                        gap: '1rem',
-                        marginBottom: '1rem'
-                    }}>
-                        <CreditCard size={48} style={{ color: '#667eea' }} />
-                        <h3 style={{ 
-                            fontSize: '1.5rem', 
-                            fontWeight: '700', 
-                            color: '#2d3748',
-                            margin: 0
-                        }}>
-                            Gestión de Pagos
-                        </h3>
-                    </div>
-                    <p style={{ color: '#718096', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                        Módulo de pagos en desarrollo
-                    </p>
+                <div>
+                    {/* Header */}
                     <div style={{
-                        background: '#f8fafc',
-                        border: '2px dashed #cbd5e0',
-                        borderRadius: '12px',
-                        padding: '2rem',
-                        maxWidth: '400px',
-                        margin: '0 auto'
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '2rem'
                     }}>
-                        <p style={{ color: '#4a5568', margin: 0 }}>
-                            Próximamente podrás gestionar pagos a proveedores, registrar facturas y controlar el flujo de caja de compras.
-                        </p>
+                        <h3 style={{
+                            margin: 0,
+                            fontSize: '1.3rem',
+                            fontWeight: '700',
+                            color: '#2d3748',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <CreditCard size={24} style={{ color: '#667eea' }} />
+                            Gestión de Pagos a Proveedores
+                        </h3>
+                        <button
+                            onClick={() => openPagoModal()}
+                            style={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '12px',
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                            }}
+                        >
+                            <Plus size={20} /> Nuevo Pago
+                        </button>
+                    </div>
+
+                    {/* Stats */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                        gap: '1.5rem',
+                        marginBottom: '2rem'
+                    }}>
+                        <div style={{
+                            background: 'white', borderRadius: '16px', padding: '1.5rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '50px', height: '50px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white'
+                                }}>
+                                    <DollarSign size={24} />
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2d3748', margin: '0 0 0.25rem 0' }}>Total Pagado</h3>
+                                    <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>A proveedores</p>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '2rem', fontWeight: '700', color: '#667eea', margin: '0' }}>
+                                ${pagos.reduce((sum, p) => sum + Number(p.monto || 0), 0).toLocaleString()}
+                            </p>
+                        </div>
+                        <div style={{
+                            background: 'white', borderRadius: '16px', padding: '1.5rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '50px', height: '50px',
+                                    background: 'linear-gradient(135deg, #ed8936 0%, #f59e0b 100%)',
+                                    borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white'
+                                }}>
+                                    <Clock size={24} />
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2d3748', margin: '0 0 0.25rem 0' }}>Por Pagar</h3>
+                                    <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>Saldo pendiente</p>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '2rem', fontWeight: '700', color: '#ed8936', margin: '0' }}>
+                                ${(() => {
+                                    const tOrd = ordenes.filter(o => o.estado !== 'cancelada').reduce((sum, o) => sum + Number(o.total || 0), 0);
+                                    const tPag = pagos.reduce((sum, p) => sum + Number(p.monto || 0), 0);
+                                    return Math.max(tOrd - tPag, 0).toLocaleString();
+                                })()}
+                            </p>
+                        </div>
+                        <div style={{
+                            background: 'white', borderRadius: '16px', padding: '1.5rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '50px', height: '50px',
+                                    background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                                    borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white'
+                                }}>
+                                    <CheckCircle size={24} />
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2d3748', margin: '0 0 0.25rem 0' }}>Pagos Registrados</h3>
+                                    <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>Transacciones</p>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '2rem', fontWeight: '700', color: '#48bb78', margin: '0' }}>{pagos.length}</p>
+                        </div>
+                        <div style={{
+                            background: 'white', borderRadius: '16px', padding: '1.5rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '50px', height: '50px',
+                                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                    borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white'
+                                }}>
+                                    <AlertCircle size={24} />
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2d3748', margin: '0 0 0.25rem 0' }}>Órdenes con Saldo</h3>
+                                    <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>Pendientes</p>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '2rem', fontWeight: '700', color: '#ef4444', margin: '0' }}>
+                                {(() => {
+                                    const oa = ordenes.filter(o => o.estado !== 'cancelada');
+                                    return oa.filter(o => {
+                                        const tp = pagos.filter(p => p.orden === o.id).reduce((s, p) => s + Number(p.monto || 0), 0);
+                                        return tp < Number(o.total || 0);
+                                    }).length;
+                                })()}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Payments Table */}
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '16px',
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                    }}>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: '#f8fafc' }}>
+                                        <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Fecha</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Orden</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Proveedor</th>
+                                        <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Monto</th>
+                                        <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Método</th>
+                                        <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Referencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredPagos.map((pago) => {
+                                        const orden = ordenes.find(o => o.id === pago.orden);
+                                        return (
+                                            <tr key={pago.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                <td style={{ padding: '1rem', color: '#4a5568' }}>{new Date(pago.fecha).toLocaleDateString()}</td>
+                                                <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>OC-{pago.orden}</td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <Users size={16} style={{ color: '#718096' }} />
+                                                        {orden?.proveedor_nombre || 'Desconocido'}
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '700', color: '#2d3748' }}>${Number(pago.monto).toLocaleString()}</td>
+                                                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                    <span style={{
+                                                        padding: '4px 12px',
+                                                        borderRadius: '9999px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        ...(pago.metodo === 'efectivo' ? { background: '#d1fae5', color: '#065f46' }
+                                                            : pago.metodo === 'cheque' ? { background: '#dbeafe', color: '#1e40af' }
+                                                            : { background: '#fef3c7', color: '#92400e' })
+                                                    }}>
+                                                        {pago.metodo}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1rem', color: '#4a5568', fontFamily: 'monospace', fontSize: '0.85rem' }}>{pago.referencia || '-'}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {filteredPagos.length === 0 && (
+                                        <tr>
+                                            <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: '#718096' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                                    <CreditCard size={48} style={{ color: '#cbd5e0' }} />
+                                                    <p>No hay pagos registrados</p>
+                                                    <button
+                                                        onClick={() => openPagoModal()}
+                                                        style={{
+                                                            padding: '0.75rem 1.5rem',
+                                                            background: '#667eea',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            fontWeight: '600'
+                                                        }}
+                                                    >
+                                                        Registrar primer pago
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
@@ -1314,6 +1542,129 @@ export default function Compras() {
                                     }}
                                 >
                                     {currentProv ? 'Actualizar' : 'Crear'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Pago */}
+            {isPagoModalOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '16px',
+                        padding: '2rem',
+                        width: '90%',
+                        maxWidth: '500px',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
+                                Registrar Pago a Proveedor
+                            </h3>
+                            <button
+                                onClick={() => setIsPagoModalOpen(false)}
+                                style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handlePagoSubmit}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                        Orden de Compra *
+                                    </label>
+                                    <select
+                                        value={pagoForm.orden}
+                                        onChange={(e) => setPagoForm({...pagoForm, orden: e.target.value})}
+                                        required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none', background: 'white' }}
+                                        onFocus={(e) => { e.target.style.borderColor = '#667eea'; }}
+                                        onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; }}
+                                    >
+                                        <option value="">Seleccione una orden...</option>
+                                        {ordenes.filter(o => o.estado !== 'cancelada').map(o => (
+                                            <option key={o.id} value={o.id}>
+                                                OC-{o.id} - {o.proveedor_nombre || 'Proveedor'} (${Number(o.total).toLocaleString()})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                        Monto a Pagar *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={pagoForm.monto}
+                                        onChange={(e) => setPagoForm({...pagoForm, monto: e.target.value})}
+                                        required
+                                        min="1"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+                                        onFocus={(e) => { e.target.style.borderColor = '#667eea'; }}
+                                        onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; }}
+                                    />
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                            Método de Pago
+                                        </label>
+                                        <select
+                                            value={pagoForm.metodo}
+                                            onChange={(e) => setPagoForm({...pagoForm, metodo: e.target.value})}
+                                            style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none', background: 'white' }}
+                                            onFocus={(e) => { e.target.style.borderColor = '#667eea'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; }}
+                                        >
+                                            <option value="transferencia">Transferencia</option>
+                                            <option value="efectivo">Efectivo</option>
+                                            <option value="cheque">Cheque</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                            Referencia
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={pagoForm.referencia}
+                                            onChange={(e) => setPagoForm({...pagoForm, referencia: e.target.value})}
+                                            placeholder="N° de transferencia, cheque..."
+                                            style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+                                            onFocus={(e) => { e.target.style.borderColor = '#667eea'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPagoModalOpen(false)}
+                                    style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)' }}
+                                >
+                                    Guardar Pago
                                 </button>
                             </div>
                         </form>
