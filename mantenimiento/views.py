@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from .models import Equipo, OrdenMantenimiento, Repuesto, DetalleMantenimiento, CostoMantenimiento
 from .serializers import EquipoSerializer, OrdenMantenimientoSerializer, RepuestoSerializer, DetalleMantenimientoSerializer, CostoMantenimientoSerializer
+from contabilidad.services import crear_asiento_mantenimiento
 
 class EquipoViewSet(viewsets.ModelViewSet):
     queryset = Equipo.objects.all().order_by('codigo')
@@ -71,31 +72,7 @@ class OrdenMantenimientoViewSet(viewsets.ModelViewSet):
             }
         )
 
-        from contabilidad.models import Cuenta, AsientoContable, MovimientoContable
-
-        cuenta_costo_maint, _ = Cuenta.objects.get_or_create(
-            codigo='520101',
-            defaults={'nombre': 'Costo Mantenimiento', 'tipo': 'gasto', 'nivel': 2}
-        )
-        cuenta_banco, _ = Cuenta.objects.get_or_create(
-            codigo='110101',
-            defaults={'nombre': 'Caja/Banco', 'tipo': 'activo', 'nivel': 2}
-        )
-        cuenta_equipos, _ = Cuenta.objects.get_or_create(
-            codigo='170101',
-            defaults={'nombre': 'Equipos', 'tipo': 'activo', 'nivel': 2}
-        )
-
-        asiento = AsientoContable.objects.create(
-            fecha=timezone.now().date(),
-            descripcion=f"Costo mantenimiento orden {orden.numero}",
-            referencia=f"Mantenimiento:{orden.numero}",
-            total_debe=costo_total,
-            total_haber=costo_total
-        )
-
-        MovimientoContable.objects.create(asiento=asiento, cuenta=cuenta_costo_maint, debe=costo_total, haber=0, descripcion='Costo de mano de obra y repuestos')
-        MovimientoContable.objects.create(asiento=asiento, cuenta=cuenta_banco, debe=0, haber=costo_total, descripcion='Pago de mantenimiento')
+        crear_asiento_mantenimiento(orden, costo_total, monto_mano_obra, costo_repuestos)
 
         return Response({'status': 'Orden completada y costo registrado y contabilizado.', 'costo_total': costo_total})
 

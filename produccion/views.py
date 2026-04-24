@@ -75,32 +75,15 @@ class OrdenProduccionViewSet(viewsets.ModelViewSet):
             costo_total=costo_total
         )
 
-        from contabilidad.models import Cuenta, AsientoContable, MovimientoContable
+        from contabilidad.services import crear_asiento_costo_produccion
 
-        cuenta_inventario_pt, _ = Cuenta.objects.get_or_create(
-            codigo='140101',
-            defaults={'nombre': 'Inventario producto terminado', 'tipo': 'activo', 'nivel': 2}
+        crear_asiento_costo_produccion(
+            orden,
+            costo_total,
+            costo_materias,
+            costo_indirecto,
+            costo_mano_obra,
         )
-        cuenta_inventario_mp, _ = Cuenta.objects.get_or_create(
-            codigo='120101',
-            defaults={'nombre': 'Inventario materia prima', 'tipo': 'activo', 'nivel': 2}
-        )
-        cuenta_costo, _ = Cuenta.objects.get_or_create(
-            codigo='510101',
-            defaults={'nombre': 'Costo de producción', 'tipo': 'gasto', 'nivel': 2}
-        )
-
-        asiento = AsientoContable.objects.create(
-            fecha=orden.fecha_fin_estimada or orden.fecha_inicio,
-            descripcion=f"Costo de producción OC-{orden.id}",
-            referencia=f"CostoProduccion:{orden.id}",
-            total_debe=costo_total,
-            total_haber=costo_total
-        )
-
-        MovimientoContable.objects.create(asiento=asiento, cuenta=cuenta_inventario_pt, debe=costo_total, haber=0, descripcion=f"Ingreso de producto terminado OC-{orden.id}")
-        MovimientoContable.objects.create(asiento=asiento, cuenta=cuenta_inventario_mp, debe=0, haber=costo_materias, descripcion='Consumo de materia prima')
-        MovimientoContable.objects.create(asiento=asiento, cuenta=cuenta_costo, debe=0, haber=(costo_mano_obra + costo_indirecto), descripcion='Costo recurrente y mano de obra')
 
         orden.estado = 'terminada'
         orden.save()

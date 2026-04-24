@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cuenta, AsientoContable, MovimientoContable
+from .models import Cuenta, AsientoContable, MovimientoContable, PeriodoContable
 
 @admin.register(Cuenta)
 class CuentaAdmin(admin.ModelAdmin):
@@ -17,3 +17,10 @@ class AsientoContableAdmin(admin.ModelAdmin):
 class MovimientoContableAdmin(admin.ModelAdmin):
     list_display = ('asiento', 'cuenta', 'debe', 'haber')
     list_filter = ('cuenta',)
+
+@admin.register(PeriodoContable)
+class PeriodoContableAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'fecha_inicio', 'fecha_fin', 'estado', 'fecha_cierre', 'resultado')
+    list_filter = ('estado',)
+    search_fields = ('nombre', 'descripcion')
+    readonly_fields = ('fecha_cierre', 'asiento_cierre', 'resultado')

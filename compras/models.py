@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from inventarios.models import Producto
-from contabilidad.models import Cuenta, AsientoContable, MovimientoContable
+from contabilidad.services import crear_asiento_pago_proveedor
 
 class Proveedor(models.Model):
     razon_social = models.CharField(max_length=200)
@@ -100,37 +100,7 @@ def post_save_pago(sender, instance, created, **kwargs):
         return
 
     orden = instance.orden
-    cuenta_pagar, _ = Cuenta.objects.get_or_create(
-        codigo='210101',
-        defaults={'nombre': 'Cuentas por pagar proveedores', 'tipo': 'pasivo', 'nivel': 2}
-    )
-    cuenta_caja, _ = Cuenta.objects.get_or_create(
-        codigo='100101',
-        defaults={'nombre': 'Caja y bancos', 'tipo': 'activo', 'nivel': 2}
-    )
-
-    asiento = AsientoContable.objects.create(
-        fecha=instance.fecha,
-        descripcion=f"Pago OC-{orden.id} / {orden.proveedor.razon_social}",
-        referencia=f"PagoCompra:{instance.id}",
-        total_debe=instance.monto,
-        total_haber=instance.monto
-    )
-
-    MovimientoContable.objects.create(
-        asiento=asiento,
-        cuenta=cuenta_pagar,
-        debe=0,
-        haber=instance.monto,
-        descripcion=f"Pago proveedor {orden.proveedor.razon_social}"
-    )
-    MovimientoContable.objects.create(
-        asiento=asiento,
-        cuenta=cuenta_caja,
-        debe=instance.monto,
-        haber=0,
-        descripcion='Salida de caja por pago de compra'
-    )
+    crear_asiento_pago_proveedor(instance.fecha, orden, instance.monto)
 
     if orden.saldo_por_pagar <= 0 and orden.estado != 'cancelada':
         orden.estado = 'completada'

@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from crm.models import Cliente
 from inventarios.models import Producto
-from contabilidad.models import Cuenta, AsientoContable, MovimientoContable
+from contabilidad.services import crear_asiento_cobro, crear_asiento_venta
 
 class OrdenVenta(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
@@ -56,73 +56,10 @@ class FacturaVenta(models.Model):
         super().save(*args, **kwargs)
 
     def crear_asiento_ventas(self):
-        # Asegurar cuentas base disponibles en el plan de cuentas
-        cuenta_cxc, _ = Cuenta.objects.get_or_create(
-            codigo='110101',
-            defaults={'nombre': 'Cuentas por cobrar clientes', 'tipo': 'activo', 'nivel': 2}
-        )
-        cuenta_ingresos, _ = Cuenta.objects.get_or_create(
-            codigo='410101',
-            defaults={'nombre': 'Ingresos por ventas', 'tipo': 'ingreso', 'nivel': 2}
-        )
-
-        asiento = AsientoContable.objects.create(
-            fecha=self.fecha_emision,
-            descripcion=f"Venta factura {self.numero_factura} - {self.orden_venta.cliente.nombre}",
-            referencia=f"FacturaVenta:{self.id}",
-            total_debe=self.total,
-            total_haber=self.total
-        )
-
-        MovimientoContable.objects.create(
-            asiento=asiento,
-            cuenta=cuenta_cxc,
-            debe=self.total,
-            haber=0,
-            descripcion=f"Venta a cliente {self.orden_venta.cliente.nombre}"
-        )
-
-        MovimientoContable.objects.create(
-            asiento=asiento,
-            cuenta=cuenta_ingresos,
-            debe=0,
-            haber=self.total,
-            descripcion="Ingreso por ventas"
-        )
+        return crear_asiento_venta(self)
 
     def crear_asiento_cobro(self):
-        cuenta_caja, _ = Cuenta.objects.get_or_create(
-            codigo='100101',
-            defaults={'nombre': 'Caja y bancos', 'tipo': 'activo', 'nivel': 2}
-        )
-        cuenta_cxc, _ = Cuenta.objects.get_or_create(
-            codigo='110101',
-            defaults={'nombre': 'Cuentas por cobrar clientes', 'tipo': 'activo', 'nivel': 2}
-        )
-
-        asiento = AsientoContable.objects.create(
-            fecha=self.fecha_emision,
-            descripcion=f"Cobro factura {self.numero_factura} - {self.orden_venta.cliente.nombre}",
-            referencia=f"FacturaVentaCobro:{self.id}",
-            total_debe=self.total,
-            total_haber=self.total
-        )
-
-        MovimientoContable.objects.create(
-            asiento=asiento,
-            cuenta=cuenta_caja,
-            debe=self.total,
-            haber=0,
-            descripcion=f"Cobro de factura {self.numero_factura}"
-        )
-
-        MovimientoContable.objects.create(
-            asiento=asiento,
-            cuenta=cuenta_cxc,
-            debe=0,
-            haber=self.total,
-            descripcion=f"Baja cuenta por cobrar cliente {self.orden_venta.cliente.nombre}"
-        )
+        return crear_asiento_cobro(self)
 
 
 @receiver(post_save, sender=FacturaVenta)
