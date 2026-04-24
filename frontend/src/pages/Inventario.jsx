@@ -574,7 +574,7 @@ export default function Inventario() {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ 
                         width: '100%', 
-                        minWidth: '1000px',
+                        minWidth: '1100px',
                         borderCollapse: 'collapse', 
                         fontSize: '0.9rem',
                         tableLayout: 'fixed'
@@ -586,7 +586,8 @@ export default function Inventario() {
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '12%' }}>Categoría</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Stock Actual</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Stock Mínimo</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '13%' }}>Precio Venta</th>
+                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '8%' }}>Unidad</th>
+                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '11%' }}>Precio Venta</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Estado</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '8%' }}>Acciones</th>
                             </tr>
@@ -638,6 +639,7 @@ export default function Inventario() {
                                             </div>
                                         </td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', color: '#718096', fontSize: '0.85rem' }}>{product.stock_minimo}</td>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', color: '#718096', fontSize: '0.85rem', textTransform: 'capitalize' }}>{product.unidad_medida || 'unidad'}</td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: 600, fontSize: '0.85rem' }}>${product.precio_venta?.toLocaleString() || 0}</td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
                                             <span style={{
