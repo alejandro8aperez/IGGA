@@ -9,11 +9,13 @@
 // =============================================================================
 // PRODUCTION URL - Hardcoded for Render deployment
 // =============================================================================
-// Using production backend URL directly since VITE_API_URL may not be set
-// In development, override this by setting VITE_API_URL in .env.local
+// Use localhost by default when running locally, otherwise fall back to configured API URL or production backend.
+// In development, set VITE_API_URL in .env.local if you want to target another backend.
+// In production, set VITE_API_URL to the deployed API endpoint.
 // =============================================================================
-const PRODUCTION_URL = 'https://erp-backend-a37b.onrender.com/api';
-const BASE_URL = import.meta.env.VITE_API_URL || PRODUCTION_URL;
+const DEFAULT_LOCAL_URL = 'http://localhost:8000/api';
+const FALLBACK_SAME_ORIGIN_URL = typeof window !== 'undefined' ? `${window.location.origin}/api` : DEFAULT_LOCAL_URL;
+const BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? DEFAULT_LOCAL_URL : FALLBACK_SAME_ORIGIN_URL);
 
 // Ensure no trailing slash for consistent URL building
 const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;

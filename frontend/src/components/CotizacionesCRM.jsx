@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FileText, AlertCircle, Edit3, Trash2, Plus, X, FileSpreadsheet, Calendar, DollarSign, User, Package, Clock, Shield, Percent } from 'lucide-react';
+import API from '../config/api';
 
-const API_URL = 'http://127.0.0.1:8000/api/crm/cotizaciones/';
-const CLIENTES_URL = 'http://127.0.0.1:8000/api/crm/clientes/';
+const API_URL = API.CRM.COTIZACIONES;
+const CLIENTES_URL = API.CRM.CLIENTES;
 
 export default function CotizacionesCRM() {
     const [cotizaciones, setCotizaciones] = useState([]);

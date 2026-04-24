@@ -36,8 +36,9 @@ function Sidebar() {
             display: 'flex',
             flexDirection: 'column'
         }}>
-            <div style={{ marginBottom: '20px' }}>
-                <h2 style={{ color: 'white', margin: '0' }}>8AMPERIOS</h2>
+            <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <img src="/logo-8amperios-part1.svg" alt="8AMPERIOS ERP - Parte 1" style={{ width: '44px', height: '44px' }} />
+                <h2 style={{ color: 'white', margin: '0', fontSize: '1.4rem' }}>8AMPERIOS</h2>
             </div>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {navItems.map((item) => (

@@ -42,10 +42,17 @@ function Sidebar() {
             top: 0,
             borderRight: '1px solid #334155'
         }}>
-            <div style={{ marginBottom: '2rem' }}>
-                <h2 style={{ color: '#f8fafc', marginBottom: '0.5rem' }}>8AMPERIOS</h2>
-                <div style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
-                    {user.nombre} - {user.cargo}
+            <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <img
+                    src="/logo-8amperios-part1.svg"
+                    alt="8AMPERIOS ERP - Parte 1"
+                    style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fff' }}
+                />
+                <div>
+                    <h2 style={{ color: '#f8fafc', marginBottom: '0.5rem' }}>8AMPERIOS</h2>
+                    <div style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
+                        {user.nombre} - {user.cargo}
+                    </div>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
                     {user.empresa?.nombre}

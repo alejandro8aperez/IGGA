@@ -154,18 +154,22 @@ function Sidebar({ width, setWidth, isOpen, onClose }) {
                     textAlign: 'center'
                 }}>
                     <div style={{
-                        width: isCollapsed ? '40px' : '60px',
-                        height: isCollapsed ? '40px' : '60px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        borderRadius: '12px',
+                        width: isCollapsed ? '40px' : '80px',
+                        height: isCollapsed ? '40px' : '80px',
+                        margin: '0 auto 1rem',
+                        borderRadius: '18px',
+                        overflow: 'hidden',
+                        background: '#fff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        margin: '0 auto 1rem',
-                        fontSize: '1.5rem',
-                        fontWeight: 'bold'
+                        boxShadow: '0 10px 28px rgba(15, 23, 42, 0.1)'
                     }}>
-                        8A
+                        <img
+                            src="/logo-8amperios-part1.svg"
+                            alt="8AMPERIOS ERP - Parte 1"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        />
                     </div>
                     {!isCollapsed && (
                         <div>

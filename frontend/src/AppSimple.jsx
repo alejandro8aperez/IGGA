@@ -20,8 +20,9 @@ function Sidebar() {
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <div className="logo">
-                    <h2>8AMPERIOS</h2>
+                <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <img src="/logo-8amperios-part1.svg" alt="8AMPERIOS ERP - Parte 1" style={{ width: '40px', height: '40px' }} />
+                    <h2 style={{ margin: 0, fontSize: '1.25rem' }}>8AMPERIOS</h2>
                 </div>
                 {user && (
                     <div className="user-info">

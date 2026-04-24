@@ -6,10 +6,11 @@ import {
     Shield, Building, Mail, Phone, MapPin, Eye, Printer,
     ChevronLeft, ChevronRight, AlertCircle, CheckCircle, Gear
 } from 'lucide-react';
+import API from '../config/api';
 
-const API_URL = 'http://127.0.0.1:8000/api/crm/cotizaciones/';
-const CLIENTES_URL = 'http://127.0.0.1:8000/api/crm/clientes/';
-const PRODUCTOS_URL = 'http://127.0.0.1:8000/api/inventarios/productos/';
+const API_URL = API.CRM.COTIZACIONES;
+const CLIENTES_URL = API.CRM.CLIENTES;
+const PRODUCTOS_URL = API.INVENTARIOS.PRODUCTOS;
 
 export default function CotizadorProfesional() {
     // Estados principales

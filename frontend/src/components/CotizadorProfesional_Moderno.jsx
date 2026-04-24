@@ -7,9 +7,10 @@ import {
     AlertCircle, CheckCircle, TrendingUp, BarChart3, Activity,
     Target, Zap, Settings, Wrench, Package, Truck, Users, Clock
 } from 'lucide-react';
+import API from '../config/api';
 
-const API_CLIENTES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/crm/clientes/';
-const API_COTIZACIONES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/crm/cotizaciones/';
+const API_CLIENTES = API.CRM.CLIENTES;
+const API_COTIZACIONES = API.CRM.COTIZACIONES;
 
 export default function CotizadorProfesional() {
     const navigate = useNavigate();

@@ -318,24 +318,17 @@ export default function Home() {
                 textAlign: 'center',
                 marginBottom: '3rem'
             }}>
-                <h1 style={{
-                    fontSize: '3.5rem',
-                    fontWeight: '800',
-                    color: 'white',
-                    margin: '0 0 1rem 0',
-                    textShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                    letterSpacing: '-0.02em'
-                }}>
-                    8AMPERIOS
-                </h1>
-                <p style={{
-                    fontSize: '1.3rem',
-                    color: 'rgba(255,255,255,0.9)',
-                    margin: 0,
-                    fontWeight: '300'
-                }}>
-                    Sistema ERP Moderno
-                </p>
+                <img
+                    src="/logo-8amperios-part2.svg"
+                    alt="8AMPERIOS - Conectamos Procesos"
+                    style={{
+                        maxWidth: '680px',
+                        width: '100%',
+                        height: 'auto',
+                        margin: '0 auto 1.5rem auto',
+                        display: 'block'
+                    }}
+                />
             </div>
 
             {/* Stats Cards */}

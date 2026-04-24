@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#33b4ff"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="40" fill="url(#grad1)"/>
+  <path d="M56 56L200 56L200 200L56 200L56 56Z" stroke="white" stroke-opacity="0.12" stroke-width="8"/>
+  <path d="M70 70L186 70L186 186L70 186L70 70Z" stroke="white" stroke-opacity="0.08" stroke-width="4"/>
+  <path d="M76 76L180 76L180 180L76 180L76 76Z" stroke="white" stroke-opacity="0.05" stroke-width="4"/>
+  <path d="M80 120C80 110.058 87.058 103 97 103H116C122.627 103 128 108.373 128 115C128 121.627 122.627 127 116 127H104V149H97C87.058 149 80 141.942 80 132V120Z" fill="url(#grad2)"/>
+  <path d="M144 103H166C176.942 103 184 110.058 184 120V132C184 141.942 176.942 149 166 149H144V136H166C169.314 136 172 133.314 172 130V122C172 118.686 169.314 116 166 116H144V103Z" fill="white"/>
+  <path d="M144 149V181H166C176.942 181 184 173.942 184 164V152C184 145.373 178.627 140 172 140H144Z" fill="white" opacity="0.85"/>
+  <text x="50%" y="224" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" font-weight="700" fill="white">ERP</text>
+</svg>
