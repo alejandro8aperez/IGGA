@@ -103,33 +103,46 @@ function Marketing() {
     if (error) return <div className="container"><div className="error"><AlertCircle size={20} />{error}</div></div>;
 
     return (
-        <div className="container">
-            <div className="header">
-                <h1><Megaphone size={32} /> Marketing y Ventas</h1>
+        <div className="container" style={{ 
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            minHeight: '100vh',
+            padding: '2rem'
+        }}>
+            <div className="header" style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '2rem',
+                marginBottom: '2rem',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+            }}>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a202c', margin: '0 0 0.5rem 0' }}>
+                    <Megaphone size={32} style={{ marginRight: '1rem', verticalAlign: 'middle' }} /> 
+                    Marketing y Ventas
+                </h1>
                 <button className="btn-primary" onClick={() => openCampModal()}>
                     <Plus size={20} /> Nueva Campaña
                 </button>
             </div>
 
-            <div className="stats-grid">
-                <div className="stat-card">
-                    <h3>Campañas Totales</h3>
-                    <p className="stat-number">{campanas.length}</p>
+            <div className="stats-grid" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                <div className="stat-card" style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flex: 1 }}>
+                    <h3 style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>Campañas Totales</h3>
+                    <p className="stat-number" style={{ fontSize: '2rem', fontWeight: 700, color: '#667eea', margin: 0 }}>{campanas.length}</p>
                 </div>
-                <div className="stat-card">
-                    <h3>Campañas Activas</h3>
-                    <p className="stat-number">{campanas.filter(c => c.estado === 'activa').length}</p>
+                <div className="stat-card" style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flex: 1 }}>
+                    <h3 style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>Campañas Activas</h3>
+                    <p className="stat-number" style={{ fontSize: '2rem', fontWeight: 700, color: '#48bb78', margin: 0 }}>{campanas.filter(c => c.estado === 'activa').length}</p>
                 </div>
-                <div className="stat-card">
-                    <h3>Leads Generados</h3>
-                    <p className="stat-number">{leads.length}</p>
+                <div className="stat-card" style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flex: 1 }}>
+                    <h3 style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>Leads Generados</h3>
+                    <p className="stat-number" style={{ fontSize: '2rem', fontWeight: 700, color: '#ed8936', margin: 0 }}>{leads.length}</p>
                 </div>
             </div>
 
-            <div className="section">
-                <h2>Campañas de Marketing</h2>
-                <div className="table-container">
-                    <table className="data-table">
+            <div className="section" style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '2rem' }}>
+                <h2 style={{ color: '#1a202c', fontSize: '1.5rem', fontWeight: 600, margin: '0 0 1.5rem 0' }}>Campañas de Marketing</h2>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
                                 <th>Nombre</th>
@@ -159,10 +172,10 @@ function Marketing() {
                 </div>
             </div>
 
-            <div className="section">
-                <h2>Leads Recientes</h2>
-                <div className="table-container">
-                    <table className="data-table">
+            <div className="section" style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <h2 style={{ color: '#1a202c', fontSize: '1.5rem', fontWeight: 600, margin: '0 0 1.5rem 0' }}>Leads Recientes</h2>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
                                 <th>Nombre</th>
