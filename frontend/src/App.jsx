@@ -44,6 +44,7 @@ const Facturacion          = lazy(() => import('./pages/Facturacion'));
 const Marketing            = lazy(() => import('./pages/Marketing'));
 const POS                  = lazy(() => import('./pages/POS'));
 const FormatosISO9001      = lazy(() => import('./pages/FormatosISO9001'));
+const FacturacionElectronica = lazy(() => import('./pages/FacturacionElectronica'));
 
 // ─── Estructura del sidebar ───────────────────────────────────────────────────
 const NAV_GROUPS = [
@@ -81,11 +82,12 @@ const NAV_GROUPS = [
     {
         grupo: 'Financiero',
         items: [
-            { path: '/facturacion',  name: 'Facturación',  icon: FileText },
-            { path: '/finanzas',     name: 'Finanzas',     icon: DollarSign },
-            { path: '/contabilidad', name: 'Contabilidad', icon: BookOpen },
-            { path: '/tesoreria',    name: 'Tesorería',    icon: Wallet },
-            { path: '/reportes',     name: 'Reportes',     icon: BarChart3 },
+            { path: '/facturacion',             name: 'Facturación',              icon: FileText },
+            { path: '/facturacion-electronica', name: 'Facturación Electrónica',  icon: FileText },
+            { path: '/finanzas',                name: 'Finanzas',                 icon: DollarSign },
+            { path: '/contabilidad',            name: 'Contabilidad',             icon: BookOpen },
+            { path: '/tesoreria',               name: 'Tesorería',                icon: Wallet },
+            { path: '/reportes',                name: 'Reportes',                 icon: BarChart3 },
         ]
     },
     {
@@ -387,9 +389,10 @@ function AppContent() {
                         <Route path="/tesoreria"     element={<P><Tesoreria/></P>}/>
                         <Route path="/facturacion"   element={<P><Facturacion/></P>}/>
                         <Route path="/marketing"     element={<P><Marketing/></P>}/>
-                        <Route path="/pos"           element={<P><POS/></P>}/>
-                        <Route path="/formatos-iso"  element={<P><FormatosISO9001/></P>}/>
-                        <Route path="*"              element={<NotFound/>}/>
+                        <Route path="/pos"                   element={<P><POS/></P>}/>
+                        <Route path="/facturacion-electronica" element={<P><FacturacionElectronica/></P>}/>
+                        <Route path="/formatos-iso"            element={<P><FormatosISO9001/></P>}/>
+                        <Route path="*"                        element={<NotFound/>}/>
                     </Routes>
                 </Suspense>
             </main>
