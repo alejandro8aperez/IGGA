@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
     LayoutDashboard, Target, Package, DollarSign, Activity, Users, Briefcase, 
@@ -10,6 +11,7 @@ import {
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const [data, setData] = useState({
         clientes: 0,
         productos: [],
@@ -793,7 +795,7 @@ export default function Dashboard() {
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <button
-                            onClick={() => window.location.href = '/crm'}
+                            onClick={() => navigate('/crm')}
                             style={{
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 color: 'white',
@@ -823,7 +825,7 @@ export default function Dashboard() {
                             CRM
                         </button>
                         <button
-                            onClick={() => window.location.href = '/ventas'}
+                            onClick={() => navigate('/ventas')}
                             style={{
                                 background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
                                 color: 'white',
@@ -853,7 +855,7 @@ export default function Dashboard() {
                             Ventas
                         </button>
                         <button
-                            onClick={() => window.location.href = '/inventario'}
+                            onClick={() => navigate('/inventario')}
                             style={{
                                 background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                                 color: 'white',
@@ -883,7 +885,7 @@ export default function Dashboard() {
                             Inventario
                         </button>
                         <button
-                            onClick={() => window.location.href = '/compras'}
+                            onClick={() => navigate('/compras')}
                             style={{
                                 background: 'linear-gradient(135deg, #38b2ac 0%, #319795 100%)',
                                 color: 'white',
