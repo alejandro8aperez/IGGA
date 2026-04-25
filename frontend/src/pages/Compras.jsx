@@ -11,6 +11,7 @@ const API_ORD = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + 
 const API_RECEPCION = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/recepciones/';
 const API_PAGO = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/pagos/';
 const API_PROD_PROV = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/productos-proveedor/';
+const API_PRODUCTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/inventarios/productos/';
 
 export default function Compras() {
     const [proveedores, setProveedores] = useState([]);
@@ -19,6 +20,7 @@ export default function Compras() {
     const [pagos, setPagos] = useState([]);
     const [productosProveedor, setProductosProveedor] = useState([]);
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState('');
+    const [productosDisponibles, setProductosDisponibles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('proveedores');
@@ -46,6 +48,19 @@ export default function Compras() {
         monto: '',
         metodo: 'transferencia',
         referencia: ''
+    });
+
+    // Modal Producto-Proveedor
+    const [isProdProvModalOpen, setIsProdProvModalOpen] = useState(false);
+    const [currentProdProv, setCurrentProdProv] = useState(null);
+    const [prodProvForm, setProdProvForm] = useState({
+        producto: '',
+        proveedor: '',
+        codigo_proveedor: '',
+        precio_proveedor: '',
+        tiempo_entrega_dias: 7,
+        es_proveedor_principal: false,
+        notas: ''
     });
 
     useEffect(() => {
@@ -182,6 +197,78 @@ export default function Compras() {
         } catch (err) {
             console.error('Error al registrar pago:', err);
             setError(err.response?.data?.error || 'Error al registrar pago');
+        }
+    };
+
+    // Funciones Producto-Proveedor
+    const openProdProvModal = async (pp = null) => {
+        // Cargar productos disponibles
+        try {
+            const res = await axios.get(API_PRODUCTOS);
+            setProductosDisponibles(res.data);
+        } catch (err) {
+            console.error('Error cargando productos:', err);
+        }
+
+        if (pp) {
+            setCurrentProdProv(pp);
+            setProdProvForm({
+                producto: pp.producto,
+                proveedor: pp.proveedor,
+                codigo_proveedor: pp.codigo_proveedor || '',
+                precio_proveedor: pp.precio_proveedor || '',
+                tiempo_entrega_dias: pp.tiempo_entrega_dias || 7,
+                es_proveedor_principal: pp.es_proveedor_principal || false,
+                notas: pp.notas || ''
+            });
+        } else {
+            setCurrentProdProv(null);
+            setProdProvForm({
+                producto: '',
+                proveedor: proveedorSeleccionado,
+                codigo_proveedor: '',
+                precio_proveedor: '',
+                tiempo_entrega_dias: 7,
+                es_proveedor_principal: false,
+                notas: ''
+            });
+        }
+        setIsProdProvModalOpen(true);
+    };
+
+    const handleProdProvSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const data = {
+                ...prodProvForm,
+                producto: Number(prodProvForm.producto),
+                proveedor: Number(prodProvForm.proveedor),
+                precio_proveedor: prodProvForm.precio_proveedor ? Number(prodProvForm.precio_proveedor) : null,
+                tiempo_entrega_dias: Number(prodProvForm.tiempo_entrega_dias)
+            };
+
+            if (currentProdProv) {
+                await axios.put(`${API_PROD_PROV}${currentProdProv.id}/`, data);
+            } else {
+                await axios.post(API_PROD_PROV, data);
+            }
+            setIsProdProvModalOpen(false);
+            fetchProductosPorProveedor();
+        } catch (err) {
+            console.error('Error al guardar producto-proveedor:', err);
+            setError(err.response?.data?.detail || 'Error al guardar relación producto-proveedor');
+        }
+    };
+
+    const handleProdProvDelete = async (id) => {
+        if (window.confirm('¿Eliminar este producto del proveedor?')) {
+            try {
+                await axios.delete(`${API_PROD_PROV}${id}/`);
+                fetchProductosPorProveedor();
+            } catch (err) {
+                console.error('Error al eliminar producto-proveedor:', err);
+                setError('Error al eliminar relación');
+            }
         }
     };
 
@@ -1640,6 +1727,27 @@ export default function Compras() {
                                     </option>
                                 ))}
                             </select>
+                            {proveedorSeleccionado && (
+                                <button
+                                    onClick={() => openProdProvModal()}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '10px',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    <Plus size={18} />
+                                    Agregar Producto
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -1661,6 +1769,7 @@ export default function Compras() {
                                             <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Precio Proveedor</th>
                                             <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Entrega (días)</th>
                                             <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Principal</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1707,11 +1816,42 @@ export default function Compras() {
                                                             </span>
                                                         )}
                                                     </td>
+                                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                        <button
+                                                            onClick={() => openProdProvModal(pp)}
+                                                            style={{
+                                                                background: 'transparent',
+                                                                border: 'none',
+                                                                cursor: 'pointer',
+                                                                padding: '0.5rem',
+                                                                borderRadius: '6px',
+                                                                color: '#667eea',
+                                                                marginRight: '0.5rem'
+                                                            }}
+                                                            title="Editar"
+                                                        >
+                                                            <Edit3 size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleProdProvDelete(pp.id)}
+                                                            style={{
+                                                                background: 'transparent',
+                                                                border: 'none',
+                                                                cursor: 'pointer',
+                                                                padding: '0.5rem',
+                                                                borderRadius: '6px',
+                                                                color: '#ef4444'
+                                                            }}
+                                                            title="Eliminar"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#718096' }}>
+                                                <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: '#718096' }}>
                                                     No hay productos registrados para este proveedor.
                                                     <br />
                                                     <span style={{ fontSize: '0.875rem' }}>
@@ -1865,6 +2005,166 @@ export default function Compras() {
                                     style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)' }}
                                 >
                                     Guardar Pago
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Producto-Proveedor */}
+            {isProdProvModalOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '16px',
+                        padding: '2rem',
+                        width: '90%',
+                        maxWidth: '600px',
+                        maxHeight: '90vh',
+                        overflow: 'auto',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, color: '#1a202c', fontSize: '1.25rem', fontWeight: '600' }}>
+                                {currentProdProv ? 'Editar Producto del Proveedor' : 'Agregar Producto al Proveedor'}
+                            </h3>
+                            <button
+                                onClick={() => setIsProdProvModalOpen(false)}
+                                style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleProdProvSubmit}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                        Proveedor *
+                                    </label>
+                                    <select
+                                        value={prodProvForm.proveedor}
+                                        onChange={(e) => setProdProvForm({...prodProvForm, proveedor: e.target.value})}
+                                        required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none', background: 'white' }}
+                                    >
+                                        <option value="">Seleccione un proveedor...</option>
+                                        {proveedores.map((prov) => (
+                                            <option key={prov.id} value={prov.id}>
+                                                {prov.razon_social} ({prov.nit})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                        Producto *
+                                    </label>
+                                    <select
+                                        value={prodProvForm.producto}
+                                        onChange={(e) => setProdProvForm({...prodProvForm, producto: e.target.value})}
+                                        required
+                                        disabled={currentProdProv}
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none', background: 'white' }}
+                                    >
+                                        <option value="">Seleccione un producto...</option>
+                                        {productosDisponibles.map((prod) => (
+                                            <option key={prod.id} value={prod.id}>
+                                                [{prod.codigo_sku}] {prod.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                            Código Proveedor
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={prodProvForm.codigo_proveedor}
+                                            onChange={(e) => setProdProvForm({...prodProvForm, codigo_proveedor: e.target.value})}
+                                            placeholder="Código usado por el proveedor"
+                                            style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                            Precio Proveedor
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={prodProvForm.precio_proveedor}
+                                            onChange={(e) => setProdProvForm({...prodProvForm, precio_proveedor: e.target.value})}
+                                            placeholder="0.00"
+                                            style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                            Tiempo de Entrega (días)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={prodProvForm.tiempo_entrega_dias}
+                                            onChange={(e) => setProdProvForm({...prodProvForm, tiempo_entrega_dias: e.target.value})}
+                                            min="1"
+                                            style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '2rem' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="es_principal"
+                                            checked={prodProvForm.es_proveedor_principal}
+                                            onChange={(e) => setProdProvForm({...prodProvForm, es_proveedor_principal: e.target.checked})}
+                                            style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                        />
+                                        <label htmlFor="es_principal" style={{ fontWeight: '600', color: '#2d3748', cursor: 'pointer' }}>
+                                            Proveedor Principal
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
+                                        Notas
+                                    </label>
+                                    <textarea
+                                        value={prodProvForm.notas}
+                                        onChange={(e) => setProdProvForm({...prodProvForm, notas: e.target.value})}
+                                        placeholder="Notas adicionales..."
+                                        rows="3"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '1rem', outline: 'none', resize: 'vertical' }}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsProdProvModalOpen(false)}
+                                    style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)' }}
+                                >
+                                    {currentProdProv ? 'Actualizar' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
