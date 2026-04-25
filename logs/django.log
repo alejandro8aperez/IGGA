@@ -638,3 +638,59 @@ INFO 2026-04-25 16:22:16,724 autoreload 23504 15276 C:\Postgres\ERP-8AMPERIOS\er
 INFO 2026-04-25 16:22:18,735 autoreload 8644 25908 Watching for file changes with StatReloader
 INFO 2026-04-25 16:22:28,420 autoreload 8644 25908 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
 INFO 2026-04-25 16:22:29,779 autoreload 7080 9752 Watching for file changes with StatReloader
+INFO 2026-04-25 16:30:55,001 autoreload 1124 5604 Watching for file changes with StatReloader
+INFO 2026-04-25 16:31:46,908 autoreload 24608 23700 Watching for file changes with StatReloader
+INFO 2026-04-25 16:32:06,255 basehttp 24608 24924 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-04-25 16:32:06,387 basehttp 24608 24924 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:32:06,440 basehttp 24608 24964 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:33:49,655 autoreload 24608 23700 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-04-25 16:33:51,715 autoreload 12672 23612 Watching for file changes with StatReloader
+INFO 2026-04-25 16:39:10,417 autoreload 12672 23612 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-04-25 16:39:12,560 autoreload 4456 2168 Watching for file changes with StatReloader
+INFO 2026-04-25 16:39:18,174 autoreload 4456 2168 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-04-25 16:39:19,930 autoreload 14272 22072 Watching for file changes with StatReloader
+INFO 2026-04-25 17:07:49,899 autoreload 14272 22072 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-04-25 17:07:52,910 autoreload 9796 5612 Watching for file changes with StatReloader
+INFO 2026-04-25 17:10:12,323 autoreload 23692 16036 Watching for file changes with StatReloader
+INFO 2026-04-25 17:11:11,378 basehttp 23692 25556 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-04-25 17:11:11,535 basehttp 23692 25556 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:11,597 basehttp 23692 20096 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:30,889 basehttp 23692 20096 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:30,899 basehttp 23692 25556 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:32,236 basehttp 23692 25556 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:32,245 basehttp 23692 20096 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:32,531 basehttp 23692 20096 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:32,556 basehttp 23692 20096 "GET /api/ventas/pedidos/ HTTP/1.1" 200 2
+INFO 2026-04-25 17:11:32,566 basehttp 23692 25556 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2637
+INFO 2026-04-25 17:11:32,579 basehttp 23692 20096 "GET /api/ventas/facturas/ HTTP/1.1" 200 2
+INFO 2026-04-25 17:11:32,597 basehttp 23692 25556 "GET /api/compras/proveedores/ HTTP/1.1" 200 407
+INFO 2026-04-25 17:11:32,611 basehttp 23692 25556 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-04-25 17:11:32,620 basehttp 23692 20096 "GET /api/compras/ordenes/ HTTP/1.1" 200 282
+INFO 2026-04-25 17:11:32,629 basehttp 23692 20096 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 17:11:32,644 basehttp 23692 25556 "GET /api/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-04-25 17:11:32,652 basehttp 23692 25556 "GET /api/ventas/pedidos/ HTTP/1.1" 200 2
+INFO 2026-04-25 17:11:32,666 basehttp 23692 20096 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 17:11:32,670 basehttp 23692 25556 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2637
+INFO 2026-04-25 17:11:32,671 basehttp 23692 20096 "GET /api/ventas/facturas/ HTTP/1.1" 200 2
+INFO 2026-04-25 17:11:32,679 basehttp 23692 25556 "GET /api/compras/proveedores/ HTTP/1.1" 200 407
+INFO 2026-04-25 17:11:32,681 basehttp 23692 20096 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-04-25 17:11:32,702 basehttp 23692 25556 "GET /api/compras/ordenes/ HTTP/1.1" 200 282
+INFO 2026-04-25 17:11:32,714 basehttp 23692 20096 "GET /api/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-04-25 17:11:32,733 basehttp 23692 25556 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 17:14:10,629 basehttp 23692 11696 "GET /api/list-models/ HTTP/1.1" 200 11915
+INFO 2026-04-25 17:14:17,982 basehttp 23692 11696 "OPTIONS /api/export-data/ HTTP/1.1" 200 0
+INFO 2026-04-25 17:14:18,144 basehttp 23692 11696 "POST /api/export-data/ HTTP/1.1" 200 1438
+INFO 2026-04-25 17:37:39,274 autoreload 23692 16036 C:\Postgres\ERP-8AMPERIOS\operaciones\models.py changed, reloading.
+INFO 2026-04-25 17:37:42,812 autoreload 5900 12276 Watching for file changes with StatReloader
+INFO 2026-04-25 17:37:51,940 autoreload 5900 12276 C:\Postgres\ERP-8AMPERIOS\operaciones\serializers.py changed, reloading.
+INFO 2026-04-25 17:37:53,394 autoreload 21188 28088 Watching for file changes with StatReloader
+INFO 2026-04-25 17:37:57,224 autoreload 21188 28088 C:\Postgres\ERP-8AMPERIOS\operaciones\serializers.py changed, reloading.
+INFO 2026-04-25 17:37:58,685 autoreload 27128 27380 Watching for file changes with StatReloader
+INFO 2026-04-25 17:38:02,713 autoreload 27128 27380 C:\Postgres\ERP-8AMPERIOS\operaciones\views.py changed, reloading.
+INFO 2026-04-25 17:38:04,075 autoreload 18796 26680 Watching for file changes with StatReloader
+INFO 2026-04-25 17:38:08,250 autoreload 18796 26680 C:\Postgres\ERP-8AMPERIOS\operaciones\views.py changed, reloading.
+INFO 2026-04-25 17:38:10,085 autoreload 10412 27792 Watching for file changes with StatReloader
+INFO 2026-04-25 17:38:15,350 autoreload 10412 27792 C:\Postgres\ERP-8AMPERIOS\operaciones\urls.py changed, reloading.
+INFO 2026-04-25 17:38:16,942 autoreload 25620 19380 Watching for file changes with StatReloader
+INFO 2026-04-25 17:38:20,664 autoreload 25620 19380 C:\Postgres\ERP-8AMPERIOS\operaciones\urls.py changed, reloading.
+INFO 2026-04-25 17:38:22,057 autoreload 21452 21344 Watching for file changes with StatReloader

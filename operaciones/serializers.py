@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Proyecto, Tarea
+from .models import Proyecto, Tarea, InformeDiarioProy
 from crm.models import Cliente
 
 class ProyectoSerializer(serializers.ModelSerializer):
@@ -14,4 +14,12 @@ class TareaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tarea
+        fields = '__all__'
+
+
+class InformeDiarioProySerializer(serializers.ModelSerializer):
+    creado_por_nombre = serializers.CharField(source='creado_por.username', read_only=True)
+    
+    class Meta:
+        model = InformeDiarioProy
         fields = '__all__'

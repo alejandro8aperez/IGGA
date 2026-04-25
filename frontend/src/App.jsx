@@ -45,6 +45,7 @@ const Marketing            = lazy(() => import('./pages/Marketing'));
 const POS                  = lazy(() => import('./pages/POS'));
 const FormatosISO9001      = lazy(() => import('./pages/FormatosISO9001'));
 const FacturacionElectronica = lazy(() => import('./pages/FacturacionElectronica'));
+const Informediarioproy     = lazy(() => import('./pages/Informediarioproy'));
 
 // ─── Estructura del sidebar ───────────────────────────────────────────────────
 const NAV_GROUPS = [
@@ -75,6 +76,7 @@ const NAV_GROUPS = [
             { path: '/compras',       name: 'Compras',       icon: ShoppingCart },
             { path: '/logistica',     name: 'Logística',     icon: Truck },
             { path: '/operaciones',   name: 'Operaciones',   icon: ClipboardList },
+            { path: '/informe-diario-proy', name: 'Informe Diario Proy', icon: FileText },
             { path: '/mantenimiento', name: 'Mantenimiento', icon: Wrench },
             { path: '/activos',       name: 'Activos',       icon: MapPin },
         ]
@@ -379,6 +381,7 @@ function AppContent() {
                         <Route path="/logistica"     element={<P><Logistica_Moderno/></P>}/>
                         <Route path="/activos"       element={<P><Activos/></P>}/>
                         <Route path="/operaciones"   element={<P><Operaciones/></P>}/>
+                        <Route path="/informe-diario-proy" element={<P><Informediarioproy/></P>}/>
                         <Route path="/mantenimiento" element={<P><Mantenimiento/></P>}/>
                         <Route path="/finanzas"      element={<P><Finanzas_Moderno/></P>}/>
                         <Route path="/produccion"    element={<P><Produccion/></P>}/>

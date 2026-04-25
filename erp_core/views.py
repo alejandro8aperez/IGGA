@@ -52,6 +52,49 @@ def create_initial_superuser(request):
             'error': str(e)
         }, status=500)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_credentials(request):
+    """
+    Endpoint para verificar credenciales de usuario.
+    """
+    try:
+        from django.contrib.auth import authenticate
+        
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        if not username or not password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Se requiere username y password'
+            }, status=400)
+        
+        user = authenticate(username=username, password=password)
+        
+        if user:
+            return JsonResponse({
+                'success': True,
+                'message': 'Credenciales válidas',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'is_superuser': user.is_superuser
+                }
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Credenciales inválidas'
+            }, status=401)
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
