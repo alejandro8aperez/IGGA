@@ -190,7 +190,9 @@ body {
   color: var(--text-main);
 }
 
-/* Override para botones X de modals - MÁS ESPECÍFICO! */
+/* Override para botones X de modals - MÁS ESPECÍFICO! 
+   COMENTADO: Estos estilos podrían estar causando bloqueos
+*//*
 .modal-overlay .btn-ghost,
 .modal .btn-ghost,
 .modal-content .btn-ghost,
@@ -226,8 +228,11 @@ body {
   transform: scale(1.1) !important;
   box-shadow: 0 6px 8px rgba(239, 68, 68, 0.4) !important;
 }
+*/
 
-/* Clase específica para botones X de modals - SOLUCIÓN RADICAL ANTI-PARPADEO */
+/* Clase específica para botones X de modals - SOLUCIÓN RADICAL ANTI-PARPADEO 
+   COMENTADO: Estos estilos estaban bloqueando la interfaz
+*//*
 .modal-close-btn {
   position: absolute !important;
   top: 0.5rem !important;
@@ -259,8 +264,11 @@ body {
   text-align: center !important;
   line-height: 60px !important;
 }
+*/
 
-/* ANTI-PARPADEO: Bloquear TODAS las transiciones */
+/* ANTI-PARPADEO: Bloquear TODAS las transiciones 
+   COMENTADO: Estos estilos estaban bloqueando la interfaz
+*//*
 .modal-close-btn *,
 .modal-close-btn:before,
 .modal-close-btn:after,
@@ -281,6 +289,7 @@ body {
   width: 60px !important;
   height: 60px !important;
 }
+*/
 
 /* Override universal para TODOS los botones X - ANTI-PARPADEO TOTAL 
    COMENTADO: Estos estilos estaban bloqueando la interfaz completa
