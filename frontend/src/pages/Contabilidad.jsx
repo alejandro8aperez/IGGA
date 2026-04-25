@@ -53,6 +53,7 @@ function Contabilidad() {
     const [activeTab, setActiveTab] = useState('cuentas');
     const [cuentas, setCuentas] = useState([]);
     const [asientos, setAsientos] = useState([]);
+    const [estadoResultados, setEstadoResultados] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -60,8 +61,11 @@ function Contabilidad() {
     const [isCuentaModalOpen, setIsCuentaModalOpen] = useState(false);
     const [currentCuenta, setCurrentCuenta] = useState(null);
     const [cuentaForm, setCuentaForm] = useState({ codigo: '', nombre: '', tipo: 'activo', nivel: 1, padre: null });
+    const [fechaInicio, setFechaInicio] = useState('');
+    const [fechaFin, setFechaFin] = useState('');
 
     useEffect(() => { fetchData(); }, []);
+    useEffect(() => { if (activeTab === 'estado') fetchEstadoResultados(); }, [activeTab]);
 
     const fetchData = async () => {
         try {
@@ -72,6 +76,18 @@ function Contabilidad() {
         } catch (err) {
             setError('Error al cargar datos de Contabilidad.');
             setLoading(false);
+        }
+    };
+
+    const fetchEstadoResultados = async () => {
+        try {
+            const params = {};
+            if (fechaInicio) params.fecha_inicio = fechaInicio;
+            if (fechaFin) params.fecha_fin = fechaFin;
+            const res = await axios.get(`${API_ASIENTOS}estado-resultados/`, { params });
+            setEstadoResultados(res.data.estado_resultados);
+        } catch (err) {
+            console.error('Error al cargar estado de resultados:', err);
         }
     };
 
@@ -121,6 +137,7 @@ function Contabilidad() {
             <div style={styles.tabs}>
                 <button style={styles.tab(activeTab === 'cuentas')} onClick={() => setActiveTab('cuentas')}><BookOpen size={16} style={{ marginRight: '0.5rem' }} />Plan de Cuentas</button>
                 <button style={styles.tab(activeTab === 'asientos')} onClick={() => setActiveTab('asientos')}><FileText size={16} style={{ marginRight: '0.5rem' }} />Asientos Contables</button>
+                <button style={styles.tab(activeTab === 'estado')} onClick={() => setActiveTab('estado')}><ArrowUpCircle size={16} style={{ marginRight: '0.5rem' }} />Pérdidas y Ganancias</button>
             </div>
             {activeTab === 'cuentas' && (
                 <div style={styles.searchFilter}>
@@ -166,6 +183,73 @@ function Contabilidad() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+            {activeTab === 'estado' && (
+                <div style={styles.card}>
+                    <div style={styles.cardHeader}>
+                        <div style={styles.cardTitle}><ArrowUpCircle size={20} color='#f59e0b' />Estado de Resultados (Pérdidas y Ganancias)</div>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            <input type='date' value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} style={{...styles.formInput, width: 'auto'}} placeholder='Fecha Inicio' />
+                            <input type='date' value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} style={{...styles.formInput, width: 'auto'}} placeholder='Fecha Fin' />
+                            <button style={styles.btnPrimary} onClick={fetchEstadoResultados}><Search size={16} /> Consultar</button>
+                        </div>
+                    </div>
+                    {estadoResultados ? (
+                        <div style={{ padding: '1.5rem' }}>
+                            {/* Ingresos */}
+                            <div style={{ marginBottom: '2rem' }}>
+                                <h3 style={{ color: '#166534', fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #dcfce7' }}>INGRESOS</h3>
+                                <table style={{...styles.table, marginBottom: '1rem'}}>
+                                    <tbody>
+                                        {estadoResultados.ingresos.map(ing => (
+                                            <tr key={ing.id}>
+                                                <td style={{...styles.td, width: '70%'}}>{ing.codigo} - {ing.nombre}</td>
+                                                <td style={{...styles.td, textAlign: 'right', fontWeight: 600, color: '#166534'}}>${ing.saldo.toLocaleString('es-CO')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div style={{ textAlign: 'right', padding: '1rem', background: '#f0fdf4', borderRadius: '8px' }}>
+                                    <span style={{ fontWeight: 600, color: '#166534' }}>Total Ingresos: ${estadoResultados.total_ingresos.toLocaleString('es-CO')}</span>
+                                </div>
+                            </div>
+
+                            {/* Gastos */}
+                            <div style={{ marginBottom: '2rem' }}>
+                                <h3 style={{ color: '#991b1b', fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #fecaca' }}>GASTOS</h3>
+                                <table style={{...styles.table, marginBottom: '1rem'}}>
+                                    <tbody>
+                                        {estadoResultados.gastos.map(gas => (
+                                            <tr key={gas.id}>
+                                                <td style={{...styles.td, width: '70%'}}>{gas.codigo} - {gas.nombre}</td>
+                                                <td style={{...styles.td, textAlign: 'right', fontWeight: 600, color: '#991b1b'}}>${gas.saldo.toLocaleString('es-CO')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div style={{ textAlign: 'right', padding: '1rem', background: '#fef2f2', borderRadius: '8px' }}>
+                                    <span style={{ fontWeight: 600, color: '#991b1b' }}>Total Gastos: ${estadoResultados.total_gastos.toLocaleString('es-CO')}</span>
+                                </div>
+                            </div>
+
+                            {/* Utilidad Neta */}
+                            <div style={{ padding: '1.5rem', borderRadius: '12px', background: estadoResultados.utilidad_neta >= 0 ? '#f0fdf4' : '#fef2f2', border: `2px solid ${estadoResultados.utilidad_neta >= 0 ? '#22c55e' : '#ef4444'}` }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: estadoResultados.utilidad_neta >= 0 ? '#166534' : '#991b1b' }}>
+                                        {estadoResultados.utilidad_neta >= 0 ? 'UTILIDAD NETA' : 'PÉRDIDA NETA'}
+                                    </span>
+                                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: estadoResultados.utilidad_neta >= 0 ? '#166534' : '#991b1b' }}>
+                                        ${Math.abs(estadoResultados.utilidad_neta).toLocaleString('es-CO')}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                            Seleccione fechas y haga clic en Consultar para ver el reporte
+                        </div>
+                    )}
                 </div>
             )}
             {isCuentaModalOpen && (
