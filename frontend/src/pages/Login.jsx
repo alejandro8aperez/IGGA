@@ -5,7 +5,7 @@ import AuthContext from '../context/AuthContext';
 import { Lock, User, Building2, Eye, EyeOff, AlertCircle, Loader } from 'lucide-react';
 
 // URL del endpoint de autenticación
-const AUTH_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/auth/token/';
+const AUTH_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/token/';
 
 const Login = () => {
     const { loginUser } = useContext(AuthContext);

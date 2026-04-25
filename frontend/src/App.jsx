@@ -139,7 +139,7 @@ function NotFound() {
 // ─── Sidebar group ────────────────────────────────────────────────────────────
 function SidebarGroup({ grupo, items, isCollapsed, currentPath, onClose }) {
     const hasActive = items.some(i => i.path === currentPath);
-    const [open, setOpen] = useState(hasActive || grupo === 'Principal');
+    const [open, setOpen] = useState(true);  // Siempre abierto por defecto
 
     return (
         <div style={{ marginBottom:'2px' }}>

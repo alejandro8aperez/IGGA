@@ -25,8 +25,8 @@ export const API = {
 
     // ── Autenticación ──────────────────────────────────────────────────────────
     AUTH: {
-        LOGIN:          `${B}/auth/token/`,
-        REFRESH:        `${B}/auth/token/refresh/`,
+        LOGIN:          `${B}/token/`,
+        REFRESH:        `${B}/token/refresh/`,
         LOGOUT:         `${B}/auth/logout/`,
         ME:             `${B}/auth/me/`,
         USUARIOS:       `${B}/auth/usuarios/`,
