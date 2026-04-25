@@ -17,28 +17,28 @@ def ping(request):
 def create_initial_superuser(request):
     """
     Endpoint temporal para crear superusuario inicial en la nube.
-    Solo funciona si no hay usuarios en la base de datos.
+    Crea o actualiza el usuario admin.
     """
     try:
-        # Verificar si ya hay usuarios
-        if User.objects.filter(is_superuser=True).exists():
-            return JsonResponse({
-                'success': False,
-                'error': 'Ya existe un superusuario. Endpoint desactivado.'
-            }, status=403)
-        
-        # Crear superusuario
-        user = User.objects.create_superuser(
+        # Crear o actualizar superusuario
+        user, created = User.objects.update_or_create(
             username='admin',
-            email='admin@8amperios.com',
-            password='admin123',
-            first_name='Administrador',
-            last_name='ERP'
+            defaults={
+                'email': 'admin@8amperios.com',
+                'is_superuser': True,
+                'is_staff': True,
+                'first_name': 'Administrador',
+                'last_name': 'ERP'
+            }
         )
+        
+        # Siempre actualizar la contraseña
+        user.set_password('admin123')
+        user.save()
         
         return JsonResponse({
             'success': True,
-            'message': 'Superusuario creado exitosamente',
+            'message': f"Superusuario {'creado' if created else 'actualizado'} exitosamente",
             'user': {
                 'id': user.id,
                 'username': user.username,
