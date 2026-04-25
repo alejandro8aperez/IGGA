@@ -567,3 +567,74 @@ INFO 2026-04-25 16:11:58,106 autoreload 19936 19824 C:\Postgres\ERP-8AMPERIOS\er
 INFO 2026-04-25 16:12:01,994 autoreload 23276 8664 Watching for file changes with StatReloader
 INFO 2026-04-25 16:12:11,829 autoreload 23276 8664 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
 INFO 2026-04-25 16:12:13,588 autoreload 10812 21308 Watching for file changes with StatReloader
+INFO 2026-04-25 16:17:50,925 basehttp 10812 12968 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,925 basehttp 10812 15868 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,932 basehttp 10812 12968 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,933 basehttp 10812 15868 "OPTIONS /api/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,935 basehttp 10812 5528 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,937 basehttp 10812 23132 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,938 basehttp 10812 16036 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,938 basehttp 10812 12968 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,943 basehttp 10812 23132 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,944 basehttp 10812 16036 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,944 basehttp 10812 5528 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,944 basehttp 10812 12968 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,949 basehttp 10812 16036 "OPTIONS /api/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-04-25 16:17:50,949 basehttp 10812 23132 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+WARNING 2026-04-25 16:17:51,076 log 10812 18720 Unauthorized: /api/crm/clientes/
+WARNING 2026-04-25 16:17:51,076 log 10812 23132 Unauthorized: /api/kave/disenos/
+WARNING 2026-04-25 16:17:51,076 log 10812 12968 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-04-25 16:17:51,076 log 10812 5528 Unauthorized: /api/crm/cotizaciones/
+WARNING 2026-04-25 16:17:51,076 log 10812 15868 Unauthorized: /api/inventarios/productos/
+WARNING 2026-04-25 16:17:51,076 log 10812 16036 Unauthorized: /api/operaciones/proyectos/
+WARNING 2026-04-25 16:17:51,078 basehttp 10812 18720 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,078 basehttp 10812 12968 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,079 basehttp 10812 15868 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,079 basehttp 10812 23132 "GET /api/kave/disenos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,079 basehttp 10812 5528 "GET /api/crm/cotizaciones/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,081 log 10812 18720 Unauthorized: /api/ventas/facturas/
+WARNING 2026-04-25 16:17:51,084 log 10812 12968 Unauthorized: /api/compras/ordenes/
+WARNING 2026-04-25 16:17:51,084 basehttp 10812 16036 "GET /api/operaciones/proyectos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,087 log 10812 15868 Unauthorized: /api/compras/proveedores/
+WARNING 2026-04-25 16:17:51,089 log 10812 23132 Unauthorized: /api/crm/clientes/
+WARNING 2026-04-25 16:17:51,090 log 10812 5528 Unauthorized: /api/inventarios/productos/
+WARNING 2026-04-25 16:17:51,093 log 10812 16036 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-04-25 16:17:51,095 basehttp 10812 18720 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,095 basehttp 10812 12968 "GET /api/compras/ordenes/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,096 basehttp 10812 15868 "GET /api/compras/proveedores/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,096 basehttp 10812 23132 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,097 basehttp 10812 16036 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,097 basehttp 10812 5528 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,127 log 10812 18720 Unauthorized: /api/kave/disenos/
+WARNING 2026-04-25 16:17:51,129 log 10812 12968 Unauthorized: /api/crm/cotizaciones/
+WARNING 2026-04-25 16:17:51,131 log 10812 15868 Unauthorized: /api/operaciones/proyectos/
+WARNING 2026-04-25 16:17:51,133 log 10812 23132 Unauthorized: /api/ventas/facturas/
+WARNING 2026-04-25 16:17:51,134 log 10812 16036 Unauthorized: /api/compras/ordenes/
+WARNING 2026-04-25 16:17:51,136 log 10812 5528 Unauthorized: /api/compras/proveedores/
+WARNING 2026-04-25 16:17:51,137 basehttp 10812 18720 "GET /api/kave/disenos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,137 basehttp 10812 12968 "GET /api/crm/cotizaciones/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,137 basehttp 10812 15868 "GET /api/operaciones/proyectos/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,139 basehttp 10812 16036 "GET /api/compras/ordenes/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,139 basehttp 10812 23132 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-04-25 16:17:51,141 basehttp 10812 5528 "GET /api/compras/proveedores/ HTTP/1.1" 401 172
+INFO 2026-04-25 16:18:05,367 basehttp 10812 5528 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-04-25 16:18:05,773 basehttp 10812 5528 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:05,827 basehttp 10812 16036 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:05,839 basehttp 10812 23132 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 16:18:05,869 basehttp 10812 16036 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 16:18:12,599 basehttp 10812 16036 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:12,611 basehttp 10812 5528 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:12,633 basehttp 10812 23132 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 16:18:12,666 basehttp 10812 5528 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 16:18:14,353 basehttp 10812 5528 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:14,366 basehttp 10812 16036 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:14,388 basehttp 10812 23132 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 16:18:14,426 basehttp 10812 16036 "GET /api/inventarios/productos/ HTTP/1.1" 200 3611
+INFO 2026-04-25 16:18:14,664 basehttp 10812 16036 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:18:14,671 basehttp 10812 23132 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-04-25 16:22:05,114 autoreload 10812 21308 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-04-25 16:22:07,346 autoreload 23504 15276 Watching for file changes with StatReloader
+INFO 2026-04-25 16:22:16,724 autoreload 23504 15276 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-04-25 16:22:18,735 autoreload 8644 25908 Watching for file changes with StatReloader
+INFO 2026-04-25 16:22:28,420 autoreload 8644 25908 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-04-25 16:22:29,779 autoreload 7080 9752 Watching for file changes with StatReloader

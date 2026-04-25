@@ -21,7 +21,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, ping
+from .views import UserViewSet, ping, create_initial_superuser
 from .views_import import import_data_api, export_data_api, list_models
 
 router = DefaultRouter()
@@ -65,5 +65,6 @@ urlpatterns = [
     path('api/import-data/', import_data_api, name='import_data'),
     path('api/export-data/', export_data_api, name='export_data'),
     path('api/list-models/', list_models, name='list_models'),
+    path('api/setup-superuser/', create_initial_superuser, name='create_initial_superuser'),
     path('api/', include(router.urls)),
 ]
