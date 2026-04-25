@@ -12,3 +12,9 @@ whitenoise==6.12.0
 dj-database-url==3.1.2
 reportlab==4.4.10
 python-docx==1.2.0
+
+# Integración Facturatech Web Service SOAP
+zeep==4.2.1
+lxml==5.3.0
+cryptography==44.0.0
+requests==2.32.3
