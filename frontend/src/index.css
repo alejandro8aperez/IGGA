@@ -282,7 +282,9 @@ body {
   height: 60px !important;
 }
 
-/* Override universal para TODOS los botones X - ANTI-PARPADEO TOTAL */
+/* Override universal para TODOS los botones X - ANTI-PARPADEO TOTAL 
+   COMENTADO: Estos estilos estaban bloqueando la interfaz completa
+*//*
 .btn-ghost[style*="position: absolute"],
 button[style*="position: absolute"],
 .modal-overlay button[style*="position: absolute"],
@@ -317,8 +319,11 @@ button[style*="position: absolute"],
   text-align: center !important;
   line-height: 60px !important;
 }
+*/
 
-/* ANTI-PARPADEO: Bloquear hover effects */
+/* ANTI-PARPADEO: Bloquear hover effects 
+   COMENTADO: Estos estilos estaban bloqueando la interfaz
+*//*
 .btn-ghost[style*="position: absolute"]:hover,
 button[style*="position: absolute"]:hover,
 .modal-overlay button[style*="position: absolute"]:hover,
@@ -334,6 +339,7 @@ button[style*="position: absolute"]:hover,
   animation: none !important;
   box-shadow: 0 8px 16px rgba(255, 0, 0, 0.8) !important;
 }
+*/
 
 /* DEBUG: Forzar botones X en cualquier modal - ANTI-PARPADEO 
    COMENTADO: Estos estilos eran demasiado agresivos y podían bloquear la interfaz
