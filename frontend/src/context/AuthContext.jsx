@@ -2,14 +2,38 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
-export function useAuth() {
-    const ctx = useContext(AuthContext);
-    if (!ctx) {
-        throw new Error('useAuth debe usarse dentro de AuthProvider');
-    }
-    return ctx;
-}
+// =============================================================================
+// Permisos por rol — qué módulos puede ver cada cargo
+// =============================================================================
+export const PERMISOS_ROL = {
+    Administrador: '*', // acceso total
+    Gerente:       ['dashboard', 'crm', 'ventas', 'compras', 'finanzas', 'contabilidad',
+                    'tesoreria', 'rrhh', 'reportes', 'operaciones', 'produccion',
+                    'inventario', 'logistica', 'activos', 'kave', 'multi-empresa'],
+    Contador:      ['dashboard', 'contabilidad', 'finanzas', 'tesoreria', 'facturacion',
+                    'reportes', 'compras'],
+    'Jefe Producción': ['dashboard', 'produccion', 'mrp', 'inventario', 'compras',
+                        'operaciones', 'mantenimiento', 'calidad'],
+    Vendedor:      ['dashboard', 'crm', 'ventas', 'facturacion', 'inventario', 'cotizador'],
+    Comprador:     ['dashboard', 'compras', 'inventario', 'proveedores'],
+    Almacenista:   ['dashboard', 'inventario', 'logistica', 'compras'],
+    Técnico:       ['dashboard', 'mantenimiento', 'activos', 'operaciones'],
+    RH:            ['dashboard', 'rrhh', 'configuracion'],
+    Planificador:  ['dashboard', 'mrp', 'produccion', 'inventario', 'operaciones'],
+    Invitado:      ['dashboard'],
+};
 
+export const tienePermiso = (user, modulo) => {
+    if (!user) return false;
+    const permisos = PERMISOS_ROL[user.cargo];
+    if (!permisos) return false;
+    if (permisos === '*') return true;
+    return permisos.includes(modulo);
+};
+
+// =============================================================================
+// Provider
+// =============================================================================
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -18,11 +42,8 @@ export const AuthProvider = ({ children }) => {
         const savedUser = localStorage.getItem('erpUser');
         if (savedUser) {
             try {
-                const parsedUser = JSON.parse(savedUser);
-                console.log('Loading user from storage:', parsedUser);
-                setUser(parsedUser);
-            } catch (error) {
-                console.error('Error parsing user data:', error);
+                setUser(JSON.parse(savedUser));
+            } catch {
                 localStorage.removeItem('erpUser');
             }
         }
@@ -30,13 +51,11 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const loginUser = (userData) => {
-        console.log('Setting user in context:', userData);
         setUser(userData);
         localStorage.setItem('erpUser', JSON.stringify(userData));
     };
 
     const logoutUser = () => {
-        console.log('Logging out user');
         setUser(null);
         localStorage.removeItem('erpUser');
     };
@@ -46,7 +65,8 @@ export const AuthProvider = ({ children }) => {
         loginUser,
         logoutUser,
         isAuthenticated: !!user,
-        loading
+        loading,
+        tienePermiso: (modulo) => tienePermiso(user, modulo),
     };
 
     return (
@@ -55,5 +75,11 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
+
+export function useAuth() {
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
+    return ctx;
+}
 
 export default AuthContext;

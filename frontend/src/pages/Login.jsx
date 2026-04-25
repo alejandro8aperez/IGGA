@@ -1,344 +1,254 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import AuthContext from '../context/AuthContext';
-import { Lock, User, Building2, Eye, EyeOff } from 'lucide-react';
-import './index.css';
+import { Lock, User, Building2, Eye, EyeOff, AlertCircle, Loader } from 'lucide-react';
+
+// URL del endpoint de autenticación
+const AUTH_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/auth/token/';
 
 const Login = () => {
     const { loginUser } = useContext(AuthContext);
-    const [showPassword, setShowPassword] = useState(false);
-    const [selectedEmpresa, setSelectedEmpresa] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
+    const redirectTo = location.state?.from?.pathname || '/dashboard';
+
+    const [username, setUsername]         = useState('');
+    const [password, setPassword]         = useState('');
+    const [selectedEmpresa, setEmpresa]   = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading]           = useState(false);
+    const [error, setError]               = useState('');
 
     const empresas = [
         { id: '1', nombre: '8AMPERIOS INDUSTRIAL', codigo: '8AMP' },
-        { id: '2', nombre: '8AMPERIOS COMERCIAL', codigo: '8COM' },
-        { id: '3', nombre: '8AMPERIOS SERVICIOS', codigo: '8SER' }
+        { id: '2', nombre: '8AMPERIOS COMERCIAL',  codigo: '8COM' },
+        { id: '3', nombre: '8AMPERIOS SERVICIOS',  codigo: '8SER' },
     ];
 
-    const usuariosPorCargo = {
-        admin: { password: 'admin123', cargo: 'Administrador', nombre: 'Administrador Sistema' },
-        gerente: { password: 'gerente123', cargo: 'Gerente', nombre: 'Gerente General' },
-        contador: { password: 'contador123', cargo: 'Contador', nombre: 'Jefe Contabilidad' },
-        produccion: { password: 'produccion123', cargo: 'Jefe Producción', nombre: 'Jefe de Producción' },
-        ventas: { password: 'ventas123', cargo: 'Vendedor', nombre: 'Ejecutivo de Ventas' },
-        compras: { password: 'compras123', cargo: 'Comprador', nombre: 'Jefe de Compras' },
-        almacen: { password: 'almacen123', cargo: 'Almacenista', nombre: 'Encargado Almacén' },
-        mantenimiento: { password: 'mantenimiento123', cargo: 'Técnico', nombre: 'Jefe Mantenimiento' },
-        rrhh: { password: 'rrhh123', cargo: 'RH', nombre: 'Jefe RRHH' },
-        mrp: { password: 'mrp123', cargo: 'Planificador', nombre: 'Planificador MRP' }
-    };
-
-    const handleLogin = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        const formData = new FormData(e.target);
-        const username = formData.get('username');
-        const password = formData.get('password');
-        
-        // Validar usuario
-        const usuarioInfo = usuariosPorCargo[username];
-        if (!usuarioInfo || usuarioInfo.password !== password) {
-            alert('Usuario o contraseña incorrectos');
-            return;
-        }
+        setError('');
 
         if (!selectedEmpresa) {
-            alert('Seleccione una empresa');
+            setError('Seleccione una empresa para continuar.');
             return;
         }
 
-        // Crear objeto de usuario
-        const userData = {
-            username: username,
-            ...usuarioInfo,
-            empresa: empresas.find(emp => emp.id === selectedEmpresa)
-        };
+        setLoading(true);
+        try {
+            // Intentar autenticación real contra Django
+            const res = await axios.post(AUTH_URL, { username, password }, { timeout: 8000 });
+            const { access, refresh, user: userData } = res.data;
 
-        console.log('Login data:', userData);
-        
-        // Guardar en localStorage para persistencia
-        localStorage.setItem('erpUser', JSON.stringify(userData));
-        
-        // Usar el contexto existente
-        loginUser(userData);
-        
-        // Redirigir al home
-        setTimeout(() => {
-            navigate('/');
-        }, 500);
-    };
+            loginUser({
+                ...userData,
+                token: access,
+                refreshToken: refresh,
+                empresa: empresas.find(e => e.id === selectedEmpresa),
+            });
+            navigate(redirectTo, { replace: true });
 
-    const handleGuestAccess = () => {
-        const guestData = {
-            username: 'guest',
-            cargo: 'Invitado',
-            nombre: 'Usuario Invitado',
-            empresa: empresas[0]
-        };
-        
-        console.log('Guest access:', guestData);
-        localStorage.setItem('erpUser', JSON.stringify(guestData));
-        loginUser(guestData);
-        setTimeout(() => {
-            navigate('/');
-        }, 500);
+        } catch (err) {
+            if (err.code === 'ECONNABORTED' || !err.response) {
+                // Backend no disponible — modo demo con usuarios de prueba
+                const demoResult = autenticarDemo(username, password, selectedEmpresa);
+                if (demoResult) {
+                    loginUser(demoResult);
+                    navigate(redirectTo, { replace: true });
+                } else {
+                    setError('Usuario o contraseña incorrectos.');
+                }
+            } else if (err.response?.status === 401) {
+                setError('Usuario o contraseña incorrectos.');
+            } else {
+                setError('Error al conectar con el servidor. Intente de nuevo.');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1a2a4a 100%)',
+            minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'linear-gradient(135deg, #0a1628 0%, #0f172a 50%, #1a1035 100%)',
             padding: '1rem'
         }}>
-            <div className="glass-card" style={{ 
-                maxWidth: '450px', 
-                width: '100%', 
-                padding: '2.5rem',
-                border: '1px solid #334155',
-                borderRadius: '16px',
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)'
+            {/* Fondo decorativo */}
+            <div style={{
+                position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0
+            }}>
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} style={{
+                        position: 'absolute',
+                        width: ['500px','300px','400px'][i],
+                        height: ['500px','300px','400px'][i],
+                        borderRadius: '50%',
+                        background: ['rgba(102,126,234,0.06)', 'rgba(118,75,162,0.05)', 'rgba(102,126,234,0.04)'][i],
+                        top: ['10%','60%','40%'][i], left: ['60%','-5%','80%'][i],
+                        filter: 'blur(60px)'
+                    }}/>
+                ))}
+            </div>
+
+            <div style={{
+                maxWidth: '440px', width: '100%', position: 'relative', zIndex: 1,
+                background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(20px)',
+                border: '1px solid #1e3a5f', borderRadius: '20px',
+                boxShadow: '0 25px 50px rgba(0,0,0,0.5)', padding: '2.5rem'
             }}>
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
-                        width: '80px',
-                        height: '80px',
-                        background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-                        borderRadius: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 1rem'
-                    }}>
-                        <Building2 size={40} color="white" />
-                    </div>
-                    <h1 style={{ 
-                        fontSize: '1.875rem', 
-                        fontWeight: 700, 
-                        margin: 0,
-                        color: '#F8FAFC'
-                    }}>
+                        width: '70px', height: '70px',
+                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                        borderRadius: '18px', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', margin: '0 auto 1.25rem',
+                        boxShadow: '0 8px 24px rgba(102,126,234,0.4)',
+                        fontSize: '1.5rem', fontWeight: 800, color: 'white'
+                    }}>8A</div>
+                    <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 0.4rem' }}>
                         8AMPERIOS ERP
                     </h1>
-                    <p style={{ 
-                        color: '#94A3B8', 
-                        fontSize: '0.875rem', 
-                        marginTop: '0.5rem',
-                        marginBottom: 0
-                    }}>
+                    <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>
                         Sistema Empresarial Integrado
                     </p>
                 </div>
 
-                <form onSubmit={handleLogin}>
+                {/* Error */}
+                {error && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
+                        borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.25rem', color: '#fca5a5'
+                    }}>
+                        <AlertCircle size={16} style={{ flexShrink: 0 }}/>
+                        <span style={{ fontSize: '0.875rem' }}>{error}</span>
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit}>
                     {/* Empresa */}
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label className="form-label" style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.5rem',
-                            color: '#E2E8F0',
-                            marginBottom: '0.5rem'
-                        }}>
-                            <Building2 size={16} /> Empresa
-                        </label>
-                        <select
-                            value={selectedEmpresa}
-                            onChange={(e) => setSelectedEmpresa(e.target.value)}
-                            className="form-input"
-                            required
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem 1rem',
-                                background: '#0F172A',
-                                border: '1px solid #334155',
-                                borderRadius: '8px',
-                                color: '#F8FAFC',
-                                fontSize: '0.875rem'
-                            }}
-                        >
+                    <Field label="Empresa" icon={<Building2 size={15}/>}>
+                        <select value={selectedEmpresa} onChange={e => setEmpresa(e.target.value)}
+                            required style={inputStyle}>
                             <option value="">Seleccione una empresa</option>
                             {empresas.map(emp => (
-                                <option key={emp.id} value={emp.id}>
-                                    {emp.nombre} ({emp.codigo})
-                                </option>
+                                <option key={emp.id} value={emp.id}>{emp.nombre} ({emp.codigo})</option>
                             ))}
                         </select>
-                    </div>
+                    </Field>
 
                     {/* Usuario */}
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label className="form-label" style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.5rem',
-                            color: '#E2E8F0',
-                            marginBottom: '0.5rem'
-                        }}>
-                            <User size={16} /> Usuario
-                        </label>
-                        <input
-                            type="text"
-                            name="username"
-                            className="form-input"
-                            placeholder="Ingrese su usuario"
-                            required
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem 1rem',
-                                background: '#0F172A',
-                                border: '1px solid #334155',
-                                borderRadius: '8px',
-                                color: '#F8FAFC',
-                                fontSize: '0.875rem'
-                            }}
-                        />
-                    </div>
+                    <Field label="Usuario" icon={<User size={15}/>}>
+                        <input type="text" value={username} onChange={e => setUsername(e.target.value)}
+                            placeholder="Ingrese su usuario" required style={inputStyle}/>
+                    </Field>
 
                     {/* Contraseña */}
-                    <div className="form-group" style={{ marginBottom: '2rem' }}>
-                        <label className="form-label" style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.5rem',
-                            color: '#E2E8F0',
-                            marginBottom: '0.5rem'
-                        }}>
-                            <Lock size={16} /> Contraseña
-                        </label>
+                    <Field label="Contraseña" icon={<Lock size={15}/>}>
                         <div style={{ position: 'relative' }}>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                name="password"
-                                className="form-input"
-                                placeholder="Ingrese su contraseña"
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem 1rem 0.75rem 2.75rem',
-                                    background: '#0F172A',
-                                    border: '1px solid #334155',
-                                    borderRadius: '8px',
-                                    color: '#F8FAFC',
-                                    fontSize: '0.875rem'
-                                }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '0.75rem',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: '#64748B',
-                                    cursor: 'pointer',
-                                    padding: '0.25rem'
-                                }}
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            <input type={showPassword ? 'text' : 'password'}
+                                value={password} onChange={e => setPassword(e.target.value)}
+                                placeholder="Ingrese su contraseña" required
+                                style={{ ...inputStyle, paddingRight: '2.5rem' }}/>
+                            <button type="button" onClick={() => setShowPassword(s => !s)}
+                                style={{ position:'absolute', right:'0.75rem', top:'50%', transform:'translateY(-50%)',
+                                    background:'none', border:'none', color:'#475569', cursor:'pointer', padding:'2px' }}>
+                                {showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}
                             </button>
                         </div>
-                    </div>
+                    </Field>
 
-                    <button 
-                        type="submit" 
-                        className="btn btn-primary"
-                        style={{
-                            width: '100%',
-                            background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '0.875rem',
-                            color: 'white',
-                            fontSize: '1rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            marginBottom: '1rem'
-                        }}
-                    >
-                        Iniciar Sesión
+                    <button type="submit" disabled={loading} style={{
+                        width: '100%', padding: '0.875rem',
+                        background: loading ? '#334155' : 'linear-gradient(135deg, #667eea, #764ba2)',
+                        border: 'none', borderRadius: '10px', color: 'white',
+                        fontSize: '0.95rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s', marginTop: '0.5rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                        boxShadow: loading ? 'none' : '0 4px 15px rgba(102,126,234,0.35)'
+                    }}>
+                        {loading && <Loader size={18} style={{ animation: 'erp-spin 0.8s linear infinite' }}/>}
+                        {loading ? 'Verificando...' : 'Iniciar Sesión'}
                     </button>
                 </form>
 
-                {/* Divider */}
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    margin: '1.5rem 0',
-                    gap: '0.75rem'
-                }}>
-                    <div style={{ flex: 1, height: '1px', background: '#334155' }}></div>
-                    <span style={{ color: '#64748B', fontSize: '0.875rem' }}>o</span>
-                    <div style={{ flex: 1, height: '1px', background: '#334155' }}></div>
-                </div>
-
-                {/* Guest Access */}
-                <button
-                    onClick={handleGuestAccess}
-                    style={{
-                        width: '100%',
-                        background: 'transparent',
-                        border: '1px solid #334155',
-                        borderRadius: '8px',
-                        padding: '0.75rem',
-                        color: '#94A3B8',
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        marginBottom: '1rem'
-                    }}
-                    onMouseEnter={(e) => {
-                        e.target.style.borderColor = '#4F46E5';
-                        e.target.style.color = '#E2E8F0';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.target.style.borderColor = '#334155';
-                        e.target.style.color = '#94A3B8';
-                    }}
-                >
-                    Acceso como Invitado
-                </button>
-
                 {/* Usuarios de prueba */}
                 <div style={{
-                    background: '#0F172A',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    marginTop: '1rem'
+                    marginTop: '1.5rem', background: 'rgba(30,58,95,0.4)',
+                    border: '1px solid #1e3a5f', borderRadius: '10px', padding: '0.875rem'
                 }}>
-                    <p style={{ 
-                        color: '#94A3B8', 
-                        fontSize: '0.75rem', 
-                        margin: '0 0 0.5rem 0',
-                        fontWeight: 500
-                    }}>
-                        Usuarios de prueba:
+                    <p style={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 600,
+                        textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.5rem' }}>
+                        Usuarios de demo
                     </p>
-                    <div style={{ 
-                        color: '#64748B', 
-                        fontSize: '0.7rem', 
-                        lineHeight: '1.4',
-                        fontFamily: 'monospace'
-                    }}>
-                        admin/admin123 (Administrador)<br/>
-                        gerente/gerente123 (Gerente)<br/>
-                        mrp/mrp123 (Planificador MRP)<br/>
-                        produccion/produccion123 (Producción)<br/>
-                        mantenimiento/mantenimiento123 (Mantenimiento)
+                    <div style={{ color: '#475569', fontSize: '0.72rem', lineHeight: 1.7, fontFamily: 'monospace' }}>
+                        admin / admin123 · Administrador<br/>
+                        gerente / gerente123 · Gerente<br/>
+                        contador / contador123 · Contador<br/>
+                        produccion / produccion123 · Producción<br/>
+                        rrhh / rrhh123 · Recursos Humanos
                     </div>
                 </div>
+
+                <p style={{ textAlign: 'center', color: '#1e3a5f', fontSize: '0.72rem', marginTop: '1.25rem' }}>
+                    8AMPERIOS ERP © {new Date().getFullYear()} · Medellín, Colombia
+                </p>
             </div>
+            <style>{`@keyframes erp-spin{to{transform:rotate(360deg)}}`}</style>
         </div>
     );
 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const inputStyle = {
+    width: '100%', padding: '0.7rem 0.9rem',
+    background: 'rgba(15,23,42,0.8)', border: '1px solid #1e3a5f',
+    borderRadius: '8px', color: '#f8fafc', fontSize: '0.875rem',
+    outline: 'none', boxSizing: 'border-box'
+};
+
+function Field({ label, icon, children }) {
+    return (
+        <div style={{ marginBottom: '1.1rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem',
+                color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.4rem' }}>
+                {icon}{label}
+            </label>
+            {children}
+        </div>
+    );
+}
+
+// Autenticación demo (solo cuando el backend no está disponible)
+function autenticarDemo(username, password, empresaId) {
+    const usuarios = {
+        admin:        { password: 'admin123',        cargo: 'Administrador',  nombre: 'Administrador Sistema' },
+        gerente:      { password: 'gerente123',      cargo: 'Gerente',        nombre: 'Gerente General' },
+        contador:     { password: 'contador123',     cargo: 'Contador',       nombre: 'Jefe Contabilidad' },
+        produccion:   { password: 'produccion123',   cargo: 'Jefe Producción',nombre: 'Jefe de Producción' },
+        ventas:       { password: 'ventas123',       cargo: 'Vendedor',       nombre: 'Ejecutivo de Ventas' },
+        compras:      { password: 'compras123',      cargo: 'Comprador',      nombre: 'Jefe de Compras' },
+        almacen:      { password: 'almacen123',      cargo: 'Almacenista',    nombre: 'Encargado Almacén' },
+        mantenimiento:{ password: 'mantenimiento123',cargo: 'Técnico',        nombre: 'Jefe Mantenimiento' },
+        rrhh:         { password: 'rrhh123',         cargo: 'RH',             nombre: 'Jefe RRHH' },
+        mrp:          { password: 'mrp123',          cargo: 'Planificador',   nombre: 'Planificador MRP' },
+    };
+    const empresas = [
+        { id: '1', nombre: '8AMPERIOS INDUSTRIAL', codigo: '8AMP' },
+        { id: '2', nombre: '8AMPERIOS COMERCIAL',  codigo: '8COM' },
+        { id: '3', nombre: '8AMPERIOS SERVICIOS',  codigo: '8SER' },
+    ];
+    const info = usuarios[username];
+    if (!info || info.password !== password) return null;
+    return {
+        username,
+        ...info,
+        empresa: empresas.find(e => e.id === empresaId),
+        modoDemo: true,
+    };
+}
 
 export default Login;

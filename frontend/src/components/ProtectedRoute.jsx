@@ -1,18 +1,21 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children }) => {
-    const { user, loading } = useAuth();
-
-    if (loading) {
-        return <div>Cargando...</div>;
-    }
+/**
+ * ProtectedRoute — ERP 8AMPERIOS
+ * Redirige a /login si el usuario no está autenticado.
+ * Guarda la ruta original para redirigir después del login.
+ */
+function ProtectedRoute({ children }) {
+    const { user } = useAuth();
+    const location = useLocation();
 
     if (!user) {
-        return <Navigate to="/login" replace />;
+        // Guardamos la ruta a la que intentaba acceder
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     return children;
-};
+}
 
 export default ProtectedRoute;

@@ -12,6 +12,27 @@ Esta guía te llevará paso a paso para desplegar tu ERP en [Render](https://ren
 
 ---
 
+## 🧪 Configuración local igual a la nube
+
+Para que tu entorno local sea equivalente al deploy en la nube, utiliza las mismas variables de entorno y el mismo esquema de configuración:
+
+1. Copia `./.env.example` a `./.env` y completa tus valores locales.
+2. Copia `frontend/.env.local.example` a `frontend/.env.local`.
+3. En local, `VITE_API_URL` debe apuntar a `http://localhost:8000/api`.
+4. En la nube, Render usará `VITE_API_URL=https://<tu-backend>.onrender.com/api`.
+5. En ambos entornos puedes controlar CORS con las mismas variables:
+
+```bash
+CORS_ALLOW_ALL_ORIGINS=True
+# o para más seguridad:
+# CORS_ALLOW_ALL_ORIGINS=False
+# CORS_ALLOWED_ORIGINS=https://tu-frontend.onrender.com,http://localhost:5173
+```
+
+Esto asegura que la aplicación local y la de Render compartan el mismo comportamiento de configuración.
+
+---
+
 ## 🏗️ Arquitectura de Despliegue
 
 ```

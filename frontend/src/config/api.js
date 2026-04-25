@@ -1,128 +1,309 @@
 // =============================================================================
-// API Configuration for ERP-8AMPERIOS
-// =============================================================================
-// This file centralizes all API URLs for the frontend.
-// In production (Render), set VITE_API_URL environment variable.
-// In development, it defaults to http://localhost:8000/api
+// config/api.js — ERP 8AMPERIOS
+// Central de endpoints. TODOS los módulos deben importar de aquí.
+// En producción (Render) setear la variable: VITE_API_URL
 // =============================================================================
 
-// =============================================================================
-// PRODUCTION URL - Hardcoded for Render deployment
-// =============================================================================
-// Use localhost by default when running locally, otherwise fall back to configured API URL or production backend.
-// In development, set VITE_API_URL in .env.local if you want to target another backend.
-// In production, set VITE_API_URL to the deployed API endpoint.
-// =============================================================================
 const DEFAULT_LOCAL_URL = 'http://localhost:8000/api';
-const FALLBACK_SAME_ORIGIN_URL = typeof window !== 'undefined' ? `${window.location.origin}/api` : DEFAULT_LOCAL_URL;
-const BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? DEFAULT_LOCAL_URL : FALLBACK_SAME_ORIGIN_URL);
+const FALLBACK_SAME_ORIGIN =
+    typeof window !== 'undefined'
+        ? `${window.location.origin}/api`
+        : DEFAULT_LOCAL_URL;
 
-// Ensure no trailing slash for consistent URL building
-const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
+const BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? DEFAULT_LOCAL_URL
+        : FALLBACK_SAME_ORIGIN);
+
+const B = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 
 // =============================================================================
-// API Endpoints Configuration
+// ENDPOINTS
 // =============================================================================
 export const API = {
-    // CRM
-    CRM: {
-        CLIENTES: `${cleanBaseUrl}/crm/clientes/`,
-        COTIZACIONES: `${cleanBaseUrl}/crm/cotizaciones/`,
+
+    // ── Autenticación ──────────────────────────────────────────────────────────
+    AUTH: {
+        LOGIN:          `${B}/auth/token/`,
+        REFRESH:        `${B}/auth/token/refresh/`,
+        LOGOUT:         `${B}/auth/logout/`,
+        ME:             `${B}/auth/me/`,
+        USUARIOS:       `${B}/auth/usuarios/`,
+        ROLES:          `${B}/auth/roles/`,
     },
 
-    // Facturación Electrónica
-    FACTURACION: {
-        FACTURAS: `${cleanBaseUrl}/facturacion/facturas/`,
-        RESOLUCIONES: `${cleanBaseUrl}/facturacion/resoluciones/`,
-        REPORTES: `${cleanBaseUrl}/facturacion/reportes/`,
+    // ── CRM ───────────────────────────────────────────────────────────────────
+    CRM: {
+        CLIENTES:       `${B}/crm/clientes/`,
+        COTIZACIONES:   `${B}/crm/cotizaciones/`,
+        OPORTUNIDADES:  `${B}/crm/oportunidades/`,
+        CONTACTOS:      `${B}/crm/contactos/`,
+        ACTIVIDADES:    `${B}/crm/actividades/`,
     },
-    
-    // Inventarios
-    INVENTARIOS: {
-        PRODUCTOS: `${cleanBaseUrl}/inventarios/productos/`,
-        CATEGORIAS: `${cleanBaseUrl}/inventarios/categorias/`,
-        ALMACENES: `${cleanBaseUrl}/inventarios/almacenes/`,
-        MOVIMIENTOS: `${cleanBaseUrl}/inventarios/movimientos/`,
-    },
-    
-    // Producción
-    PRODUCCION: {
-        RECETAS: `${cleanBaseUrl}/produccion/recetas/`,
-        ORDENES: `${cleanBaseUrl}/produccion/ordenes/`,
-        INSUMOS: `${cleanBaseUrl}/produccion/insumos/`,
-    },
-    
-    // RRHH
-    RRHH: {
-        EMPLEADOS: `${cleanBaseUrl}/rrhh/empleados/`,
-    },
-    
-    // Configuración
-    CONFIGURACION: {
-        EMPRESA: `${cleanBaseUrl}/configuracion/empresa/`,
-        DEPARTAMENTOS: `${cleanBaseUrl}/configuracion/departamentos/`,
-    },
-    
-    // Ventas
+
+    // ── Ventas ────────────────────────────────────────────────────────────────
     VENTAS: {
-        PEDIDOS: `${cleanBaseUrl}/ventas/pedidos/`,
-        CLIENTES: `${cleanBaseUrl}/ventas/clientes/`,
+        PEDIDOS:        `${B}/ventas/pedidos/`,
+        CLIENTES:       `${B}/ventas/clientes/`,
+        ORDENES:        `${B}/ventas/ordenes/`,
+        DEVOLUCIONES:   `${B}/ventas/devoluciones/`,
     },
-    
-    // Compras
+
+    // ── Facturación Electrónica DIAN ──────────────────────────────────────────
+    FACTURACION: {
+        FACTURAS:       `${B}/facturacion/facturas/`,
+        RESOLUCIONES:   `${B}/facturacion/resoluciones/`,
+        REPORTES:       `${B}/facturacion/reportes/`,
+        NOTAS_CREDITO:  `${B}/facturacion/notas-credito/`,
+        NOTAS_DEBITO:   `${B}/facturacion/notas-debito/`,
+    },
+
+    // ── Inventarios ───────────────────────────────────────────────────────────
+    INVENTARIOS: {
+        PRODUCTOS:      `${B}/inventarios/productos/`,
+        CATEGORIAS:     `${B}/inventarios/categorias/`,
+        ALMACENES:      `${B}/inventarios/almacenes/`,
+        MOVIMIENTOS:    `${B}/inventarios/movimientos/`,
+        STOCK_MINIMO:   `${B}/inventarios/stock-minimo/`,
+        AJUSTES:        `${B}/inventarios/ajustes/`,
+    },
+
+    // ── Compras ───────────────────────────────────────────────────────────────
     COMPRAS: {
-        PROVEEDORES: `${cleanBaseUrl}/compras/proveedores/`,
-        ORDENES: `${cleanBaseUrl}/compras/ordenes/`,
+        PROVEEDORES:    `${B}/compras/proveedores/`,
+        ORDENES:        `${B}/compras/ordenes/`,
+        RECEPCIONES:    `${B}/compras/recepciones/`,
+        PAGOS:          `${B}/compras/pagos/`,
+        COTIZACIONES:   `${B}/compras/cotizaciones/`,
     },
-    
-    // Contabilidad
-    CONTABILIDAD: {
-        CUENTAS: `${cleanBaseUrl}/contabilidad/cuentas/`,
-        ASIENTOS: `${cleanBaseUrl}/contabilidad/asientos/`,
+
+    // ── Logística ─────────────────────────────────────────────────────────────
+    LOGISTICA: {
+        ENVIOS:         `${B}/logistica/envios/`,
+        VEHICULOS:      `${B}/logistica/vehiculos/`,
+        RUTAS:          `${B}/logistica/rutas/`,
+        CONDUCTORES:    `${B}/logistica/conductores/`,
+        SEGUIMIENTO:    `${B}/logistica/seguimiento/`,
     },
-    
-    // Calidad
-    CALIDAD: {
-        DOCUMENTOS: `${cleanBaseUrl}/calidad/documentos-iso/`,
+
+    // ── Producción ────────────────────────────────────────────────────────────
+    PRODUCCION: {
+        RECETAS:        `${B}/produccion/recetas/`,
+        ORDENES:        `${B}/produccion/ordenes/`,
+        INSUMOS:        `${B}/produccion/insumos/`,
+        PROCESOS:       `${B}/produccion/procesos/`,
+        TURNOS:         `${B}/produccion/turnos/`,
     },
-    
-    // MRP
+
+    // ── MRP ───────────────────────────────────────────────────────────────────
     MRP: {
-        PLAN_MAESTRO: `${cleanBaseUrl}/mrp/plan-maestro/`,
-        BOM: `${cleanBaseUrl}/mrp/bom/`,
+        PLAN_MAESTRO:   `${B}/mrp/plan-maestro/`,
+        BOM:            `${B}/mrp/bom/`,
+        DEMANDA:        `${B}/mrp/demanda/`,
+        CAPACIDAD:      `${B}/mrp/capacidad/`,
     },
-    
-    // KAVE
-    KAVE: {
-        TRANSFORMERS: `${cleanBaseUrl}/kave/transformers/`,
-        COTIZACIONES: `${cleanBaseUrl}/kave/cotizaciones/`,
+
+    // ── Mantenimiento ─────────────────────────────────────────────────────────
+    MANTENIMIENTO: {
+        ORDENES:        `${B}/mantenimiento/ordenes/`,
+        EQUIPOS:        `${B}/mantenimiento/equipos/`,
+        PREVENTIVO:     `${B}/mantenimiento/preventivo/`,
+        CORRECTIVO:     `${B}/mantenimiento/correctivo/`,
+        REPUESTOS:      `${B}/mantenimiento/repuestos/`,
+        TECNICOS:       `${B}/mantenimiento/tecnicos/`,
     },
-    
-    // Multi-Empresa
+
+    // ── Activos Fijos ─────────────────────────────────────────────────────────
+    ACTIVOS: {
+        ACTIVOS:        `${B}/activos/activos/`,
+        CATEGORIAS:     `${B}/activos/categorias/`,
+        DEPRECIACION:   `${B}/activos/depreciacion/`,
+        MANTENIMIENTOS: `${B}/activos/mantenimientos/`,
+        UBICACIONES:    `${B}/activos/ubicaciones/`,
+    },
+
+    // ── Operaciones ───────────────────────────────────────────────────────────
+    OPERACIONES: {
+        PROCESOS:       `${B}/operaciones/procesos/`,
+        TAREAS:         `${B}/operaciones/tareas/`,
+        INDICADORES:    `${B}/operaciones/indicadores/`,
+        TURNOS:         `${B}/operaciones/turnos/`,
+    },
+
+    // ── RRHH ──────────────────────────────────────────────────────────────────
+    RRHH: {
+        EMPLEADOS:      `${B}/rrhh/empleados/`,
+        CONTRATOS:      `${B}/rrhh/contratos/`,
+        VACACIONES:     `${B}/rrhh/vacaciones/`,
+        INCAPACIDADES:  `${B}/rrhh/incapacidades/`,
+        EPS:            `${B}/rrhh/eps/`,
+        AFP:            `${B}/rrhh/afp/`,
+        ARL:            `${B}/rrhh/arl/`,
+        CAJA_COMP:      `${B}/rrhh/cajas-compensacion/`,
+    },
+
+    // ── Nómina (colombiana) ───────────────────────────────────────────────────
+    NOMINA: {
+        PERIODOS:       `${B}/nomina/periodos/`,
+        LIQUIDACIONES:  `${B}/nomina/liquidaciones/`,
+        COLILLAS:       `${B}/nomina/colillas/`,
+        PARAFISCALES:   `${B}/nomina/parafiscales/`,
+        CESANTIAS:      `${B}/nomina/cesantias/`,
+    },
+
+    // ── Contabilidad ──────────────────────────────────────────────────────────
+    CONTABILIDAD: {
+        CUENTAS:        `${B}/contabilidad/cuentas/`,
+        ASIENTOS:       `${B}/contabilidad/asientos/`,
+        CENTROS_COSTO:  `${B}/contabilidad/centros-costo/`,
+        CONCILIACION:   `${B}/contabilidad/conciliacion/`,
+        BALANCE:        `${B}/contabilidad/balance/`,
+        PYG:            `${B}/contabilidad/pyg/`,
+    },
+
+    // ── Finanzas ──────────────────────────────────────────────────────────────
+    FINANZAS: {
+        CUENTAS:        `${B}/finanzas/cuentas/`,
+        TRANSACCIONES:  `${B}/finanzas/transacciones/`,
+        PRESUPUESTOS:   `${B}/finanzas/presupuestos/`,
+        FLUJO_CAJA:     `${B}/finanzas/flujo-caja/`,
+    },
+
+    // ── Tesorería ─────────────────────────────────────────────────────────────
+    TESORERIA: {
+        CUENTAS:        `${B}/tesoreria/cuentas/`,
+        TRANSACCIONES:  `${B}/tesoreria/transacciones/`,
+        EGRESOS:        `${B}/tesoreria/egresos/`,
+        INGRESOS:       `${B}/tesoreria/ingresos/`,
+        TRANSFERENCIAS: `${B}/tesoreria/transferencias/`,
+        CONCILIACION:   `${B}/tesoreria/conciliacion/`,
+    },
+
+    // ── Calidad / ISO 9001 ────────────────────────────────────────────────────
+    CALIDAD: {
+        DOCUMENTOS:     `${B}/calidad/documentos-iso/`,
+        AUDITORIAS:     `${B}/calidad/auditorias/`,
+        NO_CONFORMIDADES: `${B}/calidad/no-conformidades/`,
+        ACCIONES:       `${B}/calidad/acciones-correctivas/`,
+        INDICADORES:    `${B}/calidad/indicadores/`,
+    },
+
+    // ── Marketing ─────────────────────────────────────────────────────────────
+    MARKETING: {
+        CAMPANAS:       `${B}/marketing/campanas/`,
+        LEADS:          `${B}/marketing/leads/`,
+        SEGMENTOS:      `${B}/marketing/segmentos/`,
+        METRICAS:       `${B}/marketing/metricas/`,
+    },
+
+    // ── Contratos ─────────────────────────────────────────────────────────────
+    CONTRATOS: {
+        CONTRATOS:      `${B}/contratos/contratos/`,
+        TIPOS:          `${B}/contratos/tipos/`,
+        RENOVACIONES:   `${B}/contratos/renovaciones/`,
+    },
+
+    // ── Planeación ────────────────────────────────────────────────────────────
+    PLANEACION: {
+        PLANES:         `${B}/planeacion/planes/`,
+        OBJETIVOS:      `${B}/planeacion/objetivos/`,
+        METAS:          `${B}/planeacion/metas/`,
+        SEGUIMIENTO:    `${B}/planeacion/seguimiento/`,
+    },
+
+    // ── Proyectos ─────────────────────────────────────────────────────────────
+    PROYECTOS: {
+        PROYECTOS:      `${B}/proyectos/proyectos/`,
+        TAREAS:         `${B}/proyectos/tareas/`,
+        HITOS:          `${B}/proyectos/hitos/`,
+        RECURSOS:       `${B}/proyectos/recursos/`,
+    },
+
+    // ── Configuración ─────────────────────────────────────────────────────────
+    CONFIGURACION: {
+        EMPRESA:        `${B}/configuracion/empresa/`,
+        DEPARTAMENTOS:  `${B}/configuracion/departamentos/`,
+        PARAMETROS:     `${B}/configuracion/parametros/`,
+        USUARIOS:       `${B}/configuracion/usuarios/`,
+        PERMISOS:       `${B}/configuracion/permisos/`,
+    },
+
+    // ── Multi-Empresa ─────────────────────────────────────────────────────────
     MULTI_EMPRESA: {
-        EMPRESAS: `${cleanBaseUrl}/multi-empresa/empresas/`,
+        EMPRESAS:       `${B}/multi-empresa/empresas/`,
+        CONSOLIDADO:    `${B}/multi-empresa/consolidado/`,
     },
-    
-    // Reportes
+
+    // ── KAVE (Transformadores) ────────────────────────────────────────────────
+    KAVE: {
+        TRANSFORMERS:   `${B}/kave/transformers/`,
+        COTIZACIONES:   `${B}/kave/cotizaciones/`,
+        CALCULADORA:    `${B}/kave/calculadora/`,
+        CERTIFICADOS:   `${B}/kave/certificados/`,
+    },
+
+    // ── Reportes y KPIs ───────────────────────────────────────────────────────
     REPORTES: {
-        AVANZADOS: `${cleanBaseUrl}/reportes/avanzados/`,
+        AVANZADOS:      `${B}/reportes/avanzados/`,
+        VENTAS:         `${B}/reportes/ventas/`,
+        COMPRAS:        `${B}/reportes/compras/`,
+        FINANCIERO:     `${B}/reportes/financiero/`,
+        OPERACIONES:    `${B}/reportes/operaciones/`,
+        EXPORTAR:       `${B}/reportes/exportar/`,
     },
-    
-    // Base URL (for custom endpoints)
-    BASE: cleanBaseUrl,
+
+    // ── KPIs / IA ─────────────────────────────────────────────────────────────
+    KPIS: {
+        CALCULAR:       `${B}/kpis/kpis/calcular_todos/`,
+        PREDECIR:       `${B}/kpis/kpis/predecir_ventas/`,
+        DASHBOARD:      `${B}/kpis/kpis/dashboard/`,
+    },
+
+    // ── Auditoría ─────────────────────────────────────────────────────────────
+    AUDITORIA: {
+        LOGS:           `${B}/auditoria/logs/`,
+        ACTIVIDAD:      `${B}/auditoria/actividad/`,
+    },
+
+    // ── Notificaciones ────────────────────────────────────────────────────────
+    NOTIFICACIONES: {
+        ALERTAS:        `${B}/notificaciones/alertas/`,
+        LEIDAS:         `${B}/notificaciones/marcar-leida/`,
+    },
+
+    // ── URL base (para endpoints personalizados) ──────────────────────────────
+    BASE: B,
 };
 
 // =============================================================================
-// Helper function to build URLs with query parameters
+// Helper: construir URL con query params
 // =============================================================================
 export const buildUrl = (baseUrl, params = {}) => {
     const url = new URL(baseUrl);
-    Object.keys(params).forEach(key => {
-        if (params[key] !== undefined && params[key] !== null) {
-            url.searchParams.append(key, params[key]);
+    Object.entries(params).forEach(([key, val]) => {
+        if (val !== undefined && val !== null && val !== '') {
+            url.searchParams.append(key, val);
         }
     });
     return url.toString();
+};
+
+// =============================================================================
+// Helper: validar NIT colombiano (dígito de verificación)
+// =============================================================================
+export const validarNIT = (nit) => {
+    const nitLimpio = String(nit).replace(/[.\-\s]/g, '');
+    const cuerpo = nitLimpio.slice(0, -1);
+    const digitoVerificacion = parseInt(nitLimpio.slice(-1), 10);
+
+    const factores = [3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71];
+    const digits = cuerpo.split('').reverse().map(Number);
+    const suma = digits.reduce((acc, d, i) => acc + d * factores[i], 0);
+    const residuo = suma % 11;
+    const esperado = residuo > 1 ? 11 - residuo : residuo;
+
+    return digitoVerificacion === esperado;
 };
 
 export default API;
