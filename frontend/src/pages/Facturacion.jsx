@@ -3,10 +3,14 @@ import axios from 'axios';
 import { 
     FileText, Plus, Save, Send, Trash2, CheckCircle, AlertCircle, 
     ArrowLeft, Search, Filter, Download, X, TrendingUp, DollarSign,
-    Calendar, User, Package, CreditCard, Receipt, ShieldCheck
+    Calendar, User, Package, CreditCard, Receipt, ShieldCheck, Globe,
+    RefreshCw, AlertTriangle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
+
+// API Facturación Electrónica (Facturatech)
+const API_FE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/facturacion-electronica';
 
 // Usar directamente las URLs de la configuración API
 
@@ -113,7 +117,7 @@ function Facturacion() {
     };
 
     const emitirFactura = async (id) => {
-        if (window.confirm('¿Desea emitir esta factura a la DIAN? Esta acción descontará inventario y generará el CUFE.')) {
+        if (window.confirm('¿Desea emitir esta factura? Esta acción descontará inventario y generará el número de factura.')) {
             try {
                 await axios.post(`${API.FACTURACION.FACTURAS}${id}/emitir/`);
                 alert('Factura emitida exitosamente.');
@@ -121,6 +125,76 @@ function Facturacion() {
             } catch (error) {
                 console.error('Error emiting invoice:', error);
                 alert(error.response?.data?.error || 'Error al emitir factura');
+            }
+        }
+    };
+
+    // Enviar factura a DIAN via Facturatech
+    const enviarADIAN = async (factura) => {
+        if (window.confirm(`¿Enviar factura ${factura.numero_factura} a la DIAN via Facturatech?`)) {
+            try {
+                // Primero generamos el XML UBL
+                const xmlData = {
+                    encabezado: {
+                        tipo_operacion: '10',
+                        tipo_documento: '01',
+                        prefijo: factura.numero_factura?.split('-')[0] || '',
+                        numero: factura.numero_factura?.split('-')[1] || '',
+                        fecha_emision: factura.fecha_emision,
+                        hora_emision: new Date().toISOString().split('T')[1].split('.')[0],
+                        moneda: 'COP',
+                        fecha_vencimiento: factura.fecha_vencimiento,
+                        forma_pago: '1',
+                        tipo_facturacion: '1',
+                        ambiente: '2' // 2 = Pruebas por defecto
+                    },
+                    emisor: {
+                        nit: factura.emisor_nit || '',
+                        razon_social: factura.emisor_razon_social || '',
+                        // ... otros datos del emisor
+                    },
+                    adquiriente: {
+                        nit: factura.cliente_ruc || '',
+                        razon_social: factura.cliente_nombre || '',
+                        // ... otros datos del cliente
+                    },
+                    items: factura.detalles?.map(d => ({
+                        cantidad: d.cantidad,
+                        precio_unitario: d.precio_unitario,
+                        descuento: 0,
+                        cargo: 0,
+                        impuestos: d.valor_iva || 0,
+                        descripcion: d.producto_nombre
+                    })) || [],
+                    totales: {
+                        subtotal: factura.subtotal,
+                        iva: factura.iva,
+                        total: factura.total
+                    }
+                };
+
+                // Generar XML
+                const xmlRes = await axios.post(`${API_FE}/generar-xml/`, xmlData);
+                const xmlContent = xmlRes.data.xml;
+
+                // Enviar a Facturatech
+                const envioRes = await axios.post(`${API_FE}/enviar/`, {
+                    factura_id: factura.id,
+                    factura_numero: factura.numero_factura,
+                    xml_content: xmlContent,
+                    tipo: 'ventas'
+                });
+
+                if (envioRes.data.exito) {
+                    alert(`✅ Factura enviada exitosamente a la DIAN!\n\nCUFE: ${envioRes.data.cufe || 'Pendiente'}\nTrack ID: ${envioRes.data.track_id || 'Pendiente'}`);
+                } else {
+                    alert(`⚠️ Factura enviada pero con advertencias:\n${envioRes.data.mensaje || envioRes.data.error || 'Verifique el estado en el módulo de Facturación Electrónica'}`);
+                }
+                
+                fetchData();
+            } catch (error) {
+                console.error('Error enviando a DIAN:', error);
+                alert(`❌ Error enviando a DIAN:\n${error.response?.data?.error || error.message || 'Error desconocido'}\n\nVerifique la configuración en el módulo de Facturación Electrónica.`);
             }
         }
     };
@@ -845,48 +919,87 @@ function Facturacion() {
                                             </span>
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'center', borderRadius: '0 12px 12px 0' }}>
-                                            {f.estado_dian === 'borrador' ? (
-                                                <button 
-                                                    onClick={() => emitirFactura(f.id)}
-                                                    style={{
-                                                        padding: '0.5rem 1rem',
-                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        fontWeight: 600,
-                                                        fontSize: '0.8rem',
-                                                        transition: 'all 0.2s',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.25rem'
-                                                    }}
-                                                    onMouseOver={(e) => {
-                                                        e.currentTarget.style.transform = 'scale(1.05)';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.currentTarget.style.transform = 'scale(1)';
-                                                    }}
-                                                >
-                                                    <Send size={14} /> Emitir
-                                                </button>
-                                            ) : (
-                                                <span 
-                                                    title={`CUFE: ${f.cufe}`}
-                                                    style={{ 
-                                                        color: '#16a34a', 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
-                                                        justifyContent: 'center',
-                                                        gap: '0.25rem', 
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: 600
-                                                    }}
-                                                >
-                                                    <ShieldCheck size={16} /> Firmada
-                                                </span>
-                                            )}
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                                {f.estado_dian === 'borrador' ? (
+                                                    <button 
+                                                        onClick={() => emitirFactura(f.id)}
+                                                        style={{
+                                                            padding: '0.5rem 1rem',
+                                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.8rem',
+                                                            transition: 'all 0.2s',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0.25rem'
+                                                        }}
+                                                        onMouseOver={(e) => {
+                                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                                        }}
+                                                        onMouseOut={(e) => {
+                                                            e.currentTarget.style.transform = 'scale(1)';
+                                                        }}
+                                                    >
+                                                        <Send size={14} /> Emitir
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        {/* Botón Enviar a DIAN via Facturatech */}
+                                                        <button
+                                                            onClick={() => enviarADIAN(f)}
+                                                            style={{
+                                                                padding: '0.5rem 1rem',
+                                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '8px',
+                                                                cursor: 'pointer',
+                                                                fontWeight: 600,
+                                                                fontSize: '0.75rem',
+                                                                transition: 'all 0.2s',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.25rem'
+                                                            }}
+                                                            onMouseOver={(e) => {
+                                                                e.currentTarget.style.transform = 'scale(1.05)';
+                                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                                                            }}
+                                                            onMouseOut={(e) => {
+                                                                e.currentTarget.style.transform = 'scale(1)';
+                                                                e.currentTarget.style.boxShadow = 'none';
+                                                            }}
+                                                            title="Enviar a DIAN via Facturatech"
+                                                        >
+                                                            <Globe size={14} /> Enviar a DIAN
+                                                        </button>
+                                                        
+                                                        {/* Estado Firmada */}
+                                                        <span 
+                                                            title={`CUFE: ${f.cufe || 'Pendiente'}`}
+                                                            style={{ 
+                                                                padding: '0.5rem 0.75rem',
+                                                                background: 'rgba(34, 197, 94, 0.15)',
+                                                                borderRadius: '8px',
+                                                                color: '#16a34a', 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                justifyContent: 'center',
+                                                                gap: '0.25rem', 
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: 600,
+                                                                border: '1px solid rgba(34, 197, 94, 0.3)'
+                                                            }}
+                                                        >
+                                                            <ShieldCheck size={14} /> Firmada
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
