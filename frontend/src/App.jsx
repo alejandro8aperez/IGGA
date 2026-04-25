@@ -208,7 +208,8 @@ function Sidebar({ width, setWidth, isOpen, onClose }) {
         <>
             <div onClick={onClose} style={{
                 position:'fixed', inset:0, backgroundColor:'rgba(0,0,0,0.55)', backdropFilter:'blur(4px)',
-                zIndex:9998, opacity: isOpen?1:0, visibility: isOpen?'visible':'hidden', transition:'all 0.3s'
+                zIndex:9998, opacity: isOpen?1:0, visibility: isOpen?'visible':'hidden',
+                pointerEvents: isOpen?'auto':'none', transition:'all 0.3s'
             }}/>
             <div style={{
                 width:`${width}px`, background:'linear-gradient(180deg,#0a1628 0%,#1e293b 100%)',
