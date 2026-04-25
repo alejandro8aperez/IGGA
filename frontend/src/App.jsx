@@ -342,7 +342,7 @@ function AppContent() {
 
     useEffect(() => { setIsSidebarOpen(false); }, [location.pathname]);
 
-    const isPublic = ['/', '/login', '/demo'].includes(location.pathname);
+    const isPublic = ['/login', '/demo'].includes(location.pathname);
     const showChrome = !isPublic;
     const P = ({ children }) => <ProtectedRoute>{children}</ProtectedRoute>;
     const topPad = showChrome ? (isDemoMode ? '112px' : '76px') : (isDemoMode ? '56px' : '20px');
