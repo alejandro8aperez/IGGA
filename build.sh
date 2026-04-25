@@ -18,7 +18,11 @@ echo "🔄 Applying database migrations..."
 python manage.py migrate
 
 echo ""
-echo "📁 Collecting static files..."
+echo "� Loading initial data..."
+python manage.py loaddata data_full.json || echo "⚠️  Some data may already exist"
+
+echo ""
+echo "�📁 Collecting static files..."
 python manage.py collectstatic --no-input
 
 # =============================================================================
