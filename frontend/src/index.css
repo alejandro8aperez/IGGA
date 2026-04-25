@@ -335,7 +335,10 @@ button[style*="position: absolute"]:hover,
   box-shadow: 0 8px 16px rgba(255, 0, 0, 0.8) !important;
 }
 
-/* DEBUG: Forzar botones X en cualquier modal - ANTI-PARPADEO */
+/* DEBUG: Forzar botones X en cualquier modal - ANTI-PARPADEO 
+   COMENTADO: Estos estilos eran demasiado agresivos y podían bloquear la interfaz
+*/
+/*
 .modal-overlay button,
 .modal button,
 .modal-content button,
@@ -366,8 +369,11 @@ button[style*="position: absolute"]:hover,
   text-align: center !important;
   line-height: 60px !important;
 }
+*/
 
-/* ANTI-PARPADEO: Bloquear cualquier intento de ocultar */
+/* ANTI-PARPADEO: Bloquear cualquier intento de ocultar 
+   COMENTADO: Estos estilos eran demasiado agresivos
+*//*
 .modal-overlay button *,
 .modal button *,
 .modal-content button *,
@@ -381,6 +387,7 @@ button[style*="position: absolute"]:hover,
   animation: none !important;
   transform: none !important;
 }
+*/
 
 /* Modal */
 .modal-overlay {
