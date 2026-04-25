@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from django.http import HttpResponse
 from .models import Cliente, Oportunidad, Cotizacion
 from .serializers import ClienteSerializer, OportunidadSerializer, CotizacionSerializer
@@ -13,14 +14,17 @@ from datetime import datetime
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all().order_by('-fecha_registro')
     serializer_class = ClienteSerializer
+    permission_classes = [AllowAny]
 
 class OportunidadViewSet(viewsets.ModelViewSet):
     queryset = Oportunidad.objects.all().order_by('-fecha_creacion')
     serializer_class = OportunidadSerializer
+    permission_classes = [AllowAny]
 
 class CotizacionViewSet(viewsets.ModelViewSet):
     queryset = Cotizacion.objects.all().order_by('-fecha_creacion')
     serializer_class = CotizacionSerializer
+    permission_classes = [AllowAny]
 
     @action(detail=True, methods=['get'])
     def excel(self, request, pk=None):
