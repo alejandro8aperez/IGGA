@@ -1,0 +1,1018 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target, BarChart3, TrendingUp, Mail, Calendar, DollarSign } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const API_CAMPANAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/campanas/';
+const API_LEADS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/leads/';
+const API_SEGMENTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/segmentos/';
+
+function Marketing() {
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('campanas');
+    const [campanas, setCampanas] = useState([]);
+    const [leads, setLeads] = useState([]);
+    const [segmentos, setSegmentos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Agregar estilos al head
+    useEffect(() => {
+        const styleSheet = document.createElement("style");
+        styleSheet.type = "text/css";
+        styleSheet.innerText = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+        return () => {
+            document.head.removeChild(styleSheet);
+        };
+    }, []);
+
+    // Modal Campaña
+    const [isCampModalOpen, setIsCampModalOpen] = useState(false);
+    const [currentCamp, setCurrentCamp] = useState(null);
+    const [campForm, setCampForm] = useState({
+        nombre: '', descripcion: '', segmento: '', fecha_inicio: '', fecha_fin: '', presupuesto: 0, estado: 'planificada', canales: []
+    });
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const [resCamp, resLeads, resSegmentos] = await Promise.all([
+                axios.get(API_CAMPANAS),
+                axios.get(API_LEADS),
+                axios.get(API_SEGMENTOS)
+            ]);
+            setCampanas(resCamp.data);
+            setLeads(resLeads.data);
+            setSegmentos(resSegmentos.data);
+            setLoading(false);
+        } catch (err) {
+            setError('Error al cargar datos de Marketing.');
+            setLoading(false);
+        }
+    };
+
+    const openCampModal = (camp = null) => {
+        if (camp) {
+            setCurrentCamp(camp);
+            setCampForm(camp);
+        } else {
+            setCurrentCamp(null);
+            setCampForm({ nombre: '', descripcion: '', segmento: '', fecha_inicio: '', fecha_fin: '', presupuesto: 0, estado: 'planificada', canales: [] });
+        }
+        setIsCampModalOpen(true);
+    };
+
+    const handleCampSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (currentCamp) {
+                await axios.put(`${API_CAMPANAS}${currentCamp.id}/`, campForm);
+            } else {
+                await axios.post(API_CAMPANAS, campForm);
+            }
+            fetchData();
+            setIsCampModalOpen(false);
+        } catch (err) {
+            console.error('Error al guardar campaña:', err);
+        }
+    };
+
+    const deleteCamp = async (id) => {
+        if (window.confirm('¿Eliminar esta campaña?')) {
+            try {
+                await axios.delete(`${API_CAMPANAS}${id}/`);
+                fetchData();
+            } catch (err) {
+                console.error('Error al eliminar campaña:', err);
+            }
+        }
+    };
+
+    const convertirLead = async (leadId) => {
+        if (window.confirm('¿Convertir este lead a cliente?')) {
+            try {
+                await axios.post(`${API_LEADS}${leadId}/convertir_a_cliente/`);
+                fetchData();
+                alert('Lead convertido a cliente exitosamente');
+            } catch (err) {
+                console.error('Error al convertir lead:', err);
+                alert('Error al convertir lead');
+            }
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        border: '4px solid rgba(255,255,255,0.3)', 
+                        borderTop: '4px solid white', 
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 1rem'
+                    }}></div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '500' }}>Cargando Marketing...</div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ 
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            padding: '2rem'
+        }}>
+            {/* Header */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '2rem',
+                marginBottom: '2rem',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h1 style={{ 
+                            fontSize: '2.5rem', 
+                            fontWeight: '700', 
+                            color: '#1a202c',
+                            margin: '0 0 0.5rem 0'
+                        }}>
+                            <Megaphone size={32} style={{ marginRight: '1rem', verticalAlign: 'middle' }} />
+                            Marketing Avanzado
+                        </h1>
+                        <p style={{ 
+                            fontSize: '1.1rem', 
+                            color: '#718096',
+                            margin: 0
+                        }}>
+                            Gestión de Campañas y Leads
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'transform 0.2s, box-shadow 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    >
+                        <X size={18} />
+                        Volver al Inicio
+                    </button>
+                </div>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+                <div style={{ 
+                    background: '#fed7d7',
+                    border: '1px solid #feb2b2',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    marginBottom: '2rem',
+                    color: '#c53030',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+                    <AlertCircle size={20} />
+                    <div style={{ flex: 1 }}>
+                        <strong>Error:</strong> {error}
+                    </div>
+                    <button 
+                        onClick={() => setError(null)}
+                        style={{
+                            background: '#e53e3e',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            )}
+
+            {/* Tabs */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                marginBottom: '2rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}>
+                <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
+                    <button
+                        onClick={() => setActiveTab('campanas')}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            color: activeTab === 'campanas' ? '#667eea' : '#718096',
+                            backgroundColor: activeTab === 'campanas' ? '#f0f4ff' : 'transparent',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <Target size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                        Campañas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('leads')}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            color: activeTab === 'leads' ? '#667eea' : '#718096',
+                            backgroundColor: activeTab === 'leads' ? '#f0f4ff' : 'transparent',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <Users size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                        Leads
+                    </button>
+                </div>
+
+                {activeTab === 'campanas' ? (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                                }}>
+                                    <Target size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{campanas.length}</div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Campañas</div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)'
+                                }}>
+                                    <Users size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{campanas.reduce((sum, c) => sum + (c.leads_generados || 0), 0)}</div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Leads Generados</div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(237, 137, 54, 0.3)'
+                                }}>
+                                    <TrendingUp size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                                            {campanas.length > 0 
+                                                ? (campanas.reduce((sum, c) => sum + (c.tasa_conversion || 0), 0) / campanas.length).toFixed(1)
+                                                : 0}%
+                                        </div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Conversión Promedio</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button 
+                                    onClick={() => openCampModal()}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        transition: 'transform 0.2s, box-shadow 0.2s'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.target.style.transform = 'translateY(-2px)';
+                                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = 'none';
+                                    }}
+                                >
+                                    <Plus size={18} />
+                                    Nueva Campaña
+                                </button>
+                            </div>
+                        }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h1 style={{ 
+                            fontSize: '2.5rem', 
+                            fontWeight: '700', 
+                            color: '#1a202c',
+                            margin: '0 0 0.5rem 0'
+                        }}>
+                            <Megaphone size={32} style={{ marginRight: '1rem', verticalAlign: 'middle' }} />
+                            Marketing Avanzado
+                        </h1>
+                        <p style={{ 
+                            fontSize: '1.1rem', 
+                            color: '#718096',
+                            margin: 0
+                        }}>
+                            Gestión de Campañas y Leads
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'transform 0.2s, box-shadow 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    >
+                        <X size={18} />
+                        Volver al Inicio
+                    </button>
+                </div>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+                <div style={{ 
+                    background: '#fed7d7',
+                    border: '1px solid #feb2b2',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    marginBottom: '2rem',
+                    color: '#c53030',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+                    <AlertCircle size={20} />
+                    <div style={{ flex: 1 }}>
+                        <strong>Error:</strong> {error}
+                    </div>
+                    <button 
+                        onClick={() => setError(null)}
+                        style={{
+                            background: '#e53e3e',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            )}
+
+            {/* Tabs */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                marginBottom: '2rem',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}>
+                <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
+                    <button
+                        onClick={() => setActiveTab('campanas')}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            color: activeTab === 'campanas' ? '#667eea' : '#718096',
+                            backgroundColor: activeTab === 'campanas' ? '#f0f4ff' : 'transparent',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <Target size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                        Campañas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('leads')}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            color: activeTab === 'leads' ? '#667eea' : '#718096',
+                            backgroundColor: activeTab === 'leads' ? '#f0f4ff' : 'transparent',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <Users size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                        Leads
+                    </button>
+                </div>
+
+                {activeTab === 'campanas' ? (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                                }}>
+                                    <Target size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{campanas.length}</div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Campañas</div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)'
+                                }}>
+                                    <Users size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{campanas.reduce((sum, c) => sum + (c.leads_generados || 0), 0)}</div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Leads Generados</div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(237, 137, 54, 0.3)'
+                                }}>
+                                    <TrendingUp size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                                            {campanas.length > 0 
+                                                ? (campanas.reduce((sum, c) => sum + (c.tasa_conversion || 0), 0) / campanas.length).toFixed(1)
+                                                : 0}%
+                                        </div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Conversión Promedio</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button 
+                                    onClick={() => openCampModal()}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        transition: 'transform 0.2s, box-shadow 0.2s'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.target.style.transform = 'translateY(-2px)';
+                                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = 'none';
+                                    }}
+                                >
+                                    <Plus size={18} />
+                                    Nueva Campaña
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Tabla de Campañas */}
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '12px',
+                            padding: '1.5rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            marginTop: '2rem'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h2 style={{ margin: 0, color: '#1a202c', fontSize: '1.5rem', fontWeight: '600' }}>
+                                    <Target size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                                    Campañas de Marketing
+                                </h2>
+                                <button 
+                                    onClick={() => window.open(`${API_LEADS}excel/`, '_blank')}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    <BarChart3 size={16} />
+                                    Exportar Reporte
+                                </button>
+                            </div>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#f8f9fa' }}>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Número</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Nombre</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Segmento</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Estado</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Leads</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Conversión</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {campanas.map(camp => (
+                                            <tr key={camp.id} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background-color 0.2s' }} 
+                                                onMouseOver={(e) => e.target.closest('tr').style.backgroundColor = '#f8f9fa'}
+                                                onMouseOut={(e) => e.target.closest('tr').style.backgroundColor = 'transparent'}>
+                                                <td style={{ padding: '1rem', color: '#2d3748' }}>{camp.numero_campana || `CAMP-${camp.id.toString().padStart(4, '0')}`}</td>
+                                                <td style={{ padding: '1rem', color: '#2d3748', fontWeight: '500' }}>{camp.nombre}</td>
+                                                <td style={{ padding: '1rem', color: '#718096' }}>{camp.segmento_nombre || camp.segmento}</td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '500',
+                                                        backgroundColor: camp.estado === 'activa' ? '#c6f6d5' : camp.estado === 'finalizada' ? '#fed7d7' : '#e2e8f0',
+                                                        color: camp.estado === 'activa' ? '#22543d' : camp.estado === 'finalizada' ? '#742a2a' : '#4a5568'
+                                                    }}>
+                                                        {camp.estado}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1rem', color: '#2d3748' }}>{camp.leads_generados || 0}</td>
+                                                <td style={{ padding: '1rem', color: '#2d3748' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <span>{camp.conversiones || 0}</span>
+                                                        <span style={{ color: '#718096', fontSize: '0.875rem' }}>
+                                                            ({camp.tasa_conversion ? camp.tasa_conversion.toFixed(1) : 0}%)
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                        <button 
+                                                            onClick={() => openCampModal(camp)}
+                                                            style={{
+                                                                background: '#e2e8f0',
+                                                                border: 'none',
+                                                                padding: '0.5rem',
+                                                                borderRadius: '6px',
+                                                                cursor: 'pointer',
+                                                                color: '#4a5568'
+                                                            }}
+                                                            title="Editar"
+                                                        >
+                                                            <Edit3 size={16} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => deleteCamp(camp.id)}
+                                                            style={{
+                                                                background: '#fed7d7',
+                                                                border: 'none',
+                                                                padding: '0.5rem',
+                                                                borderRadius: '6px',
+                                                                cursor: 'pointer',
+                                                                color: '#c53030'
+                                                            }}
+                                                            title="Eliminar"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                ) : (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(237, 137, 54, 0.3)'
+                                }}>
+                                    <Users size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{leads.length}</div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Total Leads</div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                                    padding: '1rem 1.5rem',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)'
+                                }}>
+                                    <TrendingUp size={24} />
+                                    <div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                                            {leads.filter(l => l.cliente_convertido).length}
+                                        </div>
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Convertidos</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button 
+                                    onClick={() => window.open(`${API_LEADS}excel/`, '_blank')}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        transition: 'transform 0.2s, box-shadow 0.2s'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.target.style.transform = 'translateY(-2px)';
+                                        e.target.style.boxShadow = '0 8px 25px rgba(72, 187, 120, 0.4)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = 'none';
+                                    }}
+                                >
+                                    <BarChart3 size={18} />
+                                    Exportar Leads
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Tabla de Leads */}
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '12px',
+                            padding: '1.5rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            marginTop: '2rem'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h2 style={{ margin: 0, color: '#1a202c', fontSize: '1.5rem', fontWeight: '600' }}>
+                                    <Users size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                                    Leads Recientes
+                                </h2>
+                            </div>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#f8f9fa' }}>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Nombre</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Email</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Empresa</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Estado</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Puntuación</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Cliente</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', color: '#4a5568', borderBottom: '2px solid #e2e8f0' }}>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {leads.slice(0, 10).map(lead => (
+                                            <tr key={lead.id} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background-color 0.2s' }} 
+                                                onMouseOver={(e) => e.target.closest('tr').style.backgroundColor = '#f8f9fa'}
+                                                onMouseOut={(e) => e.target.closest('tr').style.backgroundColor = 'transparent'}>
+                                                <td style={{ padding: '1rem', color: '#2d3748', fontWeight: '500' }}>{lead.nombre}</td>
+                                                <td style={{ padding: '1rem', color: '#718096' }}>{lead.email}</td>
+                                                <td style={{ padding: '1rem', color: '#718096' }}>{lead.empresa}</td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '500',
+                                                        backgroundColor: lead.estado === 'nuevo' ? '#bee3f8' : lead.estado === 'contactado' ? '#c6f6d5' : lead.estado === 'calificado' ? '#fef5e7' : '#e2e8f0',
+                                                        color: lead.estado === 'nuevo' ? '#2b6cb0' : lead.estado === 'contactado' ? '#22543d' : lead.estado === 'calificado' ? '#744210' : '#4a5568'
+                                                    }}>
+                                                        {lead.estado}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1rem', color: '#2d3748' }}>{lead.puntuacion}</td>
+                                                <td style={{ padding: '1rem', color: lead.cliente_convertido ? '#48bb78' : '#718096' }}>
+                                                    {lead.cliente_convertido_nombre || 'No convertido'}
+                                                </td>
+                                                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                    {!lead.cliente_convertido && (
+                                                        <button 
+                                                            onClick={() => convertirLead(lead.id)}
+                                                            style={{
+                                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                                border: 'none',
+                                                                padding: '0.5rem 1rem',
+                                                                borderRadius: '6px',
+                                                                cursor: 'pointer',
+                                                                color: 'white',
+                                                                fontSize: '0.875rem',
+                                                                fontWeight: '500',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.25rem'
+                                                            }}
+                                                            title="Convertir a cliente"
+                                                        >
+                                                            <Users size={14} />
+                                                            Convertir
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Modal Campaña */}
+            {isCampModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal" style={{ position: 'relative' }}>
+                        <div className="modal-header">
+                            <button 
+                                className="btn btn-ghost modal-close-btn" 
+                                onClick={() => setIsCampModalOpen(false)}
+                                style={{ 
+                                    position: 'absolute', 
+                                    top: '0.5rem', 
+                                    right: '0.5rem',
+                                    background: '#ff0000',
+                                    backgroundColor: '#ff0000',
+                                    color: '#ffffff',
+                                    fontSize: '2rem',
+                                    padding: '0.75rem',
+                                    border: '2px solid #ff0000',
+                                    borderRadius: '8px',
+                                    zIndex: 999999999,
+                                    width: '60px',
+                                    height: '60px',
+                                    minWidth: '60px',
+                                    minHeight: '60px',
+                                    maxWidth: '60px',
+                                    maxHeight: '60px',
+                                    visibility: 'visible',
+                                    opacity: 1,
+                                    display: 'block',
+                                    pointerEvents: 'auto',
+                                    transform: 'none',
+                                    transition: 'none',
+                                    animation: 'none',
+                                    textAlign: 'center',
+                                    lineHeight: '60px'
+                                }}
+                            >
+                                X
+                            </button>
+                            <h3>{currentCamp ? 'Editar' : 'Nueva'} Campaña</h3>
+                            <button 
+                                className="btn btn-ghost" 
+                                onClick={() => setIsCampModalOpen(false)}
+                                style={{ 
+                                    position: 'absolute', 
+                                    top: '0.5rem', 
+                                    right: '0.5rem', 
+                                    padding: '0.75rem',
+                                    background: 'rgba(239, 68, 68, 0.2)',
+                                    border: '1px solid rgba(239, 68, 68, 0.5)',
+                                    borderRadius: '8px',
+                                    zIndex: 1000,
+                                    color: '#fca5a5',
+                                    fontSize: '1.5rem',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.target.style.background = 'rgba(239, 68, 68, 0.3)';
+                                    e.target.style.transform = 'scale(1.1)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.target.style.background = 'rgba(239, 68, 68, 0.2)';
+                                    e.target.style.transform = 'scale(1)';
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleCampSubmit}>
+                            <div className="form-group">
+                                <label>Nombre:</label>
+                                <input type="text" value={campForm.nombre} onChange={(e) => setCampForm({...campForm, nombre: e.target.value})} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Descripción:</label>
+                                <textarea value={campForm.descripcion} onChange={(e) => setCampForm({...campForm, descripcion: e.target.value})} />
+                            </div>
+                            <div className="form-group">
+                                <label>Segmento:</label>
+                                <select value={campForm.segmento} onChange={(e) => setCampForm({...campForm, segmento: e.target.value})} required>
+                                    <option value="">Seleccionar segmento</option>
+                                    {segmentos.map(segmento => (
+                                        <option key={segmento.id} value={segmento.id}>{segmento.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Fecha Inicio:</label>
+                                    <input type="date" value={campForm.fecha_inicio} onChange={(e) => setCampForm({...campForm, fecha_inicio: e.target.value})} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Fecha Fin:</label>
+                                    <input type="date" value={campForm.fecha_fin} onChange={(e) => setCampForm({...campForm, fecha_fin: e.target.value})} />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Presupuesto:</label>
+                                <input type="number" step="0.01" value={campForm.presupuesto} onChange={(e) => setCampForm({...campForm, presupuesto: e.target.value})} />
+                            </div>
+                            <div className="form-group">
+                                <label>Estado:</label>
+                                <select value={campForm.estado} onChange={(e) => setCampForm({...campForm, estado: e.target.value})}>
+                                    <option value="planificada">Planificada</option>
+                                    <option value="activa">Activa</option>
+                                    <option value="pausada">Pausada</option>
+                                    <option value="finalizada">Finalizada</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Canales (separados por coma):</label>
+                                <input type="text" value={campForm.canales.join(', ')} onChange={(e) => setCampForm({...campForm, canales: e.target.value.split(', ')})} placeholder="email, redes_sociales, publicidad" />
+                            </div>
+                            
+                            {currentCamp && (
+                                <div style={{ 
+                                    backgroundColor: '#f8f9fa', 
+                                    padding: '15px', 
+                                    borderRadius: '8px', 
+                                    marginTop: '15px',
+                                    border: '1px solid #e9ecef'
+                                }}>
+                                    <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>Métricas de Campaña</h4>
+                                    <div style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                                        gap: '10px' 
+                                    }}>
+                                        <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
+                                            <label style={{ display: 'block', fontSize: '12px', color: '#6c757d', marginBottom: '5px' }}>Leads Generados:</label>
+                                            <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#007bff' }}>{currentCamp.leads_generados || 0}</span>
+                                        </div>
+                                        <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
+                                            <label style={{ display: 'block', fontSize: '12px', color: '#6c757d', marginBottom: '5px' }}>Conversiones:</label>
+                                            <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#28a745' }}>{currentCamp.conversiones || 0}</span>
+                                        </div>
+                                        <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
+                                            <label style={{ display: 'block', fontSize: '12px', color: '#6c757d', marginBottom: '5px' }}>Tasa de Conversión:</label>
+                                            <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#fd7e14' }}>
+                                                {currentCamp.tasa_conversion ? currentCamp.tasa_conversion.toFixed(1) : 0}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div className="modal-actions">
+                                <button type="button" onClick={() => setIsCampModalOpen(false)}>Cancelar</button>
+                                <button type="submit" className="btn-primary">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Marketing;

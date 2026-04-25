@@ -191,8 +191,8 @@ function Marketing() {
 
             {/* Modal Campaña */}
             {isCampModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal" style={{ position: 'relative' }}>
+                <div className="modal-overlay" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}>
+                    <div className="modal" style={{ position: 'relative', backgroundColor: 'white', color: '#1a202c' }}>
                         <div className="modal-header">
                             <button 
                                 className="btn btn-ghost modal-close-btn" 

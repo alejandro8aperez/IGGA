@@ -8,6 +8,7 @@ class SegmentoSerializer(serializers.ModelSerializer):
 
 class CampanaSerializer(serializers.ModelSerializer):
     segmento_nombre = serializers.CharField(source='segmento.nombre', read_only=True)
+    tasa_conversion = serializers.ReadOnlyField()
     
     class Meta:
         model = Campana
@@ -15,6 +16,7 @@ class CampanaSerializer(serializers.ModelSerializer):
 
 class LeadSerializer(serializers.ModelSerializer):
     campana_nombre = serializers.CharField(source='campana.nombre', read_only=True)
+    cliente_convertido_nombre = serializers.CharField(source='cliente_convertido.nombre', read_only=True)
     
     class Meta:
         model = Lead

@@ -10,6 +10,7 @@ class Segmento(models.Model):
         return self.nombre
 
 class Campana(models.Model):
+    numero_campana = models.CharField(max_length=50, unique=True, blank=True, null=True)
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     segmento = models.ForeignKey(Segmento, on_delete=models.CASCADE)
@@ -23,9 +24,25 @@ class Campana(models.Model):
         ('finalizada', 'Finalizada')
     ], default='planificada')
     canales = models.JSONField(default=list)  # e.g., ['email', 'redes_sociales', 'publicidad']
+    leads_generados = models.PositiveIntegerField(default=0)
+    conversiones = models.PositiveIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new and not self.numero_campana:
+            self.numero_campana = f"CAMP-{self.id:04d}"
+            type(self).objects.filter(pk=self.pk).update(numero_campana=self.numero_campana)
+
+    @property
+    def tasa_conversion(self):
+        if self.leads_generados > 0:
+            return (self.conversiones / self.leads_generados) * 100
+        return 0
 
     def __str__(self):
-        return self.nombre
+        numero = self.numero_campana or str(self.id)
+        return f"Campaña #{numero} - {self.nombre}"
 
 class Lead(models.Model):
     nombre = models.CharField(max_length=200)
@@ -50,6 +67,26 @@ class Lead(models.Model):
     ], default='nuevo')
     puntuacion = models.IntegerField(default=0)  # Lead scoring
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    cliente_convertido = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def convertir_a_cliente(self):
+        if not self.cliente_convertido:
+            cliente = Cliente.objects.create(
+                nombre=self.nombre,
+                email=self.email,
+                telefono=self.telefono,
+                cedula='',  # Se puede actualizar después
+                direccion=''  # Se puede actualizar después
+            )
+            self.cliente_convertido = cliente
+            self.estado = 'ganado'
+            self.save()
+            # Actualizar métricas de campaña
+            if self.campana:
+                self.campana.conversiones += 1
+                self.campana.save()
+            return cliente
+        return self.cliente_convertido
 
     def __str__(self):
         return f"{self.nombre} - {self.estado}"
