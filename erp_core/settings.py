@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     # Local apps
+    'erp_core.apps.ErpCoreConfig',
     'multi_empresa',
     'mrp',
     'crm',
