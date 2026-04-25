@@ -50,6 +50,7 @@ const NAV_GROUPS = [
     {
         grupo: 'Principal',
         items: [
+            { path: '/',             name: 'Inicio',        icon: LayoutDashboard },
             { path: '/dashboard',     name: 'Dashboard',     icon: LayoutDashboard },
             { path: '/multi-empresa', name: 'Multi-Empresa', icon: Building2 },
         ]
