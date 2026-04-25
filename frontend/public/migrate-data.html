@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migrar Datos - ERP 8AMPERIOS</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        h1 { color: #4fc3f7; }
+        .step {
+            background: #16213e;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4fc3f7;
+        }
+        button {
+            background: #4fc3f7;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover { background: #29b6f6; }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: #0f3460;
+            color: #fff;
+            border: 1px solid #4fc3f7;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            background: #0f3460;
+        }
+        .success { background: #2e7d32; }
+        .error { background: #c62828; }
+        .warning { background: #f57c00; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #4fc3f7;
+        }
+        th { color: #4fc3f7; }
+        .count { 
+            background: #4fc3f7; 
+            color: #1a1a2e; 
+            padding: 2px 8px; 
+            border-radius: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Migrar Datos - ERP 8AMPERIOS</h1>
+    <p>Herramienta para exportar datos del sistema local e importarlos en la nube.</p>
+
+    <div class="step">
+        <h2>Paso 1: Exportar datos del LOCAL</h2>
+        <p>Primero, ve a tu sistema <strong>local</strong> (http://localhost:5174) y ejecuta:</p>
+        <button onclick="listLocalModels()">📋 Ver modelos disponibles (LOCAL)</button>
+        <div id="localStatus" class="status" style="display:none;"></div>
+        <table id="localModels" style="display:none;">
+            <thead>
+                <tr><th>Modelo</th><th>Registros</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="localModelsBody"></tbody>
+        </table>
+    </div>
+
+    <div class="step">
+        <h2>Paso 2: Copiar datos exportados</h2>
+        <p>Copia el JSON exportado y pégalo aquí:</p>
+        <textarea id="jsonData" placeholder='Pega aquí el JSON con los datos exportados...
+
+Ejemplo:
+{
+  "model": "crm.Cliente",
+  "data": [...]
+}'></textarea>
+        <button onclick="validateJSON()">✅ Validar JSON</button>
+        <div id="jsonStatus" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="step">
+        <h2>Paso 3: Importar en la NUBE</h2>
+        <p>Ahora importa los datos en el sistema <strong>en la nube</strong>:</p>
+        <button onclick="importToCloud()">☁️ Importar en la NUBE</button>
+        <div id="cloudStatus" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="step">
+        <h2>📊 Resumen de Migración</h2>
+        <div id="migrationSummary"></div>
+    </div>
+
+    <script>
+        // Configuración de APIs
+        const LOCAL_API = 'http://localhost:8000/api';
+        const CLOUD_API = 'https://erp-backend-a37b.onrender.com/api';
+        
+        let exportedData = {};
+
+        async function listLocalModels() {
+            const status = document.getElementById('localStatus');
+            const table = document.getElementById('localModels');
+            const tbody = document.getElementById('localModelsBody');
+            
+            status.style.display = 'block';
+            status.className = 'status';
+            status.textContent = 'Cargando modelos...';
+            
+            try {
+                const response = await fetch(`${LOCAL_API}/list-models/`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    tbody.innerHTML = '';
+                    result.models.forEach(model => {
+                        if (model.count > 0) {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${model.full_name}</td>
+                                <td><span class="count">${model.count}</span></td>
+                                <td><button onclick="exportModel('${model.full_name}')">📤 Exportar</button></td>
+                            `;
+                            tbody.appendChild(row);
+                        }
+                    });
+                    
+                    table.style.display = 'table';
+                    status.className = 'status success';
+                    status.textContent = `✅ ${result.models.filter(m => m.count > 0).length} modelos con datos encontrados`;
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}. ¿El backend local está corriendo?`;
+            }
+        }
+
+        async function exportModel(modelName) {
+            const status = document.getElementById('localStatus');
+            status.style.display = 'block';
+            status.className = 'status';
+            status.textContent = `Exportando ${modelName}...`;
+            
+            try {
+                const response = await fetch(`${LOCAL_API}/export-data/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: modelName })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    exportedData = result;
+                    document.getElementById('jsonData').value = JSON.stringify(result, null, 2);
+                    status.className = 'status success';
+                    status.textContent = `✅ Exportado: ${result.count} registros de ${modelName}`;
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        function validateJSON() {
+            const status = document.getElementById('jsonStatus');
+            const textarea = document.getElementById('jsonData');
+            
+            try {
+                const data = JSON.parse(textarea.value);
+                
+                if (!data.model || !data.data) {
+                    throw new Error('El JSON debe tener "model" y "data"');
+                }
+                
+                exportedData = data;
+                status.className = 'status success';
+                status.textContent = `✅ JSON válido: ${data.data.length} registros de ${data.model}`;
+                status.style.display = 'block';
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+                status.style.display = 'block';
+            }
+        }
+
+        async function importToCloud() {
+            const status = document.getElementById('cloudStatus');
+            const summary = document.getElementById('migrationSummary');
+            
+            if (!exportedData.model || !exportedData.data) {
+                status.className = 'status error';
+                status.textContent = '❌ Primero exporta o pega los datos JSON';
+                status.style.display = 'block';
+                return;
+            }
+            
+            status.style.display = 'block';
+            status.className = 'status';
+            status.textContent = `Importando ${exportedData.data.length} registros de ${exportedData.model}...`;
+            
+            try {
+                const response = await fetch(`${CLOUD_API}/import-data/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(exportedData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    status.className = 'status success';
+                    status.textContent = `✅ Importación exitosa: ${result.created} creados, ${result.updated} actualizados`;
+                    
+                    summary.innerHTML += `
+                        <div class="status success">
+                            ✅ ${exportedData.model}: ${result.created} creados, ${result.updated} actualizados (Total: ${result.total})
+                        </div>
+                    `;
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

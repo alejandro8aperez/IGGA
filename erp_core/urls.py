@@ -22,6 +22,7 @@ from rest_framework_simplejwt.views import (
 )
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, ping
+from .views_import import import_data_api, export_data_api, list_models
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -61,5 +62,8 @@ urlpatterns = [
     path('api/facturacion-electronica/', include('facturacion_electronica.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/import-data/', import_data_api, name='import_data'),
+    path('api/export-data/', export_data_api, name='export_data'),
+    path('api/list-models/', list_models, name='list_models'),
     path('api/', include(router.urls)),
 ]
