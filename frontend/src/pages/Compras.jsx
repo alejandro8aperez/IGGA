@@ -10,12 +10,15 @@ const API_PROV = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') +
 const API_ORD = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/ordenes/';
 const API_RECEPCION = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/recepciones/';
 const API_PAGO = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/pagos/';
+const API_PROD_PROV = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/productos-proveedor/';
 
 export default function Compras() {
     const [proveedores, setProveedores] = useState([]);
     const [ordenes, setOrdenes] = useState([]);
     const [recepciones, setRecepciones] = useState([]);
     const [pagos, setPagos] = useState([]);
+    const [productosProveedor, setProductosProveedor] = useState([]);
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('proveedores');
@@ -49,6 +52,12 @@ export default function Compras() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (activeTab === 'productos-proveedor' && proveedorSeleccionado) {
+            fetchProductosPorProveedor();
+        }
+    }, [activeTab, proveedorSeleccionado]);
+
     const fetchData = async () => {
         try {
             const [resProv, resOrd, resRecep, resPagos] = await Promise.all([
@@ -66,6 +75,15 @@ export default function Compras() {
             console.error('Error fetching data:', err);
             setError('Error al cargar datos de Compras.');
             setLoading(false);
+        }
+    };
+
+    const fetchProductosPorProveedor = async () => {
+        try {
+            const res = await axios.get(`${API_PROD_PROV}?proveedor=${proveedorSeleccionado}`);
+            setProductosProveedor(res.data);
+        } catch (err) {
+            console.error('Error fetching productos por proveedor:', err);
         }
     };
 
@@ -752,6 +770,38 @@ export default function Compras() {
                     >
                         <CreditCard size={16} />
                         Pagos
+                    </button>
+                    <button 
+                        style={{
+                            background: activeTab === 'productos-proveedor' 
+                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                : 'transparent',
+                            color: activeTab === 'productos-proveedor' ? 'white' : '#4a5568',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (activeTab !== 'productos-proveedor') {
+                                e.target.style.backgroundColor = '#f3f4f6';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (activeTab !== 'productos-proveedor') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
+                        onClick={() => setActiveTab('productos-proveedor')}
+                    >
+                        <Package size={16} />
+                        Productos por Proveedor
                     </button>
                 </div>
             </div>
@@ -1546,6 +1596,156 @@ export default function Compras() {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+
+            {activeTab === 'productos-proveedor' && (
+                <div>
+                    {/* Header */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '1.5rem',
+                        background: 'white',
+                        padding: '1.5rem',
+                        borderRadius: '16px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                    }}>
+                        <div>
+                            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1a202c', fontSize: '1.25rem', fontWeight: '600' }}>
+                                Productos por Proveedor
+                            </h3>
+                            <p style={{ margin: 0, color: '#718096', fontSize: '0.9rem' }}>
+                                Consulta qué productos vende cada proveedor
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            <select
+                                value={proveedorSeleccionado}
+                                onChange={(e) => setProveedorSeleccionado(e.target.value)}
+                                style={{
+                                    padding: '0.75rem 1rem',
+                                    border: '2px solid #e2e8f0',
+                                    borderRadius: '10px',
+                                    fontSize: '0.95rem',
+                                    minWidth: '250px',
+                                    background: 'white'
+                                }}
+                            >
+                                <option value="">Seleccione un proveedor...</option>
+                                {proveedores.map((prov) => (
+                                    <option key={prov.id} value={prov.id}>
+                                        {prov.razon_social} ({prov.nit})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Productos Table */}
+                    {proveedorSeleccionado && (
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                        }}>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: '#f8fafc' }}>
+                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Producto</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Código SKU</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Código Proveedor</th>
+                                            <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Precio Proveedor</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Entrega (días)</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Principal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {productosProveedor.length > 0 ? (
+                                            productosProveedor.map((pp) => (
+                                                <tr key={pp.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>
+                                                        {pp.producto_nombre}
+                                                    </td>
+                                                    <td style={{ padding: '1rem', color: '#4a5568', fontFamily: 'monospace' }}>
+                                                        {pp.producto_codigo_sku}
+                                                    </td>
+                                                    <td style={{ padding: '1rem', color: '#4a5568' }}>
+                                                        {pp.codigo_proveedor || '-'}
+                                                    </td>
+                                                    <td style={{ padding: '1rem', textAlign: 'right', color: '#2d3748', fontWeight: '600' }}>
+                                                        {pp.precio_proveedor ? `$${parseFloat(pp.precio_proveedor).toLocaleString()}` : '-'}
+                                                    </td>
+                                                    <td style={{ padding: '1rem', textAlign: 'center', color: '#4a5568' }}>
+                                                        {pp.tiempo_entrega_dias} días
+                                                    </td>
+                                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                                        {pp.es_proveedor_principal ? (
+                                                            <span style={{
+                                                                padding: '4px 12px',
+                                                                borderRadius: '9999px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '600',
+                                                                background: '#c6f6d5',
+                                                                color: '#22543d'
+                                                            }}>
+                                                                Sí
+                                                            </span>
+                                                        ) : (
+                                                            <span style={{
+                                                                padding: '4px 12px',
+                                                                borderRadius: '9999px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '600',
+                                                                background: '#e2e8f0',
+                                                                color: '#4a5568'
+                                                            }}>
+                                                                No
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#718096' }}>
+                                                    No hay productos registrados para este proveedor.
+                                                    <br />
+                                                    <span style={{ fontSize: '0.875rem' }}>
+                                                        Agregue productos desde el módulo de Compras.
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style={{ padding: '1rem 1.5rem', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                                <span style={{ color: '#718096', fontSize: '0.875rem' }}>
+                                    Total: {productosProveedor.length} producto(s)
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {!proveedorSeleccionado && (
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '16px',
+                            padding: '3rem',
+                            textAlign: 'center',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                        }}>
+                            <Package size={48} style={{ color: '#cbd5e0', marginBottom: '1rem' }} />
+                            <h3 style={{ color: '#4a5568', margin: '0 0 0.5rem 0' }}>Seleccione un proveedor</h3>
+                            <p style={{ color: '#718096', margin: 0 }}>
+                                Use el selector arriba para ver los productos de un proveedor específico.
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 

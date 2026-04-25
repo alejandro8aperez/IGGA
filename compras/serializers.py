@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Proveedor, OrdenCompra, DetalleOrdenCompra, Contrato, RecepcionCompra, PagoCompra
+from .models import Proveedor, OrdenCompra, DetalleOrdenCompra, Contrato, RecepcionCompra, PagoCompra, ProductoProveedor
 
 class ProveedorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,3 +45,13 @@ class ContratoSerializer(serializers.ModelSerializer):
 
     def get_duracion_dias(self, obj):
         return obj.duracion_dias()
+
+class ProductoProveedorSerializer(serializers.ModelSerializer):
+    producto_nombre = serializers.ReadOnlyField(source='producto.nombre')
+    producto_codigo_sku = serializers.ReadOnlyField(source='producto.codigo_sku')
+    proveedor_nombre = serializers.ReadOnlyField(source='proveedor.razon_social')
+    proveedor_nit = serializers.ReadOnlyField(source='proveedor.nit')
+
+    class Meta:
+        model = ProductoProveedor
+        fields = '__all__'

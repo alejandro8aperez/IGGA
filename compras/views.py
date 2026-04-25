@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions
-from .models import Proveedor, OrdenCompra, DetalleOrdenCompra, Contrato, RecepcionCompra, PagoCompra
-from .serializers import ProveedorSerializer, OrdenCompraSerializer, DetalleOrdenCompraSerializer, ContratoSerializer, RecepcionCompraSerializer, PagoCompraSerializer
+from .models import Proveedor, OrdenCompra, DetalleOrdenCompra, Contrato, RecepcionCompra, PagoCompra, ProductoProveedor
+from .serializers import ProveedorSerializer, OrdenCompraSerializer, DetalleOrdenCompraSerializer, ContratoSerializer, RecepcionCompraSerializer, PagoCompraSerializer, ProductoProveedorSerializer
 
 class ProveedorViewSet(viewsets.ModelViewSet):
     queryset = Proveedor.objects.all().order_by('razon_social')
@@ -31,3 +31,18 @@ class ContratoViewSet(viewsets.ModelViewSet):
     queryset = Contrato.objects.all().order_by('codigo')
     serializer_class = ContratoSerializer
     permission_classes = [permissions.AllowAny]
+
+class ProductoProveedorViewSet(viewsets.ModelViewSet):
+    queryset = ProductoProveedor.objects.all().select_related('producto', 'proveedor')
+    serializer_class = ProductoProveedorSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        proveedor_id = self.request.query_params.get('proveedor')
+        producto_id = self.request.query_params.get('producto')
+        if proveedor_id:
+            queryset = queryset.filter(proveedor_id=proveedor_id)
+        if producto_id:
+            queryset = queryset.filter(producto_id=producto_id)
+        return queryset

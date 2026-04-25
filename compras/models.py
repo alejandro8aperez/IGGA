@@ -129,3 +129,23 @@ class Contrato(models.Model):
 
     def __str__(self):
         return f"CON-{self.codigo} ({self.proveedor.razon_social})"
+
+
+class ProductoProveedor(models.Model):
+    """Relación entre Producto y Proveedor - qué productos vende cada proveedor"""
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='proveedores')
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='productos')
+    codigo_proveedor = models.CharField(max_length=50, blank=True, help_text="Código del producto según el proveedor")
+    precio_proveedor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tiempo_entrega_dias = models.IntegerField(default=7, help_text="Días de entrega promedio")
+    es_proveedor_principal = models.BooleanField(default=False, help_text="Proveedor principal para este producto")
+    notas = models.TextField(blank=True)
+
+    class Meta:
+        db_table = 'compras_productoproveedor'
+        unique_together = ['producto', 'proveedor']
+        verbose_name = "Producto por Proveedor"
+        verbose_name_plural = "Productos por Proveedor"
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.proveedor.razon_social}"
