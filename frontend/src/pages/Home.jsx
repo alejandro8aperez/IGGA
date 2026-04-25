@@ -95,6 +95,14 @@ const modules = [
         stats: { total: 23, growth: '+25%' }
     },
     {
+        name: 'Informe Diario Proy',
+        description: 'Formato F-141-IN - Interventoría',
+        icon: FileText,
+        color: '#6366f1',
+        path: '/informe-diario-proy',
+        stats: { total: 0, growth: 'Nuevo' }
+    },
+    {
         name: 'Mantenimiento',
         description: 'Gestión de mantenimiento',
         icon: Wrench,
