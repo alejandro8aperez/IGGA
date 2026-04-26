@@ -13,9 +13,6 @@ import { API } from '../config/api';
 const API_BASE = API.BASE;
 const MEDIA_BASE = API_BASE.replace(/\/api$/, ''); // URL base sin /api para archivos media (siempre backend)
 
-console.log('API.BASE:', API.BASE);
-console.log('MEDIA_BASE:', MEDIA_BASE);
-
 function POS() {
     const navigate = useNavigate();
     const [productos, setProductos] = useState([]);
@@ -535,12 +532,6 @@ function ProductCard({ product, onClick }) {
     const [isPressed, setIsPressed] = useState(false);
     const imageUrl = product.imagen_url || product.imagen;
     
-    console.log('ProductCard - product.nombre:', product.nombre);
-    console.log('ProductCard - product.imagen_url:', product.imagen_url);
-    console.log('ProductCard - product.imagen:', product.imagen);
-    console.log('ProductCard - MEDIA_BASE:', MEDIA_BASE);
-    console.log('ProductCard - final imageUrl:', imageUrl);
-    
     return (
         <div 
             onClick={() => {
@@ -561,7 +552,7 @@ function ProductCard({ product, onClick }) {
                 width: '100%', height: '140px', background: '#f5f3ff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-                {imageUrl ? (
+                {imageUrl && imageUrl.length > 0 ? (
                     <img 
                         src={imageUrl} 
                         alt={product.nombre}
