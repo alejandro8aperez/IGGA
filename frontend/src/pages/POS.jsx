@@ -563,7 +563,7 @@ function ProductCard({ product, onClick }) {
             }}>
                 {imageUrl ? (
                     <img 
-                        src="https://via.placeholder.com/150" 
+                        src={imageUrl} 
                         alt={product.nombre}
                         style={{
                             width: '100%', height: '100%', objectFit: 'contain'
