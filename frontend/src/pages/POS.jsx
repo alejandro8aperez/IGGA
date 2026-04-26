@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
 
 const API_BASE = API.BASE;
+const MEDIA_BASE = API_BASE.replace(/\/api$/, ''); // URL base sin /api para archivos media
 
 function POS() {
     const navigate = useNavigate();
@@ -153,7 +154,7 @@ function POS() {
             };
             
             console.log('Procesando venta:', payload);
-            const response = await axios.post(`${API_BASE}pos/ventas/`, payload);
+            const response = await axios.post(`${API_BASE}/pos/ventas/`, payload);
             setLastSaleReceipt(response.data);
             setCart([]);
             setMontoRecibido('');
@@ -528,6 +529,8 @@ function CategoryChip({ active, onClick, label, icon: Icon }) {
 
 function ProductCard({ product, onClick }) {
     const [isPressed, setIsPressed] = useState(false);
+    const imageUrl = product.imagen_url || (product.imagen ? `${MEDIA_BASE}${product.imagen}` : null);
+    
     return (
         <div 
             onClick={() => {
@@ -536,22 +539,53 @@ function ProductCard({ product, onClick }) {
                 setTimeout(() => setIsPressed(false), 150);
             }}
             style={{
-                background: 'white', borderRadius: '16px', padding: '1.25rem', cursor: 'pointer',
+                background: 'white', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', 
                 justifyContent: 'space-between', border: '1px solid #f1f5f9',
-                transform: isPressed ? 'scale(0.95)' : 'none', transition: 'all 0.1s'
+                transform: isPressed ? 'scale(0.95)' : 'none', transition: 'all 0.1s',
+                height: '260px'
             }}
         >
-            <div style={{ marginBottom: '1rem' }}>
-                <div style={{ background: '#f5f3ff', color: '#7c3aed', fontSize: '0.65rem', fontWeight: '800', width: 'fit-content', padding: '2px 8px', borderRadius: '8px', marginBottom: '0.5rem' }}>
-                    {product.categoria_nombre || 'PAN'}
+            {/* Imagen del producto */}
+            {imageUrl ? (
+                <div style={{
+                    width: '100%', height: '140px', background: '#f5f3ff', overflow: 'hidden',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <img 
+                        src={imageUrl} 
+                        alt={product.nombre}
+                        style={{
+                            width: '100%', height: '100%', objectFit: 'cover',
+                            imageRendering: 'crisp-edges',
+                            WebkitFontSmoothing: 'antialiased'
+                        }}
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                        }}
+                    />
                 </div>
-                <h3 style={{ margin: 0, fontSize: '1rem', color: '#1e293b', fontWeight: '700', lineHeight: 1.2 }}>{product.nombre}</h3>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#10b981' }}>${Number(product.precio_venta).toLocaleString()}</span>
-                <div style={{ background: '#ec4899', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Plus size={18} />
+            ) : (
+                <div style={{
+                    width: '100%', height: '140px', background: '#f5f3ff', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', color: '#c084fc'
+                }}>
+                    📦
+                </div>
+            )}
+            
+            <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                    <div style={{ background: '#f5f3ff', color: '#7c3aed', fontSize: '0.65rem', fontWeight: '800', width: 'fit-content', padding: '2px 8px', borderRadius: '8px', marginBottom: '0.5rem' }}>
+                        {product.categoria_nombre || 'PAN'}
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: '700', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.nombre}</h3>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: '800', color: '#10b981' }}>${Number(product.precio_venta).toLocaleString()}</span>
+                    <div style={{ background: '#ec4899', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Plus size={18} />
+                    </div>
                 </div>
             </div>
         </div>
@@ -559,8 +593,33 @@ function ProductCard({ product, onClick }) {
 }
 
 function CartItem({ item, onRemove, onUpdateQty }) {
+    const imageUrl = item.imagen_url || (item.imagen ? `${MEDIA_BASE}${item.imagen}` : null);
+    
     return (
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.5rem', borderRadius: '12px' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
+            {/* Miniatura de imagen */}
+            {imageUrl ? (
+                <img 
+                    src={imageUrl} 
+                    alt={item.nombre}
+                    style={{
+                        width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover',
+                        imageRendering: 'crisp-edges',
+                        WebkitFontSmoothing: 'antialiased'
+                    }}
+                    onError={(e) => {
+                        e.target.style.display = 'none';
+                    }}
+                />
+            ) : (
+                <div style={{
+                    width: '50px', height: '50px', borderRadius: '8px', background: '#f5f3ff', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc'
+                }}>
+                    📦
+                </div>
+            )}
+            
             <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1e293b' }}>{item.nombre}</div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b' }}>${Number(item.precio_venta).toLocaleString()} / u</div>
