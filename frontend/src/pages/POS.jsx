@@ -535,6 +535,12 @@ function ProductCard({ product, onClick }) {
     const [isPressed, setIsPressed] = useState(false);
     const imageUrl = product.imagen_url || (product.imagen ? `${MEDIA_BASE}${product.imagen}` : null);
     
+    console.log('ProductCard - product.nombre:', product.nombre);
+    console.log('ProductCard - product.imagen_url:', product.imagen_url);
+    console.log('ProductCard - product.imagen:', product.imagen);
+    console.log('ProductCard - MEDIA_BASE:', MEDIA_BASE);
+    console.log('ProductCard - final imageUrl:', imageUrl);
+    
     return (
         <div 
             onClick={() => {
