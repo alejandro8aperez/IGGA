@@ -556,6 +556,7 @@ function ProductCard({ product, onClick }) {
                     <img 
                         src={imageUrl} 
                         alt={product.nombre}
+                        crossOrigin="anonymous"
                         style={{
                             maxWidth: '100%', maxHeight: '100%'
                         }}
