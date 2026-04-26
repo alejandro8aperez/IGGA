@@ -560,24 +560,19 @@ function ProductCard({ product, onClick }) {
                         src={imageUrl} 
                         alt={product.nombre}
                         style={{
-                            width: '100%', height: '100%', objectFit: 'contain',
-                            padding: '8px'
-                        }}
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                            e.target.parentElement.querySelector('.fallback-icon').style.display = 'flex';
+                            width: '100%', height: '100%', objectFit: 'cover'
                         }}
                     />
-                ) : null}
-                <div className="fallback-icon" style={{
-                    position: 'absolute', inset: 0, display: imageUrl ? 'none' : 'flex',
-                    alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-                    color: '#8b5cf6', gap: '0.5rem'
-                }}>
-                    <Package size={48} />
-                    <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
-                </div>
+                ) : (
+                    <div style={{
+                        position: 'absolute', inset: 0, display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+                        color: '#8b5cf6', gap: '0.5rem'
+                    }}>
+                        <Package size={48} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
+                    </div>
+                )}
             </div>
             
             <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
