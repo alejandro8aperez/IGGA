@@ -217,7 +217,7 @@ if USE_S3:
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 else:
     # Local media storage (for development)
-    MEDIA_URL = 'media/'
+    MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
