@@ -566,7 +566,8 @@ function ProductCard({ product, onClick }) {
                         src="https://via.placeholder.com/150" 
                         alt={product.nombre}
                         style={{
-                            maxWidth: '100%', maxHeight: '100%'
+                            maxWidth: '100%', maxHeight: '100%',
+                            border: '3px solid red'
                         }}
                     />
                 ) : (
