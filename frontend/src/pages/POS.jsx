@@ -4,7 +4,8 @@ import {
     MonitorSmartphone, ShoppingCart, Search, X, 
     CreditCard, DollarSign, ArrowLeft, RefreshCw, 
     Plus, Minus, Trash2, Printer, CheckCircle2,
-    ChevronRight, Wallet, Coffee, Cake, ShoppingBag
+    ChevronRight, Wallet, Coffee, Cake, ShoppingBag,
+    Package
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
