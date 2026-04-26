@@ -131,7 +131,8 @@ const Informediarioproy = () => {
       closeModal();
       fetchInformes();
     } catch (error) {
-      alert('Error al guardar el informe.');
+      console.error('Error al guardar:', error.response?.data || error.message);
+      alert(`Error al guardar el informe: ${error.response?.data?.detail || error.message}`);
     }
   };
 
