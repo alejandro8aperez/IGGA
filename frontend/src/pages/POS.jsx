@@ -549,28 +549,32 @@ function ProductCard({ product, onClick }) {
         >
             {/* Imagen del producto */}
             <div style={{
-                width: '100%', height: '140px', background: '#f5f3ff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                width: '100%', height: '140px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
             }}>
-                {imageUrl && imageUrl.length > 0 ? (
+                {imageUrl ? (
                     <img 
                         src={imageUrl} 
                         alt={product.nombre}
-                        crossOrigin="anonymous"
                         style={{
-                            maxWidth: '100%', maxHeight: '100%'
+                            width: '100%', height: '100%', objectFit: 'contain',
+                            padding: '8px'
+                        }}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                            e.target.parentElement.querySelector('.fallback-icon').style.display = 'flex';
                         }}
                     />
-                ) : (
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-                        color: '#8b5cf6', gap: '0.5rem'
-                    }}>
-                        <Package size={48} />
-                        <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
-                    </div>
-                )}
+                ) : null}
+                <div className="fallback-icon" style={{
+                    position: 'absolute', inset: 0, display: imageUrl ? 'none' : 'flex',
+                    alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+                    color: '#8b5cf6', gap: '0.5rem'
+                }}>
+                    <Package size={48} />
+                    <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
+                </div>
             </div>
             
             <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
@@ -592,7 +596,7 @@ function ProductCard({ product, onClick }) {
 }
 
 function CartItem({ item, onRemove, onUpdateQty }) {
-    const imageUrl = item.imagen_url || (item.imagen ? `${MEDIA_BASE}${item.imagen}` : null);
+    const imageUrl = item.imagen_url || item.imagen;
     
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
