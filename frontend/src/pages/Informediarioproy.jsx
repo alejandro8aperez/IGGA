@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FileText, Plus, X, Edit3, Trash2, Calendar, Users, Truck, ClipboardList, AlertCircle } from 'lucide-react';
 import { API } from '../config/api';
 
-const API_URL = API.OPERACIONES.INFORMES_DIARIOS || '/api/operaciones/informes-diarios/';
+const API_URL = '/api/operaciones/informes-diarios/';
 
 const Informediarioproy = () => {
   const [informes, setInformes] = useState([]);
