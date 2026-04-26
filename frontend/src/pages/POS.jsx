@@ -558,7 +558,7 @@ function ProductCard({ product, onClick }) {
         >
             {/* Imagen del producto */}
             <div style={{
-                width: '100%', height: '140px', background: '#f5f3ff', overflow: 'hidden',
+                width: '100%', height: '140px', background: '#f5f3ff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
                 {imageUrl ? (
@@ -566,7 +566,7 @@ function ProductCard({ product, onClick }) {
                         src={imageUrl} 
                         alt={product.nombre}
                         style={{
-                            width: '100%', height: '100%', objectFit: 'contain'
+                            maxWidth: '100%', maxHeight: '100%'
                         }}
                     />
                 ) : (
