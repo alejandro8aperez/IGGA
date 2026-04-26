@@ -129,6 +129,7 @@ export const API = {
         TAREAS:         `${B}/operaciones/tareas/`,
         INDICADORES:    `${B}/operaciones/indicadores/`,
         TURNOS:         `${B}/operaciones/turnos/`,
+        INFORMES_DIARIOS: `${B}/operaciones/informes-diarios/`,
     },
 
     // ── RRHH ──────────────────────────────────────────────────────────────────
