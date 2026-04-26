@@ -11,7 +11,10 @@ import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
 
 const API_BASE = API.BASE;
-const MEDIA_BASE = API_BASE.replace(/\/api$/, ''); // URL base sin /api para archivos media
+const MEDIA_BASE = API_BASE.replace(/\/api$/, ''); // URL base sin /api para archivos media (siempre backend)
+
+console.log('API.BASE:', API.BASE);
+console.log('MEDIA_BASE:', MEDIA_BASE);
 
 function POS() {
     const navigate = useNavigate();
