@@ -558,23 +558,20 @@ function ProductCard({ product, onClick }) {
         >
             {/* Imagen del producto */}
             <div style={{
-                width: '100%', height: '140px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', overflow: 'hidden',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
+                width: '100%', height: '140px', background: '#f5f3ff', overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
                 {imageUrl ? (
                     <img 
                         src={imageUrl} 
                         alt={product.nombre}
                         style={{
-                            width: '100%', height: '100%', objectFit: 'cover'
-                        }}
-                        onError={(e) => {
-                            console.error('Error loading image:', imageUrl, e);
+                            maxWidth: '100%', maxHeight: '100%'
                         }}
                     />
                 ) : (
                     <div style={{
-                        position: 'absolute', inset: 0, display: 'flex',
+                        display: 'flex',
                         alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
                         color: '#8b5cf6', gap: '0.5rem'
                     }}>
