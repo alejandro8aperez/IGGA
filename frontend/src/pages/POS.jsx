@@ -533,7 +533,7 @@ function CategoryChip({ active, onClick, label, icon: Icon }) {
 
 function ProductCard({ product, onClick }) {
     const [isPressed, setIsPressed] = useState(false);
-    const imageUrl = product.imagen_url || (product.imagen ? `${MEDIA_BASE}${product.imagen}` : null);
+    const imageUrl = product.imagen_url || product.imagen;
     
     console.log('ProductCard - product.nombre:', product.nombre);
     console.log('ProductCard - product.imagen_url:', product.imagen_url);
