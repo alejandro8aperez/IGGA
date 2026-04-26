@@ -23,7 +23,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, ping, create_initial_superuser, verify_credentials
+from .views import UserViewSet, ping, create_initial_superuser, verify_credentials, test_image
 from .views_import import import_data_api, export_data_api, list_models
 
 router = DefaultRouter()
@@ -70,6 +70,7 @@ urlpatterns = [
     path('api/setup-superuser/', create_initial_superuser, name='create_initial_superuser'),
     path('api/verify-credentials/', verify_credentials, name='verify_credentials'),
     path('api/', include(router.urls)),
+    path('test-image/<str:filename>/', test_image, name='test_image'),
 ]
 
 # Servir archivos de media (tanto en desarrollo como en producción)

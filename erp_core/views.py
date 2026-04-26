@@ -95,6 +95,18 @@ def verify_credentials(request):
             'error': str(e)
         }, status=500)
 
+from django.http import FileResponse
+from pathlib import Path
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def test_image(request, filename):
+    """Endpoint temporal para probar acceso a imágenes"""
+    image_path = Path(__file__).parent.parent / 'media' / 'productos' / filename
+    if image_path.exists():
+        return FileResponse(open(image_path, 'rb'))
+    return JsonResponse({'error': f'Image not found: {filename}'}, status=404)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
