@@ -102,10 +102,28 @@ from pathlib import Path
 @permission_classes([AllowAny])
 def test_image(request, filename):
     """Endpoint temporal para probar acceso a imágenes"""
-    image_path = Path(__file__).parent.parent / 'media' / 'productos' / filename
+    import os
+    base_dir = Path(__file__).parent.parent
+    image_path = base_dir / 'media' / 'productos' / filename
+    
+    # Debug info
+    debug_info = {
+        'filename': filename,
+        'base_dir': str(base_dir),
+        'image_path': str(image_path),
+        'exists': image_path.exists(),
+        'cwd': os.getcwd(),
+        'files_in_media': os.listdir(str(base_dir / 'media' / 'productos')) if (base_dir / 'media' / 'productos').exists() else 'directory not found'
+    }
+    
     if image_path.exists():
-        return FileResponse(open(image_path, 'rb'))
-    return JsonResponse({'error': f'Image not found: {filename}'}, status=404)
+        try:
+            return FileResponse(open(image_path, 'rb'), content_type='image/jpeg')
+        except Exception as e:
+            debug_info['error'] = str(e)
+            return JsonResponse(debug_info, status=500)
+    
+    return JsonResponse(debug_info, status=404)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
