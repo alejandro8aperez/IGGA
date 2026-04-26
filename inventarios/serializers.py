@@ -27,8 +27,8 @@ class ProductoSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(image_url)
         
-        # Fallback: construir URL manualmente
-        return f"/media{image_url}" if not image_url.startswith('http') else image_url
+        # Fallback: la URL ya debe incluir /media/ desde Django
+        return image_url if image_url.startswith('/') else f"/{image_url}"
 
 class MovimientoInventarioSerializer(serializers.ModelSerializer):
     producto_nombre = serializers.ReadOnlyField(source='producto.nombre')

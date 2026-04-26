@@ -530,7 +530,7 @@ function CategoryChip({ active, onClick, label, icon: Icon }) {
 
 function ProductCard({ product, onClick }) {
     const [isPressed, setIsPressed] = useState(false);
-    const imageUrl = product.imagen_url || (product.imagen ? `${MEDIA_BASE}${product.imagen}` : null);
+    const imageUrl = product.imagen_url || (product.imagen ? `${MEDIA_BASE}/media/${product.imagen}` : null);
     
     return (
         <div 
@@ -596,7 +596,7 @@ function ProductCard({ product, onClick }) {
 }
 
 function CartItem({ item, onRemove, onUpdateQty }) {
-    const imageUrl = item.imagen_url || (item.imagen ? `${MEDIA_BASE}${item.imagen}` : null);
+    const imageUrl = item.imagen_url || (item.imagen ? `${MEDIA_BASE}/media/${item.imagen}` : null);
     
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
