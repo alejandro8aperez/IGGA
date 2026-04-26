@@ -59,7 +59,8 @@ class InformeDiarioProy(models.Model):
     act_tecnicas_cableado = models.TextField(blank=True)
     act_montaje_pruebas = models.TextField(blank=True)
     act_obra_civil = models.TextField(blank=True)
-    act_sst_ambiental = models.TextField(blank=True)
+    act_sst = models.TextField(blank=True)
+    act_ambiental = models.TextField(blank=True)
     
     # Firmas
     elaborado_por = models.CharField(max_length=200, blank=True)

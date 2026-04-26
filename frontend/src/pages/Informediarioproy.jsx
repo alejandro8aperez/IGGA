@@ -39,7 +39,8 @@ const Informediarioproy = () => {
     act_tecnicas_cableado: '',
     act_montaje_pruebas: '',
     act_obra_civil: '',
-    act_sst_ambiental: '',
+    act_sst: '',
+    act_ambiental: '',
     elaborado_por: '',
     revisado_por: '',
     aprobado_por: ''
@@ -93,7 +94,8 @@ const Informediarioproy = () => {
         act_tecnicas_cableado: '',
         act_montaje_pruebas: '',
         act_obra_civil: '',
-        act_sst_ambiental: '',
+        act_sst: '',
+        act_ambiental: '',
         elaborado_por: '',
         revisado_por: '',
         aprobado_por: ''
@@ -296,7 +298,7 @@ const Informediarioproy = () => {
                 <div>
                   <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: '700', color: '#1a202c', marginBottom: '1rem' }}>
                     <Truck size={18} color="#667eea" />
-                    Maquinaria y Equipos
+                    MAQUINARIAS - EQUIPOS - HERRAMIENTAS DE PODER Y VEHICULOS
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {Object.entries(form.maquinaria || {}).map(([key, value]) => (
@@ -311,7 +313,7 @@ const Informediarioproy = () => {
                 <div>
                   <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: '700', color: '#1a202c', marginBottom: '1rem' }}>
                     <Users size={18} color="#667eea" />
-                    Personal de Obra
+                    PERSONAL DE OBRA
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {Object.entries(form.personal || {}).map(([key, value]) => (
@@ -328,15 +330,16 @@ const Informediarioproy = () => {
               <div>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: '700', color: '#1a202c', marginBottom: '1rem' }}>
                   <ClipboardList size={18} color="#667eea" />
-                  Actividades
+                  ACTIVIDADES
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {[
-                    { key: 'act_administrativas', label: '1. Administrativas y Documentales' },
-                    { key: 'act_tecnicas_cableado', label: '2. Técnicas (Cableado/Conexionado/Pruebas)' },
-                    { key: 'act_montaje_pruebas', label: '3. Montaje y Pruebas' },
-                    { key: 'act_obra_civil', label: '4. Obra Civil' },
-                    { key: 'act_sst_ambiental', label: '5. Gestión SST y Ambiental' }
+                    { key: 'act_administrativas', label: '3. ACTIVIDADES ADMINISTRATIVAS Y DOCUMENTALES' },
+                    { key: 'act_tecnicas_cableado', label: '4. ACTIVIDADES DE CABLEADO, CONEXIONADO Y PRUEBAS FUNCIONALES' },
+                    { key: 'act_montaje_pruebas', label: '5. ACTIVIDADES RELACIONADAS CON PRUEBAS DE EQUIPOS Y MONTAJE DE REACTORES' },
+                    { key: 'act_obra_civil', label: '6. ACTIVIDADES DE OBRA CIVIL' },
+                    { key: 'act_sst', label: '7. GESTION EN LA SEGURIDAD Y LA SALUD EN EL TRABAJO' },
+                    { key: 'act_ambiental', label: '8. ACTIVIDADES AMBIENTALES-SOCIALES' }
                   ].map((act) => (
                     <div key={act.key}>
                       <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#4a5568', marginBottom: '0.5rem' }}>{act.label}</label>
