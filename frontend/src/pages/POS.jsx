@@ -547,32 +547,34 @@ function ProductCard({ product, onClick }) {
             }}
         >
             {/* Imagen del producto */}
-            {imageUrl ? (
-                <div style={{
-                    width: '100%', height: '140px', background: '#f5f3ff', overflow: 'hidden',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
+            <div style={{
+                width: '100%', height: '140px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
+            }}>
+                {imageUrl ? (
                     <img 
                         src={imageUrl} 
                         alt={product.nombre}
                         style={{
-                            width: '100%', height: '100%', objectFit: 'cover',
-                            imageRendering: 'crisp-edges',
-                            WebkitFontSmoothing: 'antialiased'
+                            width: '100%', height: '100%', objectFit: 'contain',
+                            padding: '8px'
                         }}
                         onError={(e) => {
+                            e.target.onerror = null;
                             e.target.style.display = 'none';
+                            e.target.parentElement.querySelector('.fallback-icon').style.display = 'flex';
                         }}
                     />
-                </div>
-            ) : (
-                <div style={{
-                    width: '100%', height: '140px', background: '#f5f3ff', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', color: '#c084fc'
+                ) : null}
+                <div className="fallback-icon" style={{
+                    position: 'absolute', inset: 0, display: imageUrl ? 'none' : 'flex',
+                    alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+                    color: '#8b5cf6', gap: '0.5rem'
                 }}>
-                    📦
+                    <Package size={48} />
+                    <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
                 </div>
-            )}
+            </div>
             
             <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
                 <div style={{ marginBottom: '0.5rem' }}>
@@ -598,27 +600,27 @@ function CartItem({ item, onRemove, onUpdateQty }) {
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
             {/* Miniatura de imagen */}
-            {imageUrl ? (
-                <img 
-                    src={imageUrl} 
-                    alt={item.nombre}
-                    style={{
-                        width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover',
-                        imageRendering: 'crisp-edges',
-                        WebkitFontSmoothing: 'antialiased'
-                    }}
-                    onError={(e) => {
-                        e.target.style.display = 'none';
-                    }}
-                />
-            ) : (
-                <div style={{
-                    width: '50px', height: '50px', borderRadius: '8px', background: '#f5f3ff', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc'
-                }}>
-                    📦
-                </div>
-            )}
+            <div style={{
+                width: '50px', height: '50px', borderRadius: '8px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0
+            }}>
+                {imageUrl ? (
+                    <img 
+                        src={imageUrl} 
+                        alt={item.nombre}
+                        style={{
+                            width: '100%', height: '100%', objectFit: 'contain',
+                            padding: '4px'
+                        }}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                        }}
+                    />
+                ) : (
+                    <Package size={24} color="#8b5cf6" />
+                )}
+            </div>
             
             <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1e293b' }}>{item.nombre}</div>
