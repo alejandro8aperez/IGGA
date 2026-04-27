@@ -1,0 +1,18 @@
+{
+  "routes": [
+    {
+      "src": "/[^.]+",
+      "dest": "/index.html"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://erp-backend-a37b.onrender.com/api/$1"
+    },
+    {
+      "source": "/media/(.*)",
+      "destination": "https://erp-backend-a37b.onrender.com/media/$1"
+    }
+  ]
+}

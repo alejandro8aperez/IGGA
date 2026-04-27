@@ -20,6 +20,7 @@ class Producto(models.Model):
     precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
     stock_actual = models.IntegerField(default=0)
     stock_minimo = models.IntegerField(default=5)
+    imagen = models.ImageField(upload_to='productos/', null=True, blank=True)
 
     def __str__(self):
         return f"[{self.codigo_sku}] {self.nombre}"

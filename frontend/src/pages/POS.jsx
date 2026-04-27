@@ -5,13 +5,16 @@ import {
     CreditCard, DollarSign, ArrowLeft, RefreshCw, 
     Plus, Minus, Trash2, Printer, CheckCircle2,
     ChevronRight, Wallet, Coffee, Cake, ShoppingBag,
-    Package
+    Package, AlertCircle, Smartphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
+import './POS.css';
 
-const API_BASE = API.BASE;
-const MEDIA_BASE = API_BASE.replace(/\/api$/, ''); // URL base sin /api para archivos media (siempre backend)
+// Usar URL absoluta para evitar que el POS busque datos en el puerto equivocado (5173) en Render
+const API_BASE = import.meta.env.VITE_API_URL || API.BASE || 'http://localhost:8000/api';
+// Mejoramos la limpieza de la URL para que funcione siempre
+const MEDIA_BASE = API_BASE.replace(/\/api\/?$/, ''); 
 
 function POS() {
     const navigate = useNavigate();
@@ -42,24 +45,29 @@ function POS() {
 
     const fetchData = async () => {
         setLoading(true);
+        setError(null);
         try {
-            const [prodRes, catRes, sesionRes] = await Promise.allSettled([
-                axios.get(`${API_BASE}/inventarios/productos/`),
-                axios.get(`${API_BASE}/inventarios/categorias/`),
-                axios.get(`${API_BASE}/pos/sesiones/activa/`)
+            const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+            const config = { timeout: 10000 };
+
+            const [prodRes, catRes, sesionRes] = await Promise.all([
+                axios.get(`${base}/inventarios/productos/`, config),
+                axios.get(`${base}/inventarios/categorias/`, config),
+                axios.get(`${base}/pos/sesiones/activa/`, config).catch(() => ({ data: null }))
             ]);
             
-            if (prodRes.status === 'fulfilled') setProductos(prodRes.value.data || []);
-            if (catRes.status === 'fulfilled') setCategorias(catRes.value.data || []);
-            
-            if (sesionRes.status === 'fulfilled') {
-                setSesionActiva(sesionRes.value.data);
+            setProductos(prodRes.data || []);
+            setCategorias(catRes.data || []);
+
+            if (sesionRes.data) {
+                setSesionActiva(sesionRes.data);
             } else {
-                // Si no hay sesión, intentar abrir una automáticamente
-                await handleOpenSession();
+                console.warn('Caja cerrada, intentando apertura automática...');
+                try { await handleOpenSession(); } catch(e) { console.error("Error sesión:", e); }
             }
         } catch (err) {
-            setError('Error al cargar productos del POS.');
+            console.error('Error fatal POS:', err);
+            setError('Error de conexión: Verifique que el Backend esté encendido.');
         } finally {
             setLoading(false);
         }
@@ -155,7 +163,8 @@ function POS() {
             };
             
             console.log('Procesando venta:', payload);
-            const response = await axios.post(`${API_BASE}/pos/ventas/`, payload);
+            const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+            const response = await axios.post(`${base}/pos/ventas/`, payload);
             setLastSaleReceipt(response.data);
             setCart([]);
             setMontoRecibido('');
@@ -166,18 +175,6 @@ function POS() {
             setIsProcessing(false);
         }
     };
-
-    if (loading) return (
-        <div style={{ 
-            height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: '#1e293b', color: 'white' 
-        }}>
-            <div style={{ textAlign: 'center' }}>
-                <RefreshCw size={48} className="animate-spin" />
-                <p style={{ marginTop: '1rem', fontSize: '1.2rem' }}>Iniciando Panadería LA BOQUILLA POS...</p>
-            </div>
-        </div>
-    );
 
     return (
         <div style={{ 
@@ -254,9 +251,23 @@ function POS() {
                         flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
                         gap: '1rem', overflowY: 'auto', paddingRight: '0.5rem'
                     }}>
-                        {filteredProducts.map(p => (
-                            <ProductCard key={p.id} product={p} onClick={() => addToCart(p)} />
-                        ))}
+                        {error && (
+                            <div style={{ gridColumn: '1 / -1', padding: '3rem', textAlign: 'center', background: '#fee2e2', borderRadius: '20px', border: '1px solid #fecaca' }}>
+                                <AlertCircle size={48} style={{ color: '#ef4444', margin: '0 auto 1rem' }} />
+                                <h3 style={{ color: '#991b1b', margin: '0 0 0.5rem 0' }}>Error de Comunicación</h3>
+                                <p style={{ color: '#b91c1c', marginBottom: '1.5rem' }}>{error}</p>
+                                <button onClick={fetchData} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '0.75rem 2rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                    Reintentar Conexión
+                                </button>
+                            </div>
+                        )}
+
+                        {!error && (loading 
+                            ? [...Array(12)].map((_, i) => <ProductCardSkeleton key={i} />)
+                            : filteredProducts.map(p => (
+                                <ProductCard key={p.id} product={p} onClick={() => addToCart(p)} />
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -528,10 +539,36 @@ function CategoryChip({ active, onClick, label, icon: Icon }) {
     );
 }
 
+function ProductCardSkeleton() {
+    return (
+        <div style={{
+            background: 'white', borderRadius: '16px', height: '260px', 
+            padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem',
+            border: '1px solid #f1f5f9'
+        }}>
+            <div className="skeleton" style={{ width: '100%', height: '140px' }}></div>
+            <div className="skeleton" style={{ width: '40%', height: '14px' }}></div>
+            <div className="skeleton" style={{ width: '80%', height: '20px' }}></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto' }}>
+                <div className="skeleton" style={{ width: '30%', height: '20px' }}></div>
+                <div className="skeleton" style={{ width: '28px', height: '28px', borderRadius: '50%' }}></div>
+            </div>
+        </div>
+    );
+}
+
 function ProductCard({ product, onClick }) {
     const [isPressed, setIsPressed] = useState(false);
-    const imageUrl = product.imagen_url || product.imagen;
-    
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
+
+    // Construir URL completa si la ruta es relativa
+    const rawImage = product.imagen_url || product.imagen;
+    // Usamos el endpoint test-image por SKU para máxima compatibilidad en Render
+    const imageUrl = product.codigo_sku 
+        ? `${API_BASE}/test-image/${product.codigo_sku.toLowerCase()}.jpg?v=${product.id}`
+        : (rawImage?.startsWith('http') ? rawImage : null);
+
     return (
         <div 
             onClick={() => {
@@ -552,29 +589,36 @@ function ProductCard({ product, onClick }) {
                 width: '100%', height: '140px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', overflow: 'hidden',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
             }}>
-                {imageUrl ? (
+                {!imageLoaded && !imageError && imageUrl && (
+                    <div className="skeleton" style={{ position: 'absolute', inset: 0, zIndex: 1 }}></div>
+                )}
+                {imageUrl && !imageError ? (
                     <img 
                         src={imageUrl} 
                         alt={product.nombre}
-                        style={{
-                            width: '100%', height: '100%', objectFit: 'contain',
-                            padding: '8px'
+                        onLoad={() => setImageLoaded(true)}
+                        onError={() => {
+                            setImageLoaded(true);
+                            setImageError(true);
                         }}
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                            e.target.parentElement.querySelector('.fallback-icon').style.display = 'flex';
+                        style={{
+                            width: '100%', height: '100%', objectFit: 'cover',
+                            padding: '0',
+                            opacity: imageLoaded ? 1 : 0,
+                            transition: 'opacity 0.3s ease'
                         }}
                     />
                 ) : null}
-                <div className="fallback-icon" style={{
-                    position: 'absolute', inset: 0, display: imageUrl ? 'none' : 'flex',
+                {(!imageUrl || imageError) && (
+                    <div className="fallback-icon" style={{
+                        position: 'absolute', inset: 0, display: 'flex',
                     alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
                     color: '#8b5cf6', gap: '0.5rem'
-                }}>
+                    }}>
                     <Package size={48} />
                     <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
                 </div>
+                )}
             </div>
             
             <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
@@ -596,7 +640,7 @@ function ProductCard({ product, onClick }) {
 }
 
 function CartItem({ item, onRemove, onUpdateQty }) {
-    const imageUrl = item.imagen_url || item.imagen;
+    const imageUrl = item.imagen_url || (item.imagen ? `${MEDIA_BASE}${item.imagen}` : null);
     
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
@@ -651,13 +695,6 @@ function PaymentMethodBtn({ active, onClick, label, icon: Icon, color }) {
             <span style={{ fontSize: '0.75rem', fontWeight: '700' }}>{label}</span>
         </button>
     );
-}
-
-// Icons placeholder for Smartphone which I missed in imports
-function Smartphone(props) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-    )
 }
 
 function Numpad({ onInput }) {

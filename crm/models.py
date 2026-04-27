@@ -1,11 +1,18 @@
 from django.db import models
+from django.core.validators import RegexValidator
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=200)
     representante = models.CharField(max_length=200, blank=True, null=True)
     email = models.EmailField(unique=True)
     cedula = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    telefono = models.CharField(max_length=20, blank=True)
+    
+    # Validador para asegurar formato telefónico consistente
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message="El número debe tener formato: '+999999999'. De 9 a 15 dígitos."
+    )
+    telefono = models.CharField(validators=[phone_regex], max_length=20, blank=True)
     direccion = models.TextField(blank=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
@@ -79,4 +86,3 @@ class CotizacionDetalle(models.Model):
 
     def __str__(self):
         return f"Detalle {self.item} - {self.producto} ({self.cotizacion.id})"
-

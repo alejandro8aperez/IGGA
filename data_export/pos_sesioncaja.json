@@ -1,0 +1,86 @@
+[
+{
+  "model": "pos.sesioncaja",
+  "pk": 1,
+  "fields": {
+    "usuario": null,
+    "fecha_apertura": "2026-04-21T17:59:55.227Z",
+    "fecha_cierre": null,
+    "monto_inicial": "50000.00",
+    "monto_final_contado": "0.00",
+    "monto_final_sistema": "0.00",
+    "estado": "abierta",
+    "notas": null
+  }
+},
+{
+  "model": "pos.sesioncaja",
+  "pk": 2,
+  "fields": {
+    "usuario": null,
+    "fecha_apertura": "2026-04-21T17:59:55.228Z",
+    "fecha_cierre": null,
+    "monto_inicial": "50000.00",
+    "monto_final_contado": "0.00",
+    "monto_final_sistema": "0.00",
+    "estado": "abierta",
+    "notas": null
+  }
+},
+{
+  "model": "pos.sesioncaja",
+  "pk": 3,
+  "fields": {
+    "usuario": null,
+    "fecha_apertura": "2026-04-25T16:40:07.428Z",
+    "fecha_cierre": null,
+    "monto_inicial": "50000.00",
+    "monto_final_contado": "0.00",
+    "monto_final_sistema": "0.00",
+    "estado": "abierta",
+    "notas": null
+  }
+},
+{
+  "model": "pos.sesioncaja",
+  "pk": 4,
+  "fields": {
+    "usuario": null,
+    "fecha_apertura": "2026-04-25T16:40:07.456Z",
+    "fecha_cierre": null,
+    "monto_inicial": "50000.00",
+    "monto_final_contado": "0.00",
+    "monto_final_sistema": "0.00",
+    "estado": "abierta",
+    "notas": null
+  }
+},
+{
+  "model": "pos.sesioncaja",
+  "pk": 5,
+  "fields": {
+    "usuario": null,
+    "fecha_apertura": "2026-04-25T16:45:21.172Z",
+    "fecha_cierre": null,
+    "monto_inicial": "50000.00",
+    "monto_final_contado": "0.00",
+    "monto_final_sistema": "0.00",
+    "estado": "abierta",
+    "notas": null
+  }
+},
+{
+  "model": "pos.sesioncaja",
+  "pk": 6,
+  "fields": {
+    "usuario": null,
+    "fecha_apertura": "2026-04-25T16:45:21.186Z",
+    "fecha_cierre": null,
+    "monto_inicial": "50000.00",
+    "monto_final_contado": "0.00",
+    "monto_final_sistema": "0.00",
+    "estado": "abierta",
+    "notas": null
+  }
+}
+]

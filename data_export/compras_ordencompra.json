@@ -1,0 +1,13 @@
+[
+{
+  "model": "compras.ordencompra",
+  "pk": 1,
+  "fields": {
+    "proveedor": 1,
+    "fecha_emision": "2026-03-07",
+    "fecha_entrega_esperada": null,
+    "estado": "enviada",
+    "total": "15000.00"
+  }
+}
+]

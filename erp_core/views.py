@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.utils import timezone
+from django.db import connections
+from django.db.utils import OperationalError
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
@@ -9,8 +12,22 @@ from .serializers import UserSerializer
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def ping(request):
-    """Lightweight health-check endpoint for uptime monitoring services."""
-    return JsonResponse({'status': 'ok', 'message': 'ERP 8-AMPERIOS backend is alive!'})
+    """
+    Health-check robusto que verifica la conectividad con la base de datos.
+    Ideal para configurar en el "Health Check Path" de Render.
+    """
+    db_status = "ok"
+    try:
+        # Verifica que la base de datos responda correctamente
+        connections['default'].cursor()
+    except OperationalError:
+        db_status = "disconnected"
+
+    return JsonResponse({
+        'status': 'ok' if db_status == "ok" else 'error',
+        'database': db_status,
+        'timestamp': timezone.now().isoformat()
+    }, status=200 if db_status == "ok" else 503)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -102,7 +119,7 @@ from pathlib import Path
 @permission_classes([AllowAny])
 def test_image(request, filename):
     """Endpoint temporal para probar acceso a imágenes"""
-    import os
+    import os, mimetypes
     base_dir = Path(__file__).parent.parent
     image_path = base_dir / 'media' / 'productos' / filename
     
@@ -118,7 +135,10 @@ def test_image(request, filename):
     
     if image_path.exists():
         try:
-            return FileResponse(open(image_path, 'rb'), content_type='image/jpeg')
+            content_type, _ = mimetypes.guess_type(str(image_path))
+            response = FileResponse(open(image_path, 'rb'), content_type=content_type or 'image/jpeg')
+            response['Cache-Control'] = 'public, max-age=86400' # Cache por 24 horas
+            return response
         except Exception as e:
             debug_info['error'] = str(e)
             return JsonResponse(debug_info, status=500)

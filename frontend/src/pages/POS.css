@@ -1,0 +1,43 @@
+/* Estilos para las tarjetas de producto en el POS con efecto Zoom */
+
+.product-card {
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ffffff;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.product-card:hover {
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.product-image-container {
+  overflow: hidden; /* Esto es vital para que el zoom se quede dentro del marco */
+  width: 100%;
+}
+
+.product-image {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.12); /* Zoom del 12% */
+}
+
+/* Animación de Esqueleto */
+@keyframes pulse-skeleton {
+  0% { background-color: #e2e8f0; }
+  50% { background-color: #f1f5f9; }
+  100% { background-color: #e2e8f0; }
+}
+
+.skeleton {
+  animation: pulse-skeleton 1.5s infinite ease-in-out;
+  border-radius: 8px;
+}

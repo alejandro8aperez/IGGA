@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -26,12 +27,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-key-placeholder')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8amp-local-dev-key-fallback')
+
+if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
+    # En producción (DEBUG no es True), forzamos que exista SECRET_KEY real en el entorno
+    raise ImproperlyConfigured("La variable SECRET_KEY debe estar configurada en el entorno para producción.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,erp-frontend-7798.onrender.com').split(',')
+
+# Configuración necesaria para Render (detrás de un balanceador de carga)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
@@ -95,6 +103,11 @@ CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin.strip()]
 if CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = False
+    # Asegurar que CSRF también confíe en los orígenes del frontend
+    CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+elif not DEBUG:
+    # Fallback para producción en Render si no se define la variable
+    CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -194,11 +207,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Directorios adicionales si los tienes en la raíz
+STATICFILES_DIRS = [
+    # os.path.join(BASE_DIR, 'static'),
+]
 
 # Media files - AWS S3 Configuration
 USE_S3 = os.getenv('USE_S3', 'False') == 'True'
+
+# Configuración moderna de Almacenamiento (Django 5.x)
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage" if USE_S3 else "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 if USE_S3:
     # AWS S3 Settings
@@ -212,11 +239,8 @@ if USE_S3:
         'CacheControl': 'max-age=86400',
     }
     
-    # Media files
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 else:
-    # Local media storage (for development)
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
