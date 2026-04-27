@@ -2938,3 +2938,16 @@ INFO 2026-04-27 11:09:56,711 autoreload 28912 24804 C:\Postgres\ERP-8AMPERIOS\er
 INFO 2026-04-27 11:10:03,014 autoreload 14152 16920 Watching for file changes with StatReloader
 INFO 2026-04-27 11:19:52,805 autoreload 14152 16920 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
 INFO 2026-04-27 11:19:59,045 autoreload 27240 19064 Watching for file changes with StatReloader
+WARNING 2026-04-27 11:25:05,273 log 27240 31732 Unauthorized: /api/inventarios/categorias/
+WARNING 2026-04-27 11:25:05,273 log 27240 21020 Unauthorized: /api/inventarios/productos/
+WARNING 2026-04-27 11:25:05,273 log 27240 4688 Unauthorized: /api/pos/sesiones/activa/
+WARNING 2026-04-27 11:25:05,278 basehttp 27240 31732 "GET /api/inventarios/categorias/ HTTP/1.1" 401 172
+WARNING 2026-04-27 11:25:05,278 basehttp 27240 21020 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-04-27 11:25:05,279 basehttp 27240 4688 "GET /api/pos/sesiones/activa/ HTTP/1.1" 401 172
+WARNING 2026-04-27 11:25:05,282 log 27240 31732 Unauthorized: /api/inventarios/categorias/
+WARNING 2026-04-27 11:25:05,284 log 27240 21020 Unauthorized: /api/inventarios/productos/
+WARNING 2026-04-27 11:25:05,287 log 27240 4688 Unauthorized: /api/pos/sesiones/activa/
+WARNING 2026-04-27 11:25:05,288 basehttp 27240 21020 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-04-27 11:25:05,288 basehttp 27240 31732 "GET /api/inventarios/categorias/ HTTP/1.1" 401 172
+WARNING 2026-04-27 11:25:05,288 basehttp 27240 4688 "GET /api/pos/sesiones/activa/ HTTP/1.1" 401 172
+INFO 2026-04-27 11:25:46,397 autoreload 32748 23496 Watching for file changes with StatReloader
