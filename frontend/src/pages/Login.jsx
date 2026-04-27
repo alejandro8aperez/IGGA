@@ -43,7 +43,8 @@ const Login = () => {
 
             loginUser({
                 ...userData,
-                token: access,
+                access: access,
+                refresh: refresh,
                 refreshToken: refresh,
                 empresa: empresas.find(e => e.id === selectedEmpresa),
             });
@@ -248,6 +249,7 @@ function autenticarDemo(username, password, empresaId) {
         ...info,
         empresa: empresas.find(e => e.id === empresaId),
         modoDemo: true,
+        access: 'demo-mode-access-token',
     };
 }
 

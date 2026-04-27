@@ -121,7 +121,11 @@ def test_image(request, filename):
     """Endpoint temporal para probar acceso a imágenes"""
     import os, mimetypes
     base_dir = Path(__file__).parent.parent
+    
+    # Intentar buscar en la raíz de media y en la subcarpeta productos
     image_path = base_dir / 'media' / 'productos' / filename
+    if not image_path.exists():
+        image_path = base_dir / 'media' / filename
     
     # Debug info
     debug_info = {

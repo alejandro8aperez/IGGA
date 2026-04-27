@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext(null);
 
@@ -38,26 +39,52 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const logoutUser = () => {
+        setUser(null);
+        localStorage.removeItem('erpUser');
+        // Limpiar el encabezado de autorización global
+        delete axios.defaults.headers.common['Authorization'];
+    };
+
     useEffect(() => {
         const savedUser = localStorage.getItem('erpUser');
         if (savedUser) {
             try {
-                setUser(JSON.parse(savedUser));
+                const parsedUser = JSON.parse(savedUser);
+                setUser(parsedUser);
+                // Configurar el token para todas las peticiones futuras de Axios
+                if (parsedUser.access) {
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
+                }
             } catch {
-                localStorage.removeItem('erpUser');
+                logoutUser();
             }
         }
         setLoading(false);
+
+        // INTERCEPTOR: Si recibimos un 401 (No autorizado), cerramos sesión automáticamente.
+        // Esto arregla el problema de "solo funciona en modo incógnito".
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 401) {
+                    console.warn('Sesión expirada o inválida. Limpiando datos...');
+                    logoutUser();
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        // Limpiar el interceptor al desmontar el componente
+        return () => axios.interceptors.response.eject(interceptor);
     }, []);
 
     const loginUser = (userData) => {
         setUser(userData);
         localStorage.setItem('erpUser', JSON.stringify(userData));
-    };
-
-    const logoutUser = () => {
-        setUser(null);
-        localStorage.removeItem('erpUser');
+        if (userData.access) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.access}`;
+        }
     };
 
     const value = {
@@ -81,5 +108,4 @@ export function useAuth() {
     if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
     return ctx;
 }
-
 export default AuthContext;

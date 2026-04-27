@@ -36,7 +36,7 @@ if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,erp-frontend-7798.onrender.com').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
 
 # Configuración necesaria para Render (detrás de un balanceador de carga)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -109,12 +109,24 @@ elif not DEBUG:
     # Fallback para producción en Render si no se define la variable
     CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 
+# Configuración de SameSite para permitir comunicación entre dominios de Render
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept', 'accept-encoding', 'authorization',
     'content-type', 'dnt', 'origin', 'user-agent',
     'x-csrftoken', 'x-requested-with',
 ]
+
+# Configuración de seguridad de cookies para producción
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 # 1 año
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # Django REST Framework - permisos abiertos para ERP con auth local
 REST_FRAMEWORK = {

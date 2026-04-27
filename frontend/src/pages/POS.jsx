@@ -564,10 +564,15 @@ function ProductCard({ product, onClick }) {
 
     // Construir URL completa si la ruta es relativa
     const rawImage = product.imagen_url || product.imagen;
-    // Usamos el endpoint test-image por SKU para máxima compatibilidad en Render
-    const imageUrl = product.codigo_sku 
-        ? `${API_BASE}/test-image/${product.codigo_sku.toLowerCase()}.jpg?v=${product.id}`
-        : (rawImage?.startsWith('http') ? rawImage : null);
+    let imageUrl = null;
+
+    if (rawImage?.startsWith('http')) {
+        imageUrl = rawImage;
+    } else if (rawImage) {
+        // Extraer el nombre real del archivo (ej: "productos/pan001_abc.jpg" -> "pan001_abc.jpg")
+        const filename = rawImage.split('/').pop();
+        imageUrl = `${API_BASE}/test-image/${filename}?v=${product.id}`;
+    }
 
     return (
         <div 
