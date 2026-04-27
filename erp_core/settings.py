@@ -328,3 +328,18 @@ import os
 LOGS_DIR = BASE_DIR / 'logs'
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# Limpiar espacios en blanco al parsear ALLOWED_HOSTS por si se agregan en el panel de Render
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')]
+
+# Configuración necesaria para Render (detrás de un balanceador de carga)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Forzar la redirección de todo el tráfico HTTP a HTTPS en producción
+SECURE_SSL_REDIRECT = not DEBUG
+
+
+# Application definition
+

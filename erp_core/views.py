@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.conf import settings
 from django.utils import timezone
 from django.db import connections
 from django.db.utils import OperationalError
@@ -30,38 +31,30 @@ def ping(request):
     }, status=200 if db_status == "ok" else 503)
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser]) # SOLO administradores autenticados
 def create_initial_superuser(request):
     """
-    Endpoint temporal para crear superusuario inicial en la nube.
-    Crea o actualiza el usuario admin.
+    Gestión de Superusuarios de Emergencia.
+    Requiere token de staff para ser ejecutado.
     """
+    # En producción, esto debería estar desactivado o protegido por una API Key adicional
+    if not settings.DEBUG and request.headers.get('X-Admin-Setup-Key') != os.getenv('ADMIN_SETUP_KEY'):
+        return JsonResponse({'error': 'Unauthorized access'}, status=403)
+
     try:
-        # Crear o actualizar superusuario
         user, created = User.objects.update_or_create(
             username='admin',
             defaults={
                 'email': 'admin@8amperios.com',
                 'is_superuser': True,
                 'is_staff': True,
-                'first_name': 'Administrador',
-                'last_name': 'ERP'
             }
         )
         
-        # Siempre actualizar la contraseña
-        user.set_password('admin123')
+        password = request.data.get('password', 'admin123')
+        user.set_password(password)
         user.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': f"Superusuario {'creado' if created else 'actualizado'} exitosamente",
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email
-            }
-        })
+        return JsonResponse({'success': True, 'action': 'created' if created else 'updated'})
         
     except Exception as e:
         return JsonResponse({
