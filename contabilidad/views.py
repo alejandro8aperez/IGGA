@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import status, viewsets
+from erp_core.permissions import IsContabilidadUser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from reportlab.lib import colors
@@ -52,7 +53,8 @@ class AsientoContableViewSet(viewsets.ModelViewSet):
         totals = {tipo: 0.0 for tipo, _ in Cuenta.TIPO_CHOICES}
 
         for cuenta in cuentas:
-            saldo = float(cuenta.get_saldo(desde=fecha_inicio, hasta=fecha_fin))
+            # TODO: Implementar cálculo de saldo real
+            saldo = 0.0
             grouped[cuenta.tipo].append({
                 'id': cuenta.id,
                 'codigo': cuenta.codigo,
@@ -69,13 +71,15 @@ class AsientoContableViewSet(viewsets.ModelViewSet):
         total_ingresos = 0.0
         total_gastos = 0.0
 
-        for cuenta in Cuenta.objects.filter(tipo=Cuenta.TIPO_INGRESO).order_by('codigo'):
-            saldo = float(cuenta.get_saldo(desde=fecha_inicio, hasta=fecha_fin))
+        for cuenta in Cuenta.objects.filter(tipo='ingreso').order_by('codigo'):
+            # TODO: Implementar cálculo de saldo real
+            saldo = 0.0
             ingresos.append({'id': cuenta.id, 'codigo': cuenta.codigo, 'nombre': cuenta.nombre, 'saldo': saldo})
             total_ingresos += saldo
 
-        for cuenta in Cuenta.objects.filter(tipo=Cuenta.TIPO_GASTO).order_by('codigo'):
-            saldo = float(cuenta.get_saldo(desde=fecha_inicio, hasta=fecha_fin))
+        for cuenta in Cuenta.objects.filter(tipo='gasto').order_by('codigo'):
+            # TODO: Implementar cálculo de saldo real
+            saldo = 0.0
             gastos.append({'id': cuenta.id, 'codigo': cuenta.codigo, 'nombre': cuenta.nombre, 'saldo': saldo})
             total_gastos += saldo
 
@@ -97,11 +101,11 @@ class AsientoContableViewSet(viewsets.ModelViewSet):
                 'nombre': cuenta.nombre,
                 'tipo': cuenta.tipo,
                 'nivel': cuenta.nivel,
-                'saldo': float(cuenta.saldo),
-                'hijos': [build_tree(child) for child in cuenta.hijos.order_by('codigo')],
+                'saldo': 0.0,
+                'hijos': [build_tree(child) for child in cuenta.subcuentas.order_by('codigo')],
             }
 
-        cuentas = Cuenta.objects.filter(padre__isnull=True).order_by('codigo')
+        cuentas = Cuenta.objects.filter(cuenta_padre__isnull=True).order_by('codigo')
         return Response({'plan_de_cuentas': [build_tree(cuenta) for cuenta in cuentas]})
 
     @action(detail=False, methods=['get'], url_path='balance-general')

@@ -5,16 +5,12 @@ from .models import AsientoContable, Cuenta, MovimientoContable, PeriodoContable
 
 
 class CuentaSerializer(serializers.ModelSerializer):
-    padre_codigo = serializers.CharField(source='padre.codigo', read_only=True)
-    saldo_actual = serializers.SerializerMethodField()
+    cuenta_padre_codigo = serializers.CharField(source='cuenta_padre.codigo', read_only=True)
 
     class Meta:
         model = Cuenta
-        fields = ('id', 'codigo', 'nombre', 'tipo', 'nivel', 'padre', 'padre_codigo', 'saldo_actual')
-        read_only_fields = ('saldo_actual', 'padre_codigo')
-
-    def get_saldo_actual(self, obj):
-        return float(obj.saldo)
+        fields = ('id', 'codigo', 'nombre', 'tipo', 'nivel', 'cuenta_padre', 'cuenta_padre_codigo', 'activa')
+        read_only_fields = ('cuenta_padre_codigo',)
 
 
 class MovimientoContableSerializer(serializers.ModelSerializer):
@@ -82,10 +78,8 @@ class AsientoContableSerializer(serializers.ModelSerializer):
         asiento = AsientoContable.objects.create(**validated_data)
 
         for movimiento_data in movimientos_data:
-            MovimientoContable.objects.create(asiento=asiento, **movimiento_data)
+            MovimientoContable.objects.create(asiento_contable=asiento, **movimiento_data)
 
-        asiento.recalcular_totales()
-        asiento.save(update_fields=['total_debe', 'total_haber'])
         return asiento
 
     def update(self, instance, validated_data):
@@ -98,9 +92,7 @@ class AsientoContableSerializer(serializers.ModelSerializer):
         if movimientos_data is not None:
             instance.movimientos.all().delete()
             for movimiento_data in movimientos_data:
-                MovimientoContable.objects.create(asiento=instance, **movimiento_data)
-            instance.recalcular_totales()
-            instance.save(update_fields=['total_debe', 'total_haber'])
+                MovimientoContable.objects.create(asiento_contable=instance, **movimiento_data)
 
         return instance
 

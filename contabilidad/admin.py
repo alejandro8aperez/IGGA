@@ -15,7 +15,7 @@ class AsientoContableAdmin(admin.ModelAdmin):
 
 @admin.register(MovimientoContable)
 class MovimientoContableAdmin(admin.ModelAdmin):
-    list_display = ('asiento', 'cuenta', 'debe', 'haber')
+    list_display = ('asiento_contable', 'cuenta', 'debe', 'haber')
     list_filter = ('cuenta',)
 
 @admin.register(PeriodoContable)
