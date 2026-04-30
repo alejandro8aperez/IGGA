@@ -241,17 +241,17 @@ function Dashboard() {
                     <h2 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem' }}>Pronóstico de Ventas</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
                         {forecast.map((item, index) => (
-                            <div key={index} style={{ 
-                                padding: '1rem', 
-                                background: 'rgba(245, 158, 11, 0.1)', 
+                            <div key={index} style={{
+                                padding: '1rem',
+                                background: 'rgba(245, 158, 11, 0.1)',
                                 borderRadius: '8px',
                                 textAlign: 'center'
                             }}>
                                 <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                    {item.mes}
+                                    {item.periodo ? new Date(item.periodo).toLocaleDateString('es-CO', { month: 'short', year: 'numeric' }) : '-'}
                                 </div>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--warning)' }}>
-                                    ${item.ventas_pronosticadas?.toLocaleString() || 0}
+                                    ${item.valor?.toLocaleString() || 0}
                                 </div>
                             </div>
                         ))}
