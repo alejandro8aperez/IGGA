@@ -9,9 +9,10 @@ services:
     plan: starter
     buildCommand: |
       chmod +x build.sh && ./build.sh
-    startCommand: gunicorn erp_core.wsgi:application --bind 0.0.0.0:$PORT
-    healthCheckPath: /api/ping/
+    startCommand: gunicorn erp_core.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
     envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: DATABASE_URL
