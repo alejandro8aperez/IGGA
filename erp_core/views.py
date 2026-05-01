@@ -383,7 +383,7 @@ def reporte_pyl_api(request):
 def dashboard_stats(request):
     """
     Endpoint para estadísticas del dashboard principal.
-    Retorna conteos básicos de los módulos principales.
+    Retorna datos en formato compatible con Dashboard_Moderno.jsx
     """
     from crm.models import Cliente, Cotizacion
     from venta.models import OrdenVenta, FacturaVenta
@@ -391,17 +391,29 @@ def dashboard_stats(request):
     from compras.models import Proveedor, OrdenCompra
     from operaciones.models import Proyecto
     from rrhh.models import Empleado
+    from pos.models import MovimientoCaja
 
+    # Estructura compatible con Dashboard_Moderno.jsx
     stats = {
-        'clientes': Cliente.objects.count(),
-        'cotizaciones': Cotizacion.objects.count(),
-        'pedidos': OrdenVenta.objects.count(),
-        'facturas': FacturaVenta.objects.count(),
-        'productos': Producto.objects.count(),
-        'proveedores': Proveedor.objects.count(),
-        'ordenes_compra': OrdenCompra.objects.count(),
-        'proyectos': Proyecto.objects.count(),
-        'empleados': Empleado.objects.count(),
+        'resumen': {
+            'total_clientes': Cliente.objects.count(),
+            'total_ordenes': OrdenVenta.objects.count(),
+            'total_facturas': FacturaVenta.objects.count(),
+            'total_cotizaciones': Cotizacion.objects.count(),
+        },
+        'inventario': {
+            'total_items': Producto.objects.count(),
+            'total_valor': 0  # Placeholder, calcular si es necesario
+        },
+        'facturacion': {
+            'total_ordenes': OrdenVenta.objects.count(),
+            'total_facturas': FacturaVenta.objects.count(),
+        },
+        'movimientos': list(MovimientoCaja.objects.values()[:10]),
+        'rrhh': {
+            'total_empleados': Empleado.objects.count(),
+            'total_proyectos': Proyecto.objects.count()
+        },
         'timestamp': timezone.now().isoformat()
     }
 
