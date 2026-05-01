@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build script optimizado para Render
+# Build script optimizado para Render - sin migraciones
 set -o errexit
 
 echo "Installing dependencies..."
@@ -7,8 +7,5 @@ pip install -r requirements.txt
 
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
-
-echo "Running migrations..."
-python manage.py migrate --noinput
 
 echo "Build completed successfully!"
