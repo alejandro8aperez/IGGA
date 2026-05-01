@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from .serializers import UserSerializer
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def ping(request):
     """
     Health-check robusto que verifica la conectividad con la base de datos.
