@@ -10,6 +10,7 @@ services:
     buildCommand: |
       chmod +x build.sh && ./build.sh
     startCommand: gunicorn erp_core.wsgi:application --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/ping/
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
