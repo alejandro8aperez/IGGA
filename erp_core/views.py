@@ -391,8 +391,6 @@ def dashboard_stats(request):
     from compras.models import Proveedor, OrdenCompra
     from operaciones.models import Proyecto
     from rrhh.models import Empleado
-    from pos.models import MovimientoCaja
-
     # Estructura compatible con Dashboard_Moderno.jsx
     stats = {
         'resumen': {
@@ -409,7 +407,7 @@ def dashboard_stats(request):
             'total_ordenes': OrdenVenta.objects.count(),
             'total_facturas': FacturaVenta.objects.count(),
         },
-        'movimientos': list(MovimientoCaja.objects.values()[:10]),
+        'movimientos': [],  # Datos mock por ahora
         'rrhh': {
             'total_empleados': Empleado.objects.count(),
             'total_proyectos': Proyecto.objects.count()
