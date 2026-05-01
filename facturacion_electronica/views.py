@@ -6,7 +6,6 @@ import logging
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 
 from .models import FacturaElectronicaLog, ConfiguracionFacturatech
 from .services import FacturatechService
@@ -26,8 +25,6 @@ class FacturaElectronicaLogViewSet(viewsets.ModelViewSet):
     """
     queryset = FacturaElectronicaLog.objects.all()
     serializer_class = FacturaElectronicaLogSerializer
-    permission_classes = [AllowAny]
-    
     def get_queryset(self):
         queryset = super().get_queryset()
         
@@ -119,8 +116,7 @@ class ConfiguracionFacturatechViewSet(viewsets.ModelViewSet):
     """
     queryset = ConfiguracionFacturatech.objects.all()
     serializer_class = ConfiguracionFacturatechSerializer
-    permission_classes = [AllowAny]
-    
+
     @action(detail=False, methods=['get'])
     def activa(self, request):
         """
@@ -141,8 +137,7 @@ class FacturacionElectronicaAPIView(viewsets.ViewSet):
     """
     API View para operaciones de facturación electrónica
     """
-    permission_classes = [AllowAny]
-    
+
     @action(detail=False, methods=['post'])
     def enviar(self, request):
         """

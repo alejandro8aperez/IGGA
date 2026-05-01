@@ -96,7 +96,7 @@ class RutaManufactura(models.Model):
         ordering = ['producto', 'secuencia']
     
     def __str__(self):
-        return f"Ruta {self.producto.nombre}: Op{self.secuuencia} - {self.descripcion_operacion}"
+        return f"Ruta {self.producto.nombre}: Op{self.secuencia} - {self.descripcion_operacion}"
     
     @property
     def tiempo_total_minutos(self):

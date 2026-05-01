@@ -44,6 +44,7 @@ const Facturacion          = lazy(() => import('./pages/Facturacion'));
 const Marketing            = lazy(() => import('./pages/Marketing'));
 const POS                  = lazy(() => import('./pages/POS'));
 const FormatosISO9001      = lazy(() => import('./pages/FormatosISO9001'));
+const Nomina               = lazy(() => import('./pages/Nomina'));
 const FacturacionElectronica = lazy(() => import('./pages/FacturacionElectronica'));
 const Informediarioproy     = lazy(() => import('./pages/Informediarioproy'));
 
@@ -96,6 +97,7 @@ const NAV_GROUPS = [
         grupo: 'RRHH & Calidad',
         items: [
             { path: '/rrhh',          name: 'RRHH',         icon: HeartHandshake },
+            { path: '/nomina',        name: 'Nómina',       icon: DollarSign },
             { path: '/calidad',       name: 'Calidad',      icon: Award },
             { path: '/formatos-iso',  name: 'ISO 9001',     icon: FolderOpen },
             { path: '/form-designer', name: 'Formularios',  icon: FolderOpen },
@@ -387,6 +389,7 @@ function AppContent() {
                         <Route path="/produccion"    element={<P><Produccion/></P>}/>
                         <Route path="/calidad"       element={<P><Calidad/></P>}/>
                         <Route path="/rrhh"          element={<P><RRHH/></P>}/>
+                        <Route path="/nomina"        element={<P><Nomina/></P>}/>
                         <Route path="/reportes"      element={<P><Reportes/></P>}/>
                         <Route path="/configuracion" element={<P><Configuracion/></P>}/>
                         <Route path="/contabilidad"  element={<P><Contabilidad/></P>}/>

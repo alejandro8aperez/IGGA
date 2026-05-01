@@ -11,7 +11,9 @@ import {
   ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/kave/';
+import { API } from '../config/api';
+
+const API_URL = API.BASE + '/kave/';
 
 // ── Estilos globales ──────────────────────────────────────────────────────
 const s = {
@@ -231,18 +233,11 @@ function VistaCalculador({ onGuardar }) {
       console.log('🔧 Enviando datos a KAVE:', form);
       console.log('🌐 URL:', API_URL + 'quote/');
       
-      // Opción 1: Usar fetch nativo
-      const response = await fetch(API_URL + 'quote/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form)
-      });
+      // Opción 1: Usar axios (que ya tiene el token JWT configurado)
+      const response = await axios.post(API_URL + 'quote/', form);
       
-      const data = await response.json();
+      const data = response.data;
       console.log('>>> Respuesta KAVE completa:', data);
-      console.log('>>> Keys disponibles:', Object.keys(data));
       console.log('>>> Status:', response.status);
       console.log('>>> data.status:', data.status);
       console.log('>>> data.resultado:', data.resultado);

@@ -38,25 +38,23 @@ export default function Dashboard() {
             setLoading(true);
             setError(null);
             
-            // Simplificado - solo datos básicos para evitar errores
-            const [resClientes, resProd] = await Promise.all([
-                axios.get(`${API_BASE}crm/clientes/`).catch(() => ({ data: [] })),
-                axios.get(`${API_BASE}inventarios/productos/`).catch(() => ({ data: [] }))
-            ]);
+            const response = await axios.get(`${API_BASE}dashboard/stats/`);
+            const stats = response.data;
 
-            setData({
-                clientes: resClientes.data.length,
-                productos: resProd.data,
-                oportunidades: [],
-                cuentas: [],
-                transaccionesCaja: 0,
-                empleados: 0,
-                proyectos: 0,
-                kpis: []
-            });
+            setData(prev => ({
+                ...prev,
+                resumen: stats.resumen,
+                inventario: stats.inventario,
+                facturacion: stats.facturacion,
+                movimientos: stats.movimientos,
+                // Mantener compatibilidad con los campos antiguos si es necesario
+                clientes: stats.inventario.total_items, // Ejemplo
+                productos: [], // El gráfico de productos de mayor valor usará los movimientos o datos mock por ahora
+                transaccionesCaja: stats.movimientos.length
+            }));
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
-            setError('Error al cargar datos del dashboard');
+            setError('Error al cargar datos consolidados del dashboard');
         } finally {
             setLoading(false);
         }
@@ -456,12 +454,11 @@ export default function Dashboard() {
                         color: '#f59e0b',
                         margin: '0'
                     }}>
-                        ${valorInventario.toLocaleString()}
+                        ${(data.inventario?.valor_total || 0).toLocaleString()}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        <ArrowDown size={16} style={{ color: '#ef4444' }} />
-                        <span style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: '600' }}>
-                            -3% este mes
+                        <span style={{ color: data.inventario?.stock_bajo > 0 ? '#ef4444' : '#10b981', fontSize: '0.875rem', fontWeight: '600' }}>
+                            {data.inventario?.stock_bajo || 0} items con stock bajo
                         </span>
                     </div>
                 </div>
@@ -731,11 +728,11 @@ export default function Dashboard() {
                         alignItems: 'center',
                         gap: '0.5rem'
                     }}>
-                        <Package size={20} style={{ color: '#667eea' }} />
-                        Productos con Mayor Valor
+                        <Activity size={20} style={{ color: '#667eea' }} />
+                        Movimientos Recientes
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {inventarioChartData.map((product, index) => (
+                        {(data.movimientos || []).map((mov, index) => (
                             <div key={index} style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
@@ -752,21 +749,24 @@ export default function Dashboard() {
                                         color: '#2d3748',
                                         margin: '0 0 0.25rem 0'
                                     }}>
-                                        {product.name}
+                                        {mov.producto}
                                     </h4>
                                     <p style={{ color: '#718096', margin: 0, fontSize: '0.8rem' }}>
-                                        #{index + 1} en valor
+                                        {mov.tipo}
                                     </p>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <p style={{ 
                                         fontSize: '1rem', 
                                         fontWeight: '700', 
-                                        color: '#667eea',
+                                        color: mov.tipo.includes('Entrada') ? '#10b981' : '#ef4444',
                                         margin: 0
                                     }}>
-                                        ${product.valor.toLocaleString()}
+                                        {mov.tipo.includes('Entrada') ? '+' : '-'}{mov.cantidad}
                                     </p>
+                                    <span style={{ fontSize: '0.7rem', color: '#a0aec0' }}>
+                                        {new Date(mov.fecha).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
                         ))}

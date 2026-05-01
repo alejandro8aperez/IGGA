@@ -25,8 +25,9 @@ axios.interceptors.request.use(
         if (userData) {
             try {
                 const user = JSON.parse(userData);
-                if (user.token) {
-                    config.headers.Authorization = `Bearer ${user.token}`;
+                const token = user.access || user.token;
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
                 }
             } catch {
                 // JSON malformado — limpiar silenciosamente

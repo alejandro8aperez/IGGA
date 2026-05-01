@@ -1,6 +1,5 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.http import HttpResponse
 from .models import Segmento, Campana, Lead
@@ -15,17 +14,14 @@ from datetime import datetime
 class SegmentoViewSet(viewsets.ModelViewSet):
     queryset = Segmento.objects.all()
     serializer_class = SegmentoSerializer
-    permission_classes = [AllowAny]
 
 class CampanaViewSet(viewsets.ModelViewSet):
     queryset = Campana.objects.all().order_by('-fecha_inicio')
     serializer_class = CampanaSerializer
-    permission_classes = [AllowAny]
 
 class LeadViewSet(viewsets.ModelViewSet):
     queryset = Lead.objects.all().order_by('-fecha_creacion')
     serializer_class = LeadSerializer
-    permission_classes = [AllowAny]
 
     @action(detail=True, methods=['post'])
     def convertir_a_cliente(self, request, pk=None):

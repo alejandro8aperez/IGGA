@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions, status
+from erp_core.permissions import IsIngenieriaUser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q, Count, Sum
@@ -13,7 +14,7 @@ class ProyectoKAVEViewSet(viewsets.ModelViewSet):
     """ViewSet para la gestión de proyectos KAVE"""
     queryset = ProyectoKAVE.objects.all()
     serializer_class = ProyectoKAVESerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsIngenieriaUser]
 
     def get_queryset(self):
         queryset = ProyectoKAVE.objects.all()
@@ -103,7 +104,7 @@ class TareaKAVEViewSet(viewsets.ModelViewSet):
     """ViewSet para la gestión de tareas KAVE"""
     queryset = TareaKAVE.objects.all()
     serializer_class = TareaKAVESerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsIngenieriaUser]
 
     def get_queryset(self):
         queryset = TareaKAVE.objects.all()
@@ -133,7 +134,7 @@ class DocumentoKAVEViewSet(viewsets.ModelViewSet):
     """ViewSet para la gestión de documentos KAVE"""
     queryset = DocumentoKAVE.objects.all()
     serializer_class = DocumentoKAVESerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsIngenieriaUser]
 
     def get_queryset(self):
         queryset = DocumentoKAVE.objects.all()
@@ -154,7 +155,7 @@ class NotaKAVEViewSet(viewsets.ModelViewSet):
     """ViewSet para la gestión de notas KAVE"""
     queryset = NotaKAVE.objects.all()
     serializer_class = NotaKAVESerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsIngenieriaUser]
 
     def get_queryset(self):
         queryset = NotaKAVE.objects.all()

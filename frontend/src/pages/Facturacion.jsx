@@ -199,6 +199,18 @@ function Facturacion() {
         }
     };
 
+    const deleteFactura = async (id) => {
+        if (window.confirm('¿Está seguro de eliminar este borrador de factura? Esta acción no se puede deshacer.')) {
+            try {
+                await axios.delete(`${API.FACTURACION.FACTURAS}${id}/`);
+                fetchData();
+            } catch (err) {
+                console.error('Error al eliminar factura:', err);
+                alert('No se pudo eliminar la factura. Es posible que ya tenga movimientos asociados.');
+            }
+        }
+    };
+
     const createResolution = async () => {
         try {
             await axios.post(API.FACTURACION.RESOLUCIONES, {
@@ -919,85 +931,52 @@ function Facturacion() {
                                             </span>
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'center', borderRadius: '0 12px 12px 0' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                                {f.estado_dian === 'borrador' ? (
-                                                    <button 
-                                                        onClick={() => emitirFactura(f.id)}
-                                                        style={{
-                                                            padding: '0.5rem 1rem',
-                                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '8px',
-                                                            cursor: 'pointer',
-                                                            fontWeight: 600,
-                                                            fontSize: '0.8rem',
-                                                            transition: 'all 0.2s',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '0.25rem'
-                                                        }}
-                                                        onMouseOver={(e) => {
-                                                            e.currentTarget.style.transform = 'scale(1.05)';
-                                                        }}
-                                                        onMouseOut={(e) => {
-                                                            e.currentTarget.style.transform = 'scale(1)';
-                                                        }}
-                                                    >
-                                                        <Send size={14} /> Emitir
-                                                    </button>
-                                                ) : (
+                                            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                {/* Caso 1: Todavía es un borrador manual */}
+                                                {f.estado_dian === 'borrador' && (
                                                     <>
-                                                        {/* Botón Enviar a DIAN via Facturatech */}
+                                                        <button 
+                                                            onClick={() => emitirFactura(f.id)}
+                                                            title="Emitir internamente"
+                                                            style={{ padding: '0.5rem 0.75rem', background: '#667eea', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                                        >
+                                                            <Send size={14} /> Emitir
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => deleteFactura(f.id)}
+                                                            title="Eliminar borrador"
+                                                            style={{ padding: '0.5rem', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </>
+                                                )}
+
+                                                {/* Caso 2: Es una factura POS o interna ya emitida, pero pendiente de DIAN */}
+                                                {(f.estado_dian === 'validada' || f.estado_dian === 'validada_mock') && (
+                                                    <>
                                                         <button
                                                             onClick={() => enviarADIAN(f)}
-                                                            style={{
-                                                                padding: '0.5rem 1rem',
-                                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                                color: 'white',
-                                                                border: 'none',
-                                                                borderRadius: '8px',
-                                                                cursor: 'pointer',
-                                                                fontWeight: 600,
-                                                                fontSize: '0.75rem',
-                                                                transition: 'all 0.2s',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '0.25rem'
-                                                            }}
-                                                            onMouseOver={(e) => {
-                                                                e.currentTarget.style.transform = 'scale(1.05)';
-                                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
-                                                            }}
-                                                            onMouseOut={(e) => {
-                                                                e.currentTarget.style.transform = 'scale(1)';
-                                                                e.currentTarget.style.boxShadow = 'none';
-                                                            }}
                                                             title="Enviar a DIAN via Facturatech"
+                                                            style={{ padding: '0.5rem 0.75rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                                                         >
                                                             <Globe size={14} /> Enviar a DIAN
                                                         </button>
-                                                        
-                                                        {/* Estado Firmada */}
-                                                        <span 
-                                                            title={`CUFE: ${f.cufe || 'Pendiente'}`}
-                                                            style={{ 
-                                                                padding: '0.5rem 0.75rem',
-                                                                background: 'rgba(34, 197, 94, 0.15)',
-                                                                borderRadius: '8px',
-                                                                color: '#16a34a', 
-                                                                display: 'flex', 
-                                                                alignItems: 'center', 
-                                                                justifyContent: 'center',
-                                                                gap: '0.25rem', 
-                                                                fontSize: '0.75rem',
-                                                                fontWeight: 600,
-                                                                border: '1px solid rgba(34, 197, 94, 0.3)'
-                                                            }}
+                                                        <button 
+                                                            onClick={() => deleteFactura(f.id)}
+                                                            title="Anular/Borrar factura"
+                                                            style={{ padding: '0.5rem', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                                                         >
-                                                            <ShieldCheck size={14} /> Firmada
-                                                        </span>
+                                                            <Trash2 size={16} />
+                                                        </button>
                                                     </>
+                                                )}
+
+                                                {/* Caso 3: Ya está en la DIAN (Firmada) */}
+                                                {f.estado_dian === 'reportada' && (
+                                                    <span style={{ padding: '0.5rem 0.75rem', background: 'rgba(34, 197, 94, 0.15)', borderRadius: '8px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                                                        <ShieldCheck size={14} /> Reportada DIAN
+                                                    </span>
                                                 )}
                                             </div>
                                         </td>

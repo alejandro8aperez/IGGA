@@ -5,17 +5,17 @@ import {
     CreditCard, DollarSign, ArrowLeft, RefreshCw, 
     Plus, Minus, Trash2, Printer, CheckCircle2,
     ChevronRight, Wallet, Coffee, Cake, ShoppingBag,
-    Package, AlertCircle, Smartphone
+    Package, AlertCircle, Smartphone, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
 import './POS.css';
 
 // Usar URL absoluta para evitar que el POS busque datos en el puerto equivocado (5173) en Render
-const API_BASE = import.meta.env.VITE_API_URL || API.BASE || 'http://localhost:8000/api';
-// Mejoramos la limpieza de la URL para que funcione siempre
+const API_BASE = import.meta.env.VITE_API_URL || API.BASE || `http://${window.location.hostname}:8000/api`;
 const MEDIA_BASE = API_BASE.replace(/\/api\/?$/, ''); 
-
+console.log('API_BASE detectada:', API_BASE);
+console.log('MEDIA_BASE detectada:', MEDIA_BASE);
 function POS() {
     const navigate = useNavigate();
     const [productos, setProductos] = useState([]);
@@ -132,7 +132,7 @@ function POS() {
     const filteredProducts = productos.filter(p => {
         const matchesCategory = activeCategory === 'Todas' || p.categoria_nombre === activeCategory;
         const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || p.codigo_sku.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
+        return matchesCategory && matchesSearch && p.activo !== false;
     });
 
     const handleNumpad = (val) => {
@@ -437,7 +437,7 @@ function POS() {
                         <h2 style={{ margin: 0 }}>¡Venta Exitosa!</h2>
                         <p style={{ color: '#64748b' }}>Factura {lastSaleReceipt.factura_detalle?.numero_factura} emitida correctamente.</p>
                         
-                        <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', margin: '1.5rem 0', textAlign: 'left', fontFamily: 'monospace' }}>
+                        <div id="ticket-pos" style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', margin: '1.5rem 0', textAlign: 'left', fontFamily: 'monospace' }}>
                             <div style={{ textAlign: 'center', fontWeight: 'bold' }}>PANADERIA LA BOQUILLA</div>
                             <div style={{ textAlign: 'center', fontSize: '0.8rem' }}>NIT: 79867452-4</div>
                             <div style={{ margin: '1rem 0', fontSize: '0.8rem' }}>
@@ -450,11 +450,36 @@ function POS() {
                             </div>
                         </div>
 
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <button 
+                                onClick={() => window.print()}
+                                style={{
+                                    flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0',
+                                    background: 'white', color: '#1e293b', fontWeight: '700', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                                }}
+                            >
+                                <Printer size={18} />
+                                Imprimir / PDF
+                            </button>
+                            <button 
+                                onClick={() => navigate('/facturacion')}
+                                style={{
+                                    flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0',
+                                    background: 'white', color: '#1e293b', fontWeight: '700', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                                }}
+                            >
+                                <FileText size={18} />
+                                Ver Factura
+                            </button>
+                        </div>
+
                         <button 
                             onClick={() => setLastSaleReceipt(null)}
                             style={{
                                 width: '100%', padding: '1rem', borderRadius: '12px', border: 'none',
-                                background: '#1e293b', color: 'white', fontWeight: '700', cursor: 'pointer'
+                                background: '#10b981', color: 'white', fontWeight: '700', cursor: 'pointer'
                             }}
                         >
                             Nueva Venta
@@ -571,7 +596,8 @@ function ProductCard({ product, onClick }) {
     } else if (rawImage) {
         // Extraer el nombre real del archivo (ej: "productos/pan001_abc.jpg" -> "pan001_abc.jpg")
         const filename = rawImage.split('/').pop();
-        imageUrl = `${API_BASE}/test-image/${filename}?v=${product.id}`;
+        imageUrl = `${MEDIA_BASE}/test-image/${filename}?v=${product.id}`;
+        console.log(`Cargando imagen para ${product.nombre}: ${imageUrl}`);
     }
 
     return (
@@ -645,7 +671,14 @@ function ProductCard({ product, onClick }) {
 }
 
 function CartItem({ item, onRemove, onUpdateQty }) {
-    const imageUrl = item.imagen_url || (item.imagen ? `${MEDIA_BASE}${item.imagen}` : null);
+    const rawImage = item.imagen_url || item.imagen;
+    let imageUrl = null;
+    if (rawImage?.startsWith('http')) {
+        imageUrl = rawImage;
+    } else if (rawImage) {
+        const filename = rawImage.split('/').pop();
+        imageUrl = `${MEDIA_BASE}/test-image/${filename}?v=${item.id}`;
+    }
     
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>

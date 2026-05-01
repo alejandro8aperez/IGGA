@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions, status
+from erp_core.permissions import IsIngenieriaUser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, Q, F, Avg, Max
@@ -232,6 +233,77 @@ class RequerimientoMaterialViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(requerimiento)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def generar_solicitudes_compra(self, request):
+        """Genera Solicitudes de Compra a partir de requerimientos de materia prima pendientes"""
+        requerimientos = RequerimientoMaterial.objects.filter(
+            estado='pendiente',
+            cantidad_pendiente__gt=0
+        )
+        
+        from compras.models import SolicitudCompra, DetalleSolicitudCompra
+        
+        creadas = 0
+        for req in requerimientos:
+            # Solo si no tiene BOM (es comprado, no fabricado)
+            if not ListaMateriales.objects.filter(producto_padre=req.producto).exists():
+                solicitud = SolicitudCompra.objects.create(
+                    solicitante="Sistema MRP",
+                    departamento="Planeación",
+                    fecha_requerida=req.fecha_requerimiento,
+                    prioridad='alta' if (req.fecha_requerimiento - timezone.now().date()).days <= 7 else 'normal',
+                    estado='pendiente',
+                    origen='mrp',
+                    justificacion=f"Generado automáticamente por MRP para requerimiento {req.id}"
+                )
+                DetalleSolicitudCompra.objects.create(
+                    solicitud=solicitud,
+                    producto=req.producto,
+                    cantidad_solicitada=req.cantidad_pendiente
+                )
+                
+                req.cantidad_ordenada = req.cantidad_requerida
+                req.cantidad_pendiente = 0
+                req.estado = 'ordenado'
+                req.save(update_fields=['cantidad_ordenada', 'cantidad_pendiente', 'estado'])
+                creadas += 1
+                
+        return Response({'status': 'ok', 'solicitudes_creadas': creadas})
+
+    @action(detail=False, methods=['post'])
+    def generar_ordenes_produccion(self, request):
+        """Genera Órdenes de Producción a partir de requerimientos de productos fabricados"""
+        requerimientos = RequerimientoMaterial.objects.filter(
+            estado='pendiente',
+            cantidad_pendiente__gt=0
+        )
+        
+        from produccion.models import OrdenProduccion, Receta
+        
+        creadas = 0
+        for req in requerimientos:
+            # Solo si tiene Receta (es fabricado)
+            receta = Receta.objects.filter(producto_terminado=req.producto).first()
+            if receta:
+                OrdenProduccion.objects.create(
+                    receta=receta,
+                    cantidad_a_producir=req.cantidad_pendiente,
+                    prioridad='alta' if (req.fecha_requerimiento - timezone.now().date()).days <= 7 else 'normal',
+                    estado='planeada',
+                    fecha_planeada_inicio=timezone.now().date(),  # Idealmente se calcula con CRP
+                    fecha_planeada_fin=req.fecha_requerimiento,
+                    responsable="Sistema MRP",
+                    observaciones=f"Generada automáticamente por MRP para requerimiento {req.id}"
+                )
+                
+                req.cantidad_ordenada = req.cantidad_requerida
+                req.cantidad_pendiente = 0
+                req.estado = 'ordenado'
+                req.save(update_fields=['cantidad_ordenada', 'cantidad_pendiente', 'estado'])
+                creadas += 1
+                
+        return Response({'status': 'ok', 'ordenes_creadas': creadas})
 
 class PlanCapacidadViewSet(viewsets.ModelViewSet):
     """ViewSet para gestión de Plan de Capacidad"""

@@ -84,10 +84,43 @@ class FacturaViewSet(viewsets.ModelViewSet):
             if resolucion.numero_actual > resolucion.numero_final:
                 return Response({"error": "La resolución actual ha expirado (numeración agotada)."}, status=400)
 
-            # 1. Asignar número de factura y CUFE (Simulado)
+            # 1. Asignar número de factura y CUFE
             factura.numero_factura = f"{resolucion.prefijo}{resolucion.numero_actual}"
-            factura.cufe = str(uuid.uuid4()).replace('-', '') + "DIAN"
-            factura.estado_dian = 'validada'
+            
+            # Integración con Facturatech (DIAN)
+            try:
+                from facturacion_electronica.services import FacturatechService, UBLGenerator
+                service = FacturatechService()
+                
+                # Preparamos datos simulados para el XML UBL 2.1
+                factura_data = {
+                    'encabezado': {
+                        'numero': factura.numero_factura,
+                        'prefijo': resolucion.prefijo,
+                        'fecha_emision': str(factura.fecha_emision),
+                        'hora_emision': '12:00:00-05:00',
+                    }
+                }
+                
+                xml_content = service.generar_xml_ubl(factura_data)
+                exito, respuesta = service.enviar_factura(
+                    xml_content=xml_content,
+                    factura_id=factura.id,
+                    factura_numero=factura.numero_factura,
+                    tipo='ventas'
+                )
+                
+                if exito:
+                    factura.cufe = respuesta.get('cufe', '')
+                    factura.estado_dian = 'validada'
+                else:
+                    factura.estado_dian = 'error_emision'
+                    # Se registrará en FacturaElectronicaLog
+                    
+            except Exception as e:
+                # Si falla la conexión WS o no hay config, se asigna mock por fallback
+                factura.cufe = str(uuid.uuid4()).replace('-', '') + "DIAN-MOCK"
+                factura.estado_dian = 'validada_mock'
             
             # Incrementar el consecutivo
             resolucion.numero_actual += 1

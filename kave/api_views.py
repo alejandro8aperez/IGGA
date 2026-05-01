@@ -1,4 +1,5 @@
 from rest_framework.decorators import api_view
+from erp_core.permissions import IsIngenieriaUser
 from rest_framework.response import Response
 from rest_framework import status
 from .engine import api_design_and_quote
@@ -237,13 +238,14 @@ def send_to_mrp_engine(request, pk):
     API para despachar los requisitos de físicos del modelo al MRP
     """
     try:
-        # Verificar que los modelos MRP estén disponibles
+        # Verificar que los modelos MRP y Produccion estén disponibles
         try:
-            from mrp.models import PlanMaestroProduccion, RequerimientoMaterial
+            from mrp.models import PlanMaestroProduccion
             from inventarios.models import Producto, Categoria
+            from produccion.models import Receta, InsumoReceta, OrdenProduccion
         except ImportError:
             return Response({
-                'error': 'Módulos MRP no disponibles. Asegúrese de que las aplicaciones MRP e Inventarios estén instaladas.',
+                'error': 'Módulos MRP o Producción no disponibles. Asegúrese de que estén instalados.',
                 'status': 'error'
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         
@@ -279,7 +281,32 @@ def send_to_mrp_engine(request, pk):
             defaults={'nombre': f'Acero de Núcleo {transformer.get_material_display()}', 'categoria': cat_insumos, 'precio_compra': Decimal('0'), 'precio_venta': Decimal('0')}
         )
         
-        # 3. Crear Plan Maestro
+        # 3. Generar la Receta de Producción (BOM)
+        receta, created = Receta.objects.get_or_create(
+            producto_terminado=producto_trafo,
+            defaults={
+                'tiempo_estimado_horas': 24.0,  # Valor por defecto, podría calcularse
+                'costo_adicional_fijo': transformer.costo * Decimal('0.10'), # 10% indirecto
+                'instrucciones': f"Construcción según diseño KAVE #{transformer.id} - {transformer.get_tipo_display()}"
+            }
+        )
+        
+        # Asignar insumos a la receta si no existen
+        if created or not receta.insumos.exists():
+            InsumoReceta.objects.create(
+                receta=receta,
+                producto_materia_prima=insumo_bobina,
+                cantidad_requerida=calculo.peso_cobre_estimado or 0,
+                merma_esperada_pct=2.0
+            )
+            InsumoReceta.objects.create(
+                receta=receta,
+                producto_materia_prima=insumo_nucleo,
+                cantidad_requerida=calculo.peso_nucleo_estimado or 0,
+                merma_esperada_pct=3.0
+            )
+            
+        # 4. Crear Plan Maestro en MRP
         mps = PlanMaestroProduccion.objects.create(
             producto=producto_trafo,
             fecha_inicio=timezone.now().date(),
@@ -288,26 +315,21 @@ def send_to_mrp_engine(request, pk):
             estado='planificado'
         )
         
-        # 4. Crear Requerimientos MRP
-        RequerimientoMaterial.objects.create(
-            producto=insumo_bobina,
-            fecha_requerimiento=timezone.now().date(),
-            tipo_requerimiento='neto',
-            cantidad_requerida=calculo.peso_cobre_estimado or 0,
-            origen=f'MPS-{mps.id} (KAVE)'
-        )
-        
-        RequerimientoMaterial.objects.create(
-            producto=insumo_nucleo,
-            fecha_requerimiento=timezone.now().date(),
-            tipo_requerimiento='neto',
-            cantidad_requerida=calculo.peso_nucleo_estimado or 0,
-            origen=f'MPS-{mps.id} (KAVE)'
+        # 5. Generar directamente una Orden de Producción en borrador (Opcional pero útil)
+        op = OrdenProduccion.objects.create(
+            receta=receta,
+            cantidad_a_producir=1,
+            estado='borrador',
+            prioridad='normal',
+            fecha_planeada_inicio=timezone.now().date(),
+            fecha_planeada_fin=timezone.now().date() + timedelta(days=15),
+            responsable="Ingeniería (KAVE)",
+            observaciones=f"Generada desde diseño KAVE #{transformer.id}"
         )
         
         return Response({
             'status': 'success',
-            'mensaje': f'Diseño volcado a MRP. Plan Maestro de Producción #{mps.id} y Requerimientos de Insumos creados.'
+            'mensaje': f'Diseño volcado. Creada OP en borrador (OP-{op.numero or op.id}) y Plan Maestro #{mps.id}. Receta de producción generada.'
         })
 
     except TransformerDesign.DoesNotExist:

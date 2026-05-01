@@ -16,6 +16,8 @@ import CRM from './CRM';
 import Inventario_Moderno from './Inventario_Moderno';
 import Compras_Moderno from './Compras_Moderno';
 import Logistica_Moderno from './Logistica_Moderno';
+import RRHH from './RRHH';
+import Nomina from './Nomina';
 
 // Definición de módulos con diseño moderno
 const modules = [
@@ -90,6 +92,24 @@ const modules = [
         color: '#EC4899', 
         component: Logistica_Moderno,
         category: 'operaciones'
+    },
+    { 
+        id: 'rrhh',                
+        name: 'RRHH',                 
+        description: 'Gestión de empleados y perfiles',   
+        icon: Users,           
+        color: '#F472B6', 
+        component: RRHH,
+        category: 'administración'
+    },
+    { 
+        id: 'nomina',              
+        name: 'Nómina',               
+        description: 'Liquidación y Nómina Electrónica',   
+        icon: DollarSign,      
+        color: '#10B981', 
+        component: Nomina,
+        category: 'administración'
     }
 ];
 

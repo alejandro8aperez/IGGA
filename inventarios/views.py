@@ -1,38 +1,272 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from erp_core.permissions import IsInventarioUser
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from django.db.models import Q, Sum, F, Count
+from django.utils import timezone
 
-from rest_framework.permissions import AllowAny
-
-from .models import Categoria, Producto, MovimientoInventario
-
-from .serializers import CategoriaSerializer, ProductoSerializer, MovimientoInventarioSerializer
-
+from .models import (
+    Categoria, Almacen, Producto, Lote,
+    MovimientoInventario, AlertaInventario,
+    ConteoFisico, DetalleConteoFisico,
+)
+from .serializers import (
+    CategoriaSerializer, AlmacenSerializer,
+    ProductoSerializer, ProductoListSerializer, LoteSerializer,
+    MovimientoInventarioSerializer, AlertaInventarioSerializer,
+    ConteoFisicoSerializer, DetalleConteoFisicoSerializer,
+)
 
 
 class CategoriaViewSet(viewsets.ModelViewSet):
-
     queryset = Categoria.objects.all()
-
     serializer_class = CategoriaSerializer
+    permission_classes = [IsInventarioUser]
 
-    permission_classes = [AllowAny]
 
+class AlmacenViewSet(viewsets.ModelViewSet):
+    queryset = Almacen.objects.all()
+    serializer_class = AlmacenSerializer
+    permission_classes = [IsInventarioUser]
 
 
 class ProductoViewSet(viewsets.ModelViewSet):
-
-    queryset = Producto.objects.all()
-
+    queryset = Producto.objects.select_related('categoria', 'almacen').all()
     serializer_class = ProductoSerializer
+    permission_classes = [IsInventarioUser]
 
-    permission_classes = [AllowAny]
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ProductoListSerializer
+        return ProductoSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # Filtro por categoría
+        categoria = self.request.query_params.get('categoria')
+        if categoria:
+            qs = qs.filter(categoria_id=categoria)
+
+        # Filtro por tipo de producto
+        tipo = self.request.query_params.get('tipo')
+        if tipo:
+            qs = qs.filter(tipo_producto=tipo)
+
+        # Filtro por almacén
+        almacen = self.request.query_params.get('almacen')
+        if almacen:
+            qs = qs.filter(almacen_id=almacen)
+
+        # Filtro: solo activos (por defecto)
+        activo = self.request.query_params.get('activo')
+        if activo is not None:
+            qs = qs.filter(activo=activo.lower() == 'true')
+
+        # Filtro: stock bajo
+        stock_bajo = self.request.query_params.get('stock_bajo')
+        if stock_bajo and stock_bajo.lower() == 'true':
+            qs = qs.filter(stock_actual__lt=F('stock_minimo'))
+
+        # Búsqueda
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                Q(nombre__icontains=search) |
+                Q(codigo_sku__icontains=search) |
+                Q(marca__icontains=search) |
+                Q(referencia_fabrica__icontains=search)
+            )
+
+        return qs
+
+    def destroy(self, request, *args, **kwargs):
+        from django.db.models import ProtectedError
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"error": "No se puede eliminar este producto porque ya tiene histórico (movimientos, compras, producción). Por favor, cambie su estado a inactivo en su lugar."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['get'])
+    def stock_bajo(self, request):
+        """Productos con stock por debajo del mínimo"""
+        productos = self.get_queryset().filter(
+            stock_actual__lt=F('stock_minimo'), activo=True
+        )
+        serializer = ProductoListSerializer(productos, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def resumen(self, request):
+        """Resumen general del inventario"""
+        qs = Producto.objects.filter(activo=True)
+        total_productos = qs.count()
+        total_stock_bajo = qs.filter(stock_actual__lt=F('stock_minimo')).count()
+        total_agotados = qs.filter(stock_actual__lte=0).count()
+        valor_inventario = qs.aggregate(
+            total=Sum(F('stock_actual') * F('precio_compra'))
+        )['total'] or 0
+
+        # Distribución por tipo
+        por_tipo = list(
+            qs.values('tipo_producto')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+
+        # Alertas activas
+        alertas_activas = AlertaInventario.objects.filter(estado='activa').count()
+
+        return Response({
+            'total_productos': total_productos,
+            'total_stock_bajo': total_stock_bajo,
+            'total_agotados': total_agotados,
+            'valor_inventario_total': float(valor_inventario),
+            'alertas_activas': alertas_activas,
+            'distribucion_por_tipo': por_tipo,
+        })
+
+    @action(detail=True, methods=['get'])
+    def historial(self, request, pk=None):
+        """Historial de movimientos de un producto específico"""
+        producto = self.get_object()
+        movimientos = MovimientoInventario.objects.filter(producto=producto)[:50]
+        serializer = MovimientoInventarioSerializer(movimientos, many=True)
+        return Response(serializer.data)
+
+
+class LoteViewSet(viewsets.ModelViewSet):
+    queryset = Lote.objects.select_related('producto').all()
+    serializer_class = LoteSerializer
+    permission_classes = [IsInventarioUser]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        producto = self.request.query_params.get('producto')
+        if producto:
+            qs = qs.filter(producto_id=producto)
+
+        estado = self.request.query_params.get('estado')
+        if estado:
+            qs = qs.filter(estado=estado)
+
+        return qs
+
+    @action(detail=False, methods=['get'])
+    def por_vencer(self, request):
+        """Lotes próximos a vencer en los próximos 30 días"""
+        dias = int(request.query_params.get('dias', 30))
+        fecha_limite = timezone.now().date() + timezone.timedelta(days=dias)
+        lotes = self.get_queryset().filter(
+            fecha_vencimiento__lte=fecha_limite,
+            fecha_vencimiento__gte=timezone.now().date(),
+            estado='disponible',
+        )
+        serializer = self.get_serializer(lotes, many=True)
+        return Response(serializer.data)
 
 
 class MovimientoInventarioViewSet(viewsets.ModelViewSet):
-
-    queryset = MovimientoInventario.objects.all().order_by('-fecha')
-
+    queryset = MovimientoInventario.objects.select_related(
+        'producto', 'almacen', 'lote'
+    ).all().order_by('-fecha')
     serializer_class = MovimientoInventarioSerializer
+    permission_classes = [IsInventarioUser]
 
-    permission_classes = [AllowAny]
+    def get_queryset(self):
+        qs = super().get_queryset()
 
+        producto = self.request.query_params.get('producto')
+        if producto:
+            qs = qs.filter(producto_id=producto)
+
+        tipo = self.request.query_params.get('tipo')
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+
+        origen = self.request.query_params.get('origen')
+        if origen:
+            qs = qs.filter(origen=origen)
+
+        # Filtro por rango de fechas
+        fecha_desde = self.request.query_params.get('fecha_desde')
+        fecha_hasta = self.request.query_params.get('fecha_hasta')
+        if fecha_desde:
+            qs = qs.filter(fecha__date__gte=fecha_desde)
+        if fecha_hasta:
+            qs = qs.filter(fecha__date__lte=fecha_hasta)
+
+        return qs
+
+
+class AlertaInventarioViewSet(viewsets.ModelViewSet):
+    queryset = AlertaInventario.objects.select_related('producto').all()
+    serializer_class = AlertaInventarioSerializer
+    permission_classes = [IsInventarioUser]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        estado = self.request.query_params.get('estado')
+        if estado:
+            qs = qs.filter(estado=estado)
+        else:
+            # Por defecto solo alertas activas
+            qs = qs.filter(estado='activa')
+
+        tipo = self.request.query_params.get('tipo')
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+
+        return qs
+
+    @action(detail=True, methods=['post'])
+    def resolver(self, request, pk=None):
+        """Marca una alerta como resuelta"""
+        alerta = self.get_object()
+        alerta.resolver()
+        return Response({'status': 'Alerta resuelta'})
+
+    @action(detail=True, methods=['post'])
+    def ignorar(self, request, pk=None):
+        """Marca una alerta como ignorada"""
+        alerta = self.get_object()
+        alerta.estado = 'ignorada'
+        alerta.save(update_fields=['estado'])
+        return Response({'status': 'Alerta ignorada'})
+
+
+class ConteoFisicoViewSet(viewsets.ModelViewSet):
+    queryset = ConteoFisico.objects.select_related('almacen').prefetch_related('detalles').all()
+    serializer_class = ConteoFisicoSerializer
+    permission_classes = [IsInventarioUser]
+
+    @action(detail=True, methods=['post'])
+    def aplicar_ajustes(self, request, pk=None):
+        """Aplica todos los ajustes del conteo físico"""
+        conteo = self.get_object()
+        ajustes = 0
+
+        for detalle in conteo.detalles.filter(ajustado=False):
+            detalle.calcular_diferencia()
+            if detalle.diferencia and detalle.diferencia != 0:
+                detalle.aplicar_ajuste()
+                ajustes += 1
+
+        conteo.estado = 'aprobado'
+        conteo.save(update_fields=['estado'])
+
+        return Response({
+            'status': 'Ajustes aplicados',
+            'total_ajustes': ajustes
+        })
+
+
+class DetalleConteoFisicoViewSet(viewsets.ModelViewSet):
+    queryset = DetalleConteoFisico.objects.select_related('producto', 'conteo').all()
+    serializer_class = DetalleConteoFisicoSerializer
+    permission_classes = [IsInventarioUser]

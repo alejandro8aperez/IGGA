@@ -5,14 +5,11 @@ from .serializers import OrdenVentaSerializer, DetalleOrdenVentaSerializer, Fact
 class OrdenVentaViewSet(viewsets.ModelViewSet):
     queryset = OrdenVenta.objects.all()
     serializer_class = OrdenVentaSerializer
-    permission_classes = [permissions.AllowAny]
 
 class DetalleOrdenVentaViewSet(viewsets.ModelViewSet):
     queryset = DetalleOrdenVenta.objects.all()
     serializer_class = DetalleOrdenVentaSerializer
-    permission_classes = [permissions.AllowAny]
 
 class FacturaVentaViewSet(viewsets.ModelViewSet):
     queryset = FacturaVenta.objects.all()
     serializer_class = FacturaVentaSerializer
-    permission_classes = [permissions.AllowAny]

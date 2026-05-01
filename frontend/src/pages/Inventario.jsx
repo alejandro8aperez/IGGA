@@ -3,7 +3,7 @@ import {
     Plus, Edit3, Trash2, FileText, TrendingUp, AlertCircle, 
     DollarSign, ShoppingCart, Users, Calendar, CheckCircle, 
     Clock, X, Eye, Download, Filter, Search, Package,
-    BarChart3, Box, AlertTriangle
+    BarChart3, Box, AlertTriangle, Power
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -29,10 +29,12 @@ export default function Inventario() {
         precio_venta: 0,
         stock_actual: 0,
         stock_minimo: 0,
-        unidad_medida: 'unidad'
+        unidad_medida: 'unidad',
+        activo: true
     });
 
     const [productos, setProductos] = useState([]);
+    const [categorias, setCategorias] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('todos');
     const [filterStock, setFilterStock] = useState('todos');
@@ -44,8 +46,12 @@ export default function Inventario() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${API_BASE}productos/`);
-            setProductos(response.data);
+            const [prodRes, catRes] = await Promise.all([
+                axios.get(`${API_BASE}productos/`),
+                axios.get(`${API_BASE}categorias/`)
+            ]);
+            setProductos(prodRes.data);
+            setCategorias(catRes.data);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching productos:', err);
@@ -66,7 +72,9 @@ export default function Inventario() {
                 precio_venta: prod.precio_venta,
                 stock_actual: prod.stock_actual,
                 stock_minimo: prod.stock_minimo,
-                unidad_medida: prod.unidad_medida || 'unidad'
+                unidad_medida: prod.unidad_medida || 'UN',
+                activo: prod.activo ?? true,
+                imagen: null
             });
         } else {
             setCurrentProd(null);
@@ -79,7 +87,9 @@ export default function Inventario() {
                 precio_venta: 0,
                 stock_actual: 0,
                 stock_minimo: 0,
-                unidad_medida: 'unidad'
+                unidad_medida: 'UN',
+                activo: true,
+                imagen: null
             });
         }
         setIsProdModalOpen(true);
@@ -87,17 +97,57 @@ export default function Inventario() {
 
     const handleProdSubmit = async (e) => {
         e.preventDefault();
-        try {
-            if (currentProd) {
-                await axios.put(`${API_BASE}productos/${currentProd.id}/`, prodForm);
-            } else {
-                await axios.post(`${API_BASE}productos/`, prodForm);
+        const formData = new FormData();
+        
+        // Preparar los datos asegurando que la categoría sea un ID
+        const data = { ...prodForm };
+        if (data.categoria && typeof data.categoria === 'object') {
+            data.categoria = data.categoria.id;
+        }
+
+        Object.keys(data).forEach(key => {
+            if (key === 'imagen') {
+                if (data[key] instanceof File) {
+                    formData.append(key, data[key]);
+                }
+            } else if (data[key] !== null && data[key] !== undefined) {
+                formData.append(key, data[key]);
             }
+        });
+
+        try {
+            const url = currentProd 
+                ? `${API_BASE}productos/${currentProd.id}/` 
+                : `${API_BASE}productos/`;
+            
+            // Usar PATCH para actualizaciones para evitar enviar campos no modificados
+            const method = currentProd ? 'patch' : 'post';
+            
+            await axios({
+                method: method,
+                url: url,
+                data: formData,
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
             fetchData();
             setIsProdModalOpen(false);
         } catch (err) {
             console.error('Error al guardar producto:', err);
             setError('Error al guardar el producto');
+        }
+    };
+
+    const toggleActivo = async (product) => {
+        try {
+            await axios.patch(`${API_BASE}productos/${product.id}/`, {
+                activo: !product.activo
+            });
+            fetchData();
+        } catch (err) {
+            console.error('Error al cambiar estado:', err);
+            setError('No se pudo cambiar el estado del producto');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -108,7 +158,9 @@ export default function Inventario() {
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar producto:', err);
-                setError('Error al eliminar el producto');
+                const msg = err.response?.data?.error || 'Error al eliminar el producto';
+                setError(msg);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
     };
@@ -136,7 +188,7 @@ export default function Inventario() {
         const matchesSearch = product.codigo_sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             product.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = filterCategory === 'todos' || product.categoria === filterCategory;
+        const matchesCategory = filterCategory === 'todos' || product.categoria_nombre === filterCategory;
         const matchesStock = filterStock === 'todos' || 
                             (filterStock === 'bajo' && product.stock_actual <= product.stock_minimo) ||
                             (filterStock === 'normal' && product.stock_actual > product.stock_minimo);
@@ -172,7 +224,7 @@ export default function Inventario() {
         );
     }
 
-    if (error) {
+    if (error && productos.length === 0) {
         return (
             <div style={{ 
                 background: '#f8fafc',
@@ -538,8 +590,8 @@ export default function Inventario() {
                         onChange={(e) => setFilterCategory(e.target.value)}
                     >
                         <option value="todos">Todas las categorías</option>
-                        {[...new Set(productos.map(p => p.categoria))].map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
+                        {[...new Set(productos.map(p => p.categoria_nombre).filter(Boolean))].map(catName => (
+                            <option key={catName} value={catName}>{catName}</option>
                         ))}
                     </select>
                     <select
@@ -581,6 +633,7 @@ export default function Inventario() {
                     }}>
                         <thead>
                             <tr style={{ background: '#f8fafc' }}>
+                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '6%' }}>Foto</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '12%' }}>Código</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '25%' }}>Producto</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '12%' }}>Categoría</th>
@@ -600,17 +653,43 @@ export default function Inventario() {
                                         borderBottom: '1px solid #e2e8f0',
                                         backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc'
                                     }}>
-                                        <td style={{ padding: '0.75rem 0.5rem', fontWeight: '600', color: '#2d3748', textAlign: 'center', verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                                                <Package size={14} style={{ color: '#667eea', flexShrink: 0 }} />
-                                                <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.codigo_sku}</span>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
+                                            <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '8px',
+                                                overflow: 'hidden',
+                                                background: '#f1f5f9',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: '1px solid #e2e8f0',
+                                                margin: '0 auto'
+                                            }}>
+                                                {product.imagen_url ? (
+                                                    <img 
+                                                        src={product.imagen_url} 
+                                                        alt="" 
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                ) : (
+                                                    <Package size={20} color="#cbd5e0" />
+                                                )}
                                             </div>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.5rem', fontWeight: '600', color: '#2d3748', textAlign: 'center', verticalAlign: 'middle', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            <span style={{ fontSize: '0.85rem' }}>{product.codigo_sku}</span>
                                         </td>
                                         <td style={{ padding: '0.75rem 0.5rem', verticalAlign: 'middle', overflow: 'hidden' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                 <Box size={12} style={{ color: '#718096', flexShrink: 0 }} />
                                                 <div style={{ overflow: 'hidden' }}>
-                                                    <div style={{ fontWeight: '600', color: '#2d3748', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.nombre}</div>
+                                                    <div style={{ fontWeight: '600', color: '#2d3748', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        {product.nombre}
+                                                        {!product.activo && (
+                                                            <span style={{ background: '#feb2b2', color: '#9b2c2c', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>INACTIVO</span>
+                                                        )}
+                                                    </div>
                                                     <div style={{ fontSize: '0.75rem', color: '#718096', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.descripcion}</div>
                                                 </div>
                                             </div>
@@ -678,7 +757,27 @@ export default function Inventario() {
                                                     <Edit3 size={12} />
                                                 </button>
                                                 <button 
+                                                    onClick={() => toggleActivo(product)}
+                                                    title={product.activo ? 'Desactivar' : 'Activar'}
+                                                    style={{
+                                                        background: product.activo ? '#48bb78' : '#718096',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '0.4rem',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        transition: 'background 0.2s',
+                                                        flexShrink: 0
+                                                    }}
+                                                >
+                                                    <Power size={12} />
+                                                </button>
+                                                <button 
                                                     onClick={() => deleteProd(product.id)}
+                                                    title="Borrar"
                                                     style={{
                                                         background: '#ef4444',
                                                         color: 'white',
@@ -803,8 +902,7 @@ export default function Inventario() {
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Categoría</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={prodForm.categoria}
                                         onChange={(e) => setProdForm({...prodForm, categoria: e.target.value})}
                                         style={{
@@ -814,7 +912,12 @@ export default function Inventario() {
                                             borderRadius: '8px',
                                             fontSize: '0.9rem'
                                         }}
-                                    />
+                                    >
+                                        <option value="">Seleccione una categoría...</option>
+                                        {categorias.map(cat => (
+                                            <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Unidad Medida</label>
@@ -829,10 +932,10 @@ export default function Inventario() {
                                             fontSize: '0.9rem'
                                         }}
                                     >
-                                        <option value="unidad">Unidad</option>
-                                        <option value="kg">Kilogramo</option>
-                                        <option value="litro">Litro</option>
-                                        <option value="metro">Metro</option>
+                                        <option value="UN">Unidad</option>
+                                        <option value="KG">Kilogramo</option>
+                                        <option value="LT">Litro</option>
+                                        <option value="MT">Metro</option>
                                     </select>
                                 </div>
                                 <div>
@@ -896,6 +999,37 @@ export default function Inventario() {
                                             fontSize: '0.9rem'
                                         }}
                                     />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2rem', cursor: 'pointer', color: '#4a5568', fontWeight: '600' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={prodForm.activo}
+                                            onChange={(e) => setProdForm({...prodForm, activo: e.target.checked})}
+                                            style={{ width: '18px', height: '18px' }}
+                                        />
+                                    Producto Activo
+                                    </label>
+                                </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Imagen del Producto</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setProdForm({...prodForm, imagen: e.target.files[0]})}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: '8px',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    />
+                                    {currentProd?.imagen && !prodForm.imagen && (
+                                        <p style={{ fontSize: '0.8rem', color: '#718096', marginTop: '0.5rem' }}>
+                                            Imagen actual: {currentProd.imagen.split('/').pop()}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             
