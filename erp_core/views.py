@@ -30,6 +30,40 @@ def ping(request):
     }, status=200 if db_status == "ok" else 503)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
+def run_migrations(request):
+    """
+    Endpoint para ejecutar migraciones de base de datos.
+    Protegido por ADMIN_SETUP_KEY para evitar acceso no autorizado.
+    Útil cuando no se tiene acceso a shell (plan gratuito de Render).
+    """
+    # Verificar clave de seguridad
+    admin_key = request.headers.get('X-Admin-Setup-Key') or request.data.get('admin_key')
+    expected_key = os.getenv('ADMIN_SETUP_KEY', 'erp8amperios2024')
+    
+    if admin_key != expected_key:
+        return JsonResponse({'error': 'Unauthorized. Invalid admin key.'}, status=403)
+    
+    try:
+        from django.core.management import call_command
+        from io import StringIO
+        
+        # Capturar output de las migraciones
+        out = StringIO()
+        call_command('migrate', '--noinput', stdout=out)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Migrations completed successfully',
+            'output': out.getvalue()
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@api_view(['POST'])
 @permission_classes([IsAdminUser]) # SOLO administradores autenticados
 def create_initial_superuser(request):
     """
