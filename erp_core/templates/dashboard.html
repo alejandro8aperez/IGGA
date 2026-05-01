@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP 8AMPERIOS | Executive Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --secondary: #3B82F6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --dark: #0F172A;
+            --light: #F8FAFC;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand span {
+            color: var(--secondary);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #94A3B8;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .chart-container {
+            background: var(--glass);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            color: var(--dark);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container h3 {
+            margin-top: 0;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        canvas {
+            width: 100% !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">8AMPERIOS <span>ERP</span></div>
+        <div style="color: #94A3B8; font-size: 0.9rem;">
+            <p style="margin-bottom: 1rem; cursor: pointer; color: #fff;">📊 Resumen General</p>
+            <p style="margin-bottom: 1rem; cursor: pointer; transition: 0.3s;">🏭 Producción</p>
+            <p style="margin-bottom: 1rem; cursor: pointer; transition: 0.3s;">💰 Finanzas</p>
+            <p style="margin-bottom: 1rem; cursor: pointer; transition: 0.3s;">📑 Facturación DIAN</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header animate-fade">
+            <h1>Executive Dashboard</h1>
+            <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem;">
+                En vivo 🔴
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card animate-fade delay-1">
+                <div class="metric-title">Ventas Totales</div>
+                <div class="metric-value" id="valVentas">$ {{ ventas_total|floatformat:2 }}</div>
+            </div>
+            <div class="metric-card animate-fade delay-2">
+                <div class="metric-title">Compras Realizadas</div>
+                <div class="metric-value" id="valCompras">$ {{ compras_total|floatformat:2 }}</div>
+            </div>
+            <div class="metric-card animate-fade delay-3">
+                <div class="metric-title">Órdenes en Proceso</div>
+                <div class="metric-value" style="color: var(--success);">{{ produccion_en_proceso }} OP</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container animate-fade delay-2">
+                <h3>Flujo de Caja (Ventas vs Compras)</h3>
+                <canvas id="cashflowChart" height="100"></canvas>
+            </div>
+            <div class="chart-container animate-fade delay-3">
+                <h3>Estado DIAN (Simulado)</h3>
+                <canvas id="dianChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animaciones numéricas
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = "$ " + (progress * (end - start) + start).toLocaleString('es-CO', {minimumFractionDigits: 2});
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        const rawVentas = {{ ventas_total }};
+        const rawCompras = {{ compras_total }};
+        
+        // Chart: Flujo de Caja
+        const ctx = document.getElementById('cashflowChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Ventas vs Compras'],
+                datasets: [
+                    {
+                        label: 'Ventas (Ingresos)',
+                        data: [rawVentas || 12500000], // Mock si está en 0
+                        backgroundColor: '#10B981',
+                        borderRadius: 5
+                    },
+                    {
+                        label: 'Compras (Egresos)',
+                        data: [rawCompras || 4800000], // Mock si está en 0
+                        backgroundColor: '#F59E0B',
+                        borderRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#E2E8F0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Chart: Estado DIAN
+        const ctxDian = document.getElementById('dianChart').getContext('2d');
+        new Chart(ctxDian, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aceptadas', 'Rechazadas', 'Pendientes'],
+                datasets: [{
+                    data: [85, 5, 10],
+                    backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

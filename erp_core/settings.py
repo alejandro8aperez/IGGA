@@ -36,10 +36,14 @@ if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+# Limpiar espacios en blanco al parsear ALLOWED_HOSTS por si se agregan en el panel de Render
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')]
 
 # Configuración necesaria para Render (detrás de un balanceador de carga)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Forzar la redirección de todo el tráfico HTTP a HTTPS en producción
+SECURE_SSL_REDIRECT = not DEBUG
 
 
 # Application definition
@@ -96,6 +100,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'erp_core.middleware.AuditLogMiddleware', # Auditoría nivel SAP
 ]
 
 # CORS configuration: use environment variables for both local and cloud deployments
@@ -114,7 +119,6 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept', 'accept-encoding', 'authorization',
     'content-type', 'dnt', 'origin', 'user-agent',
@@ -128,13 +132,15 @@ SECURE_HSTS_SECONDS = 31536000 # 1 año
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Django REST Framework - permisos abiertos para ERP con auth local
+# Django REST Framework - permisos cerrados por defecto para asegurar el ERP
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -322,24 +328,7 @@ LOGGING = {
         },
     },
 }
-
-# Crear directorio de logs si no existe
-import os
+# --- Configuración Final de Entorno ---
 LOGS_DIR = BASE_DIR / 'logs'
-if not os.path.exists(LOGS_DIR):
-    os.makedirs(LOGS_DIR)
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-
-# Limpiar espacios en blanco al parsear ALLOWED_HOSTS por si se agregan en el panel de Render
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')]
-
-# Configuración necesaria para Render (detrás de un balanceador de carga)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Forzar la redirección de todo el tráfico HTTP a HTTPS en producción
-SECURE_SSL_REDIRECT = not DEBUG
-
-
-# Application definition
-
+if not LOGS_DIR.exists():
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)

@@ -23,7 +23,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, ping, create_initial_superuser, verify_credentials, test_image
+from .views import UserViewSet, ping, create_initial_superuser, verify_credentials, test_image, generar_comprobante_nomina_pdf, reporte_pyl_api, dashboard_stats
 from .views_import import import_data_api, export_data_api, list_models
 
 router = DefaultRouter()
@@ -32,6 +32,7 @@ router.register(r'users', UserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/ping/', ping, name='ping'),
+    path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),
     path('api/multi-empresa/', include('multi_empresa.urls')),
     path('api/mrp/', include('mrp.urls')),
     path('api/crm/', include('crm.urls')),
