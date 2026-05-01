@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# exit on error
+# Build script optimizado para Render
 set -o errexit
 
+echo "Installing dependencies..."
 pip install -r requirements.txt
 
+echo "Collecting static files..."
 python manage.py collectstatic --no-input
-python manage.py migrate
 
-# Opcional: Ejecutar bootstrap si la base de datos está vacía
-# python manage.py bootstrap_pos
+echo "Build completed successfully!"
