@@ -386,7 +386,7 @@ def dashboard_stats(request):
     Retorna conteos básicos de los módulos principales.
     """
     from crm.models import Cliente, Cotizacion
-    from venta.models import PedidoVenta, FacturaVenta
+    from venta.models import OrdenVenta, FacturaVenta
     from inventarios.models import Producto
     from compras.models import Proveedor, OrdenCompra
     from operaciones.models import Proyecto
@@ -395,7 +395,7 @@ def dashboard_stats(request):
     stats = {
         'clientes': Cliente.objects.count(),
         'cotizaciones': Cotizacion.objects.count(),
-        'pedidos': PedidoVenta.objects.count(),
+        'pedidos': OrdenVenta.objects.count(),
         'facturas': FacturaVenta.objects.count(),
         'productos': Producto.objects.count(),
         'proveedores': Proveedor.objects.count(),
