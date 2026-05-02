@@ -37,8 +37,8 @@ def run_migrations(request):
     Protegido por ADMIN_SETUP_KEY para evitar acceso no autorizado.
     Útil cuando no se tiene acceso a shell (plan gratuito de Render).
     """
-    # Verificar clave de seguridad
-    admin_key = request.headers.get('X-Admin-Setup-Key') or request.data.get('admin_key')
+    # Verificar clave de seguridad (solo headers, no body requerido)
+    admin_key = request.headers.get('X-Admin-Setup-Key', '')
     expected_key = os.getenv('ADMIN_SETUP_KEY', 'erp8amperios2024')
     
     if admin_key != expected_key:
@@ -47,20 +47,25 @@ def run_migrations(request):
     try:
         from django.core.management import call_command
         from io import StringIO
+        import sys
         
         # Capturar output de las migraciones
         out = StringIO()
-        call_command('migrate', '--noinput', stdout=out)
+        sys.stdout = out
+        call_command('migrate', '--noinput', interactive=False)
+        sys.stdout = sys.__stdout__
         
         return JsonResponse({
             'success': True,
             'message': 'Migrations completed successfully',
-            'output': out.getvalue()
+            'output': out.getvalue()[:2000]  # Limit output size
         })
     except Exception as e:
+        import traceback
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'traceback': traceback.format_exc()[:1000]
         }, status=500)
 
 @api_view(['POST'])
