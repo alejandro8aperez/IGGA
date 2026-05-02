@@ -35,9 +35,8 @@ def run_migrations(request):
     """
     Endpoint para ejecutar migraciones de base de datos.
     Protegido por ADMIN_SETUP_KEY para evitar acceso no autorizado.
-    Útil cuando no se tiene acceso a shell (plan gratuito de Render).
     """
-    # Verificar clave de seguridad (solo headers, no body requerido)
+    # Verificar clave de seguridad
     admin_key = request.headers.get('X-Admin-Setup-Key', '')
     expected_key = os.getenv('ADMIN_SETUP_KEY', 'erp8amperios2024')
     
@@ -46,26 +45,20 @@ def run_migrations(request):
     
     try:
         from django.core.management import call_command
-        from io import StringIO
-        import sys
         
-        # Capturar output de las migraciones
-        out = StringIO()
-        sys.stdout = out
-        call_command('migrate', '--noinput', interactive=False)
-        sys.stdout = sys.__stdout__
+        # Ejecutar migraciones sin capturar output (más simple)
+        call_command('migrate', verbosity=0)
         
         return JsonResponse({
             'success': True,
-            'message': 'Migrations completed successfully',
-            'output': out.getvalue()[:2000]  # Limit output size
+            'message': 'Migrations completed successfully'
         })
     except Exception as e:
         import traceback
         return JsonResponse({
             'success': False,
             'error': str(e),
-            'traceback': traceback.format_exc()[:1000]
+            'traceback': traceback.format_exc()[:2000]
         }, status=500)
 
 @api_view(['POST'])
