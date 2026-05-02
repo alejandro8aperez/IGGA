@@ -5099,3 +5099,466 @@ INFO 2026-04-30 18:28:58,621 basehttp 17380 22520 "GET /api/compras/ordenes/ HTT
 INFO 2026-04-30 18:28:58,631 basehttp 17380 24368 "GET /api/kave/disenos/ HTTP/1.1" 200 3585
 INFO 2026-04-30 18:28:58,635 basehttp 17380 13320 "GET /api/inventarios/productos/ HTTP/1.1" 200 6526
 INFO 2026-04-30 18:28:58,664 basehttp 17380 22520 "GET /api/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-05-01 12:33:26,390 autoreload 30420 17188 Watching for file changes with StatReloader
+INFO 2026-05-01 12:34:10,411 basehttp 30420 29088 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,413 basehttp 30420 22724 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,416 basehttp 30420 23216 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,420 basehttp 30420 29676 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,422 basehttp 30420 29088 "OPTIONS /api/inventarios/productos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,423 basehttp 30420 7692 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,423 basehttp 30420 22724 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,423 basehttp 30420 23216 "OPTIONS /api/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,426 basehttp 30420 23460 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,427 basehttp 30420 29676 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,428 basehttp 30420 29088 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,428 basehttp 30420 7692 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,430 basehttp 30420 22724 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,431 basehttp 30420 23216 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,433 basehttp 30420 23460 "OPTIONS /api/inventarios/productos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,434 basehttp 30420 29676 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,437 basehttp 30420 29088 "OPTIONS /api/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:10,439 basehttp 30420 7692 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+WARNING 2026-05-01 12:34:10,523 log 30420 23216 Unauthorized: /api/crm/cotizaciones/
+WARNING 2026-05-01 12:34:10,525 log 30420 22724 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-01 12:34:10,525 log 30420 29676 Unauthorized: /api/ventas/facturas/
+WARNING 2026-05-01 12:34:10,525 log 30420 29088 Unauthorized: /api/inventarios/productos/
+WARNING 2026-05-01 12:34:10,525 log 30420 7692 Unauthorized: /api/compras/proveedores/
+WARNING 2026-05-01 12:34:10,525 log 30420 23460 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-05-01 12:34:10,526 basehttp 30420 23216 "GET /api/crm/cotizaciones/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,526 basehttp 30420 29676 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,527 basehttp 30420 22724 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,527 basehttp 30420 29088 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,531 log 30420 23216 Unauthorized: /api/kave/disenos/
+WARNING 2026-05-01 12:34:10,532 basehttp 30420 7692 "GET /api/compras/proveedores/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,532 basehttp 30420 23460 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,534 log 30420 29676 Unauthorized: /api/operaciones/proyectos/
+WARNING 2026-05-01 12:34:10,538 log 30420 22724 Unauthorized: /api/compras/ordenes/
+WARNING 2026-05-01 12:34:10,540 log 30420 29088 Unauthorized: /api/crm/cotizaciones/
+WARNING 2026-05-01 12:34:10,542 log 30420 7692 Unauthorized: /api/ventas/facturas/
+WARNING 2026-05-01 12:34:10,544 basehttp 30420 23216 "GET /api/kave/disenos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,544 basehttp 30420 29676 "GET /api/operaciones/proyectos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,546 basehttp 30420 22724 "GET /api/compras/ordenes/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,547 basehttp 30420 7692 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,549 log 30420 23460 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-01 12:34:10,549 basehttp 30420 29088 "GET /api/crm/cotizaciones/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,551 basehttp 30420 23460 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,583 log 30420 23216 Unauthorized: /api/inventarios/productos/
+WARNING 2026-05-01 12:34:10,584 log 30420 29676 Unauthorized: /api/compras/proveedores/
+WARNING 2026-05-01 12:34:10,587 log 30420 23460 Unauthorized: /api/compras/ordenes/
+WARNING 2026-05-01 12:34:10,588 log 30420 7692 Unauthorized: /api/kave/disenos/
+WARNING 2026-05-01 12:34:10,591 log 30420 29088 Unauthorized: /api/operaciones/proyectos/
+WARNING 2026-05-01 12:34:10,593 log 30420 22724 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-05-01 12:34:10,594 basehttp 30420 23216 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,595 basehttp 30420 29676 "GET /api/compras/proveedores/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,595 basehttp 30420 23460 "GET /api/compras/ordenes/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,596 basehttp 30420 29088 "GET /api/operaciones/proyectos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,596 basehttp 30420 7692 "GET /api/kave/disenos/ HTTP/1.1" 401 172
+WARNING 2026-05-01 12:34:10,598 basehttp 30420 22724 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+INFO 2026-05-01 12:34:21,303 basehttp 30420 22724 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:22,252 basehttp 30420 22724 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-05-01 12:34:22,594 basehttp 30420 22724 "OPTIONS /api/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:34:22,595 basehttp 30420 7692 "OPTIONS /api/dashboard/stats/ HTTP/1.1" 200 0
+ERROR 2026-05-01 12:34:22,733 log 30420 7692 Internal Server Error: /api/dashboard/stats/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\erp_core\views.py", line 389, in dashboard_stats
+    from venta.models import PedidoVenta, FacturaVenta
+ImportError: cannot import name 'PedidoVenta' from 'venta.models' (C:\postgres\erp-8amperios\venta\models.py)
+ERROR 2026-05-01 12:34:22,741 basehttp 30420 7692 "GET /api/dashboard/stats/ HTTP/1.1" 500 24575
+ERROR 2026-05-01 12:34:22,769 log 30420 22724 Internal Server Error: /api/dashboard/stats/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\erp_core\views.py", line 389, in dashboard_stats
+    from venta.models import PedidoVenta, FacturaVenta
+ImportError: cannot import name 'PedidoVenta' from 'venta.models' (C:\postgres\erp-8amperios\venta\models.py)
+ERROR 2026-05-01 12:34:22,773 basehttp 30420 22724 "GET /api/dashboard/stats/ HTTP/1.1" 500 24575
+INFO 2026-05-01 12:38:05,276 autoreload 28208 21572 Watching for file changes with StatReloader
+WARNING 2026-05-01 12:38:27,678 log 28208 15096 Unauthorized: /api/token/
+WARNING 2026-05-01 12:38:27,680 basehttp 28208 15096 "POST /api/token/ HTTP/1.1" 401 63
+INFO 2026-05-01 12:38:57,971 basehttp 28208 15096 "POST /api/token/ HTTP/1.1" 200 489
+ERROR 2026-05-01 12:38:58,139 log 28208 15096 Internal Server Error: /api/dashboard/stats/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\erp_core\views.py", line 389, in dashboard_stats
+    from venta.models import PedidoVenta, FacturaVenta
+ImportError: cannot import name 'PedidoVenta' from 'venta.models' (C:\postgres\erp-8amperios\venta\models.py)
+ERROR 2026-05-01 12:38:58,144 basehttp 28208 15096 "GET /api/dashboard/stats/ HTTP/1.1" 500 24575
+ERROR 2026-05-01 12:38:58,222 log 28208 25788 Internal Server Error: /api/dashboard/stats/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\erp_core\views.py", line 389, in dashboard_stats
+    from venta.models import PedidoVenta, FacturaVenta
+ImportError: cannot import name 'PedidoVenta' from 'venta.models' (C:\postgres\erp-8amperios\venta\models.py)
+ERROR 2026-05-01 12:38:58,225 basehttp 28208 25788 "GET /api/dashboard/stats/ HTTP/1.1" 500 24575
+INFO 2026-05-01 12:39:57,678 autoreload 28208 21572 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-01 12:40:00,093 autoreload 8852 22912 Watching for file changes with StatReloader
+INFO 2026-05-01 12:40:39,975 autoreload 8852 22912 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-01 12:40:43,660 autoreload 20156 3472 Watching for file changes with StatReloader
+INFO 2026-05-01 12:45:05,113 autoreload 22036 24064 Watching for file changes with StatReloader
+INFO 2026-05-01 12:45:58,324 basehttp 22036 5552 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-05-01 12:45:58,501 basehttp 22036 5552 "GET /api/dashboard/stats/ HTTP/1.1" 200 200
+INFO 2026-05-01 12:45:58,564 basehttp 22036 21824 "GET /api/dashboard/stats/ HTTP/1.1" 200 200
+INFO 2026-05-01 12:49:17,082 autoreload 22036 24064 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-01 12:49:22,044 autoreload 29608 28404 Watching for file changes with StatReloader
+INFO 2026-05-01 12:51:55,991 autoreload 5028 25216 Watching for file changes with StatReloader
+INFO 2026-05-01 12:52:12,226 basehttp 5028 15004 "POST /api/token/ HTTP/1.1" 200 489
+ERROR 2026-05-01 12:52:12,443 log 5028 15004 Internal Server Error: /api/dashboard/stats/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\erp_core\views.py", line 394, in dashboard_stats
+    from pos.models import MovimientoCaja
+ImportError: cannot import name 'MovimientoCaja' from 'pos.models' (C:\postgres\erp-8amperios\pos\models.py)
+ERROR 2026-05-01 12:52:12,452 basehttp 5028 15004 "GET /api/dashboard/stats/ HTTP/1.1" 500 24547
+ERROR 2026-05-01 12:52:12,544 log 5028 29816 Internal Server Error: /api/dashboard/stats/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\erp_core\views.py", line 394, in dashboard_stats
+    from pos.models import MovimientoCaja
+ImportError: cannot import name 'MovimientoCaja' from 'pos.models' (C:\postgres\erp-8amperios\pos\models.py)
+ERROR 2026-05-01 12:52:12,548 basehttp 5028 29816 "GET /api/dashboard/stats/ HTTP/1.1" 500 24547
+INFO 2026-05-01 12:53:54,745 autoreload 5028 25216 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-01 12:53:58,616 autoreload 30684 7604 Watching for file changes with StatReloader
+INFO 2026-05-01 12:54:46,361 autoreload 28204 10580 Watching for file changes with StatReloader
+INFO 2026-05-01 12:55:06,082 basehttp 28204 27376 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-05-01 12:55:06,265 basehttp 28204 27376 "GET /api/dashboard/stats/ HTTP/1.1" 200 333
+INFO 2026-05-01 12:55:06,334 basehttp 28204 23124 "GET /api/dashboard/stats/ HTTP/1.1" 200 333
+INFO 2026-05-01 12:56:23,117 basehttp 28204 23124 "GET /api/dashboard/stats/ HTTP/1.1" 200 333
+INFO 2026-05-01 12:56:23,137 basehttp 28204 27376 "GET /api/dashboard/stats/ HTTP/1.1" 200 333
+INFO 2026-05-01 12:56:25,006 basehttp 28204 27376 "GET /api/dashboard/stats/ HTTP/1.1" 200 333
+INFO 2026-05-01 12:56:25,021 basehttp 28204 23124 "GET /api/dashboard/stats/ HTTP/1.1" 200 333
+INFO 2026-05-01 12:56:25,417 basehttp 28204 23124 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:56:25,424 basehttp 28204 27376 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:56:28,013 basehttp 28204 27376 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:56:28,022 basehttp 28204 23124 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:56:35,009 basehttp 28204 23124 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:56:35,020 basehttp 28204 27376 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:56:35,313 basehttp 28204 27376 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-01 12:56:35,318 basehttp 28204 27376 "OPTIONS /api/compras/recepciones/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:35,318 basehttp 28204 23124 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:35,322 basehttp 28204 23124 "OPTIONS /api/compras/recepciones/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:35,322 basehttp 28204 27376 "OPTIONS /api/compras/pagos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:35,324 basehttp 28204 23124 "OPTIONS /api/compras/pagos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:35,330 basehttp 28204 27376 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-01 12:56:35,339 basehttp 28204 23124 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:35,352 basehttp 28204 23124 "GET /api/compras/pagos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:35,352 basehttp 28204 27376 "GET /api/compras/recepciones/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:35,362 basehttp 28204 27376 "GET /api/compras/recepciones/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:35,363 basehttp 28204 23124 "GET /api/compras/pagos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:54,358 basehttp 28204 23124 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-01 12:56:54,358 basehttp 28204 27376 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:54,416 basehttp 28204 5508 "GET /api/compras/recepciones/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:54,432 basehttp 28204 27376 "GET /api/compras/recepciones/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:54,432 basehttp 28204 19400 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-01 12:56:54,432 basehttp 28204 22248 "GET /api/compras/pagos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:54,437 basehttp 28204 4368 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:54,440 basehttp 28204 5508 "GET /api/compras/pagos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,439 basehttp 28204 5508 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-01 12:56:56,444 basehttp 28204 4368 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,447 basehttp 28204 22248 "GET /api/compras/recepciones/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,450 basehttp 28204 27376 "GET /api/compras/pagos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,463 basehttp 28204 19400 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-01 12:56:56,464 basehttp 28204 4368 "GET /api/compras/recepciones/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,467 basehttp 28204 5508 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,470 basehttp 28204 22248 "GET /api/compras/pagos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,643 basehttp 28204 22248 "OPTIONS /api/logistica/vehiculos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:56,645 basehttp 28204 5508 "OPTIONS /api/logistica/envios/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:56,650 basehttp 28204 19400 "OPTIONS /api/logistica/envios/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:56,650 basehttp 28204 22248 "OPTIONS /api/logistica/vehiculos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:56:56,670 basehttp 28204 22248 "GET /api/logistica/vehiculos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,673 basehttp 28204 19400 "GET /api/logistica/envios/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,679 basehttp 28204 5508 "GET /api/logistica/vehiculos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:56:56,684 basehttp 28204 22248 "GET /api/logistica/envios/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:09,893 basehttp 28204 22248 "GET /api/logistica/vehiculos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:09,899 basehttp 28204 5508 "GET /api/logistica/envios/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:09,906 basehttp 28204 19400 "GET /api/logistica/vehiculos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:09,906 basehttp 28204 22248 "GET /api/logistica/envios/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:13,814 basehttp 28204 19400 "GET /api/logistica/envios/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:13,815 basehttp 28204 22248 "GET /api/logistica/vehiculos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:13,825 basehttp 28204 5508 "GET /api/logistica/envios/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:13,827 basehttp 28204 4368 "GET /api/logistica/vehiculos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:13,990 basehttp 28204 4368 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:13,995 basehttp 28204 5508 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:57:14,002 basehttp 28204 22248 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:14,005 basehttp 28204 4368 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:57:25,861 basehttp 28204 4368 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:25,867 basehttp 28204 22248 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:57:25,872 basehttp 28204 5508 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:25,876 basehttp 28204 4368 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:57:27,905 basehttp 28204 5508 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:57:27,905 basehttp 28204 4368 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:27,918 basehttp 28204 19400 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:57:27,918 basehttp 28204 22248 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:57:28,087 basehttp 28204 22248 "OPTIONS /api/mantenimiento/equipos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:28,087 basehttp 28204 19400 "OPTIONS /api/mantenimiento/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:28,098 basehttp 28204 22248 "OPTIONS /api/mantenimiento/equipos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:28,098 basehttp 28204 19400 "OPTIONS /api/mantenimiento/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:28,120 basehttp 28204 4368 "GET /api/mantenimiento/equipos/ HTTP/1.1" 200 198
+INFO 2026-05-01 12:57:28,135 basehttp 28204 5508 "GET /api/mantenimiento/ordenes/ HTTP/1.1" 200 373
+INFO 2026-05-01 12:57:28,136 basehttp 28204 19400 "GET /api/mantenimiento/equipos/ HTTP/1.1" 200 198
+INFO 2026-05-01 12:57:28,150 basehttp 28204 4368 "GET /api/mantenimiento/ordenes/ HTTP/1.1" 200 373
+INFO 2026-05-01 12:57:48,415 basehttp 28204 5508 "GET /api/mantenimiento/equipos/ HTTP/1.1" 200 198
+INFO 2026-05-01 12:57:48,419 basehttp 28204 4368 "GET /api/mantenimiento/ordenes/ HTTP/1.1" 200 373
+INFO 2026-05-01 12:57:48,424 basehttp 28204 19400 "GET /api/mantenimiento/equipos/ HTTP/1.1" 200 198
+INFO 2026-05-01 12:57:48,431 basehttp 28204 22248 "GET /api/mantenimiento/ordenes/ HTTP/1.1" 200 373
+INFO 2026-05-01 12:57:49,996 basehttp 28204 19400 "GET /api/mantenimiento/equipos/ HTTP/1.1" 200 198
+INFO 2026-05-01 12:57:50,001 basehttp 28204 22248 "GET /api/mantenimiento/ordenes/ HTTP/1.1" 200 373
+INFO 2026-05-01 12:57:50,009 basehttp 28204 4368 "GET /api/mantenimiento/equipos/ HTTP/1.1" 200 198
+INFO 2026-05-01 12:57:50,015 basehttp 28204 19400 "GET /api/mantenimiento/ordenes/ HTTP/1.1" 200 373
+INFO 2026-05-01 12:57:50,192 basehttp 28204 4368 "OPTIONS /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:50,192 basehttp 28204 22248 "OPTIONS /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:50,192 basehttp 28204 19400 "OPTIONS /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:50,196 basehttp 28204 5508 "OPTIONS /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:50,205 basehttp 28204 22248 "OPTIONS /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:50,205 basehttp 28204 19400 "OPTIONS /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:50,251 basehttp 28204 19400 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:57:50,264 basehttp 28204 22248 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:57:50,273 basehttp 28204 5508 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:57:50,273 basehttp 28204 4368 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:57:50,287 basehttp 28204 19400 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:57:50,291 basehttp 28204 22248 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:57:58,868 basehttp 28204 22248 "OPTIONS /api/mrp/plan-maestro-produccion/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:57:58,876 basehttp 28204 22248 "GET /api/mrp/plan-maestro-produccion/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:58:01,558 basehttp 28204 22248 "OPTIONS /api/mrp/listas-materiales/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:01,572 basehttp 28204 22248 "GET /api/mrp/listas-materiales/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:58:03,484 basehttp 28204 22248 "OPTIONS /api/mrp/requerimientos-materiales/pendientes/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:03,500 basehttp 28204 22248 "GET /api/mrp/requerimientos-materiales/pendientes/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:58:05,255 basehttp 28204 4368 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:58:05,257 basehttp 28204 19400 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:58:05,257 basehttp 28204 22248 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:58:11,798 basehttp 28204 4368 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:58:11,803 basehttp 28204 19400 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:58:11,803 basehttp 28204 22248 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:58:11,816 basehttp 28204 5508 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:58:11,825 basehttp 28204 27376 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:58:11,827 basehttp 28204 4368 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:58:15,204 basehttp 28204 5508 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:58:15,208 basehttp 28204 4368 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:58:15,208 basehttp 28204 27376 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:58:15,217 basehttp 28204 22248 "GET /api/mrp/ejecuciones-mrp/ HTTP/1.1" 200 2395
+INFO 2026-05-01 12:58:15,226 basehttp 28204 19400 "GET /api/mrp/plan-maestro-produccion/resumen/ HTTP/1.1" 200 85
+INFO 2026-05-01 12:58:15,226 basehttp 28204 5508 "GET /api/mrp/planes-capacidad/resumen/ HTTP/1.1" 200 89
+INFO 2026-05-01 12:58:15,350 basehttp 28204 5508 "OPTIONS /api/finanzas/activos-fijos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:15,350 basehttp 28204 19400 "OPTIONS /api/finanzas/activos-fijos/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:15,367 basehttp 28204 5508 "GET /api/finanzas/activos-fijos/ HTTP/1.1" 200 214
+INFO 2026-05-01 12:58:15,376 basehttp 28204 19400 "GET /api/finanzas/activos-fijos/ HTTP/1.1" 200 214
+INFO 2026-05-01 12:58:22,224 basehttp 28204 19400 "GET /api/finanzas/activos-fijos/ HTTP/1.1" 200 214
+INFO 2026-05-01 12:58:22,232 basehttp 28204 5508 "GET /api/finanzas/activos-fijos/ HTTP/1.1" 200 214
+INFO 2026-05-01 12:58:28,426 basehttp 28204 5508 "GET /api/finanzas/activos-fijos/ HTTP/1.1" 200 214
+INFO 2026-05-01 12:58:28,434 basehttp 28204 19400 "GET /api/finanzas/activos-fijos/ HTTP/1.1" 200 214
+INFO 2026-05-01 12:58:28,649 basehttp 28204 5508 "OPTIONS /api/inventarios/categorias/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:28,660 basehttp 28204 22248 "OPTIONS /api/pos/sesiones/activa/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:28,660 basehttp 28204 4368 "OPTIONS /api/inventarios/categorias/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:28,660 basehttp 28204 27376 "OPTIONS /api/pos/sesiones/activa/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:58:28,688 basehttp 28204 19400 "GET /api/inventarios/productos/ HTTP/1.1" 200 6526
+INFO 2026-05-01 12:58:28,704 basehttp 28204 4368 "GET /api/pos/sesiones/activa/ HTTP/1.1" 200 207
+INFO 2026-05-01 12:58:28,714 basehttp 28204 22248 "GET /api/inventarios/productos/ HTTP/1.1" 200 6526
+INFO 2026-05-01 12:58:28,720 basehttp 28204 19400 "GET /api/pos/sesiones/activa/ HTTP/1.1" 200 207
+INFO 2026-05-01 12:58:28,720 basehttp 28204 27376 "GET /api/inventarios/categorias/ HTTP/1.1" 200 472
+INFO 2026-05-01 12:58:28,740 basehttp 28204 22248 "GET /api/inventarios/categorias/ HTTP/1.1" 200 472
+INFO 2026-05-01 12:58:29,101 basehttp 28204 19412 "GET /media/productos/pan003.jpg HTTP/1.1" 200 19658
+INFO 2026-05-01 12:58:29,101 basehttp 28204 23512 "GET /media/productos/beb001.jpg HTTP/1.1" 200 14557
+INFO 2026-05-01 12:58:29,102 basehttp 28204 15908 "GET /media/productos/pan004.jpg HTTP/1.1" 200 20942
+INFO 2026-05-01 12:58:29,102 basehttp 28204 8368 "GET /media/productos/pas004.jpg HTTP/1.1" 200 23715
+INFO 2026-05-01 12:58:29,103 basehttp 28204 29320 "GET /media/productos/beb005.jpg HTTP/1.1" 200 19791
+INFO 2026-05-01 12:58:29,105 basehttp 28204 21900 "GET /media/productos/beb002.jpg HTTP/1.1" 200 26425
+INFO 2026-05-01 12:58:29,123 basehttp 28204 29320 "GET /media/productos/beb004.jpg HTTP/1.1" 200 19888
+INFO 2026-05-01 12:58:29,123 basehttp 28204 23512 "GET /media/productos/pan001.jpg HTTP/1.1" 200 29902
+INFO 2026-05-01 12:58:29,125 basehttp 28204 21900 "GET /media/productos/beb003.jpg HTTP/1.1" 200 30037
+INFO 2026-05-01 12:58:29,125 basehttp 28204 19412 "GET /media/productos/pas002.jpg HTTP/1.1" 200 45045
+INFO 2026-05-01 12:58:29,126 basehttp 28204 8368 "GET /media/productos/pan002.jpg HTTP/1.1" 200 30139
+INFO 2026-05-01 12:58:29,131 basehttp 28204 15908 "GET /media/productos/SEIS.png HTTP/1.1" 200 423232
+INFO 2026-05-01 12:58:29,142 basehttp 28204 8368 "GET /media/productos/pan005.jpg HTTP/1.1" 200 23241
+INFO 2026-05-01 12:58:29,142 basehttp 28204 23512 "GET /media/productos/pas003.jpg HTTP/1.1" 200 23782
+INFO 2026-05-01 12:58:29,142 basehttp 28204 19412 "GET /media/productos/pas001.jpg HTTP/1.1" 200 46602
+INFO 2026-05-01 12:59:29,641 basehttp 28204 22248 "OPTIONS /api/pos/ventas/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:29,747 basehttp 28204 22248 "POST /api/pos/ventas/ HTTP/1.1" 201 855
+INFO 2026-05-01 12:59:45,424 basehttp 28204 22248 "OPTIONS /api/facturacion/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:45,436 basehttp 28204 23124 "OPTIONS /api/facturacion/resoluciones/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:45,436 basehttp 28204 5508 "OPTIONS /api/facturacion/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:45,436 basehttp 28204 27376 "OPTIONS /api/facturacion/resoluciones/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:45,453 basehttp 28204 19400 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:59:45,460 basehttp 28204 4368 "GET /api/inventarios/productos/ HTTP/1.1" 200 6525
+INFO 2026-05-01 12:59:45,473 basehttp 28204 5508 "GET /api/facturacion/resoluciones/ HTTP/1.1" 200 302
+INFO 2026-05-01 12:59:45,485 basehttp 28204 27376 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:59:45,487 basehttp 28204 19400 "GET /api/inventarios/productos/ HTTP/1.1" 200 6525
+INFO 2026-05-01 12:59:45,488 basehttp 28204 4368 "GET /api/facturacion/resoluciones/ HTTP/1.1" 200 302
+INFO 2026-05-01 12:59:45,523 basehttp 28204 22248 "GET /api/facturacion/facturas/ HTTP/1.1" 200 5006
+INFO 2026-05-01 12:59:45,581 basehttp 28204 4368 "GET /api/facturacion/facturas/ HTTP/1.1" 200 5006
+INFO 2026-05-01 12:59:52,440 basehttp 28204 22248 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:59:52,440 basehttp 28204 27376 "GET /api/facturacion/resoluciones/ HTTP/1.1" 200 302
+INFO 2026-05-01 12:59:52,442 basehttp 28204 19400 "GET /api/inventarios/productos/ HTTP/1.1" 200 6525
+INFO 2026-05-01 12:59:52,471 basehttp 28204 5508 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:59:52,471 basehttp 28204 23124 "GET /api/facturacion/resoluciones/ HTTP/1.1" 200 302
+INFO 2026-05-01 12:59:52,471 basehttp 28204 22248 "GET /api/inventarios/productos/ HTTP/1.1" 200 6525
+INFO 2026-05-01 12:59:52,512 basehttp 28204 4368 "GET /api/facturacion/facturas/ HTTP/1.1" 200 5006
+INFO 2026-05-01 12:59:52,570 basehttp 28204 23124 "GET /api/facturacion/facturas/ HTTP/1.1" 200 5006
+INFO 2026-05-01 12:59:54,198 basehttp 28204 4368 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:59:54,198 basehttp 28204 22248 "GET /api/inventarios/productos/ HTTP/1.1" 200 6525
+INFO 2026-05-01 12:59:54,198 basehttp 28204 5508 "GET /api/facturacion/resoluciones/ HTTP/1.1" 200 302
+INFO 2026-05-01 12:59:54,233 basehttp 28204 4368 "GET /api/facturacion/resoluciones/ HTTP/1.1" 200 302
+INFO 2026-05-01 12:59:54,233 basehttp 28204 27376 "GET /api/inventarios/productos/ HTTP/1.1" 200 6525
+INFO 2026-05-01 12:59:54,233 basehttp 28204 19400 "GET /api/crm/clientes/ HTTP/1.1" 200 1337
+INFO 2026-05-01 12:59:54,281 basehttp 28204 23124 "GET /api/facturacion/facturas/ HTTP/1.1" 200 5006
+INFO 2026-05-01 12:59:54,346 basehttp 28204 19400 "GET /api/facturacion/facturas/ HTTP/1.1" 200 5006
+INFO 2026-05-01 12:59:54,371 basehttp 28204 27376 "OPTIONS /api/venta/ordenes-venta/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:54,372 basehttp 28204 19400 "OPTIONS /api/venta/ordenes-venta/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:54,372 basehttp 28204 23124 "OPTIONS /api/venta/facturas-venta/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:54,372 basehttp 28204 4368 "OPTIONS /api/venta/facturas-venta/ HTTP/1.1" 200 0
+INFO 2026-05-01 12:59:54,394 basehttp 28204 4368 "GET /api/venta/ordenes-venta/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:59:54,396 basehttp 28204 23124 "GET /api/venta/facturas-venta/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:59:54,401 basehttp 28204 19400 "GET /api/venta/ordenes-venta/ HTTP/1.1" 200 2
+INFO 2026-05-01 12:59:54,405 basehttp 28204 4368 "GET /api/venta/facturas-venta/ HTTP/1.1" 200 2
+INFO 2026-05-01 14:56:27,166 autoreload 28204 10580 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-01 14:56:33,065 autoreload 26504 9848 Watching for file changes with StatReloader
+INFO 2026-05-01 15:19:56,822 autoreload 26504 9848 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-01 15:20:00,999 autoreload 20644 29088 Watching for file changes with StatReloader
+INFO 2026-05-01 15:20:58,788 autoreload 20644 29088 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-05-01 15:21:00,883 autoreload 30592 26588 Watching for file changes with StatReloader
+INFO 2026-05-01 15:21:39,827 autoreload 30592 26588 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-05-01 15:21:41,681 autoreload 16120 2416 Watching for file changes with StatReloader
+INFO 2026-05-02 09:22:07,765 autoreload 16120 2416 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-02 09:22:13,340 autoreload 13308 28368 Watching for file changes with StatReloader
