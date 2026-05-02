@@ -39,7 +39,7 @@ services:
       - key: NODE_VERSION
         value: 20.11.0
       - key: VITE_API_URL
-        value: https://erp-8amperios-backend.onrender.com/api
+        value: https://erp-backend-a37b.onrender.com/api
     routes:
       - type: rewrite
         source: /
