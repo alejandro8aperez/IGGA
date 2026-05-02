@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import {
     LayoutDashboard, Menu, LogOut, X, FileText, MonitorSmartphone,
