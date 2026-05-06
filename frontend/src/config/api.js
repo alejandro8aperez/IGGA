@@ -47,6 +47,7 @@ export const API = {
         PEDIDOS:        `${B}/ventas/pedidos/`,
         CLIENTES:       `${B}/ventas/clientes/`,
         ORDENES:        `${B}/ventas/ordenes/`,
+        FACTURAS:       `${B}/ventas/facturas/`,
         DEVOLUCIONES:   `${B}/ventas/devoluciones/`,
     },
 

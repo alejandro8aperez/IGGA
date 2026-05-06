@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function ProyectosPS() {
+    const navigate = useNavigate();
     const [proyectos, setProyectos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -24,7 +26,7 @@ function ProyectosPS() {
     if (loading) {
         return <div className="container" style={{ position: 'relative' }}>
                 <button 
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
                     style={{ 

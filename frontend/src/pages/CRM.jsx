@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, AlertCircle, Edit3, Trash2, Plus, X, FileText, Phone, Mail, Building2, Calendar, DollarSign, Palette } from 'lucide-react';
+import { Users, AlertCircle, Edit3, Trash2, Plus, X, FileText, Phone, Mail, Building2, Calendar, DollarSign, Palette, Paperclip } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CotizacionesCRM from '../components/CotizacionesCRM';
 import { API } from '../config/api';
@@ -20,11 +20,14 @@ function CRM() {
 
     const [formData, setFormData] = useState({
         nombre: '',
-        representante: '',
+        compania: '',
         cedula: '',
+        nit: '',
         email: '',
         telefono: '',
-        direccion: ''
+        direccion: '',
+        notas: '',
+        adjunto_archivos: null
     });
 
     useEffect(() => {
@@ -55,22 +58,28 @@ function CRM() {
         if (client) {
             setCurrentClient(client);
             setFormData({
-                nombre: client.nombre,
-                representante: client.representante || '',
+                nombre: client.nombre || '',
+                compania: client.compania || '',
                 cedula: client.cedula || '',
-                email: client.email,
-                telefono: client.telefono,
-                direccion: client.direccion
+                nit: client.nit || '',
+                email: client.email || '',
+                telefono: client.telefono || '',
+                direccion: client.direccion || '',
+                notas: client.notas || '',
+                adjunto_archivos: null
             });
         } else {
             setCurrentClient(null);
             setFormData({
                 nombre: '',
-                representante: '',
+                compania: '',
                 cedula: '',
+                nit: '',
                 email: '',
                 telefono: '',
-                direccion: ''
+                direccion: '',
+                notas: '',
+                adjunto_archivos: null
             });
         }
         setIsModalOpen(true);
@@ -82,21 +91,38 @@ function CRM() {
     };
 
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value, type, files } = e.target;
+        setFormData({ 
+            ...formData, 
+            [name]: type === 'file' ? files[0] : value 
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        const data = new FormData();
+        Object.keys(formData).forEach(key => {
+            if (formData[key] !== null) {
+                data.append(key, formData[key]);
+            }
+        });
+
         try {
+            const config = { headers: { 'Content-Type': 'multipart/form-data' } };
             if (currentClient) {
-                await axios.put(`${API_URL}${currentClient.id}/`, formData);
+                // Usamos PATCH para actualizaciones parciales y más seguras
+                // Aseguramos que la URL termine con barra para Django REST Framework
+                const url = API_URL.endsWith('/') ? `${API_URL}${currentClient.id}/` : `${API_URL}/${currentClient.id}/`;
+                await axios.patch(url, data, config);
             } else {
-                await axios.post(API_URL, formData);
+                await axios.post(API_URL, data, config);
             }
             closeModal();
             fetchClientes();
         } catch (err) {
-            alert("Error al guardar el cliente.");
+            console.error('[CRM] Error al guardar cliente:', err.response?.data || err.message);
+            alert("Error al guardar el cliente. Verifique los datos e intente de nuevo.");
         }
     };
 
@@ -301,36 +327,7 @@ function CRM() {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button 
-                                    onClick={() => {
-                                        window.location.href = '/form-designer?template=Cotización%20CRM';
-                                    }}
-                                    style={{
-                                        background: 'white',
-                                        color: '#667eea',
-                                        border: '2px solid #667eea',
-                                        padding: '0.75rem 1.5rem',
-                                        borderRadius: '12px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={(e) => {
-                                        e.target.style.backgroundColor = '#667eea';
-                                        e.target.style.color = 'white';
-                                    }}
-                                    onMouseOut={(e) => {
-                                        e.target.style.backgroundColor = 'white';
-                                        e.target.style.color = '#667eea';
-                                    }}
-                                >
-                                    <Palette size={18} />
-                                    Personalizar
-                                </button>
+
                                 <button 
                                     onClick={() => openModal()}
                                     style={{
@@ -373,10 +370,11 @@ function CRM() {
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
                                         <tr style={{ background: '#f8fafc' }}>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Nombre</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Compañía / NIT</th>
                                             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Email</th>
                                             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Teléfono</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Representante</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Notas</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Docs</th>
                                             <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Acciones</th>
                                         </tr>
                                     </thead>
@@ -389,7 +387,12 @@ function CRM() {
                                                 <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                         <Building2 size={16} style={{ color: '#667eea' }} />
-                                                        {cliente.nombre}
+                                                        <div>
+                                                            <div>{cliente.cedula ? `${cliente.cedula} - ` : ''}{cliente.nombre}</div>
+                                                            <div style={{ fontSize: '0.75rem', color: '#718096' }}>
+                                                                {cliente.nit ? `${cliente.nit} - ` : ''}{cliente.compania || 'N/A'}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '1rem' }}>
@@ -405,7 +408,14 @@ function CRM() {
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                                    {cliente.representante || 'N/A'}
+                                                    <div style={{ fontSize: '0.875rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        {cliente.notas || 'N/A'}
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    {cliente.adjunto_archivos ? (
+                                                        <a href={cliente.adjunto_archivos} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea' }}><Paperclip size={16} /></a>
+                                                    ) : 'N/A'}
                                                 </td>
                                                 <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
@@ -528,7 +538,7 @@ function CRM() {
                             borderRadius: '16px',
                             padding: '2rem',
                             width: '90%',
-                            maxWidth: '600px',
+                            maxWidth: '900px',
                             maxHeight: '90vh',
                             overflowY: 'auto',
                             position: 'relative',
@@ -596,6 +606,75 @@ function CRM() {
                                     />
                                 </div>
                                 <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Cédula</label>
+                                    <input
+                                        type="text"
+                                        name="cedula"
+                                        value={formData.cedula}
+                                        onChange={handleInputChange}
+                                        style={{ 
+                                            width: '100%', 
+                                            padding: '0.75rem', 
+                                            border: '2px solid #e2e8f0', 
+                                            borderRadius: '8px',
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = '#667eea';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#e2e8f0';
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Compañía</label>
+                                    <input
+                                        type="text"
+                                        name="compania"
+                                        value={formData.compania}
+                                        onChange={handleInputChange}
+                                        style={{ 
+                                            width: '100%', 
+                                            padding: '0.75rem', 
+                                            border: '2px solid #e2e8f0', 
+                                            borderRadius: '8px',
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = '#667eea';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#e2e8f0';
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>NIT</label>
+                                    <input
+                                        type="text"
+                                        name="nit"
+                                        value={formData.nit}
+                                        onChange={handleInputChange}
+                                        style={{ 
+                                            width: '100%', 
+                                            padding: '0.75rem', 
+                                            border: '2px solid #e2e8f0', 
+                                            borderRadius: '8px',
+                                            fontSize: '1rem',
+                                            transition: 'border-color 0.2s'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = '#667eea';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#e2e8f0';
+                                        }}
+                                    />
+                                </div>
+                                <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Email *</label>
                                     <input
                                         type="email"
@@ -642,52 +721,6 @@ function CRM() {
                                         }}
                                     />
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Cédula</label>
-                                    <input
-                                        type="text"
-                                        name="cedula"
-                                        value={formData.cedula}
-                                        onChange={handleInputChange}
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Representante</label>
-                                    <input
-                                        type="text"
-                                        name="representante"
-                                        value={formData.representante}
-                                        onChange={handleInputChange}
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
                             </div>
                             <div style={{ marginTop: '1rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Dirección</label>
@@ -711,6 +744,39 @@ function CRM() {
                                     onBlur={(e) => {
                                         e.target.style.borderColor = '#e2e8f0';
                                     }}
+                                />
+                            </div>
+                            <div style={{ marginTop: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>NOTAS</label>
+                                <textarea
+                                    name="notas"
+                                    value={formData.notas}
+                                    onChange={handleInputChange}
+                                    rows={3}
+                                    style={{ 
+                                        width: '100%', 
+                                        padding: '0.75rem', 
+                                        border: '2px solid #e2e8f0', 
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        resize: 'vertical',
+                                        transition: 'border-color 0.2s'
+                                    }}
+                                    onFocus={(e) => {
+                                        e.target.style.borderColor = '#667eea';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.borderColor = '#e2e8f0';
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginTop: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>ADJUNTO ARCHIVOS</label>
+                                <input
+                                    type="file"
+                                    name="adjunto_archivos"
+                                    onChange={handleInputChange}
+                                    style={{ width: '100%', padding: '0.5rem 0' }}
                                 />
                             </div>
                             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>

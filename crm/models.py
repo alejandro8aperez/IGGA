@@ -3,17 +3,20 @@ from django.core.validators import RegexValidator
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=200)
-    representante = models.CharField(max_length=200, blank=True, null=True)
+    compania = models.CharField(max_length=200, blank=True, null=True, verbose_name="Compañía")
     email = models.EmailField(unique=True)
     cedula = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    nit = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="NIT")
     
     # Validador para asegurar formato telefónico consistente
     phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$',
-        message="El número debe tener formato: '+999999999'. De 9 a 15 dígitos."
+        regex=r'^\+?[\d\s\-]{7,20}$',
+        message="El número debe tener entre 7 y 20 dígitos (puede incluir espacios o guiones)."
     )
     telefono = models.CharField(validators=[phone_regex], max_length=20, blank=True)
     direccion = models.TextField(blank=True)
+    notas = models.TextField(blank=True, null=True, verbose_name="Notas")
+    adjunto_archivos = models.FileField(upload_to='crm/adjuntos/', blank=True, null=True, verbose_name="Adjuntos")
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -1,34 +1,124 @@
 import React, { useState, useEffect } from 'react';
 import { 
-    Plus, Edit3, Trash2, FileText, TrendingUp, AlertCircle, 
-    DollarSign, ShoppingCart, Users, Calendar, CheckCircle, 
-    Clock, X, Eye, Download, Filter, Search
+    Plus, FileText, ShoppingCart, Users, Search, 
+    Filter, Eye, Download, CheckCircle, Clock, 
+    AlertCircle, TrendingUp, DollarSign, Printer
 } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
-const API_ORD_VENTA = `${API_BASE}venta/ordenes-venta/`;
-const API_FACT_VENTA = `${API_BASE}venta/facturas-venta/`;
+// Estilos globales para el módulo de Ventas
+const s = {
+  page: { 
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    fontFamily: 'Inter, sans-serif'
+  },
+  btnPrimary: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '12px',
+    fontSize: '1rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'transform 0.2s, box-shadow 0.2s'
+  },
+  card: {
+    background: 'white',
+    borderRadius: '16px',
+    padding: '1.5rem',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+    marginBottom: '2rem'
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse'
+  },
+  th: {
+    padding: '1rem',
+    textAlign: 'left',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    color: '#64748b',
+    background: '#f8fafc',
+    borderBottom: '1px solid #e2e8f0'
+  },
+  td: {
+    padding: '1rem',
+    borderBottom: '1px solid #e2e8f0',
+    fontSize: '0.9rem',
+    color: '#334155'
+  },
+  input: { 
+    width: '100%', 
+    background: 'white', 
+    border: '1px solid #e2e8f0', 
+    borderRadius: '8px', 
+    padding: '0.6rem 0.9rem', 
+    color: '#1e293b', 
+    fontSize: '0.95rem', 
+    boxSizing: 'border-box' 
+  },
+  badge: (c) => ({ 
+    background: c + '22', 
+    color: c, 
+    padding: '0.2rem 0.7rem', 
+    borderRadius: '20px', 
+    fontSize: '0.75rem', 
+    fontWeight: 600 
+  }),
+  tabBtn: (active) => ({
+    background: active ? '#f0f4ff' : 'white',
+    color: active ? '#667eea' : '#718096',
+    border: '1px solid ' + (active ? '#667eea' : '#e2e8f0'),
+    padding: '0.6rem 1.2rem',
+    borderRadius: '10px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  })
+};
 
 export default function Ventas() {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [activeTab, setActiveTab] = useState('ordenes');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('ordenes');
 
-    // Modal Orden Venta
-    const [isOrdModalOpen, setIsOrdModalOpen] = useState(false);
-    const [currentOrd, setCurrentOrd] = useState(null);
-    const [ordForm, setOrdForm] = useState({
-        cliente: '', 
-        fecha_entrega_esperada: '', 
-        estado: 'borrador', 
-        total: 0
-    });
+  const [ordenes, setOrdenes] = useState([]);
+  const [facturas, setFacturas] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [notasCredito, setNotasCredito] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [productos, setProductos] = useState([]);
+  
+  // Estados para modal de orden
+  const [isOrdModalOpen, setIsOrdModalOpen] = useState(false);
+  const [currentOrd, setCurrentOrd] = useState(null);
+  const [ordForm, setOrdForm] = useState({
+    cliente: '',
+    fecha_entrega_esperada: '',
+    estado: 'borrador',
+    total: 0,
+    detalles: []
+  });
 
-    const [ordenesVenta, setOrdenesVenta] = useState([]);
-    const [facturasVenta, setFacturasVenta] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('todos');
+  // Estados para modal de nota de crédito
+  const [isNCModalOpen, setIsNCModalOpen] = useState(false);
+  const [currentNC, setCurrentNC] = useState(null);
+  const [ncForm, setNcForm] = useState({
+    factura: '',
+    numero_nota: '',
+    tipo: 'devolucion',
+    motivo: '',
+    porcentaje_iva: 19,
+    detalles: []
+  });
 
     useEffect(() => {
         fetchData();
@@ -36,1061 +126,583 @@ export default function Ventas() {
 
     const fetchData = async () => {
         try {
-            setLoading(true);
-            const [resOrd, resFact] = await Promise.all([
-                axios.get(API_ORD_VENTA),
-                axios.get(API_FACT_VENTA)
-            ]);
-            setOrdenesVenta(resOrd.data);
-            setFacturasVenta(resFact.data);
-            setLoading(false);
+      setLoading(true);
+      // Corregido: /pedidos/ es el endpoint correcto según urls.py
+      const [ordRes, factRes, cliRes, prodRes, ncRes] = await Promise.all([
+        axios.get('/ventas/pedidos/'),
+        axios.get('/ventas/facturas/'),
+        axios.get('/crm/clientes/'),
+        axios.get('/inventarios/productos/'),
+        axios.get('/ventas/notas-credito/')
+      ]);
+      setOrdenes(ordRes.data);
+      setFacturas(factRes.data);
+      setClientes(cliRes.data);
+      setProductos(prodRes.data || []);
+      setNotasCredito(ncRes.data || []);
+      setLoading(false);
         } catch (err) {
-            console.error('Error fetching data:', err);
-            setError('Error al cargar datos de Ventas.');
-            setLoading(false);
-        }
-    };
-
-    const openOrdModal = (ord = null) => {
-        if (ord) {
-            setCurrentOrd(ord);
-            setOrdForm({
-                cliente: ord.cliente,
-                fecha_entrega_esperada: ord.fecha_entrega_esperada || '',
-                estado: ord.estado,
-                total: ord.total
-            });
-        } else {
-            setCurrentOrd(null);
-            setOrdForm({ 
-                cliente: '', 
-                fecha_entrega_esperada: '', 
-                estado: 'borrador', 
-                total: 0 
-            });
-        }
-        setIsOrdModalOpen(true);
-    };
-
-    const handleOrdSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (currentOrd) {
-                await axios.put(`${API_ORD_VENTA}${currentOrd.id}/`, ordForm);
-            } else {
-                await axios.post(API_ORD_VENTA, ordForm);
-            }
-            fetchData();
-            setIsOrdModalOpen(false);
-        } catch (err) {
-            console.error('Error al guardar orden de venta:', err);
-            setError('Error al guardar la orden de venta');
-        }
-    };
-
-    const deleteOrd = async (id) => {
-        if (window.confirm('¿Eliminar esta orden de venta?')) {
-            try {
-                await axios.delete(`${API_ORD_VENTA}${id}/`);
-                fetchData();
-            } catch (err) {
-                console.error('Error al eliminar orden de venta:', err);
-                setError('Error al eliminar la orden de venta');
-            }
-        }
-    };
-
-    const generarFactura = async (orden) => {
-        try {
-            const numero = `FV-${orden.id}-${Date.now()}`;
-            await axios.post(API_FACT_VENTA, {
-                orden_venta: orden.id,
-                numero_factura: numero,
-                total: orden.total,
-            });
-            fetchData();
-        } catch (err) {
-            console.error('Error al generar factura:', err);
-            setError('Error al generar factura');
-        }
-    };
-
-    const filteredOrdenes = ordenesVenta.filter(ord => {
-        const matchesSearch = ord.cliente?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = filterStatus === 'todos' || ord.estado === filterStatus;
-        return matchesSearch && matchesFilter;
-    });
-
-    const filteredFacturas = facturasVenta.filter(fact => {
-        const matchesSearch = fact.numero_factura?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            fact.orden_venta_cliente?.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSearch;
-    });
-
-    // Calcular estadísticas
-    const totalVentas = ordenesVenta.reduce((sum, ord) => sum + (ord.total || 0), 0);
-    const ordenesPendientes = ordenesVenta.filter(ord => ord.estado === 'pendiente').length;
-    const facturasPendientes = facturasVenta.filter(fact => fact.estado === 'pendiente').length;
-    const totalFacturado = facturasVenta.reduce((sum, fact) => sum + (fact.total || 0), 0);
-
-    if (loading) {
-        return (
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '50vh',
-                background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-                borderRadius: '16px'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ 
-                        width: '50px', 
-                        height: '50px', 
-                        border: '4px solid rgba(102, 126, 234, 0.2)', 
-                        borderTop: '4px solid #667eea', 
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite',
-                        margin: '0 auto 1rem'
-                    }}></div>
-                    <div style={{ color: '#667eea', fontWeight: '600', fontSize: '1.1rem' }}>
-                        Cargando datos de Ventas...
-                    </div>
-                </div>
-            </div>
-        );
+      console.error('Error fetching ventas data:', err);
+      setError('Error al cargar datos de ventas. Verifique su conexión.');
+      setLoading(false);
     }
+    };
 
-    if (error) {
-        return (
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '50vh',
-                background: '#f8fafc'
-            }}>
-                <div style={{
-                    background: '#fee2e2',
-                    border: '1px solid #ef4444',
-                    borderRadius: '12px',
-                    padding: '2rem',
-                    textAlign: 'center',
-                    maxWidth: '500px'
-                }}>
-                    <AlertCircle size={48} style={{ color: '#dc2626', marginBottom: '1rem' }} />
-                    <h3 style={{ color: '#dc2626', margin: '0 0 0.5rem 0' }}>
-                        Error en Ventas
-                    </h3>
-                    <p style={{ color: '#991b1b', margin: 0 }}>
-                        {error}
-                    </p>
-                    <button 
-                        onClick={() => setError(null)}
-                        style={{
-                            background: '#ef4444',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: '8px',
-                            fontSize: '1rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            marginTop: '1rem'
-                        }}
-                    >
-                        Reintentar
-                    </button>
-                </div>
-            </div>
-        );
+  const openOrdModal = (ord = null) => {
+    if (ord) {
+      setCurrentOrd(ord);
+      setOrdForm({
+        cliente: ord.cliente,
+        fecha_entrega_esperada: ord.fecha_entrega_esperada || '',
+        estado: ord.estado,
+        total: ord.total,
+        detalles: (ord.detalles || []).map(d => ({
+          id: d.id || Math.random(),
+          producto: d.producto?.id || d.producto,
+          nombre_producto: d.producto?.nombre || d.producto_nombre || '',
+          cantidad: d.cantidad || 1,
+          valor_unitario: parseFloat(d.precio_unitario || d.valor_unitario || 0),
+          valor_total: (d.cantidad || 1) * parseFloat(d.precio_unitario || d.valor_unitario || 0)
+        }))
+      });
+    } else {
+      setCurrentOrd(null);
+      setOrdForm({
+        cliente: '',
+        fecha_entrega_esperada: '',
+        estado: 'borrador',
+        total: 0,
+        detalles: []
+      });
     }
+    setIsOrdModalOpen(true);
+  };
+
+  const closeOrdModal = () => {
+    setIsOrdModalOpen(false);
+    setCurrentOrd(null);
+  };
+
+  const addProductoToOrden = () => {
+    setOrdForm(prev => ({
+      ...prev,
+      detalles: [...prev.detalles, {
+        id: Math.random(),
+        producto: '',
+        nombre_producto: '',
+        cantidad: 1,
+        valor_unitario: 0,
+        valor_total: 0
+      }]
+    }));
+  };
+
+  const removeProductoFromOrden = (index) => {
+    setOrdForm(prev => {
+      const newDetalles = [...prev.detalles];
+      newDetalles.splice(index, 1);
+      const newTotal = newDetalles.reduce((sum, d) => sum + (d.valor_total || 0), 0);
+      return { ...prev, detalles: newDetalles, total: newTotal };
+    });
+  };
+
+  const updateProductoInOrden = (index, field, value) => {
+    setOrdForm(prev => {
+      const newDetalles = [...prev.detalles];
+      newDetalles[index] = { ...newDetalles[index], [field]: value };
+      
+      if (field === 'producto') {
+        const prod = productos.find(p => p.id === parseInt(value));
+        if (prod) {
+          newDetalles[index].nombre_producto = prod.nombre;
+          newDetalles[index].valor_unitario = parseFloat(prod.precio_venta || 0);
+        }
+      }
+      
+      if (field === 'cantidad' || field === 'valor_unitario' || field === 'producto') {
+        const cantidad = parseFloat(newDetalles[index].cantidad) || 0;
+        const valorUnitario = parseFloat(newDetalles[index].valor_unitario) || 0;
+        newDetalles[index].valor_total = cantidad * valorUnitario;
+      }
+      
+      const newTotal = newDetalles.reduce((sum, d) => sum + (d.valor_total || 0), 0);
+      return { ...prev, detalles: newDetalles, total: newTotal };
+    });
+  };
+
+  const handleOrdSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        cliente: ordForm.cliente,
+        fecha_entrega_esperada: ordForm.fecha_entrega_esperada || null,
+        estado: ordForm.estado,
+        total: ordForm.total,
+        detalles: ordForm.detalles.map(d => ({
+          producto: d.producto,
+          cantidad: d.cantidad,
+          valor_unitario: d.valor_unitario
+        }))
+      };
+      
+      if (currentOrd) {
+        await axios.put(`/ventas/pedidos/${currentOrd.id}/`, payload);
+        alert('Orden actualizada correctamente');
+      } else {
+        await axios.post('/ventas/pedidos/', payload);
+        alert('Orden creada correctamente');
+      }
+      closeOrdModal();
+      fetchData();
+    } catch (err) {
+      console.error('Error guardando orden:', err);
+      alert('Error al guardar la orden');
+    }
+  };
+
+  const eliminarFactura = async (id) => {
+    if (!window.confirm('¿Está seguro de eliminar esta factura? Esta acción no se puede deshacer.')) return;
+    try {
+      await axios.delete(`/ventas/facturas/${id}/`);
+      alert('Factura eliminada correctamente');
+      fetchData();
+    } catch (err) {
+      console.error('Error eliminando factura:', err);
+      alert('Error al eliminar la factura');
+    }
+  };
+
+  const eliminarNotaCredito = async (id) => {
+    if (!window.confirm('¿Está seguro de eliminar esta nota de crédito? Esta acción no se puede deshacer.')) return;
+    try {
+      await axios.delete(`/ventas/notas-credito/${id}/`);
+      alert('Nota de crédito eliminada correctamente');
+      fetchData();
+    } catch (err) {
+      console.error('Error eliminando nota de crédito:', err);
+      alert('Error al eliminar la nota de crédito');
+    }
+  };
+
+  const generarFactura = async (orden) => {
+    try {
+      const payload = {
+        orden_venta: orden.id,
+        cliente: orden.cliente,
+        numero_factura: `FV-${orden.id}-${Date.now()}`,
+        total: orden.total,
+        fecha_emision: new Date().toISOString().split('T')[0],
+        estado_pago: 'pendiente',
+        detalles: orden.detalles || []
+      };
+
+      console.log('[ERP] Intentando generar factura:', payload);
+
+      const response = await axios.post('/ventas/facturas/', payload);
+      if (response.status === 201 || response.status === 200) {
+        console.log('[ERP] Factura generada con éxito:', response.data);
+        alert('Factura generada y registrada en el sistema.');
+        fetchData();
+      }
+    } catch (err) {
+      const serverError = err.response?.data;
+      console.error('[ERP] Error 400 detalle:', JSON.stringify(serverError, null, 2));
+      setError(`Error: ${JSON.stringify(serverError || err.message)}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+    const totalVentas = ordenes.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+    const facturacionPendiente = ordenes.filter(o => o.estado === 'pendiente').length;
+    const totalClientes = clientes.length;
+
+    if (loading) return (
+    <div className="flex items-center justify-center min-h-screen" style={s.page}>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+    </div>
+    );
 
     return (
-        <div style={{ 
-            background: '#f8fafc',
-            minHeight: '100vh',
-            padding: '1rem'
-        }}>
-            {/* Header */}
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                marginBottom: '2rem' 
-            }}>
-                <div>
-                    <h2 style={{ 
-                        fontSize: '1.8rem', 
-                        fontWeight: '700', 
-                        color: '#1a202c',
-                        margin: '0 0 0.5rem 0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem'
-                    }}>
-                        <ShoppingCart size={32} style={{ color: '#667eea' }} />
-                        Gestión de Ventas
-                    </h2>
-                    <p style={{ color: '#718096', margin: 0, fontSize: '1rem' }}>
-                        Órdenes de venta y facturación
-                    </p>
-                </div>
-                <button
-                    onClick={() => openOrdModal()}
-                    style={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.75rem 1.5rem',
-                        borderRadius: '12px',
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-                        transition: 'all 0.2s'
-                    }}
-                    onMouseOver={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
-                    }}
-                    onMouseOut={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
-                    }}
-                >
-                    <Plus size={20} />
-                    Nueva Orden
-                </button>
-            </div>
-
-            {/* Error Display */}
-            {error && (
-                <div style={{ 
-                    background: '#fed7d7',
-                    border: '1px solid #feb2b2',
-                    borderRadius: '12px',
-                    padding: '1rem',
-                    marginBottom: '2rem',
-                    color: '#c53030',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem'
-                }}>
-                    <AlertCircle size={20} />
-                    <div style={{ flex: 1 }}>
-                        <strong>Error:</strong> {error}
-                    </div>
-                    <button 
-                        onClick={() => setError(null)}
-                        style={{
-                            background: '#e53e3e',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Cerrar
-                    </button>
-                </div>
-            )}
-
-            {/* Stats Grid */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                gap: '1.5rem', 
-                marginBottom: '2rem' 
-            }}>
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <DollarSign size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Total Ventas
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Órdenes de venta
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#667eea',
-                        margin: '0'
-                    }}>
-                        ${totalVentas.toLocaleString()}
-                    </p>
-                </div>
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <ShoppingCart size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Órdenes Pendientes
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Por procesar
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#48bb78',
-                        margin: '0'
-                    }}>
-                        {ordenesPendientes}
-                    </p>
-                </div>
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #ed8936 0%, #f59e0b 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <FileText size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Facturas Pendientes
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Por cobrar
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#ed8936',
-                        margin: '0'
-                    }}>
-                        {facturasPendientes}
-                    </p>
-                </div>
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #38b2ac 0%, #319795 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <TrendingUp size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Total Facturado
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Monto total
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#38b2ac',
-                        margin: '0'
-                    }}>
-                        ${totalFacturado.toLocaleString()}
-                    </p>
-                </div>
-            </div>
-
-            {/* Search and Filter */}
-            <div style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '1rem',
-                marginBottom: '2rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                display: 'flex',
-                gap: '1rem',
-                alignItems: 'center'
-            }}>
-                <div style={{ flex: 1, position: 'relative' }}>
-                    <Search size={20} style={{ 
-                        position: 'absolute', 
-                        left: '1rem', 
-                        top: '50%', 
-                        transform: 'translateY(-50%)',
-                        color: '#718096'
-                    }} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por cliente, número de factura..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '0.75rem 1rem 0.75rem 3rem',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '12px',
-                            fontSize: '1rem',
-                            outline: 'none',
-                            transition: 'border-color 0.2s'
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.borderColor = '#667eea';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = '#e2e8f0';
-                        }}
-                    />
-                </div>
-                {activeTab === 'ordenes' && (
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        style={{
-                            padding: '0.75rem 1rem',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '12px',
-                            fontSize: '1rem',
-                            outline: 'none',
-                            background: 'white',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <option value="todos">Todos los estados</option>
-                        <option value="borrador">Borrador</option>
-                        <option value="confirmado">Confirmado</option>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="completado">Completado</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
-                )}
-            </div>
-
-            {/* Tab Navigation */}
-            <div style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '1rem',
-                marginBottom: '2rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-            }}>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
-                        style={{
-                            background: activeTab === 'ordenes' 
-                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                : 'transparent',
-                            color: activeTab === 'ordenes' ? 'white' : '#4a5568',
-                            border: 'none',
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: '12px',
-                            fontSize: '1rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            if (activeTab !== 'ordenes') {
-                                e.target.style.backgroundColor = '#f3f4f6';
-                            }
-                        }}
-                        onMouseOut={(e) => {
-                            if (activeTab !== 'ordenes') {
-                                e.target.style.backgroundColor = 'transparent';
-                            }
-                        }}
-                        onClick={() => setActiveTab('ordenes')}
-                    >
-                        <ShoppingCart size={16} />
-                        Órdenes de Venta
-                    </button>
-                    <button 
-                        style={{
-                            background: activeTab === 'facturas' 
-                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                : 'transparent',
-                            color: activeTab === 'facturas' ? 'white' : '#4a5568',
-                            border: 'none',
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: '12px',
-                            fontSize: '1rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            if (activeTab !== 'facturas') {
-                                e.target.style.backgroundColor = '#f3f4f6';
-                            }
-                        }}
-                        onMouseOut={(e) => {
-                            if (activeTab !== 'facturas') {
-                                e.target.style.backgroundColor = 'transparent';
-                            }
-                        }}
-                        onClick={() => setActiveTab('facturas')}
-                    >
-                        <FileText size={16} />
-                        Facturas
-                    </button>
-                </div>
-            </div>
-
-            {/* Tab Content */}
-            {activeTab === 'ordenes' && (
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-                }}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ background: '#f8fafc' }}>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>ID</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Cliente</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Fecha Entrega</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Total</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Estado</th>
-                                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredOrdenes.map((ord) => (
-                                    <tr key={ord.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>{ord.id}</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontWeight: '600', color: '#2d3748' }}>
-                                                {ord.cliente}
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                            {ord.fecha_entrega_esperada || 'No definida'}
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', color: '#2d3748' }}>
-                                            ${ord.total?.toLocaleString() || 0}
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{
-                                                padding: '4px 12px',
-                                                borderRadius: '9999px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                ...(ord.estado === 'completado' 
-                                                    ? { background: '#d1fae5', color: '#065f46' }
-                                                    : ord.estado === 'confirmado' 
-                                                        ? { background: '#dbeafe', color: '#1e40af' }
-                                                        : ord.estado === 'pendiente' 
-                                                            ? { background: '#fbbf24', color: '#92400e' }
-                                                            : ord.estado === 'cancelado' 
-                                                                ? { background: '#fee2e2', color: '#991b1b' }
-                                                                : { background: '#f3f4f6', color: '#6b7280' })
-                                            }}>
-                                                {ord.estado}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                                <button 
-                                                    style={{
-                                                        background: '#e2e8f0',
-                                                        color: '#4a5568',
-                                                        border: 'none',
-                                                        padding: '0.5rem',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.25rem',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => {
-                                                        e.target.style.backgroundColor = '#cbd5e0';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.target.style.backgroundColor = '#e2e8f0';
-                                                    }}
-                                                    onClick={() => openOrdModal(ord)}
-                                                >
-                                                    <Edit3 size={16} />
-                                                </button>
-                                                <button 
-                                                    style={{
-                                                        background: '#dbeafe',
-                                                        color: '#1e40af',
-                                                        border: 'none',
-                                                        padding: '0.5rem',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.25rem',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => {
-                                                        e.target.style.backgroundColor = '#bfdbfe';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.target.style.backgroundColor = '#dbeafe';
-                                                    }}
-                                                    onClick={() => generarFactura(ord)}
-                                                >
-                                                    <FileText size={16} />
-                                                </button>
-                                                <button 
-                                                    style={{
-                                                        background: '#fee2e2',
-                                                        color: '#991b1b',
-                                                        border: 'none',
-                                                        padding: '0.5rem',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.25rem',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => {
-                                                        e.target.style.backgroundColor = '#fecaca';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.target.style.backgroundColor = '#fee2e2';
-                                                    }}
-                                                    onClick={() => deleteOrd(ord.id)}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'facturas' && (
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-                }}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ background: '#f8fafc' }}>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Número</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Cliente</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Fecha</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Total</th>
-                                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Estado</th>
-                                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredFacturas.map((fact) => (
-                                    <tr key={fact.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>
-                                            {fact.numero_factura}
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <div style={{ fontWeight: '600', color: '#2d3748' }}>
-                                                {fact.orden_venta_cliente}
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                            {new Date(fact.fecha_emision).toLocaleDateString()}
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', color: '#2d3748' }}>
-                                            ${fact.total?.toLocaleString() || 0}
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{
-                                                padding: '4px 12px',
-                                                borderRadius: '9999px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                ...(fact.estado === 'pagada' 
-                                                    ? { background: '#d1fae5', color: '#065f46' }
-                                                    : fact.estado === 'pendiente' 
-                                                        ? { background: '#fbbf24', color: '#92400e' }
-                                                        : { background: '#fee2e2', color: '#991b1b' })
-                                            }}>
-                                                {fact.estado}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                                <button 
-                                                    style={{
-                                                        background: '#e2e8f0',
-                                                        color: '#4a5568',
-                                                        border: 'none',
-                                                        padding: '0.5rem',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.25rem',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => {
-                                                        e.target.style.backgroundColor = '#cbd5e0';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.target.style.backgroundColor = '#e2e8f0';
-                                                    }}
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
-                                                <button 
-                                                    style={{
-                                                        background: '#dbeafe',
-                                                        color: '#1e40af',
-                                                        border: 'none',
-                                                        padding: '0.5rem',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.25rem',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => {
-                                                        e.target.style.backgroundColor = '#bfdbfe';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.target.style.backgroundColor = '#dbeafe';
-                                                    }}
-                                                >
-                                                    <Download size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal */}
-            {isOrdModalOpen && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: 'white',
-                        borderRadius: '16px',
-                        padding: '2rem',
-                        width: '90%',
-                        maxWidth: '500px',
-                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center', 
-                            marginBottom: '1.5rem' 
-                        }}>
-                            <h3 style={{ 
-                                fontSize: '1.5rem', 
-                                fontWeight: '700', 
-                                color: '#1a202c',
-                                margin: 0
-                            }}>
-                                {currentOrd ? 'Editar Orden' : 'Nueva Orden de Venta'}
-                            </h3>
-                            <button
-                                onClick={() => setIsOrdModalOpen(false)}
-                                style={{
-                                    background: '#f3f4f6',
-                                    color: '#4a5568',
-                                    border: 'none',
-                                    padding: '0.5rem',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.25rem'
-                                }}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleOrdSubmit}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                <div>
-                                    <label style={{ 
-                                        display: 'block', 
-                                        marginBottom: '0.5rem', 
-                                        fontWeight: '600', 
-                                        color: '#2d3748' 
-                                    }}>
-                                        Cliente
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={ordForm.cliente}
-                                        onChange={(e) => setOrdForm({...ordForm, cliente: e.target.value})}
-                                        required
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            outline: 'none'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ 
-                                        display: 'block', 
-                                        marginBottom: '0.5rem', 
-                                        fontWeight: '600', 
-                                        color: '#2d3748' 
-                                    }}>
-                                        Fecha Entrega Esperada
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={ordForm.fecha_entrega_esperada}
-                                        onChange={(e) => setOrdForm({...ordForm, fecha_entrega_esperada: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            outline: 'none'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ 
-                                        display: 'block', 
-                                        marginBottom: '0.5rem', 
-                                        fontWeight: '600', 
-                                        color: '#2d3748' 
-                                    }}>
-                                        Estado
-                                    </label>
-                                    <select
-                                        value={ordForm.estado}
-                                        onChange={(e) => setOrdForm({...ordForm, estado: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            outline: 'none',
-                                            background: 'white'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    >
-                                        <option value="borrador">Borrador</option>
-                                        <option value="confirmado">Confirmado</option>
-                                        <option value="pendiente">Pendiente</option>
-                                        <option value="completado">Completado</option>
-                                        <option value="cancelado">Cancelado</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ 
-                                        display: 'block', 
-                                        marginBottom: '0.5rem', 
-                                        fontWeight: '600', 
-                                        color: '#2d3748' 
-                                    }}>
-                                        Total
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={ordForm.total}
-                                        onChange={(e) => setOrdForm({...ordForm, total: parseFloat(e.target.value) || 0})}
-                                        required
-                                        step="0.01"
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            outline: 'none'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div style={{ 
-                                display: 'flex', 
-                                gap: '1rem', 
-                                justifyContent: 'flex-end', 
-                                marginTop: '1.5rem' 
-                            }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsOrdModalOpen(false)}
-                                    style={{
-                                        background: '#f3f4f6',
-                                        color: '#4a5568',
-                                        border: 'none',
-                                        padding: '0.75rem 1.5rem',
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '0.75rem 1.5rem',
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
-                                    }}
-                                >
-                                    {currentOrd ? 'Actualizar' : 'Crear'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+    <div className="p-8 font-sans" style={s.page}>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <ShoppingCart className="text-indigo-500" size={32} />
+              Gestión de Ventas
+            </h1>
+            <button style={s.btnPrimary} onClick={() => openOrdModal()}>
+              <Plus size={20} />
+              Nueva Orden
+            </button>
+          </div>
+          <p className="text-slate-400 mt-1" style={{ marginTop: '0.5rem' }}>Control de pedidos y facturación electrónica.</p>
         </div>
+      </div>
+
+            {error && (
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 mb-8 rounded-r-xl shadow-sm flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <AlertCircle className="text-red-500" size={24} />
+                        <div>
+                            <p className="font-bold">Ha ocurrido un problema</p>
+                            <p className="text-sm opacity-90">{error}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 text-xl font-bold px-2">×</button>
+                </div>
+            )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+        <StatCard icon={<DollarSign />} title="Ingresos Brutos" value={`$${Number(totalVentas).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} color="#10B981" />
+        <StatCard icon={<Clock />} title="Pendiente Facturar" value={facturacionPendiente} color="#F59E0B" />
+        <StatCard icon={<Users />} title="Clientes" value={totalClientes} color="#3B82F6" />
+        <StatCard icon={<TrendingUp />} title="Crecimiento" value="+12.4%" color="#6366F1" />
+      </div>
+
+      <div className="flex gap-3 mb-6">
+        <button 
+          onClick={() => setActiveTab('ordenes')}
+          style={s.tabBtn(activeTab === 'ordenes')}
+        >
+          Pedidos (Ordenes)
+        </button>
+        <button 
+          onClick={() => setActiveTab('facturas')}
+          style={s.tabBtn(activeTab === 'facturas')}
+        >
+          Bóveda de Facturas
+        </button>
+        <button 
+          onClick={() => setActiveTab('notas-credito')}
+          style={s.tabBtn(activeTab === 'notas-credito')}
+        >
+          Notas de Crédito
+        </button>
+      </div>
+
+      <div style={s.card} className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <input 
+            type="text"
+            placeholder="Buscar por cliente o número de documento..."
+            style={{ ...s.input, width: '100%', paddingLeft: '3rem' }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <div className="overflow-x-auto">
+          {activeTab === 'ordenes' ? (
+            <table style={s.table}>
+              <thead>
+                <tr>
+                  <th style={s.th}>ID Pedido</th>
+                  <th style={s.th}>Cliente</th>
+                  <th style={s.th}>Fecha</th>
+                  <th style={s.th}>Total</th>
+                  <th style={s.th}>Estado</th>
+                  <th style={s.th} className="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ordenes.filter(o => o.cliente_nombre?.toLowerCase().includes(searchTerm.toLowerCase())).map((orden) => (
+                  <tr key={orden.id}>
+                    <td style={{ ...s.td, color: '#818CF8', fontWeight: 700 }}>#{orden.id}</td>
+                    <td style={s.td}>{orden.cliente_nombre}</td>
+                    <td style={s.td}>{formatDate(orden.fecha_emision)}</td>
+                    <td style={{ ...s.td, fontWeight: 700 }}>${parseFloat(orden.total).toLocaleString()}</td>
+                    <td style={s.td}><StatusBadge status={orden.estado} /></td>
+                    <td style={s.td}>
+                      <div className="flex justify-center gap-2">
+                        <button onClick={() => openOrdModal(orden)} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
+                        {orden.estado !== 'facturado' && (
+                          <button onClick={() => generarFactura(orden)} style={{ background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}><FileText size={18} /></button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : activeTab === 'facturas' ? (
+            <table style={s.table}>
+              <thead>
+                <tr>
+                  <th style={s.th}>Nº Factura</th>
+                  <th style={s.th}>Emisión</th>
+                  <th style={s.th}>Monto</th>
+                  <th style={s.th}>DIAN</th>
+                  <th style={s.th} className="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {facturas.map((factura) => (
+                  <tr key={factura.id}>
+                    <td style={s.td}>{factura.numero_factura}</td>
+                    <td style={s.td}>{formatDate(factura.fecha_emision)}</td>
+                    <td style={{ ...s.td, color: '#10B981', fontWeight: 700 }}>${parseFloat(factura.total).toLocaleString()}</td>
+                    <td style={s.td}><span style={s.badge('#10B981')}>{factura.estado_dian || 'Aceptada'}</span></td>
+                    <td style={s.td}>
+                      <div className="flex justify-center gap-2">
+                        <button onClick={() => {
+                          const orden = ordenes.find(o => o.id === factura.orden_venta);
+                          if (orden) openOrdModal(orden);
+                          else alert('Orden no encontrada');
+                        }} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
+                        <button onClick={() => eliminarFactura(factura.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><FileText size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : activeTab === 'notas-credito' ? (
+            <table style={s.table}>
+              <thead>
+                <tr>
+                  <th style={s.th}>Nº Nota</th>
+                  <th style={s.th}>Factura</th>
+                  <th style={s.th}>Fecha</th>
+                  <th style={s.th}>Tipo</th>
+                  <th style={s.th}>Monto</th>
+                  <th style={s.th}>Estado</th>
+                  <th style={s.th} className="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {notasCredito.map((nc) => (
+                  <tr key={nc.id}>
+                    <td style={s.td}>{nc.numero_nota}</td>
+                    <td style={s.td}>{nc.factura_numero}</td>
+                    <td style={s.td}>{formatDate(nc.fecha_emision)}</td>
+                    <td style={s.td}>{nc.tipo}</td>
+                    <td style={{ ...s.td, color: '#EF4444', fontWeight: 700 }}>${parseFloat(nc.total).toLocaleString()}</td>
+                    <td style={s.td}><span style={s.badge(nc.estado === 'aprobada' ? '#10B981' : nc.estado === 'rechazada' ? '#EF4444' : '#F59E0B')}>{nc.estado}</span></td>
+                    <td style={s.td}>
+                      <div className="flex justify-center gap-2">
+                        <button onClick={() => alert(`Nota #${nc.numero_nota}\nFactura: ${nc.factura_numero}\nMotivo: ${nc.motivo}\nTotal: $${parseFloat(nc.total).toLocaleString()}`)} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
+                        <button onClick={() => eliminarNotaCredito(nc.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><FileText size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
+        </div>
+      </div>
+
+      {/* Modal de Orden */}
+      {isOrdModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '2rem'
+        }}>
+          <div style={{
+            background: 'white', borderRadius: '16px', width: '100%', maxWidth: '900px',
+            maxHeight: '90vh', overflow: 'auto', padding: '2rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                {currentOrd ? `Editar Orden #${currentOrd.id}` : 'Nueva Orden de Venta'}
+              </h2>
+              <button onClick={closeOrdModal} style={{ fontSize: '1.5rem', border: 'none', background: 'none', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <form onSubmit={handleOrdSubmit}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Cliente</label>
+                  <select
+                    value={ordForm.cliente}
+                    onChange={(e) => setOrdForm({...ordForm, cliente: e.target.value})}
+                    style={s.input}
+                    required
+                  >
+                    <option value="">Seleccione cliente</option>
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Fecha Entrega</label>
+                  <input
+                    type="date"
+                    value={ordForm.fecha_entrega_esperada}
+                    onChange={(e) => setOrdForm({...ordForm, fecha_entrega_esperada: e.target.value})}
+                    style={s.input}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Estado</label>
+                <select
+                  value={ordForm.estado}
+                  onChange={(e) => setOrdForm({...ordForm, estado: e.target.value})}
+                  style={s.input}
+                >
+                  <option value="borrador">Borrador</option>
+                  <option value="confirmado">Confirmado</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="completado">Completado</option>
+                  <option value="cancelado">Cancelado</option>
+                </select>
+              </div>
+
+              {/* Tabla de Productos */}
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ fontWeight: 600 }}>Productos</label>
+                  <button type="button" onClick={addProductoToOrden} style={{
+                    background: '#10B981', color: 'white', border: 'none', padding: '0.5rem 1rem',
+                    borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem'
+                  }}>+ Agregar Producto</button>
+                </div>
+
+                {ordForm.detalles.length > 0 ? (
+                  <table style={{ ...s.table, fontSize: '0.875rem' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ ...s.th, padding: '0.5rem' }}>Producto</th>
+                        <th style={{ ...s.th, padding: '0.5rem', width: '70px' }}>Unidad</th>
+                        <th style={{ ...s.th, padding: '0.5rem', width: '100px' }}>Cantidad</th>
+                        <th style={{ ...s.th, padding: '0.5rem', width: '120px' }}>Valor Unitario</th>
+                        <th style={{ ...s.th, padding: '0.5rem', width: '120px' }}>Valor Total</th>
+                        <th style={{ ...s.th, padding: '0.5rem', width: '50px' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ordForm.detalles.map((detalle, index) => (
+                        <tr key={detalle.id}>
+                          <td style={{ ...s.td, padding: '0.5rem' }}>
+                            <select
+                              value={detalle.producto}
+                              onChange={(e) => updateProductoInOrden(index, 'producto', e.target.value)}
+                              style={{ ...s.input, fontSize: '0.875rem' }}
+                              required
+                            >
+                              <option value="">Seleccione...</option>
+                              {productos.map(p => (
+                                <option key={p.id} value={p.id}>{p.nombre}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td style={{ ...s.td, padding: '0.5rem', textAlign: 'center' }}>
+                            {productos.find(p => p.id === parseInt(detalle.producto))?.unidad_medida || '-'}
+                          </td>
+                          <td style={{ ...s.td, padding: '0.5rem' }}>
+                            <input
+                              type="number"
+                              min="1"
+                              value={detalle.cantidad}
+                              onChange={(e) => updateProductoInOrden(index, 'cantidad', e.target.value)}
+                              style={{ ...s.input, fontSize: '0.875rem', width: '100%' }}
+                            />
+                          </td>
+                          <td style={{ ...s.td, padding: '0.5rem' }}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={detalle.valor_unitario}
+                              onChange={(e) => updateProductoInOrden(index, 'valor_unitario', e.target.value)}
+                              style={{ ...s.input, fontSize: '0.875rem', width: '100%' }}
+                            />
+                          </td>
+                          <td style={{ ...s.td, padding: '0.5rem', fontWeight: 700 }}>
+                            ${Number(detalle.valor_total).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                          </td>
+                          <td style={{ ...s.td, padding: '0.5rem', textAlign: 'center' }}>
+                            <button type="button" onClick={() => removeProductoFromOrden(index)} style={{
+                              color: '#EF4444', border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.25rem'
+                            }}>×</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#9CA3AF', background: '#F9FAFB', borderRadius: '8px' }}>
+                    No hay productos. Haga clic en "+ Agregar Producto"
+                  </div>
+                )}
+              </div>
+
+              <div style={{ textAlign: 'right', marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>
+                Total: ${Number(ordForm.total).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={closeOrdModal} style={{
+                  padding: '0.75rem 1.5rem', border: '1px solid #D1D5DB', borderRadius: '8px',
+                  background: 'white', cursor: 'pointer'
+                }}>Cancelar</button>
+                <button type="submit" style={{
+                  padding: '0.75rem 1.5rem', border: 'none', borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white',
+                  cursor: 'pointer', fontWeight: 600
+                }}>{currentOrd ? 'Actualizar' : 'Crear'} Orden</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
     );
+}
+
+// Helper para formatear fechas de forma segura
+const formatDate = (dateString) => {
+  if (!dateString) return 'Sin fecha';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+    return date.toLocaleDateString('es-CO');
+  } catch {
+    return 'Fecha inválida';
+  }
+};
+
+function StatCard({ icon, title, value, color }) {
+  return (
+    <div style={{ background: '#1E293B', padding: '1.5rem', borderRadius: '12px', border: '1px solid #334155', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ background: color + '22', color: color, padding: '1rem', borderRadius: '10px' }}>
+        {React.cloneElement(icon, { size: 24 })}
+      </div>
+      <div>
+        <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>{title}</div>
+        <div style={{ color: '#F8FAFC', fontSize: '1.25rem', fontWeight: 800 }}>{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const config = {
+    pendiente: { c: '#F59E0B', l: 'Pendiente' },
+    facturado: { c: '#10B981', l: 'Facturado' },
+    procesando: { c: '#3B82F6', l: 'Procesando' },
+    default: { c: '#94A3B8', l: status }
+  };
+  const statusCfg = config[status] || config.default;
+
+  return (
+    <span style={{ 
+      background: statusCfg.c + '22', 
+      color: statusCfg.c, 
+      padding: '0.2rem 0.6rem', 
+      borderRadius: '20px', 
+      fontSize: '0.75rem', 
+      fontWeight: 700, 
+      border: `1px solid ${statusCfg.c}44` 
+    }}>
+      {statusCfg.l}
+    </span>
+  );
 }

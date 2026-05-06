@@ -57,7 +57,17 @@ function POS() {
             ]);
             
             setProductos(prodRes.data || []);
-            setCategorias(catRes.data || []);
+            
+            // Deduplicar categorías por nombre para limpiar la interfaz del POS
+            const uniqueCategories = [];
+            const seenNames = new Set();
+            (catRes.data || []).forEach(cat => {
+                if (cat.nombre && !seenNames.has(cat.nombre)) {
+                    seenNames.add(cat.nombre);
+                    uniqueCategories.push(cat);
+                }
+            });
+            setCategorias(uniqueCategories);
 
             if (sesionRes.data) {
                 setSesionActiva(sesionRes.data);

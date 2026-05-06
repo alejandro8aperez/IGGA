@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Contratos() {
+    const navigate = useNavigate();
     const [contratos, setContratos] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ function Contratos() {
 
     if (loading) return <div className="container" style={{ position: 'relative' }}>
                 <button 
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
                     style={{ 
@@ -91,7 +93,7 @@ function Contratos() {
     return (
         <div className="container" style={{ position: 'relative' }}>
             <button 
-                onClick={() => window.location.href = '/'} 
+                onClick={() => navigate('/')} 
                 className="btn btn-ghost modal-close-btn" 
                 title="Cerrar Módulo"
                 style={{ 

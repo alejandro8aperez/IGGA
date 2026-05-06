@@ -21,9 +21,9 @@ const Login = () => {
     const [error, setError]               = useState('');
 
     const empresas = [
-        { id: '1', nombre: '8AMPERIOS INDUSTRIAL', codigo: '8AMP' },
-        { id: '2', nombre: '8AMPERIOS COMERCIAL',  codigo: '8COM' },
-        { id: '3', nombre: '8AMPERIOS SERVICIOS',  codigo: '8SER' },
+        { id: '1', nombre: 'Panaderia 1', codigo: 'PAN1' },
+        { id: '2', nombre: 'La Boquilla',  codigo: 'BOQ' },
+        { id: '3', nombre: 'Panaderia 2',  codigo: 'PAN2' },
     ];
 
     const handleSubmit = async (e) => {
@@ -238,9 +238,9 @@ function autenticarDemo(username, password, empresaId) {
         mrp:          { password: 'mrp123',          cargo: 'Planificador',   nombre: 'Planificador MRP' },
     };
     const empresas = [
-        { id: '1', nombre: '8AMPERIOS INDUSTRIAL', codigo: '8AMP' },
-        { id: '2', nombre: '8AMPERIOS COMERCIAL',  codigo: '8COM' },
-        { id: '3', nombre: '8AMPERIOS SERVICIOS',  codigo: '8SER' },
+        { id: '1', nombre: 'Panaderia 1', codigo: 'PAN1' },
+        { id: '2', nombre: 'La Boquilla',  codigo: 'BOQ' },
+        { id: '3', nombre: 'Panaderia 2',  codigo: 'PAN2' },
     ];
     const info = usuarios[username];
     if (!info || info.password !== password) return null;

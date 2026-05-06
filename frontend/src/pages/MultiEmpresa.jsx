@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Building2, Plus, Edit3, Trash2, X, Users, Settings, Globe, Shield, Edit, Eye } from 'lucide-react';
 
@@ -102,7 +103,7 @@ function MultiEmpresa() {
         return (
             <div className="container" style={{ position: 'relative' }}>
                 <button 
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
                     style={{ 

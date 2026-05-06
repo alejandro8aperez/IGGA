@@ -16,8 +16,11 @@ export default function Inventario() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('productos');
-
-    // Modal Producto
+    
+    // Modal Categoria
+    const [isCatModalOpen, setIsCatModalOpen] = useState(false);
+    const [currentCat, setCurrentCat] = useState(null);
+    const [catForm, setCatForm] = useState({ nombre: '', descripcion: '' });
     const [isProdModalOpen, setIsProdModalOpen] = useState(false);
     const [currentProd, setCurrentProd] = useState(null);
     const [prodForm, setProdForm] = useState({
@@ -43,6 +46,33 @@ export default function Inventario() {
         fetchData();
     }, []);
 
+    const handleQuickCategoryUpdate = async (productId, categoryId) => {
+        try {
+            await axios.patch(`${API.INVENTARIOS.PRODUCTOS}${productId}/`, { categoria: categoryId });
+            setProductos(productos.map(p => p.id === productId ? { ...p, categoria: categoryId, categoria_nombre: categorias.find(c => c.id === parseInt(categoryId))?.nombre } : p));
+        } catch (err) {
+            console.error("Error al actualizar categoría:", err);
+            setError("No se pudo actualizar la categoría rápidamente.");
+        }
+    };
+
+    const fetchKPIs = async () => {
+        try {
+            setLoading(true);
+            const [prodRes, catRes] = await Promise.all([
+                axios.get(`${API_BASE}productos/`),
+                axios.get(`${API_BASE}categorias/`)
+            ]);
+            setProductos(prodRes.data);
+            setCategorias(catRes.data);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching productos:', err);
+            setError('Error al cargar productos del inventario');
+            setLoading(false);
+        }
+    };
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -64,10 +94,10 @@ export default function Inventario() {
         if (prod) {
             setCurrentProd(prod);
             setProdForm({
-                codigo_sku: prod.codigo_sku,
+                codigo_sku: prod.codigo_sku || '',
                 nombre: prod.nombre,
                 descripcion: prod.descripcion,
-                categoria: prod.categoria,
+                categoria: typeof prod.categoria === 'object' ? prod.categoria.id : prod.categoria,
                 precio_compra: prod.precio_compra,
                 precio_venta: prod.precio_venta,
                 stock_actual: prod.stock_actual,
@@ -99,10 +129,16 @@ export default function Inventario() {
         e.preventDefault();
         const formData = new FormData();
         
-        // Preparar los datos asegurando que la categoría sea un ID
+        // Preparar los datos asegurando que la categoría sea un ID numérico válido
         const data = { ...prodForm };
-        if (data.categoria && typeof data.categoria === 'object') {
-            data.categoria = data.categoria.id;
+        if (data.categoria) {
+            // Si es un objeto (de un serializador anidado), extraer el ID
+            if (typeof data.categoria === 'object') {
+                data.categoria = data.categoria.id;
+            } else {
+                // Asegurar que sea un número para el backend
+                data.categoria = parseInt(data.categoria);
+            }
         }
 
         Object.keys(data).forEach(key => {
@@ -110,7 +146,7 @@ export default function Inventario() {
                 if (data[key] instanceof File) {
                     formData.append(key, data[key]);
                 }
-            } else if (data[key] !== null && data[key] !== undefined) {
+            } else if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
                 formData.append(key, data[key]);
             }
         });
@@ -161,6 +197,30 @@ export default function Inventario() {
                 const msg = err.response?.data?.error || 'Error al eliminar el producto';
                 setError(msg);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    };
+
+    const handleCatSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const url = currentCat ? `${API_BASE}categorias/${currentCat.id}/` : `${API_BASE}categorias/`;
+            const method = currentCat ? 'put' : 'post';
+            await axios({ method, url, data: catForm });
+            fetchData();
+            setIsCatModalOpen(false);
+        } catch (err) {
+            setError('Error al guardar la categoría');
+        }
+    };
+
+    const deleteCat = async (id) => {
+        if (window.confirm('¿Eliminar esta categoría?')) {
+            try {
+                await axios.delete(`${API_BASE}categorias/${id}/`);
+                fetchData();
+            } catch (err) {
+                setError('No se puede eliminar la categoría porque tiene productos asociados');
             }
         }
     };
@@ -290,39 +350,85 @@ export default function Inventario() {
                         <Package size={32} style={{ color: '#667eea' }} />
                         Gestión de Inventario
                     </h2>
-                    <p style={{ color: '#718096', margin: 0, fontSize: '1rem' }}>
-                        Control de productos y existencias
-                    </p>
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button 
+                            onClick={() => setActiveTab('productos')}
+                            style={{
+                                background: activeTab === 'productos' ? '#667eea' : 'white',
+                                color: activeTab === 'productos' ? 'white' : '#718096',
+                                border: '1px solid #e2e8f0',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                            }}
+                        >
+                            Productos
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('categorias')}
+                            style={{
+                                background: activeTab === 'categorias' ? '#667eea' : 'white',
+                                color: activeTab === 'categorias' ? 'white' : '#718096',
+                                border: '1px solid #e2e8f0',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                            }}
+                        >
+                            Categorías
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => openProdModal()}
-                    style={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.75rem 1.5rem',
-                        borderRadius: '12px',
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-                        transition: 'all 0.2s'
-                    }}
-                    onMouseOver={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
-                    }}
-                    onMouseOut={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
-                    }}
-                >
-                    <Plus size={20} />
-                    Nuevo Producto
-                </button>
+                {activeTab === 'productos' ? (
+                    <button
+                        onClick={() => openProdModal()}
+                        style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <Plus size={20} />
+                        Nuevo Producto
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => {
+                            setCurrentCat(null);
+                            setCatForm({ nombre: '', descripcion: '' });
+                            setIsCatModalOpen(true);
+                        }}
+                        style={{
+                            background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)'
+                        }}
+                    >
+                        <Plus size={20} />
+                        Nueva Categoría
+                    </button>
+                )}
             </div>
 
             {/* Error Display */}
@@ -542,7 +648,11 @@ export default function Inventario() {
                 </div>
             </div>
 
-            {/* Search and Filters */}
+            {/* Content Area */}
+            {activeTab === 'productos' ? (
+                <>
+                    {/* Stats Grid y Buscador - Aquí iría el código existente de productos */}
+                    {/* Search and Filters */}
             <div style={{
                 background: 'white',
                 borderRadius: '16px',
@@ -694,21 +804,19 @@ export default function Inventario() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', overflow: 'hidden' }}>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
                                             <span style={{
                                                 background: '#f0f4ff',
                                                 color: '#667eea',
-                                                padding: '0.2rem 0.5rem',
+                                                padding: '0.2rem 0.6rem',
                                                 borderRadius: '8px',
                                                 fontSize: '0.75rem',
-                                                fontWeight: '600',
+                                                fontWeight: '700',
                                                 whiteSpace: 'nowrap',
                                                 display: 'inline-block',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                maxWidth: '100%'
+                                                border: '1px solid #dce4ff'
                                             }}>
-                                                {product.categoria}
+                                                {product.categoria_nombre || 'Sin Categoría'}
                                             </span>
                                         </td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -805,6 +913,48 @@ export default function Inventario() {
                     </table>
                 </div>
             </div>
+            </>
+            ) : (
+                <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#4a5568' }}>
+                                <th style={{ padding: '1rem', textAlign: 'left' }}>Nombre</th>
+                                <th style={{ padding: '1rem', textAlign: 'left' }}>Descripción</th>
+                                <th style={{ padding: '1rem', textAlign: 'center' }}>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categorias.map(cat => (
+                                <tr key={cat.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                    <td style={{ padding: '1rem', fontWeight: '600' }}>{cat.nombre}</td>
+                                    <td style={{ padding: '1rem', color: '#718096' }}>{cat.descripcion}</td>
+                                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                            <button 
+                                                onClick={() => {
+                                                    setCurrentCat(cat);
+                                                    setCatForm({ nombre: cat.nombre, descripcion: cat.descripcion });
+                                                    setIsCatModalOpen(true);
+                                                }}
+                                                style={{ background: '#667eea', color: 'white', border: 'none', padding: '0.4rem', borderRadius: '4px', cursor: 'pointer' }}
+                                            >
+                                                <Edit3 size={14} />
+                                            </button>
+                                            <button 
+                                                onClick={() => deleteCat(cat.id)}
+                                                style={{ background: '#ef4444', color: 'white', border: 'none', padding: '0.4rem', borderRadius: '4px', cursor: 'pointer' }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {/* Modal */}
             {isProdModalOpen && (
@@ -900,24 +1050,72 @@ export default function Inventario() {
                                         }}
                                     />
                                 </div>
-                                <div>
+                                <div style={{ gridColumn: 'span 1' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Categoría</label>
-                                    <select
-                                        value={prodForm.categoria}
-                                        onChange={(e) => setProdForm({...prodForm, categoria: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
-                                    >
-                                        <option value="">Seleccione una categoría...</option>
-                                        {categorias.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.nombre}</option>
-                                        ))}
-                                    </select>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <select
+                                            value={prodForm.categoria}
+                                            onChange={(e) => setProdForm({...prodForm, categoria: e.target.value})}
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.75rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                fontSize: '0.9rem'
+                                            }}
+                                        >
+                                            <option value="">Seleccione una categoría...</option>
+                                            {categorias.map(cat => (
+                                                <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                                            ))}
+                                        </select>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                setCurrentCat(null);
+                                                setCatForm({ nombre: '', descripcion: '' });
+                                                setIsCatModalOpen(true);
+                                            }}
+                                            style={{
+                                                background: '#48bb78',
+                                                color: 'white',
+                                                border: 'none',
+                                                padding: '0.75rem',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                            title="Nueva Categoría"
+                                        >
+                                            <Plus size={20} />
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                if (prodForm.categoria) {
+                                                    deleteCat(prodForm.categoria);
+                                                } else {
+                                                    alert("Por favor seleccione una categoría para eliminar");
+                                                }
+                                            }}
+                                            style={{
+                                                background: '#ef4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                padding: '0.75rem',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                            title="Eliminar Categoría"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Unidad Medida</label>
@@ -1063,6 +1261,38 @@ export default function Inventario() {
                                 >
                                     {currentProd ? 'Actualizar' : 'Crear'}
                                 </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Modal Categoria */}
+            {isCatModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', width: '90%', maxWidth: '400px' }}>
+                        <h2 style={{ marginBottom: '1.5rem' }}>{currentCat ? 'Editar Categoría' : 'Nueva Categoría'}</h2>
+                        <form onSubmit={handleCatSubmit}>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Nombre</label>
+                                <input 
+                                    type="text" 
+                                    value={catForm.nombre} 
+                                    onChange={(e) => setCatForm({...catForm, nombre: e.target.value})}
+                                    required
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Descripción</label>
+                                <textarea 
+                                    value={catForm.descripcion} 
+                                    onChange={(e) => setCatForm({...catForm, descripcion: e.target.value})}
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', minHeight: '80px' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                <button type="button" onClick={() => setIsCatModalOpen(false)} style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: 'white', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
+                                <button type="submit" style={{ padding: '0.5rem 1rem', border: 'none', background: '#667eea', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>Guardar</button>
                             </div>
                         </form>
                     </div>

@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FileText, AlertCircle, Edit3, Trash2, Plus, X, FileSpreadsheet, Calendar, DollarSign, User, Package, Clock, Shield, Percent } from 'lucide-react';
-import API from '../config/api';
+import { FileText, AlertCircle, Edit3, Trash2, Plus, X, FileSpreadsheet, Calendar, DollarSign, User, Package, Clock, Shield, Percent, ShoppingCart } from 'lucide-react';
+import { API } from '../config/api';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = API.CRM.COTIZACIONES;
 const CLIENTES_URL = API.CRM.CLIENTES;
 
 export default function CotizacionesCRM() {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [cotizaciones, setCotizaciones] = useState([]);
     const [clientes, setClientes] = useState([]);
+    const [productosInventario, setProductosInventario] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -46,12 +51,20 @@ export default function CotizacionesCRM() {
 
     const fetchDatos = async () => {
         try {
-            const [cotizacionesRes, clientesRes] = await Promise.all([
+            if (user?.modoDemo) {
+                setCotizaciones([]);
+                setClientes([{ id: 1, nombre: 'Cliente Demo 1' }]);
+                setLoading(false);
+                return;
+            }
+            const [cotizacionesRes, clientesRes, productosRes] = await Promise.all([
                 axios.get(API_URL),
-                axios.get(CLIENTES_URL)
+                axios.get(CLIENTES_URL),
+                axios.get(API.INVENTARIOS.PRODUCTOS)
             ]);
             setCotizaciones(cotizacionesRes.data);
             setClientes(clientesRes.data);
+            setProductosInventario(productosRes.data);
             setLoading(false);
         } catch (err) {
             console.error("Error al cargar datos:", err);
@@ -117,8 +130,19 @@ export default function CotizacionesCRM() {
         const newDetalles = [...formData.detalles];
         newDetalles[index][field] = value;
         
+        // Si cambia el producto, auto-llenar unidad y precio
+        if (field === 'producto') {
+            const prod = productosInventario.find(p => p.id === parseInt(value) || p.nombre === value);
+            if (prod) {
+                newDetalles[index].unidad = prod.unidad_medida || 'Und';
+                newDetalles[index].valor_unitario = prod.precio_venta || 0;
+                newDetalles[index].producto_id = prod.id;
+                newDetalles[index].producto = prod.nombre;
+            }
+        }
+
         // Recalcular valor_total si cambian cantidad o valor_unitario
-        if (field === 'cantidad' || field === 'valor_unitario') {
+        if (field === 'cantidad' || field === 'valor_unitario' || field === 'producto') {
             const cantidad = parseFloat(newDetalles[index].cantidad) || 0;
             const valorUnitario = parseFloat(newDetalles[index].valor_unitario) || 0;
             newDetalles[index].valor_total = cantidad * valorUnitario;
@@ -181,8 +205,64 @@ export default function CotizacionesCRM() {
         }
     };
 
-    const handleDownloadExcel = (id) => {
-        window.open(`${API_URL}${id}/excel/`, '_blank');
+    const handleDownloadExcel = async (id) => {
+        try {
+            const response = await axios.get(`${API_URL}${id}/excel/`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Cotizacion_${id}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error("Error al descargar excel:", err);
+            alert("Error al generar el Excel. Asegúrese de que el servidor esté respondiendo.");
+        }
+    };
+
+    const handleConvertToSale = async (coti) => {
+        if (!window.confirm(`¿Desea convertir la cotización ${coti.numero_cotizacion || `KAVE-${String(coti.id).padStart(4, '0')}`} en una Orden de Venta real?`)) {
+            return;
+        }
+
+        try {
+            // Aseguramos que el cliente sea un ID numérico
+            const clienteId = parseInt(typeof coti.cliente === 'object' ? coti.cliente.id : coti.cliente);
+
+            // Preparamos la carga útil exacta para el Serializer de la Orden de Venta
+            const saleData = {
+                cliente: clienteId,
+                total: parseFloat(coti.gran_total || coti.valor_total || 0),
+                fecha_entrega_esperada: coti.tiempo_entrega || new Date().toISOString().split('T')[0],
+                estado: 'pendiente',
+                // Cambiamos 'items' por 'detalles' y aseguramos que 'producto' sea el ID numérico
+                detalles: (coti.detalles || []).map(d => ({
+                    producto: parseInt(d.producto_id || d.producto),
+                    cantidad: parseFloat(d.cantidad || 0),
+                    valor_unitario: parseFloat(d.valor_unitario || 0),
+                    valor_total: parseFloat(d.valor_total || 0)
+                }))
+            };
+
+            // Usamos la ruta directa que usa el componente de Ventas para asegurar compatibilidad
+            await axios.post('venta/ordenes-venta/', saleData);
+            
+            // Actualizamos la cotización original a 'aceptada'
+            const patchUrl = API_URL.endsWith('/') ? `${API_URL}${coti.id}/` : `${API_URL}/${coti.id}/`;
+            await axios.patch(patchUrl, { estado: 'aceptada' });
+            
+            alert('¡Éxito! Cotización convertida en Orden de Venta.');
+            fetchDatos(); 
+            navigate('/ventas'); 
+        } catch (err) {
+            console.error("Error en conversión:", err.response?.data || err.message);
+            const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : "Error de red o configuración.";
+            alert(`Error del Servidor (400): ${errorMsg}`);
+        }
     };
 
     const handleViewDetails = (coti) => {
@@ -392,6 +472,30 @@ export default function CotizacionesCRM() {
                                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                                             <button 
+                                                onClick={() => handleConvertToSale(coti)}
+                                                style={{
+                                                    background: '#10b981',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '0.5rem',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.25rem',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.target.style.backgroundColor = '#059669';
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.target.style.backgroundColor = '#10b981';
+                                                }}
+                                                title="Convertir en Venta"
+                                            >
+                                                <ShoppingCart size={14} />
+                                            </button>
+                                            <button 
                                                 onClick={() => handleViewDetails(coti)}
                                                 style={{
                                                     background: '#667eea',
@@ -553,7 +657,7 @@ export default function CotizacionesCRM() {
                             borderRadius: '16px',
                             padding: '2rem',
                             width: '95%',
-                            maxWidth: '900px',
+                            maxWidth: '1170px',
                             maxHeight: '90vh',
                             overflowY: 'auto',
                             position: 'relative',
@@ -611,39 +715,38 @@ export default function CotizacionesCRM() {
                                     Información General
                                 </h3>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>
-                                            <User size={14} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                                            Cliente *
-                                        </label>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>
+                                        Cliente *
+                                    </label>
+                                    <div style={{ position: 'relative' }}>
+                                        <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#a0aec0' }} />
                                         <select
-                                            name="cliente"
                                             value={formData.cliente}
-                                            onChange={handleInputChange}
+                                            onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
                                             required
-                                            style={{ 
-                                                width: '100%', 
-                                                padding: '0.75rem', 
-                                                border: '2px solid #e2e8f0', 
-                                                borderRadius: '8px',
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem 1rem 0.75rem 2.5rem',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '12px',
                                                 fontSize: '1rem',
-                                                transition: 'border-color 0.2s'
-                                            }}
-                                            onFocus={(e) => {
-                                                e.target.style.borderColor = '#667eea';
-                                            }}
-                                            onBlur={(e) => {
-                                                e.target.style.borderColor = '#e2e8f0';
+                                                outline: 'none',
+                                                background: 'white',
+                                                cursor: 'pointer'
                                             }}
                                         >
-                                            <option value="">Selecciona un cliente</option>
-                                            {clientes.map(cliente => (
-                                                <option key={cliente.id} value={cliente.id}>{cliente.nombre}</option>
+                                            <option value="">Seleccione un cliente registrado...</option>
+                                            {clientes.map(cli => (
+                                                <option key={cli.id} value={cli.id}>
+                                                    {cli.nombre} {cli.identificacion ? `(${cli.identificacion})` : ''}
+                                                </option>
                                             ))}
                                         </select>
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>
                                             <FileText size={14} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
                                             Asunto *
                                         </label>
@@ -846,33 +949,56 @@ export default function CotizacionesCRM() {
                                         <Package size={18} style={{ color: '#667eea' }} />
                                         Detalles de la Cotización
                                     </h3>
-                                    <button
-                                        type="button"
-                                        onClick={addDetalle}
-                                        style={{
-                                            background: '#667eea',
-                                            color: 'white',
-                                            border: 'none',
-                                            padding: '0.5rem 1rem',
-                                            borderRadius: '8px',
-                                            fontSize: '0.875rem',
-                                            fontWeight: '600',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.5rem',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        onMouseOver={(e) => {
-                                            e.target.style.backgroundColor = '#5a67d8';
-                                        }}
-                                        onMouseOut={(e) => {
-                                            e.target.style.backgroundColor = '#667eea';
-                                        }}
-                                    >
-                                        <Plus size={14} />
-                                        Agregar Item
-                                    </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => window.open('/inventario', '_blank')}
+                                                style={{
+                                                    background: '#48bb78',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '0.5rem 1rem',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <Package size={14} />
+                                                Agregar Producto
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={addDetalle}
+                                                style={{
+                                                    background: '#667eea',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '0.5rem 1rem',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.target.style.backgroundColor = '#5a67d8';
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.target.style.backgroundColor = '#667eea';
+                                                }}
+                                            >
+                                                <Plus size={14} />
+                                                Agregar Item
+                                            </button>
+                                        </div>
                                 </div>
                                 
                                 <div style={{ 
@@ -909,19 +1035,25 @@ export default function CotizacionesCRM() {
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: '0.75rem' }}>
-                                                        <input
-                                                            type="text"
-                                                            value={detalle.producto}
+                                                        <select
+                                                            value={productosInventario.find(p => p.nombre === detalle.producto)?.id || ''}
                                                             onChange={(e) => handleDetalleChange(index, 'producto', e.target.value)}
+                                                            required
                                                             style={{ 
                                                                 width: '100%', 
                                                                 padding: '0.5rem', 
-                                                                border: '1px solid #e2e8f0', 
+                                                                border: '2px solid #e2e8f0', 
                                                                 borderRadius: '4px',
                                                                 fontSize: '0.875rem'
                                                             }}
-                                                            placeholder="Nombre del producto"
-                                                        />
+                                                        >
+                                                            <option value="">Seleccione producto...</option>
+                                                            {productosInventario.map(prod => (
+                                                                <option key={prod.id} value={prod.id}>
+                                                                    [{prod.codigo_sku}] {prod.nombre} - ${Number(prod.precio_venta).toLocaleString()}
+                                                                </option>
+                                                            ))}
+                                                        </select>
                                                     </td>
                                                     <td style={{ padding: '0.75rem' }}>
                                                         <input

@@ -1,26 +1,35 @@
+# Python / Django
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 .env
-*.egg-info/
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+venv/
+env/
+ENV/
+logs/
+*.log
+
+# Node / React
 node_modules/
 dist/
-db.sqlite3
-staticfiles/
-__pycache__/
-*.pyc
-*.pyo
-.env
-*.egg-info/
-node_modules/
-dist/
-db.sqlite3
-staticfiles/
-.env.local
-.env.production
+build/
+.DS_Store
+.eslintcache
+.npm
+.yarn
+
+# IDEs
 .vscode/
 .idea/
-.DS_Store
-Thumbs.db
-.aider*
-venv/
+*.swp
+*.swo
+
+# KAVE / Temporary
+*.xlsx
+*.pdf
+test-image/
+firma_kave.png

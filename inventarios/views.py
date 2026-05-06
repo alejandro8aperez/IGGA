@@ -85,9 +85,14 @@ class ProductoViewSet(viewsets.ModelViewSet):
         try:
             return super().destroy(request, *args, **kwargs)
         except ProtectedError:
+            # Si no se puede borrar, lo desactivamos automáticamente
+            instance = self.get_object()
+            instance.activo = False
+            instance.nombre = f"[OBSOLETO] {instance.nombre}"
+            instance.save(update_fields=['activo', 'nombre'])
             return Response(
-                {"error": "No se puede eliminar este producto porque ya tiene histórico (movimientos, compras, producción). Por favor, cambie su estado a inactivo en su lugar."},
-                status=status.HTTP_400_BAD_REQUEST
+                {"detail": "El producto tiene historial y no puede borrarse definitivamente. Ha sido marcado como INACTIVO y archivado automáticamente."},
+                status=status.HTTP_200_OK
             )
 
     @action(detail=False, methods=['get'])

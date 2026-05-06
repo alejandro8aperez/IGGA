@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from crm.models import Cliente
-from inventarios.models import Producto
+from inventarios.models import Producto, MovimientoInventario
 
 class ResolucionFacturacion(models.Model):
     prefijo = models.CharField(max_length=5, default="FE")
@@ -54,8 +54,20 @@ class DetalleFactura(models.Model):
     porcentaje_iva = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
+        
+        # Al crear un nuevo detalle, descontar del inventario
+        if is_new and self.producto.tipo_producto != 'servicio':
+            MovimientoInventario.objects.create(
+                producto=self.producto,
+                cantidad=self.cantidad,
+                tipo='salida',
+                motivo=f"Facturación: {self.factura.numero_factura or 'POS'}",
+                origen='venta',
+                documento_referencia=self.factura.numero_factura or f"FAC-{self.factura.id}"
+            )
 
     def __str__(self):
         return f"{self.factura} - {self.producto.nombre}"

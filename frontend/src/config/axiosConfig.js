@@ -1,15 +1,18 @@
 // =============================================================================
 // axiosConfig.js — ERP 8AMPERIOS
-// Configuración global de axios: interceptores, manejo de errores, token JWT
+// Configuración global de axios: baseURL, headers, interceptores de request.
+// El manejo del 401 con refresh de token está en AuthContext.jsx.
 // Importar este archivo UNA vez en App.jsx o main.jsx: import './config/axiosConfig';
 // =============================================================================
-
 import axios from 'axios';
 
 const DEFAULT_LOCAL_URL = 'http://localhost:8000/api';
-const BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? DEFAULT_LOCAL_URL
-    : `${window.location.origin}/api`);
+
+const BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? DEFAULT_LOCAL_URL
+        : `${window.location.origin}/api`);
 
 const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 
@@ -18,20 +21,25 @@ axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 // ─── Interceptor de REQUEST ───────────────────────────────────────────────────
-// Adjunta el token JWT a cada petición si existe en localStorage
+// Adjunta el token JWT a cada petición si existe en localStorage.
+// Esto cubre el caso en que axios.defaults.headers no esté seteado todavía
+// (por ejemplo al recargar la página antes de que AuthContext se monte).
 axios.interceptors.request.use(
     (config) => {
-        const userData = localStorage.getItem('erpUser');
-        if (userData) {
-            try {
-                const user = JSON.parse(userData);
-                const token = user.access || user.token;
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
+        // No sobreescribir si ya viene con Authorization (lo puso AuthContext)
+        if (!config.headers.Authorization) {
+            const userData = localStorage.getItem('erpUser');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const token = user.access || user.token;
+                    if (token) {
+                        config.headers.Authorization = `Bearer ${token}`;
+                    }
+                } catch {
+                    // JSON malformado — limpiar silenciosamente
+                    localStorage.removeItem('erpUser');
                 }
-            } catch {
-                // JSON malformado — limpiar silenciosamente
-                localStorage.removeItem('erpUser');
             }
         }
         return config;
@@ -40,19 +48,14 @@ axios.interceptors.request.use(
 );
 
 // ─── Interceptor de RESPONSE ──────────────────────────────────────────────────
-// Maneja errores globales: token expirado, sin conexión, servidor caído
+// SOLO maneja errores que NO son 401.
+// El 401 lo gestiona AuthContext.jsx con lógica de refresh de token.
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
 
-        if (status === 401) {
-            // Token expirado o inválido — cerrar sesión y redirigir
-            localStorage.removeItem('erpUser');
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
-            }
-        } else if (status === 403) {
+        if (status === 403) {
             // Sin permisos — no redirigir, dejar que el componente lo maneje
             console.warn('[ERP] Acceso denegado (403):', error.config?.url);
         } else if (status === 500) {
@@ -62,6 +65,8 @@ axios.interceptors.response.use(
             console.error('[ERP] Sin conexión con el backend:', error.config?.url);
         }
 
+        // IMPORTANTE: No manejar el 401 aquí.
+        // AuthContext.jsx tiene el interceptor con refresh que lo captura primero.
         return Promise.reject(error);
     }
 );

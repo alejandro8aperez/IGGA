@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API } from '../config/api';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { 
     LayoutDashboard, Target, Package, DollarSign, Activity, Users, Briefcase, 
@@ -8,9 +10,8 @@ import {
     Calendar, Clock, CheckCircle, ArrowUp, ArrowDown
 } from 'lucide-react';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
-
 export default function Dashboard() {
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [data, setData] = useState({
         clientes: 0,
@@ -38,7 +39,14 @@ export default function Dashboard() {
             setLoading(true);
             setError(null);
             
-            const response = await axios.get(`${API_BASE}dashboard/stats/`);
+            if (user?.modoDemo) {
+                // Simulación en modo demo
+                setData(prev => ({ ...prev, clientes: 24, transaccionesCaja: 15 }));
+                setLoading(false);
+                return;
+            }
+
+            const response = await axios.get(API.BASE + '/dashboard/stats/');
             const stats = response.data;
 
             setData(prev => ({
@@ -61,9 +69,14 @@ export default function Dashboard() {
     };
 
     const calcularKPIs = async () => {
+        if (user?.modoDemo) {
+            setCalculatingKPIs(true);
+            setTimeout(() => setCalculatingKPIs(false), 1500);
+            return;
+        }
         setCalculatingKPIs(true);
         try {
-            await axios.post(`${API_BASE}kpis/kpis/calcular_todos/`);
+            await axios.post(API.KPIS.CALCULAR);
             await fetchDashboardData();
         } catch (err) {
             console.error('Error calculating KPIs:', err);
@@ -74,9 +87,20 @@ export default function Dashboard() {
     };
 
     const calcularPronosticoVentas = async () => {
+        if (user?.modoDemo) {
+            setForecastLoading(true);
+            setTimeout(() => {
+                setForecast([
+                    { periodo: '2024-06-01', valor: 65000 },
+                    { periodo: '2024-07-01', valor: 72000 }
+                ]);
+                setForecastLoading(false);
+            }, 1500);
+            return;
+        }
         setForecastLoading(true);
         try {
-            const res = await axios.post(`${API_BASE}kpis/kpis/predecir_ventas/`, { meses: 6 });
+            const res = await axios.post(API.KPIS.PREDECIR, { meses: 6 });
             setForecast(res.data.pronosticos || []);
         } catch (err) {
             console.error('Error calculating sales forecast:', err);

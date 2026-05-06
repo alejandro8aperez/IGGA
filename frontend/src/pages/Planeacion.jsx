@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Planeacion() {
+    const navigate = useNavigate();
     const [planes, setPlanes] = useState([]);
     const [objetivos, setObjetivos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ function Planeacion() {
 
     if (loading) return <div className="container" style={{ position: 'relative' }}>
                 <button 
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
                     style={{ 
@@ -73,7 +75,7 @@ function Planeacion() {
                 </button><p>Cargando planeación...</p></div>;
     if (error) return <div className="container" style={{ position: 'relative' }}>
             <button 
-                onClick={() => window.location.href = '/'} 
+                onClick={() => navigate('/')} 
                 className="btn btn-ghost modal-close-btn" 
                 title="Cerrar Módulo"
                 style={{ 

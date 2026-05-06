@@ -9,6 +9,7 @@ import {
     Factory, Shield, Users2, ClipboardList, Cog, Calculator as CalcIcon, 
     CreditCard, Megaphone, MonitorSmartphone
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { API } from '../config/api';
 
 const API_CLIENTES = API.CRM.CLIENTES;
@@ -234,6 +235,7 @@ const modules = [
 
 export default function Home() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [selectedModule, setSelectedModule] = useState(null);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -255,6 +257,9 @@ export default function Home() {
 
     const fetchStats = async () => {
         try {
+            if (!user || user.modoDemo) {
+                return; // No intentar peticiones reales en modo demo o sin usuario
+            }
             const results = await Promise.allSettled([
                 axios.get(API_CLIENTES),
                 axios.get(API_COTIZACIONES),

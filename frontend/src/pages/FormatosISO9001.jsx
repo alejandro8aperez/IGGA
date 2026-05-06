@@ -634,7 +634,7 @@ export default function FormatosISO9001() {
   return (
     <div style={{ ...s.page, position: 'relative' }}>
       <button 
-        onClick={() => window.location.href = '/'} 
+        onClick={() => navigate('/')} 
         className="btn btn-ghost modal-close-btn" 
         title="Cerrar Módulo"
         style={{ 

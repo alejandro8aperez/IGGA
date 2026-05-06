@@ -547,9 +547,59 @@ export default function Home() {
                             color: 'white',
                             padding: '1.5rem',
                             borderRadius: '16px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                                {modules.length}
+                            </div>
+                            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                                Módulos Disponibles
+                            </div>
+                        </div>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            color: 'white',
+                            padding: '1.5rem',
+                            borderRadius: '16px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                                24/7
+                            </div>
+                            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                                Disponibilidad
+                            </div>
+                        </div>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                            color: 'white',
+                            padding: '1.5rem',
+                            borderRadius: '16px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                                {currentTime.toLocaleTimeString()}
+                            </div>
+                            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                                Hora Actual
+                            </div>
+                        </div>
+                        <div style={{
+                            background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                            color: 'white',
+                            padding: '1.5rem',
+                            borderRadius: '16px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                                Cloud
+                            </div>
+                            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                                Acceso Remoto
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                {/* Arrow */}
 
                 {/* Search Bar */}
                 <div style={{
@@ -719,29 +769,6 @@ export default function Home() {
                                     <ArrowRight size={20} />
                                 </div>
                             </div>
-                            
-                            {/* Arrow */}
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                alignItems: 'center'
-                            }}>
-                                <div style={{
-                                    width: '40px',
-                                    height: '40px',
-                                    background: `linear-gradient(135deg, ${module.color} 0%, ${module.color}dd 100%)`,
-                                    borderRadius: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    transform: 'translateX(10px)',
-                                    opacity: 0,
-                                    transition: 'all 0.3s ease'
-                                }}>
-                                    <ArrowRight size={20} />
-                                </div>
-                            </div>
                         </button>
                     ))}
                 </div>
@@ -771,7 +798,7 @@ export default function Home() {
                         flexWrap: 'wrap'
                     }}>
                         <button
-                            onClick={() => window.location.href = '/dashboard'}
+                            onClick={() => navigate('/dashboard')}
                             style={{
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 color: 'white',
@@ -799,7 +826,7 @@ export default function Home() {
                             Dashboard
                         </button>
                         <button
-                            onClick={() => window.location.href = '/crm'}
+                            onClick={() => navigate('/crm')}
                             style={{
                                 background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
                                 color: 'white',
@@ -827,7 +854,7 @@ export default function Home() {
                             CRM
                         </button>
                         <button
-                            onClick={() => window.location.href = '/ventas'}
+                            onClick={() => navigate('/ventas')}
                             style={{
                                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                 color: 'white',

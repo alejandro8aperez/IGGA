@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target } from 'lucide-react';
 
@@ -6,6 +7,7 @@ const API_CAMPANAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api
 const API_LEADS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/leads/';
 
 function Marketing() {
+    const navigate = useNavigate();
     const [campanas, setCampanas] = useState([]);
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -76,7 +78,7 @@ function Marketing() {
 
     if (loading) return <div className="container" style={{ position: 'relative' }}>
                 <button 
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
                     style={{ 

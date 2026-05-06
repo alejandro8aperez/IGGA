@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Briefcase, AlertCircle, Edit3, Trash2, Plus, X, Users, Calendar } from 'lucide-react';
 
@@ -6,6 +7,7 @@ const API_PROYECTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/ap
 const API_TAREAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/proyectos/tareas/';
 
 function Proyectos() {
+    const navigate = useNavigate();
     const [proyectos, setProyectos] = useState([]);
     const [tareas, setTareas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -76,7 +78,7 @@ function Proyectos() {
 
     if (loading) return <div className="container" style={{ position: 'relative' }}>
                 <button 
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
                     style={{ 

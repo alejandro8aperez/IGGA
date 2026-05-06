@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext(null);
@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 // Permisos por rol — qué módulos puede ver cada cargo
 // =============================================================================
 export const PERMISOS_ROL = {
-    Administrador: '*', // acceso total
+    Administrador: '*',
     Gerente:       ['dashboard', 'crm', 'ventas', 'compras', 'finanzas', 'contabilidad',
                     'tesoreria', 'rrhh', 'reportes', 'operaciones', 'produccion',
                     'inventario', 'logistica', 'activos', 'kave', 'multi-empresa'],
@@ -36,24 +36,38 @@ export const tienePermiso = (user, modulo) => {
 // Provider
 // =============================================================================
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser]       = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Refs para manejar múltiples peticiones simultáneas que fallen con 401
+    const isRefreshing = useRef(false);
+    const failedQueue  = useRef([]);
+
+    const processQueue = (error, token = null) => {
+        failedQueue.current.forEach(({ resolve, reject }) => {
+            if (error) reject(error);
+            else resolve(token);
+        });
+        failedQueue.current = [];
+    };
 
     const logoutUser = () => {
         setUser(null);
         localStorage.removeItem('erpUser');
-        // Limpiar el encabezado de autorización global
         delete axios.defaults.headers.common['Authorization'];
     };
 
     useEffect(() => {
+        // Restaurar sesión desde localStorage al montar
         const savedUser = localStorage.getItem('erpUser');
         if (savedUser) {
             try {
                 const parsedUser = JSON.parse(savedUser);
-                setUser(parsedUser);
-                // Configurar el token para todas las peticiones futuras de Axios
-                if (parsedUser.access) {
+                // Si el token parece muy antiguo o faltan campos, forzar login
+                if (!parsedUser.access || !parsedUser.refresh) {
+                    logoutUser();
+                } else {
+                    setUser(parsedUser);
                     axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
                 }
             } catch {
@@ -62,20 +76,77 @@ export const AuthProvider = ({ children }) => {
         }
         setLoading(false);
 
-        // INTERCEPTOR: Si recibimos un 401 (No autorizado), cerramos sesión automáticamente.
-        // Esto arregla el problema de "solo funciona en modo incógnito".
+        // =====================================================================
+        // INTERCEPTOR DE RESPUESTA con refresh automático de token
+        // Flujo:
+        //   1. Petición falla con 401
+        //   2. Intentamos POST /api/auth/token/refresh/ con el refresh token
+        //   3. Si funciona → guardamos el nuevo access token y reintentamos
+        //   4. Si falla   → logout y el usuario vuelve al login
+        //
+        // Las peticiones que llegan mientras el refresh está en curso se encolan
+        // y se resuelven/rechazan cuando el refresh termina (failedQueue).
+        // =====================================================================
         const interceptor = axios.interceptors.response.use(
             (response) => response,
-            (error) => {
-                if (error.response?.status === 401) {
-                    console.warn('Sesión expirada o inválida. Limpiando datos...');
-                    logoutUser();
+            async (error) => {
+                const originalRequest = error.config;
+
+                // Solo actuar en 401; evitar bucle con _retry
+                if (error.response?.status === 401 && !originalRequest._retry) {
+
+                    // Si ya hay un refresh en progreso, encolar esta petición
+                    if (isRefreshing.current) {
+                        return new Promise((resolve, reject) => {
+                            failedQueue.current.push({ resolve, reject });
+                        }).then((token) => {
+                            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+                            return axios(originalRequest);
+                        }).catch((err) => Promise.reject(err));
+                    }
+
+                    originalRequest._retry    = true;
+                    isRefreshing.current      = true;
+
+                    try {
+                        const savedUser     = localStorage.getItem('erpUser');
+                        const parsedUser    = savedUser ? JSON.parse(savedUser) : null;
+                        const refreshToken  = parsedUser?.refresh;
+
+                        if (!refreshToken) throw new Error('Sin refresh token');
+
+                        // Llamar al endpoint estándar de Django Simple JWT
+                        const { data } = await axios.post(
+                            '/api/auth/token/refresh/',
+                            { refresh: refreshToken },
+                            { _retry: true }
+                        );
+
+                        // Persistir el nuevo access token
+                        const updatedUser = { ...parsedUser, access: data.access };
+                        localStorage.setItem('erpUser', JSON.stringify(updatedUser));
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
+                        originalRequest.headers['Authorization']       = `Bearer ${data.access}`;
+                        setUser(updatedUser);
+
+                        processQueue(null, data.access);
+                        return axios(originalRequest);
+
+                    } catch (refreshError) {
+                        processQueue(refreshError, null);
+                        console.warn('[ERP] Refresh token inválido o expirado. Cerrando sesión.');
+                        logoutUser();
+                        return Promise.reject(refreshError);
+
+                    } finally {
+                        isRefreshing.current = false;
+                    }
                 }
+
                 return Promise.reject(error);
             }
         );
 
-        // Limpiar el interceptor al desmontar el componente
         return () => axios.interceptors.response.eject(interceptor);
     }, []);
 
@@ -108,4 +179,5 @@ export function useAuth() {
     if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
     return ctx;
 }
+
 export default AuthContext;

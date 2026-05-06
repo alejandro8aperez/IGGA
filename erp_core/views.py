@@ -1,4 +1,6 @@
+import os
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from django.conf import settings
 from django.utils import timezone
@@ -285,44 +287,43 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def dashboard_stats(request):
     """
-    Endpoint consolidado para el Dashboard de React.
-    Retorna métricas de Ventas, Compras, Inventario y Facturación Electrónica.
+    Endpoint consolidado y robusto para el Dashboard de React.
+    Retorna métricas de Ventas, Compras, CRM, Inventario, RRHH y Facturación Electrónica.
     """
     from django.db.models import Sum, Count, F
+    from crm.models import Cliente, Cotizacion
+    from venta.models import OrdenVenta
     from facturacion.models import Factura
     from inventarios.models import Producto, MovimientoInventario
     from compras.models import OrdenCompra
-    from venta.models import OrdenVenta
-    
-    # Rango de fecha (últimos 30 días por defecto)
-    hace_30_dias = timezone.now() - timezone.timedelta(days=30)
-    
+    from operaciones.models import Proyecto
+    from rrhh.models import Empleado
+
     # 1. Ventas y Compras (Totales)
     total_ventas = OrdenVenta.objects.aggregate(total=Sum('total'))['total'] or 0
     total_compras = OrdenCompra.objects.aggregate(total=Sum('total'))['total'] or 0
-    
-    # 2. Facturación Electrónica (Estados DIAN)
-    dian_stats = Factura.objects.values('estado_dian').annotate(cantidad=Count('id'))
-    
-    # 3. Inventario
+
+    # 2. Inventario
     total_productos = Producto.objects.count()
     productos_stock_bajo = Producto.objects.filter(stock_actual__lte=F('stock_minimo')).count()
     valor_inventario = Producto.objects.aggregate(
         total=Sum(F('stock_actual') * F('precio_compra'))
     )['total'] or 0
 
-    # 4. Movimientos recientes
+    # 3. Movimientos recientes
     movimientos_recientes = MovimientoInventario.objects.select_related('producto').order_by('-fecha')[:5]
     movimientos_data = [{
         'id': m.id,
         'producto': m.producto.nombre,
         'tipo': m.get_tipo_display(),
         'cantidad': float(m.cantidad),
-        'fecha': m.fecha.isoformat()
+        'fecha': m.fecha.isoformat() if m.fecha else None
     } for m in movimientos_recientes]
 
     return JsonResponse({
         'resumen': {
+            'total_clientes': Cliente.objects.count(),
+            'total_cotizaciones': Cotizacion.objects.count(),
             'ventas_totales': float(total_ventas),
             'compras_totales': float(total_compras),
             'balance': float(total_ventas - total_compras),
@@ -332,8 +333,12 @@ def dashboard_stats(request):
             'stock_bajo': productos_stock_bajo,
             'valor_total': float(valor_inventario)
         },
-        'facturacion': list(dian_stats),
         'movimientos': movimientos_data,
+        'rrhh': {
+            'total_empleados': Empleado.objects.count(),
+            'total_proyectos': Proyecto.objects.count()
+        },
+        'facturacion': list(Factura.objects.values('estado_dian').annotate(cantidad=Count('id'))),
         'timestamp': timezone.now().isoformat()
     })
 
@@ -409,43 +414,3 @@ def reporte_pyl_api(request):
         'desglose_modulos': list(desglose_modulos),
         'timestamp': timezone.now().isoformat()
     })
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def dashboard_stats(request):
-    """
-    Endpoint para estadísticas del dashboard principal.
-    Retorna datos en formato compatible con Dashboard_Moderno.jsx
-    """
-    from crm.models import Cliente, Cotizacion
-    from venta.models import OrdenVenta, FacturaVenta
-    from inventarios.models import Producto
-    from compras.models import Proveedor, OrdenCompra
-    from operaciones.models import Proyecto
-    from rrhh.models import Empleado
-    # Estructura compatible con Dashboard_Moderno.jsx
-    stats = {
-        'resumen': {
-            'total_clientes': Cliente.objects.count(),
-            'total_ordenes': OrdenVenta.objects.count(),
-            'total_facturas': FacturaVenta.objects.count(),
-            'total_cotizaciones': Cotizacion.objects.count(),
-        },
-        'inventario': {
-            'total_items': Producto.objects.count(),
-            'total_valor': 0  # Placeholder, calcular si es necesario
-        },
-        'facturacion': {
-            'total_ordenes': OrdenVenta.objects.count(),
-            'total_facturas': FacturaVenta.objects.count(),
-        },
-        'movimientos': [],  # Datos mock por ahora
-        'rrhh': {
-            'total_empleados': Empleado.objects.count(),
-            'total_proyectos': Proyecto.objects.count()
-        },
-        'timestamp': timezone.now().isoformat()
-    }
-
-    return JsonResponse(stats)

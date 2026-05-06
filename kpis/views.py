@@ -47,7 +47,7 @@ class KPIViewSet(viewsets.ModelViewSet):
     def calcular_dias_cobrar(self):
         # Días por cobrar = cuentas por cobrar / ventas diarias
         cuentas_cobrar = MovimientoContable.objects.filter(cuenta__codigo__startswith='120').aggregate(total=Sum('debe'))['total'] or 0
-        ventas_diarias = FacturaVenta.objects.filter(fecha__gte=timezone.now() - timedelta(days=30)).aggregate(total=Sum('total'))['total'] or 1
+        ventas_diarias = FacturaVenta.objects.filter(fecha_emision__gte=timezone.now() - timedelta(days=30)).aggregate(total=Sum('total'))['total'] or 1
         ventas_diarias = ventas_diarias / 30
         dias = cuentas_cobrar / ventas_diarias if ventas_diarias > 0 else 0
         KPI.objects.update_or_create(nombre='dias_por_cobrar', defaults={'descripcion': 'Días promedio por cobrar', 'valor': dias})

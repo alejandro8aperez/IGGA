@@ -9,6 +9,8 @@ router.register(r'facturas-venta', views.FacturaVentaViewSet, basename='facturas
 # Alias para el frontend
 router.register(r'pedidos', views.OrdenVentaViewSet, basename='pedidos')
 router.register(r'facturas', views.FacturaVentaViewSet, basename='facturas')
+router.register(r'notas-credito', views.NotaCreditoViewSet, basename='notas-credito')
+router.register(r'detalles-nota-credito', views.DetalleNotaCreditoViewSet, basename='detalles-nota-credito')
 
 urlpatterns = [
     path('', include(router.urls)),

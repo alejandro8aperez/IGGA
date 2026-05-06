@@ -33,7 +33,7 @@ def crear_asiento_con_movimientos(fecha, descripcion, referencia, movimientos):
         )
 
         for movimiento in movimientos:
-            MovimientoContable.objects.create(asiento=asiento, **movimiento)
+            MovimientoContable.objects.create(asiento_contable=asiento, **movimiento)
 
     return asiento
 
