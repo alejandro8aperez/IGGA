@@ -8,14 +8,21 @@ from django.utils import timezone
 from .models import (
     Categoria, Almacen, Producto, Lote,
     MovimientoInventario, AlertaInventario,
-    ConteoFisico, DetalleConteoFisico,
+    ConteoFisico, DetalleConteoFisico, UnidadMedida
 )
 from .serializers import (
     CategoriaSerializer, AlmacenSerializer,
     ProductoSerializer, ProductoListSerializer, LoteSerializer,
     MovimientoInventarioSerializer, AlertaInventarioSerializer,
     ConteoFisicoSerializer, DetalleConteoFisicoSerializer,
+    UnidadMedidaSerializer
 )
+
+
+class UnidadMedidaViewSet(viewsets.ModelViewSet):
+    queryset = UnidadMedida.objects.all()
+    serializer_class = UnidadMedidaSerializer
+    permission_classes = [IsInventarioUser]
 
 
 class CategoriaViewSet(viewsets.ModelViewSet):

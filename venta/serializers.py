@@ -85,7 +85,7 @@ class DetalleNotaCreditoSerializer(serializers.ModelSerializer):
 
 
 class NotaCreditoSerializer(serializers.ModelSerializer):
-    detalles = DetalleNotaCreditoSerializer(many=True)
+    detalles = DetalleNotaCreditoSerializer(many=True, required=False)
     factura_numero = serializers.CharField(source='factura.numero_factura', read_only=True)
     cliente_nombre = serializers.CharField(source='factura.orden_venta.cliente.nombre', read_only=True)
     

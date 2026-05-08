@@ -159,7 +159,7 @@ class PeriodoNominaViewSet(viewsets.ModelViewSet):
         c_int_ces   = get_con('PROV-INT', 'Intereses Cesantías (1%)', 'PROV')
         c_vacaciones = get_con('PROV-VAC', 'Provisión Vacaciones (4.17%)', 'PROV')
         
-        c_pension_er = get_con('PROV-PEN-ER', 'Pensión Patronal (12%)', 'PROV')
+        c_pension_er = get_con('PROV-PEN-E', 'Pensión Patronal (12%)', 'PROV')
         c_arl       = get_con('PROV-ARL', 'ARL', 'PROV')
         c_caja      = get_con('PROV-CAJ', 'Caja Compensación (4%)', 'PROV')
 
@@ -176,66 +176,75 @@ class PeriodoNominaViewSet(viewsets.ModelViewSet):
         }
 
         for emp in empleados:
-            if not Nomina.objects.filter(periodo=periodo, empleado=emp).exists():
-                salario = emp.salario_basico
-                base_prestaciones = salario
-                tiene_auxilio = False
+            # Eliminar nómina existente para permitir reliquidación y actualización de datos (como el salario)
+            Nomina.objects.filter(periodo=periodo, empleado=emp).delete()
+            salario = emp.salario_basico
+            base_prestaciones = salario
+            tiene_auxilio = False
+            
+            if emp.auxilio_transporte and salario <= (MIN_SALARY * 2):
+                base_prestaciones += AUX_TRANS_VAL
+                tiene_auxilio = True
+            nomina = Nomina.objects.create(
+                periodo=periodo, empleado=emp, salario_base=salario,
+                dias_trabajados=30, total_devengados=0, total_deducciones=0, neto_pagar=0 
+            )
+            
+            # --- DEVENGADOS ---
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_sueldo, valor_unitario=salario, cantidad=1, valor=salario)
+            if tiene_auxilio:
+                DetalleNomina.objects.create(nomina=nomina, concepto=c_aux_trans, valor_unitario=AUX_TRANS_VAL, cantidad=1, valor=AUX_TRANS_VAL)
+            
+            # --- DEDUCCIONES (EMPLEADO) ---
+            v_salud = (salario * Decimal('0.04')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_salud_ee, valor_unitario=v_salud, cantidad=1, valor=v_salud)
+            
+            v_pension = (salario * Decimal('0.04')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_pension_ee, valor_unitario=v_pension, cantidad=1, valor=v_pension)
+            
+            # --- PROVISIONES Y CARGAS (PATRONAL) ---
+            # Prestaciones
+            v_prima = (base_prestaciones * Decimal('0.0833')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_prima, valor_unitario=v_prima, cantidad=1, valor=v_prima)
+            
+            v_cesantias = (base_prestaciones * Decimal('0.0833')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_cesantias, valor_unitario=v_cesantias, cantidad=1, valor=v_cesantias)
+            
+            v_int_ces = (v_cesantias * Decimal('0.12') / 12).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_int_ces, valor_unitario=v_int_ces, cantidad=1, valor=v_int_ces)
+            
+            v_vac = (salario * Decimal('0.0417')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_vacaciones, valor_unitario=v_vac, cantidad=1, valor=v_vac)
+            
+            # Seguridad Social y Parafiscales Patronal
+            v_pen_er = (salario * Decimal('0.12')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_pension_er, valor_unitario=v_pen_er, cantidad=1, valor=v_pen_er)
+            
+            rate_arl = ARL_RATES.get(emp.nivel_riesgo_arl, ARL_RATES['I'])
+            v_arl = (salario * rate_arl).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_arl, valor_unitario=v_arl, cantidad=1, valor=v_arl)
+            
+            v_caja = (salario * Decimal('0.04')).quantize(Decimal('1'))
+            DetalleNomina.objects.create(nomina=nomina, concepto=c_caja, valor_unitario=v_caja, cantidad=1, valor=v_caja)
+            nomina.calcular_totales()
+            nominas_creadas += 1
                 
-                if emp.auxilio_transporte and salario <= (MIN_SALARY * 2):
-                    base_prestaciones += AUX_TRANS_VAL
-                    tiene_auxilio = True
-
-                nomina = Nomina.objects.create(
-                    periodo=periodo, empleado=emp, salario_base=salario,
-                    dias_trabajados=30, total_devengados=0, total_deducciones=0, neto_pagar=0 
-                )
-                
-                # --- DEVENGADOS ---
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_sueldo, valor_unitario=salario, cantidad=1, valor=salario)
-                if tiene_auxilio:
-                    DetalleNomina.objects.create(nomina=nomina, concepto=c_aux_trans, valor_unitario=AUX_TRANS_VAL, cantidad=1, valor=AUX_TRANS_VAL)
-                
-                # --- DEDUCCIONES (EMPLEADO) ---
-                v_salud = (salario * Decimal('0.04')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_salud_ee, valor_unitario=v_salud, cantidad=1, valor=v_salud)
-                
-                v_pension = (salario * Decimal('0.04')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_pension_ee, valor_unitario=v_pension, cantidad=1, valor=v_pension)
-                
-                # --- PROVISIONES Y CARGAS (PATRONAL) ---
-                # Prestaciones
-                v_prima = (base_prestaciones * Decimal('0.0833')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_prima, valor_unitario=v_prima, cantidad=1, valor=v_prima)
-                
-                v_cesantias = (base_prestaciones * Decimal('0.0833')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_cesantias, valor_unitario=v_cesantias, cantidad=1, valor=v_cesantias)
-                
-                v_int_ces = (v_cesantias * Decimal('0.12') / 12).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_int_ces, valor_unitario=v_int_ces, cantidad=1, valor=v_int_ces)
-                
-                v_vac = (salario * Decimal('0.0417')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_vacaciones, valor_unitario=v_vac, cantidad=1, valor=v_vac)
-                
-                # Seguridad Social y Parafiscales Patronal
-                v_pen_er = (salario * Decimal('0.12')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_pension_er, valor_unitario=v_pen_er, cantidad=1, valor=v_pen_er)
-                
-                rate_arl = ARL_RATES.get(emp.nivel_riesgo_arl, ARL_RATES['I'])
-                v_arl = (salario * rate_arl).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_arl, valor_unitario=v_arl, cantidad=1, valor=v_arl)
-                
-                v_caja = (salario * Decimal('0.04')).quantize(Decimal('1'))
-                DetalleNomina.objects.create(nomina=nomina, concepto=c_caja, valor_unitario=v_caja, cantidad=1, valor=v_caja)
-
-                nomina.calcular_totales()
-                nominas_creadas += 1
-                
-        return Response({'status': 'ok', 'creados': nominas_creadas})
+        if nominas_creadas == 0:
+            return Response({'status': 'warning', 'message': 'No se encontraron empleados activos para liquidar o ya fueron liquidados.', 'creados': 0})
+            
+        return Response({'status': 'ok', 'message': f'Se liquidaron {nominas_creadas} nóminas exitosamente.', 'creados': nominas_creadas})
 
 
 class NominaViewSet(viewsets.ModelViewSet):
     queryset = Nomina.objects.all()
     serializer_class = NominaSerializer
+
+    def get_queryset(self):
+        queryset = Nomina.objects.all()
+        periodo_id = self.request.query_params.get('periodo')
+        if periodo_id:
+            queryset = queryset.filter(periodo_id=periodo_id)
+        return queryset
 
     @action(detail=False, methods=['get'], url_path='exportar-electronica')
     def exportar_electronica(self, request):

@@ -2,34 +2,34 @@
 __pycache__/
 *.py[cod]
 *$py.class
-.env
-db.sqlite3
-db.sqlite3-journal
-media/
-staticfiles/
+.venv/
 venv/
-env/
 ENV/
-logs/
-*.log
+db.sqlite3
+.env
 
 # Node / React
 node_modules/
 dist/
 build/
-.DS_Store
 .eslintcache
-.npm
-.yarn
+.DS_Store
+
+# Entorno y Secretos
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # IDEs
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# KAVE / Temporary
-*.xlsx
-*.pdf
-test-image/
-firma_kave.png
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Media y estáticos generados
+media/
+staticfiles/

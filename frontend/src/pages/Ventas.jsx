@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
     Plus, FileText, ShoppingCart, Users, Search, 
     Filter, Eye, Download, CheckCircle, Clock, 
-    AlertCircle, TrendingUp, DollarSign, Printer
+    AlertCircle, TrendingUp, DollarSign, Printer, Trash2
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -138,7 +138,11 @@ export default function Ventas() {
       setOrdenes(ordRes.data);
       setFacturas(factRes.data);
       setClientes(cliRes.data);
-      setProductos(prodRes.data || []);
+      setProductos((prodRes.data || []).filter(p => 
+        p.tipo_producto === 'producto_terminado' || 
+        p.tipo_producto === 'semielaborado' ||
+        !p.tipo_producto // Por si hay datos antiguos sin tipo
+      ));
       setNotasCredito(ncRes.data || []);
       setLoading(false);
         } catch (err) {
@@ -147,6 +151,95 @@ export default function Ventas() {
       setLoading(false);
     }
     };
+
+  const openNCModal = (nc = null) => {
+    if (nc) {
+      setCurrentNC(nc);
+      setNcForm({
+        factura: nc.factura,
+        numero_nota: nc.numero_nota,
+        tipo: nc.tipo,
+        motivo: nc.motivo,
+        total: parseFloat(nc.total || 0),
+        subtotal: parseFloat(nc.total || 0),
+        porcentaje_iva: 0,
+        valor_iva: 0,
+        detalles: []
+      });
+    } else {
+      setCurrentNC(null);
+      setNcForm({
+        factura: '',
+        numero_nota: `NC-${Date.now()}`,
+        tipo: 'devolucion',
+        motivo: '',
+        total: 0,
+        subtotal: 0,
+        porcentaje_iva: 0,
+        valor_iva: 0,
+        detalles: []
+      });
+    }
+    setIsNCModalOpen(true);
+  };
+
+  const closeNCModal = () => {
+    setIsNCModalOpen(false);
+    setCurrentNC(null);
+  };
+
+  const handleNCSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const totalValue = parseFloat(ncForm.total) || 0;
+      const payload = { 
+        ...ncForm,
+        subtotal: totalValue,
+        valor_iva: 0,
+        porcentaje_iva: 0,
+        total: totalValue,
+        detalles: []
+      };
+      if (currentNC) {
+        await axios.put(`/ventas/notas-credito/${currentNC.id}/`, payload);
+        alert('Nota de crédito actualizada');
+      } else {
+        await axios.post('/ventas/notas-credito/', payload);
+        alert('Nota de crédito creada');
+      }
+      closeNCModal();
+      fetchData();
+    } catch (err) {
+      console.error('Error guardando nota de crédito:', err);
+      alert('Error al guardar la nota de crédito.');
+    }
+  };
+
+  const descargarPDFNC = async (id, numero) => {
+    try {
+      const response = await axios.get(`/ventas/notas-credito/${id}/export_pdf/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `NotaCredito_${numero}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) { alert('Error al generar PDF de la nota'); }
+  };
+
+  const descargarExcelNC = async (id, numero) => {
+    try {
+      const response = await axios.get(`/ventas/notas-credito/${id}/export_excel/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `NotaCredito_${numero}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) { alert('Error al generar Excel de la nota'); }
+  };
 
   const openOrdModal = (ord = null) => {
     if (ord) {
@@ -160,6 +253,7 @@ export default function Ventas() {
           id: d.id || Math.random(),
           producto: d.producto?.id || d.producto,
           nombre_producto: d.producto?.nombre || d.producto_nombre || '',
+          unidad: d.unidad || 'UND',
           cantidad: d.cantidad || 1,
           valor_unitario: parseFloat(d.precio_unitario || d.valor_unitario || 0),
           valor_total: (d.cantidad || 1) * parseFloat(d.precio_unitario || d.valor_unitario || 0)
@@ -190,6 +284,7 @@ export default function Ventas() {
         id: Math.random(),
         producto: '',
         nombre_producto: '',
+        unidad: 'UND',
         cantidad: 1,
         valor_unitario: 0,
         valor_total: 0
@@ -216,6 +311,7 @@ export default function Ventas() {
         if (prod) {
           newDetalles[index].nombre_producto = prod.nombre;
           newDetalles[index].valor_unitario = parseFloat(prod.precio_venta || 0);
+          newDetalles[index].unidad = prod.unidad_medida || 'UND';
         }
       }
       
@@ -240,6 +336,7 @@ export default function Ventas() {
         total: ordForm.total,
         detalles: ordForm.detalles.map(d => ({
           producto: d.producto,
+          unidad: d.unidad,
           cantidad: d.cantidad,
           valor_unitario: d.valor_unitario
         }))
@@ -269,6 +366,18 @@ export default function Ventas() {
     } catch (err) {
       console.error('Error eliminando factura:', err);
       alert('Error al eliminar la factura');
+    }
+  };
+
+  const eliminarOrden = async (id) => {
+    if (!window.confirm('¿Está seguro de eliminar este pedido? Esta acción no se puede deshacer.')) return;
+    try {
+      await axios.delete(`/ventas/pedidos/${id}/`);
+      alert('Pedido eliminado correctamente');
+      fetchData();
+    } catch (err) {
+      console.error('Error eliminando pedido:', err);
+      alert('Error al eliminar el pedido');
     }
   };
 
@@ -312,6 +421,42 @@ export default function Ventas() {
     }
   };
 
+  const descargarPDF = async (id, numero) => {
+    try {
+      const response = await axios.get(`/ventas/facturas/${id}/export_pdf/`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Factura_${numero}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error('Error descargando PDF:', err);
+      alert('Error al generar el PDF');
+    }
+  };
+
+  const descargarExcel = async (id, numero) => {
+    try {
+      const response = await axios.get(`/ventas/facturas/${id}/export_excel/`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Factura_${numero}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error('Error descargando Excel:', err);
+      alert('Error al generar el Excel');
+    }
+  };
+
     const totalVentas = ordenes.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
     const facturacionPendiente = ordenes.filter(o => o.estado === 'pendiente').length;
     const totalClientes = clientes.length;
@@ -331,12 +476,15 @@ export default function Ventas() {
               <ShoppingCart className="text-indigo-500" size={32} />
               Gestión de Ventas
             </h1>
-            <button style={s.btnPrimary} onClick={() => openOrdModal()}>
+            <button 
+              style={s.btnPrimary} 
+              onClick={() => activeTab === 'ordenes' ? openOrdModal() : openNCModal()}
+            >
               <Plus size={20} />
-              Nueva Orden
+              {activeTab === 'ordenes' ? 'Nueva Orden' : 'Nueva Nota de Crédito'}
             </button>
           </div>
-          <p className="text-slate-400 mt-1" style={{ marginTop: '0.5rem' }}>Control de pedidos y facturación electrónica.</p>
+          <p className="text-slate-400 mt-1" style={{ marginTop: '0.5rem' }}>Control de pedidos, facturación y devoluciones.</p>
         </div>
       </div>
 
@@ -418,10 +566,11 @@ export default function Ventas() {
                     <td style={s.td}><StatusBadge status={orden.estado} /></td>
                     <td style={s.td}>
                       <div className="flex justify-center gap-2">
-                        <button onClick={() => openOrdModal(orden)} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
+                        <button title="Ver" onClick={() => openOrdModal(orden)} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
                         {orden.estado !== 'facturado' && (
-                          <button onClick={() => generarFactura(orden)} style={{ background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}><FileText size={18} /></button>
+                          <button title="Generar Factura" onClick={() => generarFactura(orden)} style={{ background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}><FileText size={18} /></button>
                         )}
+                        <button title="Borrar" onClick={() => eliminarOrden(orden.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
                       </div>
                     </td>
                   </tr>
@@ -448,12 +597,14 @@ export default function Ventas() {
                     <td style={s.td}><span style={s.badge('#10B981')}>{factura.estado_dian || 'Aceptada'}</span></td>
                     <td style={s.td}>
                       <div className="flex justify-center gap-2">
-                        <button onClick={() => {
+                        <button title="Ver" onClick={() => {
                           const orden = ordenes.find(o => o.id === factura.orden_venta);
                           if (orden) openOrdModal(orden);
                           else alert('Orden no encontrada');
                         }} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
-                        <button onClick={() => eliminarFactura(factura.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><FileText size={18} /></button>
+                        <button title="Descargar PDF" onClick={() => descargarPDF(factura.id, factura.numero_factura)} style={{ background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}><Printer size={18} /></button>
+                        <button title="Descargar Excel" onClick={() => descargarExcel(factura.id, factura.numero_factura)} style={{ background: 'transparent', border: 'none', color: '#059669', cursor: 'pointer' }}><Download size={18} /></button>
+                        <button title="Borrar" onClick={() => eliminarFactura(factura.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
                       </div>
                     </td>
                   </tr>
@@ -484,8 +635,10 @@ export default function Ventas() {
                     <td style={s.td}><span style={s.badge(nc.estado === 'aprobada' ? '#10B981' : nc.estado === 'rechazada' ? '#EF4444' : '#F59E0B')}>{nc.estado}</span></td>
                     <td style={s.td}>
                       <div className="flex justify-center gap-2">
-                        <button onClick={() => alert(`Nota #${nc.numero_nota}\nFactura: ${nc.factura_numero}\nMotivo: ${nc.motivo}\nTotal: $${parseFloat(nc.total).toLocaleString()}`)} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
-                        <button onClick={() => eliminarNotaCredito(nc.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><FileText size={18} /></button>
+                        <button title="Editar" onClick={() => openNCModal(nc)} style={{ background: 'transparent', border: 'none', color: '#818CF8', cursor: 'pointer' }}><Eye size={18} /></button>
+                        <button title="Imprimir PDF" onClick={() => descargarPDFNC(nc.id, nc.numero_nota)} style={{ background: 'transparent', border: 'none', color: '#10B981', cursor: 'pointer' }}><Printer size={18} /></button>
+                        <button title="Exportar Excel" onClick={() => descargarExcelNC(nc.id, nc.numero_nota)} style={{ background: 'transparent', border: 'none', color: '#059669', cursor: 'pointer' }}><Download size={18} /></button>
+                        <button title="Borrar" onClick={() => eliminarNotaCredito(nc.id)} style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
                       </div>
                     </td>
                   </tr>
@@ -595,7 +748,13 @@ export default function Ventas() {
                             </select>
                           </td>
                           <td style={{ ...s.td, padding: '0.5rem', textAlign: 'center' }}>
-                            {productos.find(p => p.id === parseInt(detalle.producto))?.unidad_medida || '-'}
+                            <input
+                              type="text"
+                              value={detalle.unidad || ''}
+                              onChange={(e) => updateProductoInOrden(index, 'unidad', e.target.value)}
+                              placeholder="UND"
+                              style={{ ...s.input, fontSize: '0.875rem', width: '100%', textAlign: 'center' }}
+                            />
                           </td>
                           <td style={{ ...s.td, padding: '0.5rem' }}>
                             <input
@@ -648,6 +807,92 @@ export default function Ventas() {
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white',
                   cursor: 'pointer', fontWeight: 600
                 }}>{currentOrd ? 'Actualizar' : 'Crear'} Orden</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal de Nota de Crédito */}
+      {isNCModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1001, padding: '2rem'
+        }}>
+          <div style={{
+            background: 'white', borderRadius: '16px', width: '100%', maxWidth: '800px',
+            maxHeight: '90vh', overflow: 'auto', padding: '2rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                {currentNC ? `Editar Nota de Crédito #${currentNC.numero_nota}` : 'Nueva Nota de Crédito'}
+              </h2>
+              <button onClick={closeNCModal} style={{ fontSize: '1.5rem', border: 'none', background: 'none', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <form onSubmit={handleNCSubmit}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Factura Relacionada</label>
+                  <select
+                    value={ncForm.factura}
+                    onChange={(e) => setNcForm({...ncForm, factura: e.target.value})}
+                    style={s.input}
+                    required
+                  >
+                    <option value="">Seleccione factura</option>
+                    {facturas.map(f => (
+                      <option key={f.id} value={f.id}>{f.numero_factura} ({f.cliente_nombre})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Tipo de Nota</label>
+                  <select
+                    value={ncForm.tipo}
+                    onChange={(e) => setNcForm({...ncForm, tipo: e.target.value})}
+                    style={s.input}
+                  >
+                    <option value="devolucion">Devolución de Mercancía</option>
+                    <option value="descuento">Descuento/Anulación</option>
+                    <option value="correccion">Corrección de Factura</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Motivo</label>
+                <textarea
+                  value={ncForm.motivo}
+                  onChange={(e) => setNcForm({...ncForm, motivo: e.target.value})}
+                  style={{ ...s.input, height: '80px', resize: 'none' }}
+                  placeholder="Explique el motivo de la nota..."
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Valor Total a Acreditar</label>
+                <input
+                  type="number"
+                  value={ncForm.total}
+                  onChange={(e) => setNcForm({...ncForm, total: e.target.value})}
+                  style={{ ...s.input, fontSize: '1.25rem', fontWeight: 700, color: '#EF4444' }}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                <button type="button" onClick={closeNCModal} style={{
+                  padding: '0.75rem 1.5rem', border: '1px solid #D1D5DB', borderRadius: '8px',
+                  background: 'white', cursor: 'pointer'
+                }}>Cancelar</button>
+                <button type="submit" style={{
+                  padding: '0.75rem 1.5rem', border: 'none', borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)', color: 'white',
+                  cursor: 'pointer', fontWeight: 600
+                }}>{currentNC ? 'Actualizar' : 'Crear'} Nota de Crédito</button>
               </div>
             </form>
           </div>

@@ -875,23 +875,7 @@ function RRHH() {
                             style={styles.searchInput}
                         />
                     </div>
-                    <button 
-                        onClick={() => window.location.href = '/form-designer?template=Empleado%20RRHH'}
-                        style={{
-                            background: 'white',
-                            border: '1px solid #e2e8f0',
-                            color: '#64748b',
-                            padding: '0.75rem 1rem',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                        }}
-                    >
-                        <Palette size={18} />
-                        Personalizar
-                    </button>
+
                     <button onClick={openNew} style={styles.btnSuccess}>
                         <Plus size={18} />
                         Nuevo Empleado

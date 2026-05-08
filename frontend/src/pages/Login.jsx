@@ -13,17 +13,17 @@ const Login = () => {
     const location = useLocation();
     const redirectTo = location.state?.from?.pathname || '/dashboard';
 
-    const [username, setUsername]         = useState('');
-    const [password, setPassword]         = useState('');
-    const [selectedEmpresa, setEmpresa]   = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [selectedEmpresa, setEmpresa] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading]           = useState(false);
-    const [error, setError]               = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const empresas = [
-        { id: '1', nombre: 'Panaderia 1', codigo: 'PAN1' },
-        { id: '2', nombre: 'La Boquilla',  codigo: 'BOQ' },
-        { id: '3', nombre: 'Panaderia 2',  codigo: 'PAN2' },
+        { id: '1', nombre: 'La Boquilla', codigo: 'BOQ' },
+        { id: '2', nombre: 'Panaderia 1', codigo: 'PAN1' },
+        { id: '3', nombre: 'Panaderia 2', codigo: 'PAN2' },
     ];
 
     const handleSubmit = async (e) => {
@@ -83,13 +83,13 @@ const Login = () => {
                 {[...Array(3)].map((_, i) => (
                     <div key={i} style={{
                         position: 'absolute',
-                        width: ['500px','300px','400px'][i],
-                        height: ['500px','300px','400px'][i],
+                        width: ['500px', '300px', '400px'][i],
+                        height: ['500px', '300px', '400px'][i],
                         borderRadius: '50%',
                         background: ['rgba(102,126,234,0.06)', 'rgba(118,75,162,0.05)', 'rgba(102,126,234,0.04)'][i],
-                        top: ['10%','60%','40%'][i], left: ['60%','-5%','80%'][i],
+                        top: ['10%', '60%', '40%'][i], left: ['60%', '-5%', '80%'][i],
                         filter: 'blur(60px)'
-                    }}/>
+                    }} />
                 ))}
             </div>
 
@@ -102,18 +102,29 @@ const Login = () => {
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
-                        width: '70px', height: '70px',
-                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                        borderRadius: '18px', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', margin: '0 auto 1.25rem',
-                        boxShadow: '0 8px 24px rgba(102,126,234,0.4)',
-                        fontSize: '1.5rem', fontWeight: 800, color: 'white'
-                    }}>8A</div>
+                        width: '120px', height: '120px',
+                        margin: '0 auto 1.25rem',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        background: 'white',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                        <img 
+                            src="/logo_boquilla.png" 
+                            alt="Logotipo La Boquilla" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.parentElement.innerHTML = '<span style="color:#d97706; font-weight:bold;">LOGO</span>';
+                            }}
+                        />
+                    </div>
                     <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 0.4rem' }}>
-                        8AMPERIOS ERP
+                        LA BOQUILLA
                     </h1>
                     <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>
-                        Sistema Empresarial Integrado
+                        Panadería y Pastelería
                     </p>
                 </div>
 
@@ -124,14 +135,14 @@ const Login = () => {
                         background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
                         borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.25rem', color: '#fca5a5'
                     }}>
-                        <AlertCircle size={16} style={{ flexShrink: 0 }}/>
+                        <AlertCircle size={16} style={{ flexShrink: 0 }} />
                         <span style={{ fontSize: '0.875rem' }}>{error}</span>
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
                     {/* Empresa */}
-                    <Field label="Empresa" icon={<Building2 size={15}/>}>
+                    <Field label="Empresa" icon={<Building2 size={15} />}>
                         <select value={selectedEmpresa} onChange={e => setEmpresa(e.target.value)}
                             required style={inputStyle}>
                             <option value="">Seleccione una empresa</option>
@@ -142,22 +153,24 @@ const Login = () => {
                     </Field>
 
                     {/* Usuario */}
-                    <Field label="Usuario" icon={<User size={15}/>}>
+                    <Field label="Usuario" icon={<User size={15} />}>
                         <input type="text" value={username} onChange={e => setUsername(e.target.value)}
-                            placeholder="Ingrese su usuario" required style={inputStyle}/>
+                            placeholder="Ingrese su usuario" required style={inputStyle} />
                     </Field>
 
                     {/* Contraseña */}
-                    <Field label="Contraseña" icon={<Lock size={15}/>}>
+                    <Field label="Contraseña" icon={<Lock size={15} />}>
                         <div style={{ position: 'relative' }}>
                             <input type={showPassword ? 'text' : 'password'}
                                 value={password} onChange={e => setPassword(e.target.value)}
                                 placeholder="Ingrese su contraseña" required
-                                style={{ ...inputStyle, paddingRight: '2.5rem' }}/>
+                                style={{ ...inputStyle, paddingRight: '2.5rem' }} />
                             <button type="button" onClick={() => setShowPassword(s => !s)}
-                                style={{ position:'absolute', right:'0.75rem', top:'50%', transform:'translateY(-50%)',
-                                    background:'none', border:'none', color:'#475569', cursor:'pointer', padding:'2px' }}>
-                                {showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}
+                                style={{
+                                    position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                                    background: 'none', border: 'none', color: '#475569', cursor: 'pointer', padding: '2px'
+                                }}>
+                                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                             </button>
                         </div>
                     </Field>
@@ -171,7 +184,7 @@ const Login = () => {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                         boxShadow: loading ? 'none' : '0 4px 15px rgba(102,126,234,0.35)'
                     }}>
-                        {loading && <Loader size={18} style={{ animation: 'erp-spin 0.8s linear infinite' }}/>}
+                        {loading && <Loader size={18} style={{ animation: 'erp-spin 0.8s linear infinite' }} />}
                         {loading ? 'Verificando...' : 'Iniciar Sesión'}
                     </button>
                 </form>
@@ -181,21 +194,23 @@ const Login = () => {
                     marginTop: '1.5rem', background: 'rgba(30,58,95,0.4)',
                     border: '1px solid #1e3a5f', borderRadius: '10px', padding: '0.875rem'
                 }}>
-                    <p style={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 600,
-                        textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.5rem' }}>
+                    <p style={{
+                        color: '#64748b', fontSize: '0.72rem', fontWeight: 600,
+                        textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.5rem'
+                    }}>
                         Usuarios de demo
                     </p>
                     <div style={{ color: '#475569', fontSize: '0.72rem', lineHeight: 1.7, fontFamily: 'monospace' }}>
-                        admin / admin123 · Administrador<br/>
-                        gerente / gerente123 · Gerente<br/>
-                        contador / contador123 · Contador<br/>
-                        produccion / produccion123 · Producción<br/>
+                        admin / admin123 · Administrador<br />
+                        gerente / gerente123 · Gerente<br />
+                        contador / contador123 · Contador<br />
+                        produccion / produccion123 · Producción<br />
                         rrhh / rrhh123 · Recursos Humanos
                     </div>
                 </div>
 
                 <p style={{ textAlign: 'center', color: '#1e3a5f', fontSize: '0.72rem', marginTop: '1.25rem' }}>
-                    8AMPERIOS ERP © {new Date().getFullYear()} · Medellín, Colombia
+                    8AMPERIOS © {new Date().getFullYear()} · Medellín, Colombia
                 </p>
             </div>
             <style>{`@keyframes erp-spin{to{transform:rotate(360deg)}}`}</style>
@@ -214,8 +229,10 @@ const inputStyle = {
 function Field({ label, icon, children }) {
     return (
         <div style={{ marginBottom: '1.1rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem',
-                color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.4rem' }}>
+            <label style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                color: '#94a3b8', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.4rem'
+            }}>
                 {icon}{label}
             </label>
             {children}
@@ -226,21 +243,21 @@ function Field({ label, icon, children }) {
 // Autenticación demo (solo cuando el backend no está disponible)
 function autenticarDemo(username, password, empresaId) {
     const usuarios = {
-        admin:        { password: 'admin123',        cargo: 'Administrador',  nombre: 'Administrador Sistema' },
-        gerente:      { password: 'gerente123',      cargo: 'Gerente',        nombre: 'Gerente General' },
-        contador:     { password: 'contador123',     cargo: 'Contador',       nombre: 'Jefe Contabilidad' },
-        produccion:   { password: 'produccion123',   cargo: 'Jefe Producción',nombre: 'Jefe de Producción' },
-        ventas:       { password: 'ventas123',       cargo: 'Vendedor',       nombre: 'Ejecutivo de Ventas' },
-        compras:      { password: 'compras123',      cargo: 'Comprador',      nombre: 'Jefe de Compras' },
-        almacen:      { password: 'almacen123',      cargo: 'Almacenista',    nombre: 'Encargado Almacén' },
-        mantenimiento:{ password: 'mantenimiento123',cargo: 'Técnico',        nombre: 'Jefe Mantenimiento' },
-        rrhh:         { password: 'rrhh123',         cargo: 'RH',             nombre: 'Jefe RRHH' },
-        mrp:          { password: 'mrp123',          cargo: 'Planificador',   nombre: 'Planificador MRP' },
+        admin: { password: 'admin123', cargo: 'Administrador', nombre: 'Administrador Sistema' },
+        gerente: { password: 'gerente123', cargo: 'Gerente', nombre: 'Gerente General' },
+        contador: { password: 'contador123', cargo: 'Contador', nombre: 'Jefe Contabilidad' },
+        produccion: { password: 'produccion123', cargo: 'Jefe Producción', nombre: 'Jefe de Producción' },
+        ventas: { password: 'ventas123', cargo: 'Vendedor', nombre: 'Ejecutivo de Ventas' },
+        compras: { password: 'compras123', cargo: 'Comprador', nombre: 'Jefe de Compras' },
+        almacen: { password: 'almacen123', cargo: 'Almacenista', nombre: 'Encargado Almacén' },
+        mantenimiento: { password: 'mantenimiento123', cargo: 'Técnico', nombre: 'Jefe Mantenimiento' },
+        rrhh: { password: 'rrhh123', cargo: 'RH', nombre: 'Jefe RRHH' },
+        mrp: { password: 'mrp123', cargo: 'Planificador', nombre: 'Planificador MRP' },
     };
     const empresas = [
         { id: '1', nombre: 'Panaderia 1', codigo: 'PAN1' },
-        { id: '2', nombre: 'La Boquilla',  codigo: 'BOQ' },
-        { id: '3', nombre: 'Panaderia 2',  codigo: 'PAN2' },
+        { id: '2', nombre: 'La Boquilla', codigo: 'BOQ' },
+        { id: '3', nombre: 'Panaderia 2', codigo: 'PAN2' },
     ];
     const info = usuarios[username];
     if (!info || info.password !== password) return null;

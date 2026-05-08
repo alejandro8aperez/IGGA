@@ -255,7 +255,8 @@ export class DemoDataSeeder {
                     const cotizacion = {
                         ...cotizacionData,
                         cliente: clienteAleatorio.id,
-                        fecha_creacion: new Date().toISOString(),
+                        fecha_creacion: new Date().toISOString().split('T')[0],
+                        fecha_validez: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         gran_total: cotizacionData.detalles.reduce((sum, item) => sum + item.valor_total, 0) * 1.19
                     };
                     

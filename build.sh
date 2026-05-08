@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Build script optimizado para Render - sin migraciones
+# exit on error
 set -o errexit
 
-echo "Installing dependencies..."
+# Instalar dependencias de Python
 pip install -r requirements.txt
 
-echo "Collecting static files..."
+# Recolectar archivos estáticos para WhiteNoise
 python manage.py collectstatic --no-input
-
-echo "Build completed successfully!"
+# Aplicar migraciones a la base de datos en la nube
+python manage.py migrate

@@ -64,6 +64,7 @@ export const API = {
     INVENTARIOS: {
         PRODUCTOS:      `${B}/inventarios/productos/`,
         CATEGORIAS:     `${B}/inventarios/categorias/`,
+        UNIDADES_MEDIDA: `${B}/inventarios/unidades-medida/`,
         ALMACENES:      `${B}/inventarios/almacenes/`,
         MOVIMIENTOS:    `${B}/inventarios/movimientos/`,
         STOCK_MINIMO:   `${B}/inventarios/stock-minimo/`,
@@ -147,11 +148,10 @@ export const API = {
 
     // ── Nómina (colombiana) ───────────────────────────────────────────────────
     NOMINA: {
-        PERIODOS:       `${B}/nomina/periodos/`,
-        LIQUIDACIONES:  `${B}/nomina/liquidaciones/`,
-        COLILLAS:       `${B}/nomina/colillas/`,
-        PARAFISCALES:   `${B}/nomina/parafiscales/`,
-        CESANTIAS:      `${B}/nomina/cesantias/`,
+        PERIODOS:       `${B}/rrhh/periodos-nomina/`,
+        NOMINAS:        `${B}/rrhh/nominas/`,
+        CONCEPTOS:      `${B}/rrhh/conceptos-nomina/`,
+        DETALLES:       `${B}/rrhh/detalles-nomina/`,
     },
 
     // ── Contabilidad ──────────────────────────────────────────────────────────

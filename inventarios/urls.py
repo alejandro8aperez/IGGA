@@ -3,11 +3,12 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CategoriaViewSet, AlmacenViewSet, ProductoViewSet, LoteViewSet,
     MovimientoInventarioViewSet, AlertaInventarioViewSet,
-    ConteoFisicoViewSet, DetalleConteoFisicoViewSet,
+    ConteoFisicoViewSet, DetalleConteoFisicoViewSet, UnidadMedidaViewSet
 )
 
 router = DefaultRouter()
 router.register(r'categorias', CategoriaViewSet)
+router.register(r'unidades-medida', UnidadMedidaViewSet)
 router.register(r'almacenes', AlmacenViewSet)
 router.register(r'productos', ProductoViewSet)
 router.register(r'lotes', LoteViewSet)

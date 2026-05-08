@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FileText, AlertCircle, Edit3, Trash2, Plus, X, FileSpreadsheet, Calendar, DollarSign, User, Package, Clock, Shield, Percent, ShoppingCart } from 'lucide-react';
+import { FileText, AlertCircle, Edit3, Trash2, Plus, X, FileSpreadsheet, Calendar, DollarSign, User, Package, Clock, Shield, Percent, ShoppingCart, RefreshCw } from 'lucide-react';
 import { API } from '../config/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,7 +31,7 @@ export default function CotizacionesCRM() {
         valor_total: 0,
         gran_total: 0,
         estado: 'borrador',
-        fecha_validez: '',
+        fecha_validez: new Date().toISOString().split('T')[0],
         detalles: []
     });
 
@@ -103,7 +103,7 @@ export default function CotizacionesCRM() {
                 valor_total: 0,
                 gran_total: 0,
                 estado: 'borrador',
-                fecha_validez: '',
+                fecha_validez: new Date().toISOString().split('T')[0],
                 detalles: [{
                     item: 1,
                     producto: '',
@@ -177,11 +177,18 @@ export default function CotizacionesCRM() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Asegurar formato YYYY-MM-DD antes de enviar
+        const payload = {
+            ...formData,
+            fecha_validez: formData.fecha_validez ? new Date(formData.fecha_validez).toISOString().split('T')[0] : null
+        };
+
         try {
             if (currentCoti) {
-                await axios.put(`${API_URL}${currentCoti.id}/`, formData);
+                await axios.put(`${API_URL}${currentCoti.id}/`, payload);
             } else {
-                await axios.post(API_URL, formData);
+                await axios.post(API_URL, payload);
             }
             closeModal();
             fetchDatos();
@@ -932,6 +939,25 @@ export default function CotizacionesCRM() {
                                             <option value="rechazada">Rechazada</option>
                                         </select>
                                     </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>
+                                            Fecha de Validez *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="fecha_validez"
+                                            value={formData.fecha_validez}
+                                            onChange={handleInputChange}
+                                            required
+                                            style={{ 
+                                                width: '100%', 
+                                                padding: '0.75rem', 
+                                                border: '2px solid #e2e8f0', 
+                                                borderRadius: '8px',
+                                                fontSize: '1rem'
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -952,7 +978,11 @@ export default function CotizacionesCRM() {
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button
                                                 type="button"
-                                                onClick={() => window.open('/inventario', '_blank')}
+                                                onClick={() => {
+                                                    // Al usar HashRouter, la URL necesita el prefijo /#/ antes de la ruta
+                                                    const url = `${window.location.origin}/#/inventario`;
+                                                    window.open(url, '_blank');
+                                                }}
                                                 style={{
                                                     background: '#48bb78',
                                                     color: 'white',
@@ -970,6 +1000,29 @@ export default function CotizacionesCRM() {
                                             >
                                                 <Package size={14} />
                                                 Agregar Producto
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={fetchDatos}
+                                                title="Sincronizar con el inventario actual"
+                                                disabled={loading}
+                                                style={{
+                                                    background: '#718096',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '0.5rem 1rem',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                                                Refrescar
                                             </button>
                                             <button
                                                 type="button"

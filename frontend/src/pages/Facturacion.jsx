@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
+import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const API_FE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/facturacion-electronica';
 
@@ -227,6 +230,164 @@ function Facturacion() {
         }
     };
 
+    const exportToExcel = (factura = null) => {
+        let dataToExport = [];
+        
+        if (factura) {
+            // Header for Excel
+            dataToExport.push({ 'Factura No': 'PANADERIA LA BOQUILLA', 'Cliente': '', 'Fecha': '', 'Producto': '', 'Cantidad': '', 'Precio Unit.': '', 'IVA %': '', 'Subtotal Item': '', 'Total Factura': '' });
+            dataToExport.push({ 'Factura No': 'NIT: 79867452-4', 'Cliente': '', 'Fecha': '', 'Producto': '', 'Cantidad': '', 'Precio Unit.': '', 'IVA %': '', 'Subtotal Item': '', 'Total Factura': '' });
+            dataToExport.push({}); // Empty row
+
+            // Exportar UNA factura con sus detalles
+            const items = factura.detalles.map(d => ({
+                'Factura No': factura.numero_factura || `Borrador #${factura.id}`,
+                'Cliente': factura.cliente_nombre,
+                'Fecha': new Date(factura.fecha_emision).toLocaleDateString(),
+                'Producto': d.producto_nombre || `ID: ${d.producto}`,
+                'Cantidad': d.cantidad,
+                'Precio Unit.': d.precio_unitario,
+                'IVA %': d.porcentaje_iva,
+                'Subtotal Item': d.subtotal || (d.cantidad * d.precio_unitario),
+                'Total Factura': factura.total
+            }));
+            dataToExport = [...dataToExport, ...items];
+        } else {
+            // Exportar resumen de TODAS las facturas
+            dataToExport = facturas.map(f => ({
+                'Factura No': f.numero_factura || `Borrador #${f.id}`,
+                'Cliente': f.cliente_nombre,
+                'Emisión': new Date(f.fecha_emision).toLocaleDateString(),
+                'Subtotal': f.subtotal,
+                'IVA': f.iva_total,
+                'Total': f.total,
+                'Estado': f.estado_dian.toUpperCase()
+            }));
+        }
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Facturacion");
+        XLSX.writeFile(wb, factura ? `Factura_${factura.numero_factura || factura.id}.xlsx` : `Reporte_Facturacion_${new Date().getTime()}.xlsx`);
+    };
+
+    const exportToPDF = (factura) => {
+        if (!factura) return;
+        try {
+            const doc = new jsPDF();
+            
+            // Función para añadir el logo
+            const addLogoAndHeader = () => {
+                // Logo placeholder (circulo si no carga la imagen)
+                doc.setFillColor(248, 250, 252);
+                doc.circle(30, 25, 15, 'F');
+                
+                // Intentar cargar imagen real si existe
+                const img = new Image();
+                img.src = '/logo_boquilla.png';
+                try {
+                    doc.addImage(img, 'PNG', 15, 10, 30, 30);
+                } catch(e) {
+                    console.log("Logo no cargado, usando texto");
+                }
+
+                doc.setTextColor(30, 41, 59);
+                doc.setFontSize(22);
+                doc.setFont(undefined, 'bold');
+                doc.text("PANADERÍA LA BOQUILLA", 50, 22);
+                
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text("NIT: 79867452-4 | Régimen Simplificado", 50, 28);
+                doc.text("Calle Principal No. 123 | Tel: 300 123 4567", 50, 33);
+                
+                doc.setDrawColor(102, 126, 234);
+                doc.setLineWidth(1);
+                doc.line(15, 42, 195, 42);
+            };
+
+            addLogoAndHeader();
+            
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text("FACTURA DE VENTA", 105, 55, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            // Info Bloque Izquierdo
+            doc.text(`No. Factura:`, 15, 65);
+            doc.setFont(undefined, 'bold');
+            doc.text(`${factura.numero_factura || 'BORRADOR'}`, 45, 65);
+            
+            doc.setFont(undefined, 'normal');
+            doc.text(`Fecha Emisión:`, 15, 70);
+            doc.text(`${new Date(factura.fecha_emision).toLocaleDateString()}`, 45, 70);
+            
+            doc.text(`Fecha Venc.:`, 15, 75);
+            doc.text(`${factura.fecha_vencimiento}`, 45, 75);
+
+            // Info Bloque Derecho (Cliente)
+            doc.setFontSize(11);
+            doc.text("FACTURADO A:", 120, 65);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text(factura.cliente_nombre || 'Cliente General', 120, 71);
+            doc.setFont(undefined, 'normal');
+            doc.text(`ID/NIT: ${factura.cliente_ruc || 'N/A'}`, 120, 76);
+            
+            // Details Table
+            const tableColumn = ["Producto", "Cant.", "Precio Unit.", "IVA", "Total"];
+            const tableRows = factura.detalles.map(d => [
+                d.producto_nombre || `Producto ${d.producto}`,
+                d.cantidad,
+                `$${Number(d.precio_unitario).toLocaleString()}`,
+                `${d.porcentaje_iva}%`,
+                `$${Number(d.subtotal || (d.cantidad * d.precio_unitario)).toLocaleString()}`
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 85,
+                styles: { fontSize: 9, cellPadding: 3 },
+                headStyles: { fillColor: [102, 126, 234], textColor: 255 },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+            
+            const finalY = doc.lastAutoTable.finalY || 150;
+            
+            // Totales
+            const startX = 130;
+            doc.setFont(undefined, 'normal');
+            doc.text(`Subtotal:`, startX, finalY + 15);
+            doc.text(`$${Number(factura.subtotal).toLocaleString()}`, 195, finalY + 15, { align: 'right' });
+            
+            doc.text(`IVA Total:`, startX, finalY + 22);
+            doc.text(`$${Number(factura.iva_total).toLocaleString()}`, 195, finalY + 22, { align: 'right' });
+            
+            doc.setDrawColor(102, 126, 234);
+            doc.setLineWidth(0.5);
+            doc.line(startX, finalY + 26, 195, finalY + 26);
+            
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text(`TOTAL A PAGAR:`, startX, finalY + 35);
+            doc.text(`$${Number(factura.total).toLocaleString()}`, 195, finalY + 35, { align: 'right' });
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'italic');
+            doc.setTextColor(100, 100, 100);
+            doc.text("Gracias por elegir Panadería La Boquilla. ¡Hecho con amor, para ti!", 105, 285, { align: 'center' });
+            
+            doc.save(`Factura_${factura.numero_factura || factura.id}.pdf`);
+        } catch (err) {
+            console.error("Error generating PDF:", err);
+            alert("No se pudo generar el PDF. Error: " + err.message);
+        }
+    };
+
     const createResolution = async () => {
         try {
             await axios.post(API.FACTURACION.RESOLUCIONES, {
@@ -266,9 +427,14 @@ function Facturacion() {
                         <ArrowLeft size={18} /> Volver
                     </button>
                     {!showNewForm && (
-                        <button onClick={() => setShowNewForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)' }}>
-                            <Plus size={20} /> Nueva Factura
-                        </button>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button onClick={() => exportToExcel()} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                                <Download size={18} /> Excel General
+                            </button>
+                            <button onClick={() => setShowNewForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)' }}>
+                                <Plus size={20} /> Nueva Factura
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -345,6 +511,28 @@ function Facturacion() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
+                        {currentFacturaId && (
+                            <>
+                                <button 
+                                    onClick={() => {
+                                        const fact = facturas.find(f => f.id === currentFacturaId);
+                                        if (fact) exportToExcel(fact);
+                                    }} 
+                                    style={{ padding: '0.75rem 1.5rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    <Download size={18} /> ENVIAR A EXCEL
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        const fact = facturas.find(f => f.id === currentFacturaId);
+                                        if (fact) exportToPDF(fact);
+                                    }} 
+                                    style={{ padding: '0.75rem 1.5rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    <FileText size={18} /> ENVIAR A PDF
+                                </button>
+                            </>
+                        )}
                         <button onClick={() => { setShowNewForm(false); setCurrentFacturaId(null); }} style={{ padding: '0.75rem 1.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
                         <button onClick={saveBorrador} style={{ padding: '0.75rem 1.5rem', background: '#667eea', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>{currentFacturaId ? 'Actualizar' : 'Guardar Borrador'}</button>
                     </div>

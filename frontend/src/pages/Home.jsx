@@ -328,18 +328,32 @@ export default function Home() {
             <div style={{
                 position: 'relative',
                 zIndex: 10,
-                textAlign: 'center',
-                marginBottom: '3rem'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2rem',
+                marginBottom: '3rem',
+                flexWrap: 'wrap'
             }}>
                 <img
                     src="/logo-8amperios-part2.svg"
-                    alt="8AMPERIOS - Conectamos Procesos"
+                    alt="8AMPERIOS"
                     style={{
-                        maxWidth: '680px',
-                        width: '100%',
-                        height: 'auto',
-                        margin: '0 auto 1.5rem auto',
-                        display: 'block'
+                        maxHeight: '120px',
+                        width: 'auto',
+                        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+                    }}
+                />
+                <div style={{ width: '2px', height: '80px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }} />
+                <img
+                    src="/logo_boquilla.png"
+                    alt="La Boquilla"
+                    style={{
+                        maxHeight: '140px',
+                        width: 'auto',
+                        borderRadius: '50%',
+                        border: '4px solid rgba(255,255,255,0.2)',
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.3)'
                     }}
                 />
             </div>
@@ -349,25 +363,25 @@ export default function Home() {
                 position: 'relative',
                 zIndex: 10,
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1.5rem',
-                marginBottom: '3rem',
-                maxWidth: '1200px',
-                margin: '0 auto 3rem'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                gap: '1rem',
+                marginBottom: '2rem',
+                maxWidth: '1000px',
+                margin: '0 auto 2rem'
             }}>
                 <div style={{
                     background: 'rgba(255,255,255,0.1)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    padding: '0.75rem',
                     border: '1px solid rgba(255,255,255,0.2)',
                     textAlign: 'center'
                 }}>
-                    <Users size={32} style={{ color: 'white', marginBottom: '0.5rem' }} />
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
+                    <Users size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
                         {stats.clientes}
                     </div>
-                    <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
                         Clientes
                     </div>
                 </div>
@@ -375,16 +389,16 @@ export default function Home() {
                 <div style={{
                     background: 'rgba(255,255,255,0.1)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    padding: '0.75rem',
                     border: '1px solid rgba(255,255,255,0.2)',
                     textAlign: 'center'
                 }}>
-                    <FileText size={32} style={{ color: 'white', marginBottom: '0.5rem' }} />
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
+                    <FileText size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
                         {stats.cotizaciones}
                     </div>
-                    <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
                         Cotizaciones
                     </div>
                 </div>
@@ -392,16 +406,16 @@ export default function Home() {
                 <div style={{
                     background: 'rgba(255,255,255,0.1)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    padding: '0.75rem',
                     border: '1px solid rgba(255,255,255,0.2)',
                     textAlign: 'center'
                 }}>
-                    <ShoppingCart size={32} style={{ color: 'white', marginBottom: '0.5rem' }} />
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
+                    <ShoppingCart size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
                         {stats.pedidos}
                     </div>
-                    <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
                         Pedidos
                     </div>
                 </div>
@@ -409,84 +423,42 @@ export default function Home() {
                 <div style={{
                     background: 'rgba(255,255,255,0.1)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    padding: '0.75rem',
                     border: '1px solid rgba(255,255,255,0.2)',
                     textAlign: 'center'
                 }}>
-                    <Package size={32} style={{ color: 'white', marginBottom: '0.5rem' }} />
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'white' }}>
+                    <Package size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
                         {stats.proveedores}
                     </div>
-                    <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
                         Proveedores
                     </div>
                 </div>
             </div>
 
-            {/* Search Bar */}
-            <div style={{
-                position: 'relative',
-                zIndex: 10,
-                maxWidth: '600px',
-                margin: '0 auto 3rem 3rem'
-            }}>
-                <div style={{ position: 'relative' }}>
-                    <Search size={20} style={{
-                        position: 'absolute',
-                        left: '1.5rem',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'rgba(255,255,255,0.6)'
-                    }} />
-                    <input
-                        type="text"
-                        placeholder="Buscar módulos..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '1rem 1rem 1rem 4rem',
-                            background: 'rgba(255,255,255,0.1)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '16px',
-                            fontSize: '1rem',
-                            color: 'white',
-                            outline: 'none',
-                            transition: 'all 0.3s'
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.background = 'rgba(255,255,255,0.15)';
-                            e.target.style.borderColor = 'rgba(255,255,255,0.3)';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.background = 'rgba(255,255,255,0.1)';
-                            e.target.style.borderColor = 'rgba(255,255,255,0.2)';
-                        }}
-                    />
-                </div>
-            </div>
+
 
             {/* Modules Grid */}
             <div style={{
                 position: 'relative',
                 zIndex: 10,
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                gap: '1.2rem',
-                maxWidth: '1200px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: '0.75rem',
+                maxWidth: '1400px',
                 margin: '0 auto'
             }}>
-                {filteredModules.map((module, index) => (
+                {modules.map((module, index) => (
                     <div
                         key={module.name}
                         onClick={() => openModule(module)}
                         style={{
                             background: 'rgba(255,255,255,0.1)',
                             backdropFilter: 'blur(10px)',
-                            borderRadius: '16px',
-                            padding: '1.2rem',
+                            borderRadius: '10px',
+                            padding: '0.75rem',
                             border: '1px solid rgba(255,255,255,0.2)',
                             cursor: 'pointer',
                             transition: 'all 0.3s',
@@ -505,47 +477,47 @@ export default function Home() {
                         }}
                     >
                         <div style={{
-                            width: '45px',
-                            height: '45px',
+                            width: '28px',
+                            height: '28px',
                             background: module.color,
-                            borderRadius: '16px',
+                            borderRadius: '8px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginBottom: '1rem',
-                            boxShadow: `0 8px 20px ${module.color}33`
+                            marginBottom: '0.5rem',
+                            boxShadow: `0 4px 10px ${module.color}33`
                         }}>
-                            <module.icon size={24} style={{ color: 'white' }} />
+                            <module.icon size={16} style={{ color: 'white' }} />
                         </div>
                         <h3 style={{
-                            fontSize: '1.1rem',
+                            fontSize: '0.85rem',
                             fontWeight: '700',
                             color: 'white',
-                            margin: '0 0 0.5rem 0'
+                            margin: '0 0 0.25rem 0'
                         }}>
                             {module.name}
                         </h3>
                         <p style={{
-                            fontSize: '0.85rem',
+                            fontSize: '0.65rem',
                             color: 'rgba(255,255,255,0.8)',
-                            margin: '0 0 0.8rem 0',
-                            lineHeight: '1.5'
+                            margin: '0 0 0.5rem 0',
+                            lineHeight: '1.3'
                         }}>
                             {module.description}
                         </p>
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.5rem'
+                            gap: '0.3rem'
                         }}>
                             <span style={{
-                                fontSize: '0.9rem',
+                                fontSize: '0.7rem',
                                 color: 'rgba(255,255,255,0.7)'
                             }}>
-                                {module.stats.total} registros
+                                {module.stats.total} reg.
                             </span>
                             <span style={{
-                                fontSize: '0.8rem',
+                                fontSize: '0.65rem',
                                 color: '#10b981',
                                 fontWeight: '600'
                             }}>

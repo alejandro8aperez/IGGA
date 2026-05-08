@@ -65,12 +65,12 @@ class DetalleOrdenCompraSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DetalleOrdenCompra
-        fields = '__all__'
+        exclude = ('orden',)
 
 
 class OrdenCompraSerializer(serializers.ModelSerializer):
     proveedor_nombre = serializers.ReadOnlyField(source='proveedor.razon_social')
-    detalles = DetalleOrdenCompraSerializer(many=True, read_only=True)
+    detalles = DetalleOrdenCompraSerializer(many=True, required=False)
     estado_display = serializers.ReadOnlyField(source='get_estado_display')
     saldo_por_pagar = serializers.ReadOnlyField()
     porcentaje_recibido = serializers.ReadOnlyField()
@@ -79,6 +79,37 @@ class OrdenCompraSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrdenCompra
         fields = '__all__'
+
+    def create(self, validated_data):
+        detalles_data = validated_data.pop('detalles', [])
+        orden = OrdenCompra.objects.create(**validated_data)
+        for det in detalles_data:
+            DetalleOrdenCompra.objects.create(
+                orden=orden,
+                **det
+            )
+        orden.recalcular_totales()
+        return orden
+
+    def update(self, instance, validated_data):
+        detalles_data = validated_data.pop('detalles', None)
+        
+        # Update main order fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update details
+        if detalles_data is not None:
+            instance.detalles.all().delete()
+            for det in detalles_data:
+                DetalleOrdenCompra.objects.create(
+                    orden=instance,
+                    **det
+                )
+        
+        instance.recalcular_totales()
+        return instance
 
 
 class OrdenCompraListSerializer(serializers.ModelSerializer):
@@ -112,10 +143,62 @@ class DetalleRecepcionSerializer(serializers.ModelSerializer):
 class RecepcionCompraSerializer(serializers.ModelSerializer):
     detalles_recepcion = DetalleRecepcionSerializer(many=True, read_only=True)
     orden_numero = serializers.ReadOnlyField(source='orden.numero')
+    proveedor_nombre = serializers.ReadOnlyField(source='orden.proveedor.razon_social')
+    cantidad_total = serializers.SerializerMethodField()
+
+    def get_cantidad_total(self, obj):
+        from django.db.models import Sum
+        return obj.detalles_recepcion.aggregate(total=Sum('cantidad_recibida'))['total'] or 0
 
     class Meta:
         model = RecepcionCompra
         fields = '__all__'
+
+    def create(self, validated_data):
+        # Mapear campos del frontend si vienen con nombres distintos
+        fecha = self.initial_data.get('fecha_recepcion') or self.initial_data.get('fecha') or validated_data.get('fecha')
+        if fecha:
+            validated_data['fecha'] = fecha
+            
+        cantidad = self.initial_data.get('cantidad_recibida')
+        
+        recepcion = RecepcionCompra.objects.create(**validated_data)
+        
+        # Si se envió una cantidad total, crear un detalle para el primer producto de la OC
+        # (Simplificación para el flujo rápido del frontend)
+        if cantidad:
+            from .models import DetalleOrdenCompra, DetalleRecepcion
+            primer_detalle_oc = DetalleOrdenCompra.objects.filter(orden=recepcion.orden).first()
+            if primer_detalle_oc:
+                DetalleRecepcion.objects.create(
+                    recepcion=recepcion,
+                    detalle_orden=primer_detalle_oc,
+                    cantidad_recibida=cantidad
+                )
+        
+        return recepcion
+
+    def update(self, instance, validated_data):
+        fecha = self.initial_data.get('fecha_recepcion') or self.initial_data.get('fecha')
+        if fecha:
+            validated_data['fecha'] = fecha
+            
+        cantidad = self.initial_data.get('cantidad_recibida')
+        
+        # Actualizar campos básicos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Si se envió una nueva cantidad, actualizar el primer detalle
+        if cantidad:
+            from .models import DetalleRecepcion
+            primer_detalle = instance.detalles_recepcion.first()
+            if primer_detalle:
+                primer_detalle.cantidad_recibida = cantidad
+                primer_detalle.save()
+                
+        return instance
 
 
 # --- Pago ---
@@ -127,6 +210,14 @@ class PagoCompraSerializer(serializers.ModelSerializer):
     class Meta:
         model = PagoCompra
         fields = '__all__'
+
+    def validate(self, data):
+        orden = data.get('orden')
+        if orden and orden.estado == 'cancelada':
+            raise serializers.ValidationError("No se puede registrar pago para una orden cancelada.")
+        if data.get('monto', 0) <= 0:
+            raise serializers.ValidationError("El monto debe ser mayor a cero.")
+        return data
 
 
 # --- Contrato ---

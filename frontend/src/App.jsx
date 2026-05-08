@@ -367,7 +367,7 @@ function AppContent() {
             <main style={{ flex:1, width:'100%', minHeight:'100vh', padding:'20px', paddingTop:topPad }}>
                 <Suspense fallback={<PageLoader/>}>
                     <Routes>
-                        <Route path="/"      element={<Home/>}/>
+                        <Route path="/"      element={<P><Home/></P>}/>
                         <Route path="/login" element={<Login/>}/>
                         <Route path="/demo"  element={<DemoPage/>}/>
                         <Route path="/dashboard"    element={<P><Dashboard/></P>}/>

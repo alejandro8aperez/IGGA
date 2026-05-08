@@ -6,11 +6,16 @@ import { useAuth } from '../context/AuthContext';
  * Redirige a /login si el usuario no está autenticado.
  * Guarda la ruta original para redirigir después del login.
  */
-function ProtectedRoute({ children }) {
-    const { user } = useAuth();
+function ProtectedRoute({ children }) { 
+    const { user, loading } = useAuth(); // Get loading state
     const location = useLocation();
 
-    if (!user) {
+    if (loading) {
+        // Show a loading indicator while authentication status is being determined
+        return <div>Cargando autenticación...</div>; // Or a more sophisticated spinner
+    }
+
+    if (!user) { // If not loading and no user, then redirect
         // Guardamos la ruta a la que intentaba acceder
         return <Navigate to="/login" state={{ from: location }} replace />;
     }

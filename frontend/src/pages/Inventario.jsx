@@ -42,6 +42,11 @@ export default function Inventario() {
     const [filterCategory, setFilterCategory] = useState('todos');
     const [filterStock, setFilterStock] = useState('todos');
 
+    // Modal Unidad Medida
+    const [unidadesMedida, setUnidadesMedida] = useState([]);
+    const [isUnitModalOpen, setIsUnitModalOpen] = useState(false);
+    const [unitForm, setUnitForm] = useState({ nombre: '', abreviatura: '' });
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -76,17 +81,32 @@ export default function Inventario() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [prodRes, catRes] = await Promise.all([
+            const [prodRes, catRes, unitRes] = await Promise.all([
                 axios.get(`${API_BASE}productos/`),
-                axios.get(`${API_BASE}categorias/`)
+                axios.get(`${API_BASE}categorias/`),
+                axios.get(`${API_BASE}unidades-medida/`)
             ]);
             setProductos(prodRes.data);
             setCategorias(catRes.data);
+            setUnidadesMedida(unitRes.data);
             setLoading(false);
         } catch (err) {
-            console.error('Error fetching productos:', err);
-            setError('Error al cargar productos del inventario');
+            console.error('Error fetching data:', err);
+            setError('Error al cargar datos del inventario');
             setLoading(false);
+        }
+    };
+
+    const handleUnitSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post(`${API_BASE}unidades-medida/`, unitForm);
+            setUnidadesMedida([...unidadesMedida, res.data]);
+            setProdForm({ ...prodForm, unidad_medida: res.data.nombre });
+            setIsUnitModalOpen(false);
+            setUnitForm({ nombre: '', abreviatura: '' });
+        } catch (err) {
+            alert('Error al crear unidad de medida');
         }
     };
 
@@ -978,93 +998,132 @@ export default function Inventario() {
                         style={{
                             background: 'white',
                             borderRadius: '16px',
-                            padding: '2rem',
-                            width: '90%',
-                            maxWidth: '600px',
+                            padding: '1.25rem 2rem',
+                            width: '95%',
+                            maxWidth: '1200px',
                             maxHeight: '90vh',
                             overflow: 'auto'
                         }}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ margin: 0, color: '#1a202c' }}>
-                                {currentProd ? 'Editar Producto' : 'Nuevo Producto'}
-                            </h2>
-                            <button 
-                                onClick={() => setIsProdModalOpen(false)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    fontSize: '1.5rem',
-                                    cursor: 'pointer',
-                                    color: '#718096'
-                                }}
-                            >
-                                ×
-                            </button>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            marginBottom: '1rem',
+                            borderBottom: '1px solid #f1f5f9',
+                            paddingBottom: '0.75rem'
+                        }}>
+                            <div>
+                                <h2 style={{ margin: 0, color: '#1a202c', fontSize: '1.5rem', fontWeight: '800' }}>
+                                    {currentProd ? 'Editar Producto' : 'Nuevo Producto'}
+                                </h2>
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                                {/* Previsualización de imagen en la esquina superior derecha */}
+                                {currentProd?.imagen_url && (
+                                    <div style={{ 
+                                        width: '60px', 
+                                        height: '60px', 
+                                        borderRadius: '8px', 
+                                        overflow: 'hidden', 
+                                        border: '2px solid white',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                        background: '#f8fafc'
+                                    }}>
+                                        <img 
+                                            src={currentProd.imagen_url} 
+                                            alt="Preview" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                    </div>
+                                )}
+                                <button 
+                                    onClick={() => setIsProdModalOpen(false)}
+                                    style={{
+                                        background: '#f1f5f9',
+                                        border: 'none',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        color: '#64748b',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
+                                    onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
                         </div>
                         
                         <form onSubmit={handleProdSubmit}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                                {/* Fila 1 */}
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Código SKU</label>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Código SKU</label>
                                     <input
                                         type="text"
                                         value={prodForm.codigo_sku}
                                         onChange={(e) => setProdForm({...prodForm, codigo_sku: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                     />
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Nombre</label>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Nombre del Producto</label>
                                     <input
                                         type="text"
                                         value={prodForm.nombre}
                                         onChange={(e) => setProdForm({...prodForm, nombre: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                     />
                                 </div>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Descripción</label>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Estado e Imagen</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f8fafc', padding: '0.25rem 0.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', height: '35px' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={prodForm.activo}
+                                                onChange={(e) => setProdForm({...prodForm, activo: e.target.checked})}
+                                                style={{ width: '16px', height: '16px' }}
+                                            />
+                                            Activo
+                                        </label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setProdForm({...prodForm, imagen: e.target.files[0]})}
+                                            style={{ fontSize: '0.65rem', width: '100%' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Fila 2: Descripción */}
+                                <div style={{ gridColumn: 'span 4' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Descripción / Notas</label>
                                     <textarea
                                         value={prodForm.descripcion}
                                         onChange={(e) => setProdForm({...prodForm, descripcion: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            minHeight: '80px'
-                                        }}
+                                        placeholder="Características o ingredientes..."
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem', minHeight: '40px', maxHeight: '60px', resize: 'vertical' }}
                                     />
                                 </div>
+
+                                {/* Fila 3: Clasificación */}
                                 <div style={{ gridColumn: 'span 1' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Categoría</label>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Categoría</label>
+                                    <div style={{ display: 'flex', gap: '0.25rem' }}>
                                         <select
                                             value={prodForm.categoria}
                                             onChange={(e) => setProdForm({...prodForm, categoria: e.target.value})}
-                                            style={{
-                                                flex: 1,
-                                                padding: '0.75rem',
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: '8px',
-                                                fontSize: '0.9rem'
-                                            }}
+                                            style={{ flex: 1, padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                         >
-                                            <option value="">Seleccione una categoría...</option>
+                                            <option value="">Categoría...</option>
                                             {categorias.map(cat => (
                                                 <option key={cat.id} value={cat.id}>{cat.nombre}</option>
                                             ))}
@@ -1076,172 +1135,92 @@ export default function Inventario() {
                                                 setCatForm({ nombre: '', descripcion: '' });
                                                 setIsCatModalOpen(true);
                                             }}
-                                            style={{
-                                                background: '#48bb78',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '0.75rem',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                            title="Nueva Categoría"
+                                            style={{ background: '#48bb78', color: 'white', border: 'none', padding: '0 0.5rem', borderRadius: '8px', cursor: 'pointer' }}
                                         >
-                                            <Plus size={20} />
+                                            <Plus size={16} />
                                         </button>
+                                    </div>
+                                </div>
+                                <div style={{ gridColumn: 'span 1' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Unidad Medida</label>
+                                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                        <select
+                                            value={prodForm.unidad_medida}
+                                            onChange={(e) => setProdForm({...prodForm, unidad_medida: e.target.value})}
+                                            style={{ flex: 1, padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
+                                        >
+                                            <option value="">Unidad...</option>
+                                            {unidadesMedida.map(u => (
+                                                <option key={u.id} value={u.nombre}>{u.nombre}</option>
+                                            ))}
+                                            <option value="Unidad">Unidad</option>
+                                            <option value="Kilogramo">Kilogramo</option>
+                                        </select>
                                         <button 
                                             type="button"
-                                            onClick={() => {
-                                                if (prodForm.categoria) {
-                                                    deleteCat(prodForm.categoria);
-                                                } else {
-                                                    alert("Por favor seleccione una categoría para eliminar");
-                                                }
-                                            }}
-                                            style={{
-                                                background: '#ef4444',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '0.75rem',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                            title="Eliminar Categoría"
+                                            onClick={() => setIsUnitModalOpen(true)}
+                                            style={{ background: '#48bb78', color: 'white', border: 'none', padding: '0 0.5rem', borderRadius: '8px', cursor: 'pointer' }}
                                         >
-                                            <Trash2 size={20} />
+                                            <Plus size={16} />
                                         </button>
                                     </div>
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Unidad Medida</label>
-                                    <select
-                                        value={prodForm.unidad_medida}
-                                        onChange={(e) => setProdForm({...prodForm, unidad_medida: e.target.value})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
-                                    >
-                                        <option value="UN">Unidad</option>
-                                        <option value="KG">Kilogramo</option>
-                                        <option value="LT">Litro</option>
-                                        <option value="MT">Metro</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Precio Compra</label>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>P. Compra</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={prodForm.precio_compra}
                                         onChange={(e) => setProdForm({...prodForm, precio_compra: parseFloat(e.target.value) || 0})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Precio Venta</label>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>P. Venta</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={prodForm.precio_venta}
                                         onChange={(e) => setProdForm({...prodForm, precio_venta: parseFloat(e.target.value) || 0})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                     />
                                 </div>
+
+                                {/* Fila 4: Inventario */}
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Stock Actual</label>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Stock Actual</label>
                                     <input
                                         type="number"
                                         value={prodForm.stock_actual}
                                         onChange={(e) => setProdForm({...prodForm, stock_actual: parseInt(e.target.value) || 0})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Stock Mínimo</label>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Stock Mínimo</label>
                                     <input
                                         type="number"
                                         value={prodForm.stock_minimo}
                                         onChange={(e) => setProdForm({...prodForm, stock_minimo: parseInt(e.target.value) || 0})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
                                     />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2rem', cursor: 'pointer', color: '#4a5568', fontWeight: '600' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={prodForm.activo}
-                                            onChange={(e) => setProdForm({...prodForm, activo: e.target.checked})}
-                                            style={{ width: '18px', height: '18px' }}
-                                        />
-                                    Producto Activo
-                                    </label>
                                 </div>
                                 <div style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#4a5568', fontWeight: '600' }}>Imagen del Producto</label>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => setProdForm({...prodForm, imagen: e.target.files[0]})}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem'
-                                        }}
-                                    />
-                                    {currentProd?.imagen && !prodForm.imagen && (
-                                        <p style={{ fontSize: '0.8rem', color: '#718096', marginTop: '0.5rem' }}>
-                                            Imagen actual: {currentProd.imagen.split('/').pop()}
-                                        </p>
-                                    )}
+                                    {/* Espacio libre para mantener alineación o añadir campos futuros */}
                                 </div>
                             </div>
                             
-                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                                 <button
                                     type="button"
                                     onClick={() => setIsProdModalOpen(false)}
                                     style={{
-                                        padding: '0.75rem 1.5rem',
+                                        padding: '0.6rem 1.25rem',
                                         border: '1px solid #e2e8f0',
                                         borderRadius: '8px',
                                         background: 'white',
                                         cursor: 'pointer',
-                                        fontSize: '1rem'
+                                        fontSize: '0.9rem'
                                     }}
                                 >
                                     Cancelar
@@ -1249,13 +1228,13 @@ export default function Inventario() {
                                 <button
                                     type="submit"
                                     style={{
-                                        padding: '0.75rem 1.5rem',
+                                        padding: '0.6rem 1.25rem',
                                         border: 'none',
                                         borderRadius: '8px',
                                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                         color: 'white',
                                         cursor: 'pointer',
-                                        fontSize: '1rem',
+                                        fontSize: '0.9rem',
                                         fontWeight: '600'
                                     }}
                                 >
@@ -1294,6 +1273,41 @@ export default function Inventario() {
                                 <button type="button" onClick={() => setIsCatModalOpen(false)} style={{ padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: 'white', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
                                 <button type="submit" style={{ padding: '0.5rem 1rem', border: 'none', background: '#667eea', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>Guardar</button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Modal Nueva Unidad de Medida */}
+            {isUnitModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', width: '90%', maxWidth: '400px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h2 style={{ margin: 0 }}>Nueva Unidad</h2>
+                            <button onClick={() => setIsUnitModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                        </div>
+                        <form onSubmit={handleUnitSubmit}>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Nombre (ej: Mililitro)</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={unitForm.nombre}
+                                    onChange={(e) => setUnitForm({...unitForm, nombre: e.target.value})}
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Abreviatura (ej: ml)</label>
+                                <input
+                                    type="text"
+                                    value={unitForm.abreviatura}
+                                    onChange={(e) => setUnitForm({...unitForm, abreviatura: e.target.value})}
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                />
+                            </div>
+                            <button type="submit" style={{ width: '100%', padding: '0.75rem', background: '#48bb78', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+                                Guardar Unidad
+                            </button>
                         </form>
                     </div>
                 </div>

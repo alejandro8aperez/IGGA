@@ -3,6 +3,18 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 
 
+class UnidadMedida(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    abreviatura = models.CharField(max_length=10, blank=True)
+
+    class Meta:
+        verbose_name = "Unidad de Medida"
+        verbose_name_plural = "Unidades de Medida"
+
+    def __str__(self):
+        return self.nombre
+
+
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
@@ -78,8 +90,8 @@ class Producto(models.Model):
         default='producto_terminado', verbose_name="Tipo de producto"
     )
     unidad_medida = models.CharField(
-        max_length=5, choices=UNIDAD_MEDIDA_CHOICES,
-        default='UN', verbose_name="Unidad de medida"
+        max_length=50,
+        default='Unidad', verbose_name="Unidad de medida"
     )
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
     marca = models.CharField(max_length=100, blank=True, verbose_name="Marca")

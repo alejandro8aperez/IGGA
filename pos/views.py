@@ -110,85 +110,81 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
         metodo_pago = data.get('metodo_pago', 'efectivo')
         monto_recibido = Decimal(str(data.get('monto_recibido', 0)))
         
-        # 1. Obtener o crear Cliente consumidor final
-        cliente, _ = Cliente.objects.get_or_create(
-            cedula='222222222222',
-            defaults={
-                'nombre': 'CONSUMIDOR FINAL',
-                'email': 'consumidor@final.com',
-                'telefono': '0000000',
-                'direccion': 'Ciudad'
-            }
-        )
-
-        # 2. Crear Factura Borrador
-        factura = Factura.objects.create(
-            cliente=cliente,
-            fecha_vencimiento=timezone.now().date(),
-            estado_dian='borrador'
-        )
-
-        subtotal_total = Decimal('0.00')
-        iva_total = Decimal('0.00')
-
-        for item in items:
-            producto = Producto.objects.get(id=item['producto_id'])
-            cantidad = int(item['cantidad'])
-            precio = producto.precio_venta
-            iva_pct = Decimal('19.00') # Estándar panadería
-
-            subt = cantidad * precio
-            iva = subt * (iva_pct / Decimal('100'))
-            
-            subtotal_total += subt
-            iva_total += iva
-
-            DetalleFactura.objects.create(
-                factura=factura,
-                producto=producto,
-                cantidad=cantidad,
-                precio_unitario=precio,
-                subtotal=subt,
-                porcentaje_iva=iva_pct
+        try:
+            # 1. Obtener o crear Cliente consumidor final (Buscamos por email para evitar conflictos de llave única)
+            cliente, _ = Cliente.objects.get_or_create(
+                email='consumidor@final.com',
+                defaults={
+                    'nombre': 'CONSUMIDOR FINAL',
+                    'cedula': '222222222222',
+                    'telefono': '0000000',
+                    'direccion': 'Ciudad'
+                }
             )
 
-        factura.subtotal = subtotal_total
-        factura.iva_total = iva_total
-        factura.total = subtotal_total + iva_total
-        factura.save()
+            # 2. Crear Factura Borrador
+            factura = Factura.objects.create(
+                cliente=cliente,
+                fecha_vencimiento=timezone.now().date(),
+                estado_dian='borrador'
+            )
 
-        # 3. Emitir Factura (Lógica de FacturacionViewset simulada aquí)
-        resolucion = ResolucionFacturacion.objects.filter(prefijo='POS', activa=True).first()
-        if not resolucion:
-            # Fallback a cualquier resolución activa si no hay POS
-            resolucion = ResolucionFacturacion.objects.filter(activa=True).first()
+            subtotal_total = Decimal('0.00')
+            iva_total = Decimal('0.00')
 
-        if not resolucion:
-            return Response({"error": "No hay resolución de facturación activa configurada."}, status=400)
+            for item in items:
+                producto = Producto.objects.get(id=item['producto_id'])
+                cantidad = int(item['cantidad'])
+                precio = producto.precio_venta
+                iva_pct = Decimal('19.00') # Estándar panadería
 
-        factura.numero_factura = f"{resolucion.prefijo}{resolucion.numero_actual}"
-        factura.cufe = str(uuid.uuid4()).replace('-', '') + "POS"
-        factura.estado_dian = 'validada'
-        
-        resolucion.numero_actual += 1
-        resolucion.save()
+                subt = cantidad * precio
+                iva = subt * (iva_pct / Decimal('100'))
+                
+                subtotal_total += subt
+                iva_total += iva
 
-        # Descontar Inventario
-        for detalle in factura.detalles.all():
-            prod = detalle.producto
-            prod.stock_actual -= detalle.cantidad
-            prod.save()
+                DetalleFactura.objects.create(
+                    factura=factura,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio,
+                    subtotal=subt,
+                    porcentaje_iva=iva_pct
+                )
 
-        factura.save()
+            factura.subtotal = subtotal_total
+            factura.iva_total = iva_total
+            factura.total = subtotal_total + iva_total
+            factura.save()
 
-        # 4. Crear registro VentaPOS
-        cambio = monto_recibido - factura.total if metodo_pago == 'efectivo' else 0
-        venta_pos = VentaPOS.objects.create(
-            factura=factura,
-            sesion_caja=sesion,
-            metodo_pago=metodo_pago,
-            monto_recibido=monto_recibido,
-            cambio=cambio
-        )
+            # 3. Emitir Factura (Lógica de FacturacionViewset simulada aquí)
+            resolucion = ResolucionFacturacion.objects.filter(prefijo='POS', activa=True).first()
+            if not resolucion:
+                # Fallback a cualquier resolución activa si no hay POS
+                resolucion = ResolucionFacturacion.objects.filter(activa=True).first()
 
-        return Response(self.get_serializer(venta_pos).data, status=status.HTTP_201_CREATED)
+            if not resolucion:
+                return Response({"error": "No hay resolución de facturación activa configurada."}, status=400)
+
+            factura.numero_factura = f"{resolucion.prefijo}{resolucion.numero_actual}"
+            factura.cufe = str(uuid.uuid4()).replace('-', '') + "POS"
+            factura.estado_dian = 'validada'
+            
+            resolucion.numero_actual += 1
+            resolucion.save()
+            factura.save()
+
+            # 4. Crear registro VentaPOS
+            cambio = monto_recibido - factura.total if metodo_pago == 'efectivo' else 0
+            venta_pos = VentaPOS.objects.create(
+                factura=factura,
+                sesion_caja=sesion,
+                metodo_pago=metodo_pago,
+                monto_recibido=monto_recibido,
+                cambio=cambio
+            )
+
+            return Response(self.get_serializer(venta_pos).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": f"Error interno: {str(e)}"}, status=500)

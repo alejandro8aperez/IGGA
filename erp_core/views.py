@@ -287,19 +287,24 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def dashboard_stats(request):
     """
-    Endpoint consolidado y robusto para el Dashboard de React.
-    Retorna métricas de Ventas, Compras, CRM, Inventario, RRHH y Facturación Electrónica.
+    Endpoint consolidado para el Dashboard de React.
+    Incluye: métricas generales, ventas mensuales reales (6 meses),
+    ventas por categoría reales, movimientos recientes e inventario.
     """
     from django.db.models import Sum, Count, F
+    from django.db.models.functions import TruncMonth
+    from dateutil.relativedelta import relativedelta
     from crm.models import Cliente, Cotizacion
-    from venta.models import OrdenVenta
+    from venta.models import OrdenVenta, DetalleOrdenVenta
     from facturacion.models import Factura
-    from inventarios.models import Producto, MovimientoInventario
+    from inventarios.models import Producto, MovimientoInventario, Categoria
     from compras.models import OrdenCompra
     from operaciones.models import Proyecto
     from rrhh.models import Empleado
 
-    # 1. Ventas y Compras (Totales)
+    now = timezone.now()
+
+    # 1. Totales generales
     total_ventas = OrdenVenta.objects.aggregate(total=Sum('total'))['total'] or 0
     total_compras = OrdenCompra.objects.aggregate(total=Sum('total'))['total'] or 0
 
@@ -320,6 +325,44 @@ def dashboard_stats(request):
         'fecha': m.fecha.isoformat() if m.fecha else None
     } for m in movimientos_recientes]
 
+    # 4. Ventas mensuales reales — últimos 6 meses
+    MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+    ventas_por_mes_qs = (
+        OrdenVenta.objects
+        .filter(fecha_emision__gte=(now - relativedelta(months=5)).replace(day=1))
+        .annotate(mes=TruncMonth('fecha_emision'))
+        .values('mes')
+        .annotate(total=Sum('total'))
+        .order_by('mes')
+    )
+    ventas_por_mes_dict = {
+        v['mes'].strftime('%Y-%m'): float(v['total'] or 0)
+        for v in ventas_por_mes_qs
+    }
+    ventas_mensuales = []
+    for i in range(5, -1, -1):
+        fecha = (now - relativedelta(months=i)).replace(day=1)
+        key = fecha.strftime('%Y-%m')
+        ventas_mensuales.append({
+            'mes': MESES_ES[fecha.month - 1],
+            'ventas': ventas_por_mes_dict.get(key, 0),
+        })
+
+    # 5. Ventas por categoría reales (desde DetalleOrdenVenta → Producto → Categoria)
+    ventas_categoria_qs = (
+        DetalleOrdenVenta.objects
+        .select_related('producto__categoria')
+        .values('producto__categoria__nombre')
+        .annotate(valor=Sum(F('cantidad') * F('precio_unitario')))
+        .order_by('-valor')[:6]
+    )
+    total_cat = sum(float(v['valor'] or 0) for v in ventas_categoria_qs) or 1
+    ventas_categorias = [{
+        'categoria': v['producto__categoria__nombre'] or 'Sin categoría',
+        'valor': float(v['valor'] or 0),
+        'porcentaje': round(float(v['valor'] or 0) / total_cat * 100, 1)
+    } for v in ventas_categoria_qs]
+
     return JsonResponse({
         'resumen': {
             'total_clientes': Cliente.objects.count(),
@@ -334,6 +377,8 @@ def dashboard_stats(request):
             'valor_total': float(valor_inventario)
         },
         'movimientos': movimientos_data,
+        'ventas_mensuales': ventas_mensuales,
+        'ventas_categorias': ventas_categorias,
         'rrhh': {
             'total_empleados': Empleado.objects.count(),
             'total_proyectos': Proyecto.objects.count()

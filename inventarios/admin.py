@@ -3,8 +3,14 @@ from django.utils.html import mark_safe
 from .models import (
     Categoria, Almacen, Producto, Lote,
     MovimientoInventario, AlertaInventario,
-    ConteoFisico, DetalleConteoFisico,
+    ConteoFisico, DetalleConteoFisico, UnidadMedida
 )
+
+
+@admin.register(UnidadMedida)
+class UnidadMedidaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'abreviatura')
+    search_fields = ('nombre', 'abreviatura')
 
 
 @admin.register(Categoria)

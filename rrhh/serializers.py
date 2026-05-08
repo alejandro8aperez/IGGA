@@ -116,6 +116,7 @@ class PeriodoNominaSerializer(serializers.ModelSerializer):
 
 class DetalleNominaSerializer(serializers.ModelSerializer):
     concepto_nombre = serializers.CharField(source='concepto.nombre', read_only=True)
+    concepto_tipo = serializers.CharField(source='concepto.tipo', read_only=True)
 
     class Meta:
         model = DetalleNomina
@@ -124,6 +125,8 @@ class DetalleNominaSerializer(serializers.ModelSerializer):
 
 class NominaSerializer(serializers.ModelSerializer):
     empleado_nombre = serializers.CharField(source='empleado.nombre_completo', read_only=True)
+    empleado_numero_documento = serializers.CharField(source='empleado.numero_documento', read_only=True)
+    empleado_cargo = serializers.CharField(source='empleado.cargo', read_only=True)
     periodo_nombre = serializers.CharField(source='periodo.nombre', read_only=True)
     detalles = DetalleNominaSerializer(many=True, read_only=True)
 

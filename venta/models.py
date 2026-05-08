@@ -127,10 +127,12 @@ class NotaCredito(models.Model):
         return f"NC-{self.numero_nota} / Factura {self.factura.numero_factura}"
     
     def calcular_totales(self):
-        self.subtotal = sum(d.valor_total for d in self.detalles.all())
-        self.valor_iva = self.subtotal * (self.porcentaje_iva / 100)
-        self.total = self.subtotal + self.valor_iva
-        self.save()
+        detalles = self.detalles.all()
+        if detalles.exists():
+            self.subtotal = sum(d.valor_total for d in detalles)
+            self.valor_iva = self.subtotal * (self.porcentaje_iva / 100)
+            self.total = self.subtotal + self.valor_iva
+            self.save()
 
 
 class DetalleNotaCredito(models.Model):

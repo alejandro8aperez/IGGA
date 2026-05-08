@@ -2,8 +2,15 @@ from rest_framework import serializers
 from .models import (
     Categoria, Almacen, Producto, Lote,
     MovimientoInventario, AlertaInventario,
-    ConteoFisico, DetalleConteoFisico,
+    ConteoFisico, DetalleConteoFisico, UnidadMedida
 )
+
+
+class UnidadMedidaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnidadMedida
+        fields = '__all__'
+
 
 
 class CategoriaSerializer(serializers.ModelSerializer):

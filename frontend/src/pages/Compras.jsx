@@ -41,6 +41,16 @@ export default function Compras() {
         estado: 'activo'
     });
 
+    // Modal Recepciones
+    const [isRecepModalOpen, setIsRecepModalOpen] = useState(false);
+    const [currentRecep, setCurrentRecep] = useState(null);
+    const [recepForm, setRecepForm] = useState({
+        orden: '',
+        cantidad_recibida: '',
+        fecha_recepcion: new Date().toISOString().split('T')[0],
+        estado: 'recibida'
+    });
+
     // Modal Pagos
     const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
     const [pagoForm, setPagoForm] = useState({
@@ -62,6 +72,23 @@ export default function Compras() {
         es_proveedor_principal: false,
         notas: ''
     });
+
+    // Modal Órdenes de Compra
+    const [isOrdModalOpen, setIsOrdModalOpen] = useState(false);
+    const [currentOrd, setCurrentOrd] = useState(null);
+    const [ordForm, setOrdForm] = useState({
+        proveedor: '',
+        fecha_entrega_esperada: '',
+        estado: 'borrador',
+        condicion_pago: '',
+        observaciones: '',
+        porcentaje_iva: 19,
+        descuento: 0,
+        detalles: []
+    });
+    const [productosProveedorActual, setProductosProveedorActual] = useState([]);
+    const [soloProductosProveedor, setSoloProductosProveedor] = useState(true);
+    const [filtroTipoProducto, setFiltroTipoProducto] = useState('materia_prima');
 
     useEffect(() => {
         fetchData();
@@ -150,14 +177,60 @@ export default function Compras() {
         }
     };
 
+    const openRecepModal = (rec = null) => {
+        if (rec) {
+            setCurrentRecep(rec);
+            // Intentar obtener la cantidad desde el primer detalle si no está en el objeto principal
+            const cant = rec.cantidad_recibida || (rec.detalles_recepcion?.[0]?.cantidad_recibida) || 0;
+            setRecepForm({
+                orden: rec.orden,
+                cantidad_recibida: cant,
+                fecha_recepcion: rec.fecha || rec.fecha_recepcion || new Date().toISOString().split('T')[0],
+                estado: rec.estado || 'recibida'
+            });
+        } else {
+            setCurrentRecep(null);
+            setRecepForm({
+                orden: '',
+                cantidad_recibida: '',
+                fecha_recepcion: new Date().toISOString().split('T')[0],
+                estado: 'recibida'
+            });
+        }
+        setIsRecepModalOpen(true);
+    };
+
+    const handleRecepSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const payload = {
+                ...recepForm,
+                orden: Number(recepForm.orden),
+                cantidad_recibida: Number(recepForm.cantidad_recibida)
+            };
+
+            if (currentRecep) {
+                await axios.put(`${API_RECEPCION}${currentRecep.id}/`, payload);
+            } else {
+                await axios.post(API_RECEPCION, payload);
+            }
+            setIsRecepModalOpen(false);
+            fetchData();
+            alert(`Recepción ${currentRecep ? 'actualizada' : 'registrada'} correctamente.`);
+        } catch (err) {
+            console.error('Error al guardar recepción:', err);
+            setError(err.response?.data?.detail || 'Error al guardar recepción');
+        }
+    };
+
     const registrarRecepcion = async (orden) => {
         if (orden.estado === 'cancelada') {
             setError('No se puede recibir una orden cancelada.');
             return;
         }
 
-        const cantidad = Number(prompt('Cantidad recibida:', orden.cantidad || 0));
-        if (!cantidad || cantidad <= 0) return;
+        const cantidad = Number(prompt(`Cantidad a recibir para la orden ${orden.numero}:`, orden.cantidad || 0));
+        if (isNaN(cantidad) || cantidad <= 0) return;
 
         try {
             await axios.post(API_RECEPCION, {
@@ -167,9 +240,22 @@ export default function Compras() {
                 estado: 'recibida'
             });
             fetchData();
+            alert('Recepción registrada correctamente.');
         } catch (err) {
             console.error('Error al registrar recepción:', err);
-            setError('Error al registrar recepción');
+            setError(err.response?.data?.detail || 'Error al registrar recepción');
+        }
+    };
+
+    const handleRecepcionDelete = async (id) => {
+        if (window.confirm('¿Está seguro de eliminar esta recepción? Esto afectará el saldo pendiente de la orden.')) {
+            try {
+                await axios.delete(`${API_RECEPCION}${id}/`);
+                fetchData();
+            } catch (err) {
+                console.error('Error al eliminar recepción:', err);
+                setError('Error al eliminar recepción.');
+            }
         }
     };
 
@@ -186,17 +272,31 @@ export default function Compras() {
     const handlePagoSubmit = async (e) => {
         e.preventDefault();
         try {
+            const cleanMonto = typeof pagoForm.monto === 'string' 
+                ? pagoForm.monto.replace(/\./g, '').replace(',', '.') 
+                : pagoForm.monto;
+
+            const montoNum = Number(cleanMonto);
+            if (isNaN(montoNum) || montoNum <= 0) {
+                setError('El monto debe ser un número válido mayor a cero.');
+                return;
+            }
+
             await axios.post(API_PAGO, {
                 orden: Number(pagoForm.orden),
-                monto: Number(pagoForm.monto),
+                monto: montoNum,
                 metodo: pagoForm.metodo,
-                referencia: pagoForm.referencia
+                referencia: pagoForm.referencia,
+                fecha: new Date().toISOString().split('T')[0]
             });
             setIsPagoModalOpen(false);
             fetchData();
         } catch (err) {
             console.error('Error al registrar pago:', err);
-            setError(err.response?.data?.error || 'Error al registrar pago');
+            const errorMsg = err.response?.data 
+                ? JSON.stringify(err.response.data) 
+                : 'Error al registrar pago';
+            setError(errorMsg);
         }
     };
 
@@ -272,6 +372,151 @@ export default function Compras() {
         }
     };
 
+    // Funciones Órdenes de Compra
+    const fetchProductosProveedorActual = async (proveedorId) => {
+        if (!proveedorId) {
+            setProductosProveedorActual([]);
+            return;
+        }
+        try {
+            const res = await axios.get(`${API_PROD_PROV}?proveedor=${proveedorId}`);
+            setProductosProveedorActual(res.data);
+        } catch (err) {
+            console.error('Error cargando productos del proveedor:', err);
+        }
+    };
+
+    const openOrdModal = async (ord = null) => {
+        try {
+            const res = await axios.get(API_PRODUCTOS);
+            setProductosDisponibles(res.data);
+        } catch (err) { console.error('Error cargando productos:', err); }
+
+        if (ord) {
+            setCurrentOrd(ord);
+            fetchProductosProveedorActual(ord.proveedor);
+            setOrdForm({
+                proveedor: ord.proveedor,
+                fecha_entrega_esperada: ord.fecha_entrega_esperada || '',
+                estado: ord.estado,
+                condicion_pago: ord.condicion_pago || '',
+                observaciones: ord.observaciones || '',
+                porcentaje_iva: ord.porcentaje_iva || 19,
+                descuento: ord.descuento || 0,
+                detalles: (ord.detalles || []).map(d => ({
+                    id: d.id || Math.random(),
+                    producto: d.producto,
+                    nombre_producto: d.producto_nombre || '',
+                    unidad: d.unidad_medida || d.unidad || 'UND',
+                    cantidad: d.cantidad || 1,
+                    precio_unitario: d.precio_unitario || 0,
+                    notas: d.notas || ''
+                }))
+            });
+        } else {
+            setCurrentOrd(null);
+            const initialProv = proveedorSeleccionado || '';
+            if (initialProv) fetchProductosProveedorActual(initialProv);
+            setOrdForm({
+                proveedor: initialProv,
+                fecha_entrega_esperada: '',
+                estado: 'borrador',
+                condicion_pago: '',
+                observaciones: '',
+                porcentaje_iva: 19,
+                descuento: 0,
+                detalles: []
+            });
+        }
+        setIsOrdModalOpen(true);
+    };
+
+    const addProductoToOrden = () => {
+        setOrdForm({
+            ...ordForm,
+            detalles: [...ordForm.detalles, { 
+                id: Math.random(), 
+                producto: '', 
+                nombre_producto: '', 
+                unidad: 'UND',
+                cantidad: 1, 
+                precio_unitario: 0, 
+                notas: '' 
+            }]
+        });
+    };
+
+    const removeProductoFromOrden = (id) => {
+        setOrdForm({
+            ...ordForm,
+            detalles: ordForm.detalles.filter(d => d.id !== id)
+        });
+    };
+
+    const updateProductoInOrden = (id, field, value) => {
+        const newDetalles = ordForm.detalles.map(d => {
+            if (d.id === id) {
+                const update = { ...d, [field]: value };
+                if (field === 'producto') {
+                    const prod = productosDisponibles.find(p => p.id === Number(value));
+                    if (prod) {
+                        update.nombre_producto = prod.nombre;
+                        update.precio_unitario = prod.precio_compra || 0;
+                        update.unidad = prod.unidad_medida || 'UND';
+                    }
+                }
+                return update;
+            }
+            return d;
+        });
+        setOrdForm({ ...ordForm, detalles: newDetalles });
+    };
+
+    const handleOrdSubmit = async (e) => {
+        e.preventDefault();
+        if (ordForm.detalles.length === 0) {
+            alert('Debe agregar al menos un producto');
+            return;
+        }
+        try {
+            // Limpiar detalles para el backend
+            const cleanDetalles = ordForm.detalles.map(d => ({
+                producto: d.producto,
+                cantidad: d.cantidad,
+                precio_unitario: d.precio_unitario,
+                notas: d.notas || ''
+            }));
+
+            const payload = { ...ordForm, detalles: cleanDetalles };
+
+            if (currentOrd) {
+                await axios.put(`${API_ORD}${currentOrd.id}/`, payload);
+            } else {
+                await axios.post(API_ORD, payload);
+            }
+            setIsOrdModalOpen(false);
+            fetchData();
+        } catch (err) {
+            console.error('Error al guardar orden:', err);
+            const errorMsg = err.response?.data 
+                ? JSON.stringify(err.response.data) 
+                : 'Error al guardar orden de compra';
+            setError(errorMsg);
+        }
+    };
+
+    const handleOrdDelete = async (id) => {
+        if (window.confirm('¿Eliminar orden de compra?')) {
+            try {
+                await axios.delete(`${API_ORD}${id}/`);
+                fetchData();
+            } catch (err) {
+                console.error('Error al eliminar orden:', err);
+                setError('Error al eliminar orden.');
+            }
+        }
+    };
+
     const filteredProveedores = proveedores.filter(prov => {
         const matchesSearch = prov.razon_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             prov.nit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -281,14 +526,16 @@ export default function Compras() {
     });
 
     const filteredOrdenes = ordenes.filter(ord => {
-        const matchesSearch = ord.numero_orden?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            ord.proveedor_razon_social?.toLowerCase().includes(searchTerm.toLowerCase());
+        const term = searchTerm.toLowerCase();
+        const matchesSearch = (ord.numero || '').toLowerCase().includes(term) ||
+                            (ord.proveedor_nombre || '').toLowerCase().includes(term);
         return matchesSearch;
     });
 
     const filteredRecepciones = recepciones.filter(rec => {
-        const matchesSearch = rec.orden_numero?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            rec.proveedor_razon_social?.toLowerCase().includes(searchTerm.toLowerCase());
+        const term = searchTerm.toLowerCase();
+        const matchesSearch = (rec.numero || '').toLowerCase().includes(term) ||
+                            (rec.proveedor_nombre || '').toLowerCase().includes(term);
         return matchesSearch;
     });
 
@@ -411,7 +658,13 @@ export default function Compras() {
                     </p>
                 </div>
                 <button
-                    onClick={() => openProvModal()}
+                    onClick={() => {
+                        if (activeTab === 'ordenes') openOrdModal();
+                        else if (activeTab === 'recepciones') openRecepModal();
+                        else if (activeTab === 'pagos') openPagoModal();
+                        else if (activeTab === 'productos-proveedor') openProdProvModal();
+                        else openProvModal();
+                    }}
                     style={{
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         color: 'white',
@@ -428,16 +681,20 @@ export default function Compras() {
                         transition: 'all 0.2s'
                     }}
                     onMouseOver={(e) => {
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
                     }}
                     onMouseOut={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
                     }}
                 >
                     <Plus size={20} />
-                    Nuevo Proveedor
+                    {activeTab === 'ordenes' ? 'Nueva Orden' : 
+                     activeTab === 'recepciones' ? 'Nueva Recepción' :
+                     activeTab === 'pagos' ? 'Nuevo Pago' :
+                     activeTab === 'productos-proveedor' ? 'Agregar Producto' :
+                     'Nuevo Proveedor'}
                 </button>
             </div>
 
@@ -1022,15 +1279,15 @@ export default function Compras() {
                             <tbody>
                                 {filteredOrdenes.map((ord) => (
                                     <tr key={ord.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>{ord.numero_orden}</td>
+                                        <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>OC-{ord.numero || ord.id}</td>
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <Users size={16} style={{ color: '#718096' }} />
-                                                {ord.proveedor_razon_social}
+                                                {ord.proveedor_nombre}
                                             </div>
                                         </td>
                                         <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                            {new Date(ord.fecha_orden).toLocaleDateString()}
+                                            {ord.fecha_emision ? new Date(ord.fecha_emision).toLocaleDateString() : '-'}
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', color: '#2d3748' }}>
                                             ${ord.total?.toLocaleString() || 0}
@@ -1055,6 +1312,13 @@ export default function Compras() {
                                         <td style={{ padding: '1rem', textAlign: 'center' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                                                 <button 
+                                                    onClick={() => openOrdModal(ord)}
+                                                    style={{ background: '#e2e8f0', color: '#4a5568', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}
+                                                    title="Editar Orden"
+                                                >
+                                                    <Edit3 size={16} />
+                                                </button>
+                                                <button 
                                                     style={{
                                                         background: '#dbeafe',
                                                         color: '#1e40af',
@@ -1074,8 +1338,16 @@ export default function Compras() {
                                                         e.target.style.backgroundColor = '#dbeafe';
                                                     }}
                                                     onClick={() => registrarRecepcion(ord)}
+                                                    title="Recibir Mercancía"
                                                 >
                                                     <Package size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleOrdDelete(ord.id)}
+                                                    style={{ background: '#fee2e2', color: '#991b1b', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}
+                                                    title="Eliminar Orden"
+                                                >
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </td>
@@ -1103,6 +1375,7 @@ export default function Compras() {
                                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Fecha Recepción</th>
                                     <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Cantidad</th>
                                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Estado</th>
+                                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', fontSize: '0.875rem' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1112,14 +1385,14 @@ export default function Compras() {
                                         <td style={{ padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <Users size={16} style={{ color: '#718096' }} />
-                                                {rec.proveedor_razon_social}
+                                                {rec.proveedor_nombre}
                                             </div>
                                         </td>
                                         <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                            {new Date(rec.fecha_recepcion).toLocaleDateString()}
+                                            {rec.fecha ? new Date(rec.fecha).toLocaleDateString() : '-'}
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'center', color: '#4a5568' }}>
-                                            {rec.cantidad_recibida}
+                                            {rec.cantidad_total || 0}
                                         </td>
                                         <td style={{ padding: '1rem' }}>
                                             <span style={{
@@ -1127,12 +1400,50 @@ export default function Compras() {
                                                 borderRadius: '9999px',
                                                 fontSize: '0.75rem',
                                                 fontWeight: '600',
-                                                ...(rec.estado === 'recibida' 
+                                                ...(rec.estado?.toLowerCase() === 'recibida' 
                                                     ? { background: '#d1fae5', color: '#065f46' }
                                                     : { background: '#fbbf24', color: '#92400e' })
                                             }}>
-                                                {rec.estado}
+                                                {rec.estado || 'Recibida'}
                                             </span>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                <button 
+                                                    onClick={() => openRecepModal(rec)}
+                                                    style={{ 
+                                                        background: '#e0e7ff', 
+                                                        color: '#4338ca', 
+                                                        border: 'none', 
+                                                        padding: '0.5rem', 
+                                                        borderRadius: '8px', 
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.background = '#c7d2fe'}
+                                                    onMouseOut={(e) => e.target.style.background = '#e0e7ff'}
+                                                    title="Editar Recepción"
+                                                >
+                                                    <Edit3 size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleRecepcionDelete(rec.id)}
+                                                    style={{ 
+                                                        background: '#fee2e2', 
+                                                        color: '#991b1b', 
+                                                        border: 'none', 
+                                                        padding: '0.5rem', 
+                                                        borderRadius: '8px', 
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.background = '#fecaca'}
+                                                    onMouseOut={(e) => e.target.style.background = '#fee2e2'}
+                                                    title="Eliminar Recepción"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -2165,6 +2476,299 @@ export default function Compras() {
                                     style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)' }}
                                 >
                                     {currentProdProv ? 'Actualizar' : 'Guardar'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Modal Orden de Compra */}
+            {isRecepModalOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+                    <div style={{ background: 'white', padding: '2.5rem', borderRadius: '20px', width: '500px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#1a202c' }}>
+                                {currentRecep ? 'Editar Recepción' : 'Registrar Recepción'}
+                            </h3>
+                            <button onClick={() => setIsRecepModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#718096' }}><X size={24} /></button>
+                        </div>
+                        <form onSubmit={handleRecepSubmit}>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Orden de Compra</label>
+                                <select
+                                    value={recepForm.orden}
+                                    onChange={(e) => setRecepForm({...recepForm, orden: e.target.value})}
+                                    required
+                                    disabled={!!currentRecep}
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '10px', background: currentRecep ? '#f8fafc' : 'white' }}
+                                >
+                                    <option value="">Seleccione una orden...</option>
+                                    {currentRecep ? (
+                                        <option value={currentRecep.orden}>OC-{currentRecep.orden_numero}</option>
+                                    ) : (
+                                        ordenes
+                                            .filter(o => o.estado !== 'cancelada' && o.estado !== 'recibida')
+                                            .map(o => (
+                                                <option key={o.id} value={o.id}>
+                                                    OC-{o.numero} - {o.proveedor_nombre} (Total: ${o.total?.toLocaleString()})
+                                                </option>
+                                            ))
+                                    )}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Fecha de Recepción</label>
+                                <input
+                                    type="date"
+                                    value={recepForm.fecha_recepcion}
+                                    onChange={(e) => setRecepForm({...recepForm, fecha_recepcion: e.target.value})}
+                                    required
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '10px' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Cantidad Total Recibida</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={recepForm.cantidad_recibida}
+                                    onChange={(e) => setRecepForm({...recepForm, cantidad_recibida: e.target.value})}
+                                    required
+                                    placeholder="Ej: 100"
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '10px' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                                <button type="button" onClick={() => setIsRecepModalOpen(false)} style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.75rem 2rem', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Cancelar</button>
+                                <button type="submit" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '0.75rem 2rem', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)' }}>
+                                    {currentRecep ? 'Actualizar Cambios' : 'Guardar Recepción'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            
+            {isOrdModalOpen && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.5)', display: 'flex',
+                    justifyContent: 'center', alignItems: 'center', zIndex: 1100
+                }}>
+                    <div style={{
+                        background: 'white', borderRadius: '16px', padding: '2rem',
+                        width: '95%', maxWidth: '900px', maxHeight: '90vh', overflow: 'auto',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
+                                {currentOrd ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}
+                            </h3>
+                            <button
+                                onClick={() => setIsOrdModalOpen(false)}
+                                style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleOrdSubmit}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: '600' }}>Proveedor *</label>
+                                    <select
+                                        value={ordForm.proveedor}
+                                        onChange={(e) => {
+                                            const provId = e.target.value;
+                                            setOrdForm({...ordForm, proveedor: provId});
+                                            fetchProductosProveedorActual(provId);
+                                        }}
+                                        required
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                    >
+                                        <option value="">Seleccione...</option>
+                                        {proveedores.map(p => <option key={p.id} value={p.id}>{p.razon_social}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: '600' }}>Fecha Entrega</label>
+                                    <input
+                                        type="date"
+                                        value={ordForm.fecha_entrega_esperada}
+                                        onChange={(e) => setOrdForm({...ordForm, fecha_entrega_esperada: e.target.value})}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: '600' }}>Estado</label>
+                                    <select
+                                        value={ordForm.estado}
+                                        onChange={(e) => setOrdForm({...ordForm, estado: e.target.value})}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                    >
+                                        <option value="borrador">Borrador</option>
+                                        <option value="enviada">Enviada</option>
+                                        <option value="confirmada">Confirmada</option>
+                                        <option value="cancelada">Cancelada</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                                        <h4 style={{ margin: 0, color: '#4a5568', fontWeight: '700' }}>Productos en la Orden</h4>
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                id="solo_prov" 
+                                                checked={soloProductosProveedor} 
+                                                onChange={(e) => setSoloProductosProveedor(e.target.checked)} 
+                                            />
+                                            <label htmlFor="solo_prov" style={{ fontSize: '0.85rem', color: '#4a5568', cursor: 'pointer' }}>Solo productos de este proveedor</label>
+                                        </div>
+                                        {!soloProductosProveedor && (
+                                            <select 
+                                                value={filtroTipoProducto} 
+                                                onChange={(e) => setFiltroTipoProducto(e.target.value)}
+                                                style={{ padding: '0.3rem', borderRadius: '6px', fontSize: '0.85rem', border: '1px solid #cbd5e0' }}
+                                            >
+                                                <option value="todos">Todos los tipos</option>
+                                                <option value="materia_prima">Materia Prima</option>
+                                                <option value="insumo">Insumos</option>
+                                                <option value="producto_terminado">Producto Terminado</option>
+                                                <option value="empaque">Empaque</option>
+                                            </select>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addProductoToOrden}
+                                        style={{ background: '#667eea', color: 'white', border: 'none', padding: '0.4rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}
+                                    >
+                                        + Agregar Producto
+                                    </button>
+                                </div>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: '#edf2f7' }}>
+                                            <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '0.85rem', color: '#4a5568' }}>Producto</th>
+                                            <th style={{ padding: '0.75rem', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '0.85rem', color: '#4a5568' }}>UN</th>
+                                            <th style={{ padding: '0.75rem', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '0.85rem', color: '#4a5568' }}>Cant.</th>
+                                            <th style={{ padding: '0.75rem', textAlign: 'right', borderBottom: '1px solid #e2e8f0', fontSize: '0.85rem', color: '#4a5568' }}>V. Unitario</th>
+                                            <th style={{ padding: '0.75rem', textAlign: 'right', borderBottom: '1px solid #e2e8f0', fontSize: '0.85rem', color: '#4a5568' }}>Subtotal</th>
+                                            <th style={{ padding: '0.75rem', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {ordForm.detalles.map((det) => (
+                                            <tr key={det.id}>
+                                                <td style={{ padding: '0.5rem' }}>
+                                                    <select
+                                                        value={det.producto}
+                                                        onChange={(e) => updateProductoInOrden(det.id, 'producto', e.target.value)}
+                                                        required
+                                                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                                                    >
+                                                        <option value="">Seleccione...</option>
+                                                        {soloProductosProveedor ? (
+                                                            productosProveedorActual.map(pp => (
+                                                                <option key={pp.producto} value={pp.producto}>
+                                                                    {pp.producto_nombre} ({pp.producto_codigo_sku}) - ${parseFloat(pp.precio_proveedor).toLocaleString()}
+                                                                </option>
+                                                            ))
+                                                        ) : (
+                                                            productosDisponibles
+                                                                .filter(p => filtroTipoProducto === 'todos' || p.tipo_producto === filtroTipoProducto)
+                                                                .map(p => (
+                                                                    <option key={p.id} value={p.id}>
+                                                                        [{p.tipo_producto?.replace('_', ' ')}] {p.nombre}
+                                                                    </option>
+                                                                ))
+                                                        )}
+                                                    </select>
+                                                </td>
+                                                <td style={{ padding: '0.5rem', textAlign: 'center', color: '#4a5568', fontWeight: '600' }}>
+                                                    {det.unidad}
+                                                </td>
+                                                <td style={{ padding: '0.5rem' }}>
+                                                    <input
+                                                        type="number"
+                                                        value={det.cantidad}
+                                                        onChange={(e) => updateProductoInOrden(det.id, 'cantidad', e.target.value)}
+                                                        min="0.01" step="0.01" required
+                                                        style={{ width: '80px', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '6px', textAlign: 'center' }}
+                                                    />
+                                                </td>
+                                                <td style={{ padding: '0.5rem' }}>
+                                                    <input
+                                                        type="number"
+                                                        value={det.precio_unitario}
+                                                        onChange={(e) => updateProductoInOrden(det.id, 'precio_unitario', e.target.value)}
+                                                        min="0" step="0.01" required
+                                                        style={{ width: '120px', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '6px', textAlign: 'right' }}
+                                                    />
+                                                </td>
+                                                <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: '600' }}>
+                                                    ${(det.cantidad * det.precio_unitario).toLocaleString()}
+                                                </td>
+                                                <td style={{ padding: '0.5rem', textAlign: 'center' }}>
+                                                    <button type="button" onClick={() => removeProductoFromOrden(det.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {ordForm.detalles.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#718096', fontSize: '0.9rem' }}>
+                                                    Haga clic en "+ Agregar Producto" para empezar
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Observaciones</label>
+                                    <textarea
+                                        value={ordForm.observaciones}
+                                        onChange={(e) => setOrdForm({...ordForm, observaciones: e.target.value})}
+                                        rows="4"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', resize: 'none' }}
+                                    />
+                                </div>
+                                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <span>Subtotal:</span>
+                                        <span style={{ fontWeight: '600' }}>${ordForm.detalles.reduce((s, d) => s + (d.cantidad * d.precio_unitario), 0).toLocaleString()}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <span>IVA ({ordForm.porcentaje_iva}%):</span>
+                                        <span style={{ fontWeight: '600' }}>${(ordForm.detalles.reduce((s, d) => s + (d.cantidad * d.precio_unitario), 0) * (ordForm.porcentaje_iva / 100)).toLocaleString()}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #e2e8f0', marginTop: '1rem', paddingTop: '1rem', fontSize: '1.2rem', color: '#1a202c' }}>
+                                        <strong>Total:</strong>
+                                        <strong>${(ordForm.detalles.reduce((s, d) => s + (d.cantidad * d.precio_unitario), 0) * (1 + ordForm.porcentaje_iva / 100)).toLocaleString()}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsOrdModalOpen(false)}
+                                    style={{ background: '#f3f4f6', color: '#4a5568', border: 'none', padding: '0.75rem 2rem', borderRadius: '10px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '0.75rem 2rem', borderRadius: '10px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)' }}
+                                >
+                                    {currentOrd ? 'Actualizar Orden' : 'Crear Orden'}
                                 </button>
                             </div>
                         </form>

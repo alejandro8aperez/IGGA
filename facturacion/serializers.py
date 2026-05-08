@@ -17,7 +17,7 @@ class DetalleFacturaSerializer(serializers.ModelSerializer):
 class FacturaSerializer(serializers.ModelSerializer):
     detalles = DetalleFacturaSerializer(many=True, read_only=True)
     cliente_nombre = serializers.ReadOnlyField(source='cliente.nombre')
-    cliente_ruc = serializers.ReadOnlyField(source='cliente.identificacion')
+    cliente_ruc = serializers.ReadOnlyField(source='cliente.cedula')
 
     class Meta:
         model = Factura
