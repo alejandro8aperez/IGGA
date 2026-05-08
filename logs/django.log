@@ -15730,3 +15730,142 @@ INFO 2026-05-08 11:59:21,951 basehttp 10016 28524 "GET /api/inventarios/producto
 INFO 2026-05-08 11:59:21,971 basehttp 10016 33820 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
 INFO 2026-05-08 12:02:26,496 basehttp 10016 33820 "GET /api/crm/clientes/ HTTP/1.1" 200 785
 INFO 2026-05-08 12:22:28,321 autoreload 32048 14836 Watching for file changes with StatReloader
+INFO 2026-05-08 12:23:17,555 basehttp 32048 26628 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:17,560 basehttp 32048 3340 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+WARNING 2026-05-08 12:23:17,962 log 32048 3340 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-08 12:23:17,964 basehttp 32048 3340 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:23:17,968 log 32048 26628 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-08 12:23:17,970 basehttp 32048 26628 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+INFO 2026-05-08 12:23:18,132 basehttp 32048 26628 "POST /api/api/auth/token/refresh/ HTTP/1.1" 200 244
+INFO 2026-05-08 12:23:18,202 basehttp 32048 26628 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:23:18,325 basehttp 32048 3340 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:23:21,573 basehttp 32048 3340 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:21,574 basehttp 32048 26628 "OPTIONS /api/inventarios/productos/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:21,577 basehttp 32048 3340 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:21,579 basehttp 32048 26628 "OPTIONS /api/inventarios/productos/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:21,625 basehttp 32048 26628 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:21,634 basehttp 32048 3340 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:23:21,648 basehttp 32048 26628 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:21,650 basehttp 32048 11328 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:23:21,658 basehttp 32048 3340 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:23:21,661 basehttp 32048 26628 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:23:36,814 basehttp 32048 26628 "OPTIONS /api/inventarios/categorias/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:36,819 basehttp 32048 3340 "OPTIONS /api/inventarios/unidades-medida/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:36,822 basehttp 32048 33260 "OPTIONS /api/inventarios/categorias/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:36,822 basehttp 32048 19124 "OPTIONS /api/inventarios/unidades-medida/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:23:36,838 basehttp 32048 11328 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:36,846 basehttp 32048 3340 "GET /api/inventarios/unidades-medida/ HTTP/1.1" 200 93
+INFO 2026-05-08 12:23:36,859 basehttp 32048 11328 "GET /api/inventarios/unidades-medida/ HTTP/1.1" 200 93
+INFO 2026-05-08 12:23:36,861 basehttp 32048 26628 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-08 12:23:36,884 basehttp 32048 11328 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-08 12:23:36,911 basehttp 32048 33260 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:56,432 basehttp 32048 26628 "GET /api/inventarios/unidades-medida/ HTTP/1.1" 200 93
+INFO 2026-05-08 12:23:56,432 basehttp 32048 33260 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:56,447 basehttp 32048 3340 "GET /api/inventarios/unidades-medida/ HTTP/1.1" 200 93
+INFO 2026-05-08 12:23:56,450 basehttp 32048 11328 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-08 12:23:56,471 basehttp 32048 3340 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-08 12:23:56,603 basehttp 32048 19124 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:58,649 basehttp 32048 19124 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:58,649 basehttp 32048 11328 "GET /api/inventarios/unidades-medida/ HTTP/1.1" 200 93
+INFO 2026-05-08 12:23:58,668 basehttp 32048 33260 "GET /api/inventarios/unidades-medida/ HTTP/1.1" 200 93
+INFO 2026-05-08 12:23:58,668 basehttp 32048 26628 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:23:58,672 basehttp 32048 3340 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-08 12:23:58,691 basehttp 32048 26628 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-08 12:23:58,725 basehttp 32048 26628 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:23:58,733 basehttp 32048 3340 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:24:02,869 basehttp 32048 26628 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:24:02,869 basehttp 32048 33260 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:24:02,876 basehttp 32048 3340 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:24:02,887 basehttp 32048 19124 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:24:02,887 basehttp 32048 11328 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:24:02,901 basehttp 32048 33260 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:24:12,237 basehttp 32048 19124 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:24:12,237 basehttp 32048 11328 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:24:12,240 basehttp 32048 33260 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:24:15,025 basehttp 32048 11328 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:24:15,026 basehttp 32048 19124 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:24:15,027 basehttp 32048 33260 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:24:16,435 basehttp 32048 11328 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:24:16,438 basehttp 32048 19124 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:24:16,438 basehttp 32048 33260 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:48:54,249 basehttp 32048 11720 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:48:54,262 basehttp 32048 26636 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:48:54,587 basehttp 32048 17936 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:48:54,636 basehttp 32048 26636 "OPTIONS /api/ventas/notas-credito/ HTTP/1.1" 200 0
+WARNING 2026-05-08 12:48:54,868 log 32048 11720 Unauthorized: /api/crm/clientes/
+INFO 2026-05-08 12:48:54,972 basehttp 32048 26304 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+WARNING 2026-05-08 12:48:54,982 log 32048 26636 Unauthorized: /api/ventas/facturas/
+WARNING 2026-05-08 12:48:54,983 log 32048 17936 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-05-08 12:48:54,984 log 32048 35000 Unauthorized: /api/inventarios/productos/
+WARNING 2026-05-08 12:48:54,999 log 32048 26304 Unauthorized: /api/ventas/notas-credito/
+WARNING 2026-05-08 12:48:54,999 basehttp 32048 11720 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+INFO 2026-05-08 12:48:55,000 basehttp 32048 34424 "OPTIONS /api/ventas/notas-credito/ HTTP/1.1" 200 0
+WARNING 2026-05-08 12:48:55,001 basehttp 32048 17936 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,001 basehttp 32048 26636 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,006 log 32048 11720 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-08 12:48:55,006 basehttp 32048 35000 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,009 basehttp 32048 26304 "GET /api/ventas/notas-credito/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,011 log 32048 17936 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-05-08 12:48:55,045 log 32048 26636 Unauthorized: /api/inventarios/productos/
+WARNING 2026-05-08 12:48:55,110 log 32048 35000 Unauthorized: /api/ventas/facturas/
+WARNING 2026-05-08 12:48:55,140 basehttp 32048 11720 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,159 log 32048 26304 Unauthorized: /api/ventas/notas-credito/
+WARNING 2026-05-08 12:48:55,279 basehttp 32048 17936 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,294 basehttp 32048 26636 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,295 basehttp 32048 35000 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-05-08 12:48:55,296 basehttp 32048 26304 "GET /api/ventas/notas-credito/ HTTP/1.1" 401 172
+INFO 2026-05-08 12:48:55,485 basehttp 32048 34424 "POST /api/api/auth/token/refresh/ HTTP/1.1" 200 244
+INFO 2026-05-08 12:48:55,936 basehttp 32048 34424 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:48:55,994 basehttp 32048 17936 "GET /api/ventas/notas-credito/ HTTP/1.1" 200 367
+INFO 2026-05-08 12:48:56,018 basehttp 32048 35000 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-08 12:48:56,050 basehttp 32048 26636 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:48:56,058 basehttp 32048 11720 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:48:56,065 basehttp 32048 34424 "GET /api/ventas/notas-credito/ HTTP/1.1" 200 367
+INFO 2026-05-08 12:48:56,067 basehttp 32048 26304 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-08 12:48:56,067 basehttp 32048 17936 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-08 12:48:56,091 basehttp 32048 35000 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:48:56,123 basehttp 32048 11720 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-08 12:49:28,227 basehttp 32048 17936 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:28,232 basehttp 32048 11720 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-08 12:49:28,234 basehttp 32048 35000 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:49:28,241 basehttp 32048 34424 "GET /api/ventas/notas-credito/ HTTP/1.1" 200 367
+INFO 2026-05-08 12:49:28,267 basehttp 32048 26636 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:28,267 basehttp 32048 26304 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-08 12:49:28,270 basehttp 32048 17936 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:49:28,280 basehttp 32048 11720 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-08 12:49:28,285 basehttp 32048 35000 "GET /api/ventas/notas-credito/ HTTP/1.1" 200 367
+INFO 2026-05-08 12:49:28,298 basehttp 32048 26636 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-08 12:49:29,934 basehttp 32048 26636 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-08 12:49:30,003 basehttp 32048 17936 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:49:30,006 basehttp 32048 35000 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-08 12:49:30,014 basehttp 32048 11720 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:30,058 basehttp 32048 26636 "GET /api/ventas/notas-credito/ HTTP/1.1" 200 367
+INFO 2026-05-08 12:49:30,058 basehttp 32048 34424 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-08 12:49:30,067 basehttp 32048 35000 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:30,068 basehttp 32048 17936 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-08 12:49:30,071 basehttp 32048 26304 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-08 12:49:30,079 basehttp 32048 11720 "GET /api/ventas/notas-credito/ HTTP/1.1" 200 367
+INFO 2026-05-08 12:49:30,596 basehttp 32048 11720 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:30,607 basehttp 32048 17936 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:30,613 basehttp 32048 26304 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:49:30,625 basehttp 32048 17936 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:49:43,792 basehttp 32048 17936 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:43,798 basehttp 32048 26304 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:49:43,810 basehttp 32048 11720 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:43,814 basehttp 32048 17936 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:49:45,275 basehttp 32048 17936 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:45,291 basehttp 32048 26304 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-08 12:49:45,296 basehttp 32048 11720 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:49:45,313 basehttp 32048 17936 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-08 12:49:45,417 basehttp 32048 17936 "OPTIONS /api/marketing/campanas/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:49:45,417 basehttp 32048 35000 "OPTIONS /api/marketing/leads/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:49:45,418 basehttp 32048 26304 "OPTIONS /api/marketing/campanas/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:49:45,418 basehttp 32048 11720 "OPTIONS /api/marketing/leads/ HTTP/1.1" 200 0
+INFO 2026-05-08 12:49:45,467 basehttp 32048 26304 "GET /api/marketing/campanas/ HTTP/1.1" 200 333
+INFO 2026-05-08 12:49:45,472 basehttp 32048 11720 "GET /api/marketing/leads/ HTTP/1.1" 200 916
+INFO 2026-05-08 12:49:45,484 basehttp 32048 35000 "GET /api/marketing/campanas/ HTTP/1.1" 200 333
+INFO 2026-05-08 12:49:45,487 basehttp 32048 26304 "GET /api/marketing/leads/ HTTP/1.1" 200 916
+INFO 2026-05-08 12:49:51,890 basehttp 32048 26304 "GET /api/marketing/campanas/ HTTP/1.1" 200 333
+INFO 2026-05-08 12:49:51,901 basehttp 32048 35000 "GET /api/marketing/leads/ HTTP/1.1" 200 916
+INFO 2026-05-08 12:49:51,907 basehttp 32048 11720 "GET /api/marketing/campanas/ HTTP/1.1" 200 333
+INFO 2026-05-08 12:49:51,918 basehttp 32048 26304 "GET /api/marketing/leads/ HTTP/1.1" 200 916
