@@ -45,11 +45,15 @@ def run_migrations(request):
     if admin_key != expected_key:
         return JsonResponse({'error': 'Unauthorized. Invalid admin key.'}, status=403)
     
+    print("🚀 Iniciando migraciones desde endpoint de emergencia...")
     try:
         from django.core.management import call_command
         
-        # Ejecutar migraciones sin capturar output (más simple)
-        call_command('migrate', verbosity=0)
+        # Ejecutar migraciones y mostrar qué se está haciendo en los logs de Render
+        print("  - Ejecutando migrate...")
+        call_command('migrate', verbosity=1)
+
+        print("✅ Migraciones completadas exitosamente.")
         
         return JsonResponse({
             'success': True,

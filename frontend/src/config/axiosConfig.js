@@ -10,13 +10,17 @@ const DEFAULT_LOCAL_URL = 'http://localhost:8000/api';
 
 const BASE_URL =
     import.meta.env.VITE_API_URL ||
-    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? DEFAULT_LOCAL_URL
         : `${window.location.origin}/api`);
 
 const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 
 axios.defaults.baseURL = cleanBaseUrl;
+
+// Aumentar timeout a 60s para soportar el "cold start" de Render Free Tier
+axios.defaults.timeout = 60000; 
+
 axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
@@ -59,10 +63,16 @@ axios.interceptors.response.use(
             // Sin permisos — no redirigir, dejar que el componente lo maneje
             console.warn('[ERP] Acceso denegado (403):', error.config?.url);
         } else if (status === 500) {
-            console.error('[ERP] Error del servidor (500):', error.config?.url);
+            console.error('[ERP] Error del servidor (500) en:', error.config?.url);
+            if (error.response?.data) {
+                console.error('[ERP] Detalle del error:', error.response.data);
+            }
+        } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+            // Error específico de tiempo de espera excedido
+            console.error('[ERP] Tiempo de espera agotado (Timeout). El servidor de Render podría estar despertando:', error.config?.url);
         } else if (!error.response) {
             // Sin conexión con el backend
-            console.error('[ERP] Sin conexión con el backend:', error.config?.url);
+            console.error('[ERP] Sin conexión con el backend (Network Error):', error.config?.url);
         }
 
         // IMPORTANTE: No manejar el 401 aquí.

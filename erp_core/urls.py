@@ -22,6 +22,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from django.views.generic.base import RedirectView
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, ping, create_initial_superuser, verify_credentials, test_image, generar_comprobante_nomina_pdf, reporte_pyl_api, dashboard_stats, run_migrations
 from .views_import import import_data_api, export_data_api, list_models
@@ -30,7 +31,9 @@ router = DefaultRouter()
 router.register(r'users', UserViewSet)
 
 urlpatterns = [
+    path('', ping, name='index'), # Root redirect to ping for cleaner logs
     path('admin/', admin.site.urls),
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')), # Silencia el error 404 del favicon
     path('api/ping/', ping, name='ping'),
     path('api/admin/migrate/', run_migrations, name='run_migrations'),
     path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),
@@ -65,8 +68,6 @@ urlpatterns = [
     path('api/pos/', include('pos.urls')),
     path('api/facturacion-electronica/', include('facturacion_electronica.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/token/refresh/', TokenRefreshView.as_view()), 
-    path('api/api/auth/token/refresh/', TokenRefreshView.as_view()), # Alias para corregir error 404 del frontend
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/import-data/', import_data_api, name='import_data'),
     path('api/export-data/', export_data_api, name='export_data'),

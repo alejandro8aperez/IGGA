@@ -274,6 +274,14 @@ export const API = {
         LEIDAS:         `${B}/notificaciones/marcar-leida/`,
     },
 
+    // ── POS (Point of Sale) ───────────────────────────────────────────────────
+    POS: {
+        VENTAS:         `${B}/pos/ventas/`,
+        SESIONES:       `${B}/pos/sesiones/`,
+        SESION_ACTIVA:  `${B}/pos/sesiones/activa/`,
+        CAJAS:          `${B}/pos/cajas/`,
+    },
+
     // ── URL base (para endpoints personalizados) ──────────────────────────────
     BASE: B,
 };

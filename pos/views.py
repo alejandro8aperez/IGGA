@@ -7,12 +7,11 @@ from .models import SesionCaja, VentaPOS
 from .serializers import SesionCajaSerializer, VentaPOSSerializer
 from facturacion.models import Factura, DetalleFactura, ResolucionFacturacion
 from crm.models import Cliente
-from inventarios.models import Producto
+from inventarios.models import Producto, Categoria, MovimientoInventario
 import uuid
 from decimal import Decimal
 from django.db.models import Sum
 from rest_framework.decorators import api_view
-from inventarios.models import Categoria
 
 @api_view(['POST'])
 def seed_bakery_data(request):
@@ -111,71 +110,105 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
         monto_recibido = Decimal(str(data.get('monto_recibido', 0)))
         
         try:
-            # 1. Obtener o crear Cliente consumidor final (Buscamos por email para evitar conflictos de llave única)
+            # 0. Verificar Resolución de Facturación ANTES de procesar
+            resolucion = ResolucionFacturacion.objects.filter(prefijo='POS', activa=True).first()
+            if not resolucion:
+                resolucion = ResolucionFacturacion.objects.filter(activa=True).first()
+            
+            if not resolucion:
+                return Response({"error": "No hay resolución de facturación activa configurada."}, status=400)
+
+            # 1. Obtener Cliente consumidor final (Prioridad por ID para consistencia SAP)
             cliente, _ = Cliente.objects.get_or_create(
-                email='consumidor@final.com',
+                id=1,
                 defaults={
                     'nombre': 'CONSUMIDOR FINAL',
-                    'cedula': '222222222222',
+                    'nit': '222222222222',
                     'telefono': '0000000',
+                    'email': 'consumidor@final.com',
                     'direccion': 'Ciudad'
                 }
             )
 
-            # 2. Crear Factura Borrador
-            factura = Factura.objects.create(
-                cliente=cliente,
-                fecha_vencimiento=timezone.now().date(),
-                estado_dian='borrador'
-            )
-
+            # 2. Preparar totales y Validar Stock
             subtotal_total = Decimal('0.00')
             iva_total = Decimal('0.00')
+            items_preparados = []
 
             for item in items:
                 producto = Producto.objects.get(id=item['producto_id'])
                 cantidad = int(item['cantidad'])
+                
+                # --- Validación de Stock Crítica ---
+                if producto.stock_actual < cantidad:
+                    return Response({
+                        "error": f"Stock insuficiente para {producto.nombre}. Disponible: {producto.stock_actual}"
+                    }, status=400)
+
                 precio = producto.precio_venta
                 iva_pct = Decimal('19.00') # Estándar panadería
 
                 subt = cantidad * precio
                 iva = subt * (iva_pct / Decimal('100'))
-                
+
                 subtotal_total += subt
                 iva_total += iva
+                
+                items_preparados.append({
+                    'producto': producto,
+                    'cantidad': cantidad,
+                    'precio': precio,
+                    'subt': subt,
+                    'iva_pct': iva_pct
+                })
+
+            # 3. Asignación de Numeración Legal Segura (Pre-save)
+            prefijo = resolucion.prefijo
+            proximo_numero = resolucion.numero_actual
+            while Factura.objects.filter(numero_factura=f"{prefijo}{proximo_numero}").exists():
+                proximo_numero += 1
+            
+            # 4. Crear Factura (Directamente Validada)
+            factura = Factura.objects.create(
+                cliente=cliente,
+                numero_factura=f"{prefijo}{proximo_numero}",
+                fecha_vencimiento=timezone.now().date(),
+                subtotal=subtotal_total,
+                iva_total=iva_total,
+                total=subtotal_total + iva_total,
+                cufe=str(uuid.uuid4()).replace('-', '') + "POS",
+                estado_dian='validada'
+            )
+
+            # 5. Procesar Detalles, Stock y Movimientos
+            for d in items_preparados:
+                producto = d['producto']
+                cantidad = d['cantidad']
+
+                producto.stock_actual -= cantidad
+                producto.save()
+
+                MovimientoInventario.objects.create(
+                    producto=producto,
+                    tipo='salida',
+                    cantidad=cantidad,
+                    descripcion=f"Venta POS - Factura {factura.numero_factura}"
+                )
 
                 DetalleFactura.objects.create(
                     factura=factura,
                     producto=producto,
                     cantidad=cantidad,
-                    precio_unitario=precio,
-                    subtotal=subt,
-                    porcentaje_iva=iva_pct
+                    precio_unitario=d['precio'],
+                    subtotal=d['subt'],
+                    porcentaje_iva=d['iva_pct']
                 )
-
-            factura.subtotal = subtotal_total
-            factura.iva_total = iva_total
-            factura.total = subtotal_total + iva_total
-            factura.save()
-
-            # 3. Emitir Factura (Lógica de FacturacionViewset simulada aquí)
-            resolucion = ResolucionFacturacion.objects.filter(prefijo='POS', activa=True).first()
-            if not resolucion:
-                # Fallback a cualquier resolución activa si no hay POS
-                resolucion = ResolucionFacturacion.objects.filter(activa=True).first()
-
-            if not resolucion:
-                return Response({"error": "No hay resolución de facturación activa configurada."}, status=400)
-
-            factura.numero_factura = f"{resolucion.prefijo}{resolucion.numero_actual}"
-            factura.cufe = str(uuid.uuid4()).replace('-', '') + "POS"
-            factura.estado_dian = 'validada'
             
-            resolucion.numero_actual += 1
+            # Actualizar contador de resolución
+            resolucion.numero_actual = proximo_numero + 1
             resolucion.save()
-            factura.save()
 
-            # 4. Crear registro VentaPOS
+            # 6. Crear registro VentaPOS
             cambio = monto_recibido - factura.total if metodo_pago == 'efectivo' else 0
             venta_pos = VentaPOS.objects.create(
                 factura=factura,

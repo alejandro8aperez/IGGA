@@ -37,7 +37,12 @@ if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Limpiar espacios en blanco al parsear ALLOWED_HOSTS por si se agregan en el panel de Render
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')]
+ALLOWED_HOSTS = [
+    h.strip() 
+    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+]
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
 # Configuración necesaria para Render (detrás de un balanceador de carga)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -108,11 +113,17 @@ CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin.strip()]
 if CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = False
-    # Asegurar que CSRF también confíe en los orígenes del frontend
-    CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
-elif not DEBUG:
-    # Fallback para producción en Render si no se define la variable
+
+# Asegurar que CSRF también confíe en los orígenes del frontend y el propio dominio de Render
+CSRF_TRUSTED_ORIGINS = []
+if CORS_ALLOWED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.extend(CORS_ALLOWED_ORIGINS)
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}")
+if not CSRF_TRUSTED_ORIGINS and not DEBUG: # Fallback si no se definió nada y no es debug
     CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
+
+print(f"DEBUG: CSRF_TRUSTED_ORIGINS = {CSRF_TRUSTED_ORIGINS}") # Added for debugging
 
 # Configuración de SameSite para permitir comunicación entre dominios de Render
 CORS_ALLOW_CREDENTIALS = True
@@ -145,6 +156,20 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+}
+
+# Simple JWT Configuration
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
 }
 
 ROOT_URLCONF = 'erp_core.urls'
@@ -287,7 +312,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
@@ -313,7 +338,12 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
             'propagate': True,
         },
         'facturatech': {

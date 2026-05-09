@@ -67,14 +67,18 @@ export const AuthProvider = ({ children }) => {
                 if (!parsedUser.access || !parsedUser.refresh) {
                     logoutUser();
                 } else {
-                    setUser(parsedUser);
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
+                    // Verificar si el token no es un string "undefined" accidental
+                    if (parsedUser.access !== "undefined" && parsedUser.access !== null) {
+                        setUser(parsedUser);
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
+                    } else {
+                        logoutUser();
+                    }
                 }
             } catch {
                 logoutUser();
             }
         }
-        setLoading(false);
 
         // =====================================================================
         // INTERCEPTOR DE RESPUESTA con refresh automático de token
@@ -115,12 +119,9 @@ export const AuthProvider = ({ children }) => {
 
                         if (!refreshToken) throw new Error('Sin refresh token');
 
-                        // Llamar al endpoint estándar de Django Simple JWT
-                        const { data } = await axios.post(
-                            '/api/auth/token/refresh/',
-                            { refresh: refreshToken },
-                            { _retry: true }
-                        );
+                        // Petición de refresco usando ruta relativa para respetar el /api/ del baseURL
+                        const cleanAxios = axios.create({ baseURL: axios.defaults.baseURL });
+                        const { data } = await cleanAxios.post('token/refresh/', { refresh: refreshToken });
 
                         // Persistir el nuevo access token
                         const updatedUser = { ...parsedUser, access: data.access };
@@ -146,6 +147,9 @@ export const AuthProvider = ({ children }) => {
                 return Promise.reject(error);
             }
         );
+
+        // Liberar pantalla de carga una vez configurado todo
+        setLoading(false);
 
         return () => axios.interceptors.response.eject(interceptor);
     }, []);

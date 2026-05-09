@@ -15869,3 +15869,186 @@ INFO 2026-05-08 12:49:51,890 basehttp 32048 26304 "GET /api/marketing/campanas/ 
 INFO 2026-05-08 12:49:51,901 basehttp 32048 35000 "GET /api/marketing/leads/ HTTP/1.1" 200 916
 INFO 2026-05-08 12:49:51,907 basehttp 32048 11720 "GET /api/marketing/campanas/ HTTP/1.1" 200 333
 INFO 2026-05-08 12:49:51,918 basehttp 32048 26304 "GET /api/marketing/leads/ HTTP/1.1" 200 916
+INFO 2026-05-09 11:20:35,930 autoreload 27548 32848 Watching for file changes with StatReloader
+INFO 2026-05-09 11:27:24,267 basehttp 27548 15884 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,273 basehttp 27548 9416 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,280 basehttp 27548 35464 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,280 basehttp 27548 4868 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,293 basehttp 27548 33432 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,293 basehttp 27548 9416 "OPTIONS /api/inventarios/productos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,294 basehttp 27548 15884 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,295 basehttp 27548 4868 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,296 basehttp 27548 24724 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,296 basehttp 27548 35464 "OPTIONS /api/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,299 basehttp 27548 33432 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,301 basehttp 27548 15884 "OPTIONS /api/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,301 basehttp 27548 9416 "OPTIONS /api/ventas/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,302 basehttp 27548 4868 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,305 basehttp 27548 24724 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,306 basehttp 27548 35464 "OPTIONS /api/inventarios/productos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,319 basehttp 27548 33432 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:24,320 basehttp 27548 15884 "OPTIONS /api/kave/disenos/ HTTP/1.1" 200 0
+WARNING 2026-05-09 11:27:24,844 log 27548 4868 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-09 11:27:24,844 log 27548 9416 Unauthorized: /api/crm/cotizaciones/
+WARNING 2026-05-09 11:27:24,844 log 27548 33432 Unauthorized: /api/compras/proveedores/
+WARNING 2026-05-09 11:27:24,845 log 27548 24724 Unauthorized: /api/ventas/facturas/
+WARNING 2026-05-09 11:27:24,845 log 27548 15884 Unauthorized: /api/inventarios/productos/
+WARNING 2026-05-09 11:27:24,845 log 27548 35464 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-05-09 11:27:24,846 basehttp 27548 4868 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,846 basehttp 27548 9416 "GET /api/crm/cotizaciones/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,847 basehttp 27548 33432 "GET /api/compras/proveedores/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,847 basehttp 27548 15884 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,848 basehttp 27548 24724 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,853 log 27548 4868 Unauthorized: /api/operaciones/proyectos/
+WARNING 2026-05-09 11:27:24,860 log 27548 9416 Unauthorized: /api/compras/ordenes/
+WARNING 2026-05-09 11:27:24,884 basehttp 27548 35464 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,906 log 27548 33432 Unauthorized: /api/kave/disenos/
+WARNING 2026-05-09 11:27:24,907 log 27548 24724 Unauthorized: /api/crm/cotizaciones/
+WARNING 2026-05-09 11:27:24,908 log 27548 15884 Unauthorized: /api/crm/clientes/
+WARNING 2026-05-09 11:27:24,911 log 27548 35464 Unauthorized: /api/compras/proveedores/
+WARNING 2026-05-09 11:27:24,911 basehttp 27548 4868 "GET /api/operaciones/proyectos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,914 basehttp 27548 9416 "GET /api/compras/ordenes/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,914 basehttp 27548 33432 "GET /api/kave/disenos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,915 basehttp 27548 15884 "GET /api/crm/clientes/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,915 basehttp 27548 24724 "GET /api/crm/cotizaciones/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,917 log 27548 4868 Unauthorized: /api/inventarios/productos/
+WARNING 2026-05-09 11:27:24,918 basehttp 27548 35464 "GET /api/compras/proveedores/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,920 log 27548 9416 Unauthorized: /api/ventas/facturas/
+WARNING 2026-05-09 11:27:24,924 log 27548 15884 Unauthorized: /api/ventas/pedidos/
+WARNING 2026-05-09 11:27:24,926 log 27548 24724 Unauthorized: /api/operaciones/proyectos/
+INFO 2026-05-09 11:27:24,926 basehttp 27548 33432 "OPTIONS /api/api/auth/token/refresh/ HTTP/1.1" 200 0
+WARNING 2026-05-09 11:27:24,928 log 27548 35464 Unauthorized: /api/compras/ordenes/
+WARNING 2026-05-09 11:27:24,930 basehttp 27548 4868 "GET /api/inventarios/productos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,931 basehttp 27548 9416 "GET /api/ventas/facturas/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,932 log 27548 33432 Unauthorized: /api/kave/disenos/
+WARNING 2026-05-09 11:27:24,933 basehttp 27548 15884 "GET /api/ventas/pedidos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,933 basehttp 27548 24724 "GET /api/operaciones/proyectos/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,943 basehttp 27548 35464 "GET /api/compras/ordenes/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:27:24,944 basehttp 27548 33432 "GET /api/kave/disenos/ HTTP/1.1" 401 172
+INFO 2026-05-09 11:27:25,154 basehttp 27548 4868 "POST /api/api/auth/token/refresh/ HTTP/1.1" 200 244
+INFO 2026-05-09 11:27:25,315 basehttp 27548 35464 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-09 11:27:25,335 basehttp 27548 15884 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-09 11:27:25,338 basehttp 27548 33432 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-09 11:27:25,339 basehttp 27548 4868 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:25,344 basehttp 27548 24724 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-09 11:27:25,406 basehttp 27548 4868 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-09 11:27:25,408 basehttp 27548 35464 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-09 11:27:25,422 basehttp 27548 15884 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-09 11:27:25,424 basehttp 27548 24724 "GET /api/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-05-09 11:27:25,427 basehttp 27548 9416 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-09 11:27:25,440 basehttp 27548 35464 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:25,445 basehttp 27548 4868 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-09 11:27:25,460 basehttp 27548 33432 "GET /api/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-05-09 11:27:25,465 basehttp 27548 24724 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 2
+INFO 2026-05-09 11:27:25,471 basehttp 27548 15884 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-09 11:27:25,482 basehttp 27548 9416 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-09 11:27:25,501 basehttp 27548 4868 "GET /api/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-05-09 11:27:25,501 basehttp 27548 35464 "GET /api/ventas/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-09 11:27:36,655 basehttp 27548 35464 "OPTIONS /api/rrhh/empleados/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:36,655 basehttp 27548 4868 "OPTIONS /api/rrhh/empleados/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:27:36,797 basehttp 27548 4868 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:36,909 basehttp 27548 35464 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:43,874 basehttp 27548 35464 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:43,997 basehttp 27548 4868 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:45,674 basehttp 27548 4868 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:45,798 basehttp 27548 35464 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:45,952 basehttp 27548 35464 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:45,962 basehttp 27548 4868 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:49,141 basehttp 27548 4868 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:49,150 basehttp 27548 35464 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:55,066 basehttp 27548 35464 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:55,075 basehttp 27548 4868 "GET /api/crm/clientes/ HTTP/1.1" 200 785
+INFO 2026-05-09 11:27:55,254 basehttp 27548 4868 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:27:55,346 basehttp 27548 35464 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:29:00,947 basehttp 27548 35464 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:29:01,059 basehttp 27548 4868 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:29:02,866 basehttp 27548 4868 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:29:02,988 basehttp 27548 35464 "GET /api/rrhh/empleados/ HTTP/1.1" 200 5181
+INFO 2026-05-09 11:29:03,438 basehttp 27548 35464 "OPTIONS /api/rrhh/periodos-nomina/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:29:03,438 basehttp 27548 4868 "OPTIONS /api/rrhh/periodos-nomina/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:29:03,484 basehttp 27548 4868 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:29:03,496 basehttp 27548 35464 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:29:03,519 basehttp 27548 35464 "OPTIONS /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 0
+INFO 2026-05-09 11:29:03,656 basehttp 27548 35464 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+INFO 2026-05-09 11:29:03,749 basehttp 27548 4868 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+WARNING 2026-05-09 11:32:45,355 log 27548 4868 Unauthorized: /api/rrhh/periodos-nomina/
+WARNING 2026-05-09 11:32:45,362 basehttp 27548 4868 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 401 172
+WARNING 2026-05-09 11:32:45,367 log 27548 4868 Unauthorized: /api/rrhh/periodos-nomina/
+WARNING 2026-05-09 11:32:45,368 basehttp 27548 4868 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 401 172
+INFO 2026-05-09 11:32:45,414 basehttp 27548 35464 "POST /api/api/auth/token/refresh/ HTTP/1.1" 200 244
+INFO 2026-05-09 11:32:45,437 basehttp 27548 35464 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:32:45,449 basehttp 27548 4868 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:32:45,586 basehttp 27548 4868 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+INFO 2026-05-09 11:32:45,655 basehttp 27548 35464 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+INFO 2026-05-09 11:32:49,621 basehttp 27548 35464 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:32:49,635 basehttp 27548 4868 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:32:49,837 basehttp 27548 4868 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+INFO 2026-05-09 11:32:50,216 basehttp 27548 35464 "OPTIONS /api/inventarios/categorias/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:32:50,243 basehttp 27548 35464 "OPTIONS /api/pos/sesiones/activa/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:32:50,247 basehttp 27548 35464 "OPTIONS /api/inventarios/categorias/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:32:50,249 basehttp 27548 35464 "OPTIONS /api/pos/sesiones/activa/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:32:50,293 basehttp 27548 4868 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-09 11:32:50,339 basehttp 27548 35464 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-09 11:32:50,339 basehttp 27548 4868 "GET /api/pos/sesiones/activa/ HTTP/1.1" 200 207
+INFO 2026-05-09 11:32:50,364 basehttp 27548 35464 "GET /api/inventarios/productos/ HTTP/1.1" 200 6393
+INFO 2026-05-09 11:32:50,380 basehttp 27548 35464 "GET /api/pos/sesiones/activa/ HTTP/1.1" 200 207
+INFO 2026-05-09 11:32:50,380 basehttp 27548 4868 "GET /api/inventarios/categorias/ HTTP/1.1" 200 585
+INFO 2026-05-09 11:32:50,758 basehttp 27548 22708 "GET /media/productos/caldo_de_costilla.png HTTP/1.1" 304 0
+INFO 2026-05-09 11:32:50,761 basehttp 27548 34776 "GET /media/productos/SEIS.png HTTP/1.1" 304 0
+INFO 2026-05-09 11:32:59,846 basehttp 27548 4868 "OPTIONS /api/pos/ventas/ HTTP/1.1" 200 0
+INFO 2026-05-09 11:32:59,981 basehttp 27548 4868 "POST /api/pos/ventas/ HTTP/1.1" 201 868
+INFO 2026-05-09 11:33:03,133 basehttp 27548 4868 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:33:03,143 basehttp 27548 35464 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 200 135
+INFO 2026-05-09 11:33:03,216 basehttp 27548 35464 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+INFO 2026-05-09 11:33:03,286 basehttp 27548 4868 "GET /api/rrhh/nominas/?periodo=1 HTTP/1.1" 200 6549
+INFO 2026-05-09 12:08:52,363 autoreload 15104 27340 Watching for file changes with StatReloader
+INFO 2026-05-09 12:10:42,874 autoreload 15104 27340 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 12:10:45,640 autoreload 13932 4024 Watching for file changes with StatReloader
+INFO 2026-05-09 12:12:19,878 autoreload 13932 4024 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 12:12:21,396 autoreload 14104 27044 Watching for file changes with StatReloader
+INFO 2026-05-09 12:17:05,419 autoreload 14104 27044 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-05-09 12:17:07,565 autoreload 17260 16276 Watching for file changes with StatReloader
+INFO 2026-05-09 12:19:23,908 basehttp 17260 3292 "OPTIONS /api/rrhh/periodos-nomina/ HTTP/1.1" 200 0
+INFO 2026-05-09 12:19:23,909 basehttp 17260 27464 "OPTIONS /api/rrhh/periodos-nomina/ HTTP/1.1" 200 0
+WARNING 2026-05-09 12:19:24,013 basehttp 17260 27464 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 401 172
+WARNING 2026-05-09 12:19:24,019 basehttp 17260 3292 "GET /api/rrhh/periodos-nomina/ HTTP/1.1" 401 172
+INFO 2026-05-09 12:19:24,022 basehttp 17260 3292 "OPTIONS /api/api/auth/token/refresh/ HTTP/1.1" 200 0
+WARNING 2026-05-09 12:19:24,032 basehttp 17260 3292 "POST /api/api/auth/token/refresh/ HTTP/1.1" 401 54
+INFO 2026-05-09 12:22:52,341 autoreload 17260 16276 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 12:22:54,789 autoreload 23376 14372 Watching for file changes with StatReloader
+INFO 2026-05-09 12:23:27,671 autoreload 23376 14372 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-09 12:23:29,331 autoreload 19588 12228 Watching for file changes with StatReloader
+INFO 2026-05-09 12:28:02,527 autoreload 19588 12228 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 12:28:06,558 autoreload 26396 7984 Watching for file changes with StatReloader
+INFO 2026-05-09 12:33:08,080 autoreload 26396 7984 C:\Postgres\ERP-8AMPERIOS\erp_core\apps.py changed, reloading.
+INFO 2026-05-09 12:33:10,952 autoreload 7124 5240 Watching for file changes with StatReloader
+INFO 2026-05-09 12:34:14,414 autoreload 7124 5240 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-09 12:34:15,695 autoreload 27556 20344 Watching for file changes with StatReloader
+INFO 2026-05-09 12:34:21,097 autoreload 27556 20344 C:\Postgres\ERP-8AMPERIOS\erp_core\apps.py changed, reloading.
+INFO 2026-05-09 12:34:22,247 autoreload 14324 12912 Watching for file changes with StatReloader
+INFO 2026-05-09 12:54:17,364 autoreload 14324 12912 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-05-09 12:54:20,390 autoreload 6324 12348 Watching for file changes with StatReloader
+INFO 2026-05-09 13:07:21,579 autoreload 6324 12348 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 13:07:24,462 autoreload 21448 26028 Watching for file changes with StatReloader
+INFO 2026-05-09 13:09:07,487 autoreload 21448 26028 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 13:09:09,138 autoreload 13420 25844 Watching for file changes with StatReloader
+INFO 2026-05-09 13:16:16,330 autoreload 13420 25844 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 13:16:18,710 autoreload 5704 19800 Watching for file changes with StatReloader
+INFO 2026-05-09 13:25:30,319 autoreload 5704 19800 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 13:25:33,124 autoreload 23016 26564 Watching for file changes with StatReloader
+INFO 2026-05-09 13:25:44,937 autoreload 23016 26564 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 13:25:46,153 autoreload 5860 5000 Watching for file changes with StatReloader
+INFO 2026-05-09 13:25:51,988 autoreload 5860 5000 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-09 13:25:53,543 autoreload 16080 10640 Watching for file changes with StatReloader
+INFO 2026-05-09 13:26:03,419 autoreload 16080 10640 C:\Postgres\ERP-8AMPERIOS\erp_core\apps.py changed, reloading.
+INFO 2026-05-09 13:26:05,057 autoreload 24296 6140 Watching for file changes with StatReloader
+INFO 2026-05-09 13:26:09,678 autoreload 24296 6140 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
+INFO 2026-05-09 13:26:11,533 autoreload 27212 22676 Watching for file changes with StatReloader
+INFO 2026-05-09 13:26:16,921 autoreload 27212 22676 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 13:26:18,244 autoreload 8896 9068 Watching for file changes with StatReloader
+INFO 2026-05-09 13:26:23,372 autoreload 8896 9068 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 13:26:24,544 autoreload 23888 17328 Watching for file changes with StatReloader
+INFO 2026-05-09 13:26:30,378 autoreload 23888 17328 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
+INFO 2026-05-09 13:26:31,641 autoreload 3348 18916 Watching for file changes with StatReloader
+INFO 2026-05-09 14:26:02,992 autoreload 3348 18916 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-05-09 14:26:07,946 autoreload 26028 24264 Watching for file changes with StatReloader
