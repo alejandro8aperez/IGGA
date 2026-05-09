@@ -180,7 +180,17 @@ function POS() {
             setMontoRecibido('');
             setShowPaymentModal(false);
         } catch (err) {
-            alert('Error al procesar la venta: ' + (err.response?.data?.error || err.message));
+            // ⚠️ DEBUG TEMPORAL — expone traceback completo del servidor
+            const data = err.response?.data;
+            console.error('=== ERROR VENTA COMPLETO ===');
+            console.error('Status:', err.response?.status);
+            console.error('Data:', JSON.stringify(data, null, 2));
+            if (data?.traceback) {
+                console.error('=== TRACEBACK ===\n' + data.traceback);
+            }
+            const msg = data?.error || err.message || 'Error desconocido';
+            const tb = data?.traceback ? '\n\nTRACEBACK:\n' + data.traceback : '';
+            alert('Error al procesar la venta:\n\n' + msg + tb);
         } finally {
             setIsProcessing(false);
         }
@@ -604,7 +614,6 @@ function ProductCard({ product, onClick }) {
     if (rawImage?.startsWith('http')) {
         imageUrl = rawImage;
     } else if (rawImage) {
-        // Extraer el nombre real del archivo (ej: "productos/pan001_abc.jpg" -> "pan001_abc.jpg")
         const filename = rawImage.split('/').pop();
         imageUrl = `${MEDIA_BASE}/test-image/${filename}?v=${product.id}`;
         console.log(`Cargando imagen para ${product.nombre}: ${imageUrl}`);
@@ -653,12 +662,12 @@ function ProductCard({ product, onClick }) {
                 {(!imageUrl || imageError) && (
                     <div className="fallback-icon" style={{
                         position: 'absolute', inset: 0, display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-                    color: '#8b5cf6', gap: '0.5rem'
+                        alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
+                        color: '#8b5cf6', gap: '0.5rem'
                     }}>
-                    <Package size={48} />
-                    <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
-                </div>
+                        <Package size={48} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
+                    </div>
                 )}
             </div>
             
