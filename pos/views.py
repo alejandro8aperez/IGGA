@@ -9,6 +9,7 @@ from facturacion.models import Factura, DetalleFactura, ResolucionFacturacion
 from crm.models import Cliente
 from inventarios.models import Producto, Categoria, MovimientoInventario
 import uuid
+import traceback
 from decimal import Decimal
 from django.db.models import Sum
 from rest_framework.decorators import api_view
@@ -86,7 +87,7 @@ class SesionCajaViewSet(viewsets.ModelViewSet):
         sesion = self.get_object()
         sesion.fecha_cierre = timezone.now()
         sesion.monto_final_contado = request.data.get('monto_final_contado', 0)
-        
+
         # Calcular el monto esperado en sistema
         total_ventas = sesion.ventas.aggregate(Sum('factura__total'))['factura__total__sum'] or 0
         sesion.monto_final_sistema = sesion.monto_inicial + total_ventas
@@ -108,17 +109,17 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
         items = data.get('items', [])
         metodo_pago = data.get('metodo_pago', 'efectivo')
         monto_recibido = Decimal(str(data.get('monto_recibido', 0)))
-        
+
         try:
             # 0. Verificar Resolución de Facturación ANTES de procesar
             resolucion = ResolucionFacturacion.objects.filter(prefijo='POS', activa=True).first()
             if not resolucion:
                 resolucion = ResolucionFacturacion.objects.filter(activa=True).first()
-            
+
             if not resolucion:
                 return Response({"error": "No hay resolución de facturación activa configurada."}, status=400)
 
-            # 1. Obtener Cliente consumidor final (Prioridad por ID para consistencia SAP)
+            # 1. Obtener Cliente consumidor final
             cliente, _ = Cliente.objects.get_or_create(
                 id=1,
                 defaults={
@@ -138,22 +139,22 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
             for item in items:
                 producto = Producto.objects.get(id=item['producto_id'])
                 cantidad = int(item['cantidad'])
-                
-                # --- Validación de Stock Crítica ---
+
+                # Validación de Stock
                 if producto.stock_actual < cantidad:
                     return Response({
                         "error": f"Stock insuficiente para {producto.nombre}. Disponible: {producto.stock_actual}"
                     }, status=400)
 
                 precio = producto.precio_venta
-                iva_pct = Decimal('19.00') # Estándar panadería
+                iva_pct = Decimal('19.00')
 
                 subt = cantidad * precio
                 iva = subt * (iva_pct / Decimal('100'))
 
                 subtotal_total += subt
                 iva_total += iva
-                
+
                 items_preparados.append({
                     'producto': producto,
                     'cantidad': cantidad,
@@ -167,8 +168,8 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
             proximo_numero = resolucion.numero_actual
             while Factura.objects.filter(numero_factura=f"{prefijo}{proximo_numero}").exists():
                 proximo_numero += 1
-            
-            # 4. Crear Factura (Directamente Validada)
+
+            # 4. Crear Factura
             factura = Factura.objects.create(
                 cliente=cliente,
                 numero_factura=f"{prefijo}{proximo_numero}",
@@ -183,27 +184,30 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
             # 5. Procesar Detalles, Stock y Movimientos
             for d in items_preparados:
                 producto = d['producto']
-                cantidad = d['cantidad']
+                cant_vendida = d['cantidad']
 
-                producto.stock_actual -= cantidad
-                producto.save()
-
+                # NOTA: el stock se descuenta aquí manualmente porque el
+                # MovimientoInventario.save() también lo haría — evitamos doble descuento
+                # dejando que el movimiento maneje el stock (quitamos el producto.save() manual)
                 MovimientoInventario.objects.create(
                     producto=producto,
                     tipo='salida',
-                    cantidad=cantidad,
-                    descripcion=f"Venta POS - Factura {factura.numero_factura}"
+                    cantidad=cant_vendida,
+                    motivo=f"Venta POS - Factura {factura.numero_factura}",
+                    descripcion=f"Venta POS registrada en sesión de caja #{sesion.id}",
+                    origen='venta',
+                    documento_referencia=factura.numero_factura,
                 )
 
                 DetalleFactura.objects.create(
                     factura=factura,
                     producto=producto,
-                    cantidad=cantidad,
+                    cantidad=cant_vendida,
                     precio_unitario=d['precio'],
                     subtotal=d['subt'],
                     porcentaje_iva=d['iva_pct']
                 )
-            
+
             # Actualizar contador de resolución
             resolucion.numero_actual = proximo_numero + 1
             resolucion.save()
@@ -220,4 +224,8 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
 
             return Response(self.get_serializer(venta_pos).data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({"error": f"Error interno: {str(e)}"}, status=500)
+            # ⚠️ MODO DEBUG TEMPORAL — quitar antes de producción real
+            return Response({
+                "error": f"Error interno: {str(e)}",
+                "traceback": traceback.format_exc()
+            }, status=500)
