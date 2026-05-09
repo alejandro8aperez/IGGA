@@ -246,9 +246,18 @@ class MovimientoInventario(models.Model):
     cantidad = models.DecimalField(max_digits=12, decimal_places=2)
     tipo = models.CharField(max_length=25, choices=TIPO_CHOICES)
     fecha = models.DateTimeField(auto_now_add=True)
-    motivo = models.CharField(max_length=200)
+    motivo = models.CharField(max_length=200, blank=True, default='')
 
-    # Campos nuevos: Contexto del movimiento
+    # ─── CAMPO AGREGADO ─────────────────────────────────────────────────────────
+    descripcion = models.TextField(
+        blank=True,
+        default='',
+        verbose_name="Descripción",
+        help_text="Detalle adicional del movimiento (ej: número de venta, observaciones)"
+    )
+    # ────────────────────────────────────────────────────────────────────────────
+
+    # Contexto del movimiento
     origen = models.CharField(
         max_length=20, choices=ORIGEN_CHOICES,
         default='manual', verbose_name="Origen del movimiento"
@@ -294,7 +303,6 @@ class MovimientoInventario(models.Model):
 
     def save(self, *args, **kwargs):
         """Al guardar, actualiza automáticamente el stock del producto"""
-        # Solo actualizar stock en creación (no en edición)
         is_new = self.pk is None
 
         if is_new:
@@ -372,7 +380,7 @@ class AlertaInventario(models.Model):
                 tipo=tipo,
                 mensaje=(
                     f"El producto '{producto.nombre}' tiene stock de "
-                    f"{producto.stock_actual} {producto.get_unidad_medida_display()}. "
+                    f"{producto.stock_actual} {producto.unidad_medida}. "
                     f"Mínimo requerido: {producto.stock_minimo}."
                 ),
                 stock_al_momento=producto.stock_actual,
