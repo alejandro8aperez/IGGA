@@ -5,16 +5,14 @@
 // =============================================================================
 
 const DEFAULT_LOCAL_URL = 'http://localhost:8000/api';
-const FALLBACK_SAME_ORIGIN =
-    typeof window !== 'undefined'
-        ? `${window.location.origin}/api`
-        : DEFAULT_LOCAL_URL;
 
+// En producción (Render), usar VITE_API_URL que apunta al backend
+// En desarrollo local, usar localhost:8000
 const BASE_URL =
     import.meta.env.VITE_API_URL ||
     (typeof window !== 'undefined' && window.location.hostname === 'localhost'
         ? DEFAULT_LOCAL_URL
-        : FALLBACK_SAME_ORIGIN);
+        : DEFAULT_LOCAL_URL);
 
 const B = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 const M = B.replace('/api', ''); // Base para archivos de Media (sin el prefijo /api)

@@ -186,17 +186,11 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
                 producto = d['producto']
                 cant_item = d['cantidad']
 
-                # NOTA: el stock se descuenta aquí manualmente porque el
-                # MovimientoInventario.save() también lo haría — evitamos doble descuento
-                # dejando que el movimiento maneje el stock (quitamos el producto.save() manual)
                 MovimientoInventario.objects.create(
                     producto=producto,
                     tipo='salida',
                     cantidad=cant_item,
-                    motivo=f"Venta POS - Factura {factura.numero_factura}",
-                    observaciones=f"Venta POS registrada en sesión de caja #{sesion.id}",
-                    origen='venta',
-                    documento_referencia=factura.numero_factura,
+                    motivo=f"Venta POS {factura.numero_factura} - Caja #{sesion.id}"
                 )
 
                 DetalleFactura.objects.create(
