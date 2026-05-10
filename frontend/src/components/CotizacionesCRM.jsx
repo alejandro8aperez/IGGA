@@ -138,6 +138,7 @@ export default function CotizacionesCRM() {
                 newDetalles[index].valor_unitario = prod.precio_venta || 0;
                 newDetalles[index].producto_id = prod.id;
                 newDetalles[index].producto = prod.nombre;
+  
                 newDetalles[index].imagen = prod.imagen; // Guardar referencia de imagen
             }
         }
@@ -257,7 +258,7 @@ export default function CotizacionesCRM() {
             };
 
             // Usamos la constante centralizada para garantizar compatibilidad en Render
-            await axios.post(API.VENTAS.ORDENES, saleData);
+            await axios.post('/ventas/pedidos/', saleData);
             
             // Actualizamos la cotización original a 'aceptada'
             const patchUrl = API_URL.endsWith('/') ? `${API_URL}${coti.id}/` : `${API_URL}/${coti.id}/`;

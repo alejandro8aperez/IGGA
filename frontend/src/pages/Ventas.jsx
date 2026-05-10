@@ -135,7 +135,7 @@ export default function Ventas() {
         axios.get('/inventarios/productos/'),
         axios.get('/ventas/notas-credito/')
       ]);
-      setOrdenes(ordRes.data);
+      setOrdenes(Array.isArray(ordRes.data) ? ordRes.data : []);
       setFacturas(factRes.data);
       setClientes(cliRes.data);
       setProductos((prodRes.data || []).filter(p => 
@@ -416,7 +416,13 @@ export default function Ventas() {
     } catch (err) {
       const serverError = err.response?.data;
       console.error('[ERP] Error 400 detalle:', JSON.stringify(serverError, null, 2));
-      setError(`Error: ${JSON.stringify(serverError || err.message)}`);
+      
+      // Evitar mostrar HTML crudo en el mensaje de error si el servidor responde con 404/500
+      const errorMsg = typeof serverError === 'string' && serverError.includes('<!doctype html>') 
+        ? 'Error del servidor (Ruta no encontrada o fallo interno)' 
+        : JSON.stringify(serverError || err.message);
+        
+      setError(`Error: ${errorMsg}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
