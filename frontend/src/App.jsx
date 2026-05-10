@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Menu, LogOut, X, FileText, MonitorSmartphone,
     Users, ShoppingCart, Package, TrendingUp, Truck, Wrench,
     DollarSign, BookOpen, Wallet, BarChart3, Settings, Building2,
-    ClipboardList, Cpu, HeartHandshake, Award, Megaphone,
+    ClipboardList, Cpu, Award, Megaphone,
     FolderOpen, Zap, Factory, MapPin, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -96,7 +96,7 @@ const NAV_GROUPS = [
     {
         grupo: 'RRHH & Calidad',
         items: [
-            { path: '/rrhh',          name: 'RRHH',         icon: HeartHandshake },
+            { path: '/rrhh',          name: 'RRHH',         icon: Users },
             { path: '/nomina',        name: 'Nómina',       icon: DollarSign },
             { path: '/calidad',       name: 'Calidad',      icon: Award },
             { path: '/formatos-iso',  name: 'ISO 9001',     icon: FolderOpen },

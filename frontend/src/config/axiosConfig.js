@@ -69,18 +69,6 @@ axios.interceptors.response.use(
         if (status === 403) {
             // Sin permisos — no redirigir, dejar que el componente lo maneje
             console.warn('[ERP] Acceso denegado (403):', error.config?.url);
-        } else if (status === 401) {
-            // El token ha expirado y el sistema de refresco falló.
-            // Limpiamos el localStorage automáticamente para que no quedes atrapado.
-            console.error('[ERP] Sesión inválida o expirada. Limpiando rastro...');
-            localStorage.removeItem('erpUser');
-            delete axios.defaults.headers.common['Authorization'];
-            // ⚠️ Usar HashRouter (el ERP usa # en las rutas) — redirigir con # no con path
-            if (!window.location.hash.includes('/login')) {
-                window.location.href = `${window.location.origin}/#/login`;
-                // Forzar reload para descartar cualquier estado en memoria
-                window.location.reload();
-            }
         } else if (status === 500) {
             console.error('[ERP] Error del servidor (500) en:', error.config?.url);
             if (error.response?.data) {
