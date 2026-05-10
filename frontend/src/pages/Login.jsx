@@ -102,8 +102,8 @@ const Login = () => {
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
-                        width: '168px', height: '168px',
-                        margin: '0 auto 1.25rem',
+                        width: '200px', height: '200px',
+                        margin: '0 auto 1.5rem',
                         borderRadius: '50%',
                         overflow: 'hidden',
                         background: 'white',
@@ -113,7 +113,7 @@ const Login = () => {
                         <img 
                             src="/logo_boquilla.png" 
                             alt="Logotipo La Boquilla" 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
                             onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.parentElement.innerHTML = '<span style="color:#d97706; font-weight:bold;">LOGO</span>';
