@@ -241,7 +241,7 @@ export default function Ventas() {
     if (ord) {
       setCurrentOrd(ord);
       setOrdForm({
-        cliente: ord.cliente,
+        cliente: ord.cliente?.id || ord.cliente || '',
         fecha_entrega_esperada: ord.fecha_entrega_esperada || '',
         estado: ord.estado,
         total: ord.total,
@@ -326,12 +326,12 @@ export default function Ventas() {
     e.preventDefault();
     try {
       const payload = {
-        cliente: ordForm.cliente,
+        cliente: parseInt(ordForm.cliente),
         fecha_entrega_esperada: ordForm.fecha_entrega_esperada || null,
         estado: ordForm.estado,
         total: ordForm.total,
         detalles: ordForm.detalles.map(d => ({
-          producto: d.producto,
+          producto: parseInt(d.producto),
           unidad: d.unidad,
           cantidad: d.cantidad,
           valor_unitario: d.valor_unitario
@@ -738,7 +738,7 @@ export default function Ventas() {
                         <tr key={detalle.id}>
                           <td style={{ ...s.td, padding: '0.5rem' }}>
                             <select
-                              value={detalle.producto}
+                    value={String(detalle.producto || '')}
                               onChange={(e) => updateProductoInOrden(index, 'producto', e.target.value)}
                               style={{ ...s.input, fontSize: '0.875rem' }}
                               required

@@ -77,7 +77,7 @@ export default function CotizacionesCRM() {
         if (coti) {
             setCurrentCoti(coti);
             setFormData({
-                cliente: coti.cliente,
+                cliente: coti.cliente?.id || coti.cliente || '',
                 asunto: coti.asunto,
                 tiempo_entrega: coti.tiempo_entrega || '15 días hábiles',
                 forma_pago: coti.forma_pago || 'Contado',
@@ -137,8 +137,7 @@ export default function CotizacionesCRM() {
                 newDetalles[index].unidad = prod.unidad_medida || 'Und';
                 newDetalles[index].valor_unitario = prod.precio_venta || 0;
                 newDetalles[index].producto_id = prod.id;
-                newDetalles[index].producto = prod.nombre;
-  
+                // Mantenemos el ID en el campo producto para que el backend no falle
                 newDetalles[index].imagen = prod.imagen; // Guardar referencia de imagen
             }
         }
@@ -183,6 +182,7 @@ export default function CotizacionesCRM() {
         // Asegurar formato YYYY-MM-DD antes de enviar
         const payload = {
             ...formData,
+            cliente: parseInt(formData.cliente),
             fecha_validez: formData.fecha_validez ? new Date(formData.fecha_validez).toISOString().split('T')[0] : null
         };
 
@@ -1081,7 +1081,7 @@ PRODUCTOS:\n${itemsInfo}`);
                                                     </td>
                                                     <td style={{ padding: '0.75rem' }}>
                                                         <select
-                                                            value={detalle.producto_id || productosInventario.find(p => p.nombre === detalle.producto)?.id || ''}
+                                                            value={String(detalle.producto_id || detalle.producto || '')}
                                                             onChange={(e) => handleDetalleChange(index, 'producto', e.target.value)}
                                                             required
                                                             style={{ 
