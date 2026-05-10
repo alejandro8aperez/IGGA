@@ -30,8 +30,15 @@ axios.defaults.headers.common['Content-Type'] = 'application/json';
 // (por ejemplo al recargar la página antes de que AuthContext se monte).
 axios.interceptors.request.use(
     (config) => {
+        // FORZADO: Sobreescribir cualquier timeout local (como los 10s del POS)
+        // para dar tiempo a Render de iniciar el servicio.
+        config.timeout = 60000;
+
         // No sobreescribir si ya viene con Authorization (lo puso AuthContext)
-        if (!config.headers.Authorization) {
+        // Y NO adjuntar en peticiones de login o refresh para evitar conflictos
+        const isAuthRequest = config.url.includes('token/');
+
+        if (!config.headers.Authorization && !isAuthRequest) {
             const userData = localStorage.getItem('erpUser');
             if (userData) {
                 try {

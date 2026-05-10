@@ -184,7 +184,7 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
             # 5. Procesar Detalles, Stock y Movimientos
             for d in items_preparados:
                 producto = d['producto']
-                cant_vendida = d['cantidad']
+                cant_item = d['cantidad']
 
                 # NOTA: el stock se descuenta aquí manualmente porque el
                 # MovimientoInventario.save() también lo haría — evitamos doble descuento
@@ -192,9 +192,9 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
                 MovimientoInventario.objects.create(
                     producto=producto,
                     tipo='salida',
-                    cantidad=cant_vendida,
+                    cantidad=cant_item,
                     motivo=f"Venta POS - Factura {factura.numero_factura}",
-                    descripcion=f"Venta POS registrada en sesión de caja #{sesion.id}",
+                    observaciones=f"Venta POS registrada en sesión de caja #{sesion.id}",
                     origen='venta',
                     documento_referencia=factura.numero_factura,
                 )
@@ -202,7 +202,7 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
                 DetalleFactura.objects.create(
                     factura=factura,
                     producto=producto,
-                    cantidad=cant_vendida,
+                    cantidad=cant_item,
                     precio_unitario=d['precio'],
                     subtotal=d['subt'],
                     porcentaje_iva=d['iva_pct']

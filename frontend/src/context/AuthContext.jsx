@@ -59,25 +59,21 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Restaurar sesión desde localStorage al montar
-        const savedUser = localStorage.getItem('erpUser');
-        if (savedUser) {
-            try {
+        try {
+            const savedUser = localStorage.getItem('erpUser');
+            if (savedUser && savedUser !== "undefined") {
                 const parsedUser = JSON.parse(savedUser);
-                // Si el token parece muy antiguo o faltan campos, forzar login
-                if (!parsedUser.access || !parsedUser.refresh) {
-                    logoutUser();
+                
+                if (parsedUser?.access && parsedUser?.access !== "undefined") {
+                    setUser(parsedUser);
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
                 } else {
-                    // Verificar si el token no es un string "undefined" accidental
-                    if (parsedUser.access !== "undefined" && parsedUser.access !== null) {
-                        setUser(parsedUser);
-                        axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
-                    } else {
-                        logoutUser();
-                    }
+                    localStorage.removeItem('erpUser');
                 }
-            } catch {
-                logoutUser();
             }
+        } catch (err) {
+            console.warn("[ERP] Error restaurando sesión:", err);
+            localStorage.removeItem('erpUser');
         }
 
         // =====================================================================

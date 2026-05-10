@@ -138,6 +138,7 @@ export default function CotizacionesCRM() {
                 newDetalles[index].valor_unitario = prod.precio_venta || 0;
                 newDetalles[index].producto_id = prod.id;
                 newDetalles[index].producto = prod.nombre;
+                newDetalles[index].imagen = prod.imagen; // Guardar referencia de imagen
             }
         }
 
@@ -255,8 +256,8 @@ export default function CotizacionesCRM() {
                 }))
             };
 
-            // Usamos la ruta directa que usa el componente de Ventas para asegurar compatibilidad
-            await axios.post('venta/ordenes-venta/', saleData);
+            // Usamos la constante centralizada para garantizar compatibilidad en Render
+            await axios.post(API.VENTAS.ORDENES, saleData);
             
             // Actualizamos la cotización original a 'aceptada'
             const patchUrl = API_URL.endsWith('/') ? `${API_URL}${coti.id}/` : `${API_URL}/${coti.id}/`;
@@ -273,7 +274,14 @@ export default function CotizacionesCRM() {
     };
 
     const handleViewDetails = (coti) => {
-        alert(`Detalles de la cotización ${coti.numero_cotizacion || `KAVE-${String(coti.id).padStart(4, '0')}`}:\n\nCliente: ${coti.cliente_nombre || (clientes.find(c => c.id === coti.cliente)?.nombre)}\nAsunto: ${coti.asunto}\nTotal: ${(Number(coti.gran_total || coti.valor_total) || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}\nEstado: ${coti.estado}\n\nItems: ${(coti.detalles || []).length} productos`);
+        const itemsInfo = (coti.detalles || []).map(d => `- ${d.producto}: ${d.cantidad} ud`).join('\n');
+        alert(`Cotización: ${coti.numero_cotizacion || `KAVE-${String(coti.id).padStart(4, '0')}`}
+
+Cliente: ${coti.cliente_nombre || (clientes.find(c => c.id === coti.cliente)?.nombre)}
+Asunto: ${coti.asunto}
+Total: ${(Number(coti.gran_total || coti.valor_total) || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}
+
+PRODUCTOS:\n${itemsInfo}`);
     };
 
     const getBadgeStyle = (estado) => {
@@ -978,11 +986,7 @@ export default function CotizacionesCRM() {
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    // Al usar HashRouter, la URL necesita el prefijo /#/ antes de la ruta
-                                                    const url = `${window.location.origin}/#/inventario`;
-                                                    window.open(url, '_blank');
-                                                }}
+                                                onClick={addDetalle}
                                                 style={{
                                                     background: '#48bb78',
                                                     color: 'white',
@@ -999,7 +1003,7 @@ export default function CotizacionesCRM() {
                                                 }}
                                             >
                                                 <Package size={14} />
-                                                Agregar Producto
+                                                Añadir Producto
                                             </button>
                                             <button
                                                 type="button"
@@ -1023,33 +1027,6 @@ export default function CotizacionesCRM() {
                                             >
                                                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
                                                 Refrescar
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={addDetalle}
-                                                style={{
-                                                    background: '#667eea',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    padding: '0.5rem 1rem',
-                                                    borderRadius: '8px',
-                                                    fontSize: '0.875rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.5rem',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                                onMouseOver={(e) => {
-                                                    e.target.style.backgroundColor = '#5a67d8';
-                                                }}
-                                                onMouseOut={(e) => {
-                                                    e.target.style.backgroundColor = '#667eea';
-                                                }}
-                                            >
-                                                <Plus size={14} />
-                                                Agregar Item
                                             </button>
                                         </div>
                                 </div>
@@ -1075,17 +1052,31 @@ export default function CotizacionesCRM() {
                                         <tbody>
                                             {formData.detalles.map((detalle, index) => (
                                                 <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                                        <span style={{
-                                                            background: '#667eea',
-                                                            color: 'white',
-                                                            padding: '0.25rem 0.5rem',
+                                                    <td style={{ padding: '0.75rem', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                        {/* Miniatura del producto */}
+                                                        {detalle.imagen ? (
+                                                            <img 
+                                                                src={detalle.imagen.startsWith('http') ? detalle.imagen : `${API.MEDIA}${detalle.imagen}`} 
+                                                                alt="p" 
+                                                                style={{ 
+                                                                    width: '32px', 
+                                                                    height: '32px', 
+                                                                    borderRadius: '4px', 
+                                                                    objectFit: 'cover',
+                                                                    marginBottom: '4px',
+                                                                    border: '1px solid #e2e8f0'
+                                                                }} 
+                                                            />
+                                                        ) : (
+                                                            <span style={{
+                                                                background: '#667eea', color: 'white', padding: '0.25rem 0.5rem',
                                                             borderRadius: '4px',
                                                             fontSize: '0.75rem',
                                                             fontWeight: '600'
                                                         }}>
                                                             {detalle.item}
                                                         </span>
+                                                        )}
                                                     </td>
                                                     <td style={{ padding: '0.75rem' }}>
                                                         <select

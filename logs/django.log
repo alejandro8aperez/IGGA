@@ -16052,3 +16052,17 @@ INFO 2026-05-09 13:26:30,378 autoreload 23888 17328 C:\Postgres\ERP-8AMPERIOS\er
 INFO 2026-05-09 13:26:31,641 autoreload 3348 18916 Watching for file changes with StatReloader
 INFO 2026-05-09 14:26:02,992 autoreload 3348 18916 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
 INFO 2026-05-09 14:26:07,946 autoreload 26028 24264 Watching for file changes with StatReloader
+INFO 2026-05-09 15:11:06,693 autoreload 26028 24264 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 15:11:09,104 autoreload 5244 16304 Watching for file changes with StatReloader
+INFO 2026-05-09 15:11:50,481 autoreload 5244 16304 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 15:11:51,963 autoreload 19888 11732 Watching for file changes with StatReloader
+INFO 2026-05-09 16:18:58,294 autoreload 19888 11732 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 16:19:03,139 autoreload 29128 30324 Watching for file changes with StatReloader
+INFO 2026-05-09 16:22:11,196 autoreload 29128 30324 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 16:22:14,634 autoreload 9504 564 Watching for file changes with StatReloader
+INFO 2026-05-09 16:34:55,304 autoreload 9504 564 C:\Postgres\ERP-8AMPERIOS\inventarios\models.py changed, reloading.
+INFO 2026-05-09 16:35:04,855 autoreload 17216 21220 Watching for file changes with StatReloader
+INFO 2026-05-09 16:44:38,448 autoreload 17216 21220 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 16:44:44,325 autoreload 5736 30152 Watching for file changes with StatReloader
+INFO 2026-05-09 16:52:48,224 autoreload 5736 30152 C:\Postgres\ERP-8AMPERIOS\pos\views.py changed, reloading.
+INFO 2026-05-09 16:52:53,544 autoreload 9364 28720 Watching for file changes with StatReloader

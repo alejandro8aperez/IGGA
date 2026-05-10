@@ -17,6 +17,7 @@ const BASE_URL =
         : FALLBACK_SAME_ORIGIN);
 
 const B = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
+const M = B.replace('/api', ''); // Base para archivos de Media (sin el prefijo /api)
 
 // =============================================================================
 // ENDPOINTS
@@ -281,6 +282,9 @@ export const API = {
         SESION_ACTIVA:  `${B}/pos/sesiones/activa/`,
         CAJAS:          `${B}/pos/cajas/`,
     },
+
+    // ── Media (Imágenes) ──────────────────────────────────────────────────────
+    MEDIA: M,
 
     // ── URL base (para endpoints personalizados) ──────────────────────────────
     BASE: B,
