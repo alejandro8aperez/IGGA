@@ -230,17 +230,11 @@ function VistaCalculador({ onGuardar }) {
     try {
       console.log('🔧 Enviando datos a KAVE:', form);
       console.log('🌐 URL:', API_URL + 'quote/');
-      
-      // Opción 1: Usar fetch nativo
-      const response = await fetch(API_URL + 'quote/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form)
-      });
-      
-      const data = await response.json();
+
+      // Usar axios para aprovechar los interceptores de JWT y timeout global
+      const response = await axios.post(API_URL + 'quote/', form);
+      const data = response.data;
+
       console.log('>>> Respuesta KAVE completa:', data);
       console.log('>>> Keys disponibles:', Object.keys(data));
       console.log('>>> Status:', response.status);

@@ -47,9 +47,10 @@ axios.interceptors.request.use(
                     if (token) {
                         config.headers.Authorization = `Bearer ${token}`;
                     }
-                } catch {
-                    // JSON malformado — limpiar silenciosamente
-                    localStorage.removeItem('erpUser');
+                } catch (e) {
+                    // Error al parsear el JSON o acceso a localStorage.
+                    // Evitamos el borrado automático para que AuthContext decida el flujo.
+                    console.error('[ERP] Error al recuperar datos de sesión:', e);
                 }
             }
         }

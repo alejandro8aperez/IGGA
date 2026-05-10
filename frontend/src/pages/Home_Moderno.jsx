@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 // Importaciones de módulos modernos
-tatusimport MultiEmpresa from './MultiEmpresa';
+import MultiEmpresa from './MultiEmpresa';
 import MRP from './MRP';
 import Dashboard_Moderno from './Dashboard_Moderno';
 import Ventas from './Ventas';
