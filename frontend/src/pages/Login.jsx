@@ -102,7 +102,7 @@ const Login = () => {
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
-                        width: '180px', height: '180px',
+                        width: '192px !important', height: '192px !important',
                         margin: '0 auto 1.5rem',
                         borderRadius: '50%',
                         overflow: 'hidden',
