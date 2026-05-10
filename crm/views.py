@@ -1,5 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from django.http import HttpResponse
 from .models import Cliente, Oportunidad, Cotizacion
 from .serializers import ClienteSerializer, OportunidadSerializer, CotizacionSerializer
@@ -10,12 +11,31 @@ import os
 from django.conf import settings
 from datetime import datetime
 
+
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all().order_by('-fecha_registro')
     serializer_class = ClienteSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        cliente = self.get_object()
+        try:
+            cliente.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response(
+                {
+                    "error": f"No se puede eliminar el cliente '{cliente.nombre}' porque tiene registros asociados "
+                             f"(cotizaciones, facturas u oportunidades). Elimine primero esos registros.",
+                    "detalle": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
 class OportunidadViewSet(viewsets.ModelViewSet):
     queryset = Oportunidad.objects.all().order_by('-fecha_creacion')
     serializer_class = OportunidadSerializer
+
 
 class CotizacionViewSet(viewsets.ModelViewSet):
     queryset = Cotizacion.objects.all().order_by('-fecha_creacion')
@@ -31,7 +51,7 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         
         # Styles
         header_font = Font(name='Arial', size=12, bold=True, color="FFFFFF")
-        header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # Dark Blue
+        header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
         bold_font = Font(bold=True)
         center_align = Alignment(horizontal='center', vertical='center')
         thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
@@ -90,7 +110,6 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             cell.fill = header_fill
             cell.alignment = center_align
             cell.border = thin_border
-            # Column width
             ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = col_widths[i-1]
             
         # Table Items
@@ -169,22 +188,16 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         
         sign_row += 6
         ws.cell(row=sign_row, column=2, value="Ing Alejandro Ochoa P.")
-        
         sign_row += 1
         ws.cell(row=sign_row, column=2, value="Gerente")
-        
         sign_row += 2
         ws.cell(row=sign_row, column=2, value="Calle 20 sur No 35-120")
-        
         sign_row += 1
         ws.cell(row=sign_row, column=2, value="Medellin-Colombia")
-        
         sign_row += 1
         ws.cell(row=sign_row, column=2, value="Tel: 300 7849624")
-        
         sign_row += 1
         ws.cell(row=sign_row, column=2, value="aochoa@transformadoreskave.com")
-        
         sign_row += 1
         ws.cell(row=sign_row, column=2, value="www.transformadoreskave.com")
         
