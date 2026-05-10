@@ -43,16 +43,16 @@ export default function Mantenimiento() {
     const fetchData = async () => {
         try {
             setLoading(true);
-                // Intentamos cargar equipos específicos y también productos del inventario que puedan ser activos
-                const [ordenesRes, equipoRes, productosRes] = await Promise.all([
+                // Intentamos cargar equipos específicos y también activos fijos
+                const [ordenesRes, equipoRes, activosRes] = await Promise.all([
                 axios.get(API_ORDENES),
                     axios.get(API_EQUIPOS),
-                    axios.get('/inventarios/productos/').catch(() => ({ data: [] }))
+                    axios.get('/activos/activos/').catch(() => ({ data: [] }))
             ]);
                 setOrdenes(Array.isArray(ordenesRes.data) ? ordenesRes.data : []);
                 
-                // Si no hay equipos en mantenimiento, intentamos mostrar los "Activos" del inventario
-                setEquipos(equipoRes.data?.length > 0 ? equipoRes.data : productosRes.data);
+                // Si no hay equipos registrados en el módulo, mostramos los Activos Fijos del sistema
+                setEquipos(equipoRes.data?.length > 0 ? equipoRes.data : (activosRes.data || []));
                 
             setLoading(false);
         } catch (err) {
