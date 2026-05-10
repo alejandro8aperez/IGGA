@@ -230,6 +230,30 @@ const modules = [
         color: '#ec4899',
         path: '/pos',
         stats: { total: 0, growth: 'Nuevo' }
+    },
+    {
+        name: 'Facturación Electrónica',
+        description: 'Facturación electrónica DIAN (Colombia)',
+        icon: FileText,
+        color: '#0ea5e9',
+        path: '/facturacion-electronica',
+        stats: { total: 0, growth: 'Nuevo' }
+    },
+    {
+        name: 'Nómina',
+        description: 'Liquidación de nómina colombiana',
+        icon: HeartHandshake,
+        color: '#16a34a',
+        path: '/nomina',
+        stats: { total: 0, growth: 'Nuevo' }
+    },
+    {
+        name: 'ISO 9001',
+        description: 'Formatos y documentos ISO 9001',
+        icon: FolderOpen,
+        color: '#7c3aed',
+        path: '/formatos-iso',
+        stats: { total: 0, growth: 'Nuevo' }
     }
 ];
 
