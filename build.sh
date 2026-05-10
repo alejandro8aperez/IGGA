@@ -2,17 +2,20 @@
 # exit on error
 set -o errexit
 
-# Instalar dependencias
-pip install -r requirements.txt
+echo "🔧 Instalando dependencias…"
+pip install --upgrade pip --quiet
+pip install -r requirements.txt --quiet
 
-# Preparar archivos estáticos y base de datos
-python manage.py collectstatic --no-input
-python manage.py migrate
+echo "📦 Preparando archivos estáticos…"
+python manage.py collectstatic --no-input --clear
 
-# ─── Seed inicial del módulo Informe Diario (idempotente) ────────────────
-# Crea/actualiza los catálogos (Obras, Recursos, Cat. Actividades) si no existen.
-# Es seguro correrlo en cada deploy porque usa get_or_create.
-python manage.py seed_informe_diario || echo "⚠️ seed_informe_diario omitido"
+echo "🗄️  Corriendo migraciones…"
+python manage.py migrate --no-input
 
-# Opcional: Cargar datos iniciales si fuera necesario
-# python manage.py loaddata initial_data.json
+# ─── Seed inicial del módulo Informe Diario (idempotente, no bloquea deploy) ─
+# Usa get_or_create por lo que es seguro correrlo en cada deploy.
+# Si falla por cualquier motivo (BD locked, timeout, etc.), el deploy continúa.
+echo "🌱 Sembrando catálogos informe_diario…"
+timeout 30 python manage.py seed_informe_diario || echo "⚠️ seed_informe_diario omitido (continuando deploy)"
+
+echo "✅ Build completado"
