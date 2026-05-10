@@ -67,6 +67,7 @@ urlpatterns = [
     path('api/kave/', include('kave.urls')),
     path('api/pos/', include('pos.urls')),
     path('api/facturacion-electronica/', include('facturacion_electronica.urls')),
+    path('api/informe-diario/', include('informe_diario.urls')),  # ← Módulo Informe Diario
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/import-data/', import_data_api, name='import_data'),

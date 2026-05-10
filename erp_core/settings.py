@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'kave',
     'pos',
     'facturacion_electronica',
+    'informe_diario',  # ← Módulo Informe Diario de Obra (F-141-IN)
 ]
 
 MIDDLEWARE = [

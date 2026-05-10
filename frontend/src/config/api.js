@@ -133,6 +133,20 @@ export const API = {
         INFORMES_DIARIOS: `${B}/operaciones/informes-diarios/`,
     },
 
+    // ── Informe Diario de Obra (F-141-IN) ─────────────────────────────────────
+    INFORME_DIARIO: {
+        OBRAS:                   `${B}/informe-diario/obras/`,
+        CATEGORIAS_RECURSOS:     `${B}/informe-diario/categorias-recursos/`,
+        RECURSOS:                `${B}/informe-diario/recursos/`,
+        CATEGORIAS_ACTIVIDADES:  `${B}/informe-diario/categorias-actividades/`,
+        INFORMES:                `${B}/informe-diario/informes/`,
+        ANEXOS:                  `${B}/informe-diario/anexos/`,
+        DASHBOARD_RESUMEN:       `${B}/informe-diario/dashboard/resumen/`,
+        DASHBOARD_LLUVIA:        `${B}/informe-diario/dashboard/lluvia-mensual/`,
+        DASHBOARD_PERSONAL:      `${B}/informe-diario/dashboard/personal-por-rol/`,
+    },
+
+
     // ── RRHH ──────────────────────────────────────────────────────────────────
     RRHH: {
         EMPLEADOS:      `${B}/rrhh/empleados/`,

@@ -57,24 +57,89 @@ export const AuthProvider = ({ children }) => {
         delete axios.defaults.headers.common['Authorization'];
     };
 
-    useEffect(() => {
-        // Restaurar sesión desde localStorage al montar
+    // Decodifica el payload de un JWT (sin verificar firma) y devuelve true si está vencido.
+    // Si el token está malformado o no tiene 'exp', se considera inválido.
+    const isJwtExpired = (token) => {
         try {
-            const savedUser = localStorage.getItem('erpUser');
-            if (savedUser && savedUser !== "undefined") {
-                const parsedUser = JSON.parse(savedUser);
-                
-                if (parsedUser?.access && parsedUser?.access !== "undefined") {
-                    setUser(parsedUser);
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
-                } else {
-                    localStorage.removeItem('erpUser');
-                }
-            }
-        } catch (err) {
-            console.warn("[ERP] Error restaurando sesión:", err);
-            localStorage.removeItem('erpUser');
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (!payload.exp) return true;
+            // Margen de 10s para evitar fallos por desfase de reloj
+            return payload.exp * 1000 < (Date.now() + 10000);
+        } catch {
+            return true;
         }
+    };
+
+    // Intenta refrescar el access token usando el refresh token guardado.
+    // Devuelve el usuario actualizado o null si falla.
+    const tryRefreshSilently = async (parsedUser) => {
+        if (!parsedUser?.refresh) return null;
+        try {
+            const cleanAxios = axios.create({ baseURL: axios.defaults.baseURL });
+            const { data } = await cleanAxios.post('token/refresh/', {
+                refresh: parsedUser.refresh,
+            });
+            const updatedUser = { ...parsedUser, access: data.access };
+            localStorage.setItem('erpUser', JSON.stringify(updatedUser));
+            axios.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
+            return updatedUser;
+        } catch {
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        let cancelled = false;
+
+        // =====================================================================
+        // Inicialización con VALIDACIÓN real del JWT.
+        // Antes solo leía localStorage y daba por bueno el token, lo que dejaba
+        // al usuario en "limbo" (autenticado pero sin acceso a APIs) cuando el
+        // token expiraba o el backend reiniciaba con SECRET_KEY distinta.
+        // =====================================================================
+        const init = async () => {
+            try {
+                const savedUser = localStorage.getItem('erpUser');
+                if (!savedUser || savedUser === 'undefined') {
+                    if (!cancelled) setLoading(false);
+                    return;
+                }
+
+                const parsedUser = JSON.parse(savedUser);
+                if (!parsedUser?.access) {
+                    localStorage.removeItem('erpUser');
+                    if (!cancelled) setLoading(false);
+                    return;
+                }
+
+                // ¿El access token sigue vigente?
+                if (!isJwtExpired(parsedUser.access)) {
+                    if (!cancelled) {
+                        setUser(parsedUser);
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.access}`;
+                    }
+                } else {
+                    // Access expirado → intentar refresh silencioso
+                    const refreshed = await tryRefreshSilently(parsedUser);
+                    if (refreshed && !cancelled) {
+                        setUser(refreshed);
+                    } else {
+                        // No hay forma de recuperarse → limpiar todo y forzar login
+                        console.warn('[ERP] Sesión expirada — redirigiendo al login.');
+                        localStorage.removeItem('erpUser');
+                        delete axios.defaults.headers.common['Authorization'];
+                    }
+                }
+            } catch (err) {
+                console.warn('[ERP] Error restaurando sesión:', err);
+                localStorage.removeItem('erpUser');
+                delete axios.defaults.headers.common['Authorization'];
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        init();
 
         // =====================================================================
         // INTERCEPTOR DE RESPUESTA con refresh automático de token
@@ -145,9 +210,12 @@ export const AuthProvider = ({ children }) => {
         );
 
         // Liberar pantalla de carga una vez configurado todo
-        setLoading(false);
+        // (setLoading(false) ya se hizo en init() arriba)
 
-        return () => axios.interceptors.response.eject(interceptor);
+        return () => {
+            cancelled = true;
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
     const loginUser = (userData) => {

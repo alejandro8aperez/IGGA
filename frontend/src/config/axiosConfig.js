@@ -74,8 +74,13 @@ axios.interceptors.response.use(
             // Limpiamos el localStorage automáticamente para que no quedes atrapado.
             console.error('[ERP] Sesión inválida o expirada. Limpiando rastro...');
             localStorage.removeItem('erpUser');
-            // Redirigir al login solo si no estamos ya ahí
-            if (window.location.pathname !== '/login') window.location.href = '/login';
+            delete axios.defaults.headers.common['Authorization'];
+            // ⚠️ Usar HashRouter (el ERP usa # en las rutas) — redirigir con # no con path
+            if (!window.location.hash.includes('/login')) {
+                window.location.href = `${window.location.origin}/#/login`;
+                // Forzar reload para descartar cualquier estado en memoria
+                window.location.reload();
+            }
         } else if (status === 500) {
             console.error('[ERP] Error del servidor (500) en:', error.config?.url);
             if (error.response?.data) {
