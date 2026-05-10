@@ -30,15 +30,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8amp-local-dev-key-fallback')
 
 if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
-    # En producción (DEBUG no es True), forzamos que exista SECRET_KEY real en el entorno
     raise ImproperlyConfigured("La variable SECRET_KEY debe estar configurada en el entorno para producción.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Limpiar espacios en blanco al parsear ALLOWED_HOSTS por si se agregan en el panel de Render
 ALLOWED_HOSTS = [
-    h.strip() 
+    h.strip()
     for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
 ]
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
@@ -105,45 +103,50 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'erp_core.middleware.AuditLogMiddleware', # Auditoría nivel SAP
+    'erp_core.middleware.AuditLogMiddleware',
 ]
 
-# CORS configuration: use environment variables for both local and cloud deployments
-CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin.strip()]
-if CORS_ALLOWED_ORIGINS:
-    CORS_ALLOW_ALL_ORIGINS = False
+# ─── CORS ────────────────────────────────────────────────────────────────────
+CORS_ALLOW_ALL_ORIGINS = False
 
-# Asegurar que CSRF también confíe en los orígenes del frontend y el propio dominio de Render
-CSRF_TRUSTED_ORIGINS = []
-if CORS_ALLOWED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.extend(CORS_ALLOWED_ORIGINS)
-if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
-    CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}")
-if not CSRF_TRUSTED_ORIGINS and not DEBUG: # Fallback si no se definió nada y no es debug
-    CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
+CORS_ALLOWED_ORIGINS = [
+    "https://erp-frontend-7798.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+]
 
-print(f"DEBUG: CSRF_TRUSTED_ORIGINS = {CSRF_TRUSTED_ORIGINS}") # Added for debugging
+CSRF_TRUSTED_ORIGINS = [
+    "https://erp-frontend-7798.onrender.com",
+    "https://erp-backend-a37b.onrender.com",
+]
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Configuración de SameSite para permitir comunicación entre dominios de Render
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 CORS_ALLOW_HEADERS = [
-    'accept', 'accept-encoding', 'authorization',
-    'content-type', 'dnt', 'origin', 'user-agent',
-    'x-csrftoken', 'x-requested-with',
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # Configuración de seguridad de cookies para producción
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
-SECURE_HSTS_SECONDS = 31536000 # 1 año
+SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Django REST Framework - permisos cerrados por defecto para asegurar el ERP
+# Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -167,7 +170,6 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
-
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
 }
@@ -193,8 +195,6 @@ WSGI_APPLICATION = 'erp_core.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv('DATABASE_URL'),
@@ -203,7 +203,6 @@ DATABASES = {
     )
 }
 
-# Fallback para desarrollo local si no hay DATABASE_URL en .env o el entorno de la nube
 if not DATABASES['default']:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
@@ -216,51 +215,30 @@ if not DATABASES['default']:
 
 
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Directorios adicionales si los tienes en la raíz
-STATICFILES_DIRS = [
-    # os.path.join(BASE_DIR, 'static'),
-]
+STATICFILES_DIRS = []
 
 # Media files - AWS S3 Configuration
 USE_S3 = os.getenv('USE_S3', 'False') == 'True'
 
-# Configuración moderna de Almacenamiento (Django 5.x)
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage" if USE_S3 else "django.core.files.storage.FileSystemStorage",
@@ -271,7 +249,6 @@ STORAGES = {
 }
 
 if USE_S3:
-    # AWS S3 Settings
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
@@ -281,18 +258,15 @@ if USE_S3:
     AWS_S3_OBJECT_PARAMETERS = {
         'CacheControl': 'max-age=86400',
     }
-    
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging Configuration - Facturación Electrónica
+# Logging Configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -358,7 +332,7 @@ LOGGING = {
         },
     },
 }
-# --- Configuración Final de Entorno ---
+
 LOGS_DIR = BASE_DIR / 'logs'
 if not LOGS_DIR.exists():
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
