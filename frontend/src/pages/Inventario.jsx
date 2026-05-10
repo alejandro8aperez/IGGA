@@ -722,8 +722,7 @@ export default function Inventario() {
                         value={filterCategory}
                         onChange={(e) => setFilterCategory(e.target.value)}
                     >
-                        <option value="todos">Todas las categorías</option                        {[...new Set(productos.map(p => p.categoria_nombre).filter(Boolean))].map(catName => (
-                            <option key={catName} value={catName}>{catName}</option>
+                        <option value="todos">Todas las categorías</option>
                         {categorias.map(cat => (
                             <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
                         ))}

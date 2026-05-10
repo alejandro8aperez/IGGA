@@ -9,17 +9,17 @@ import {
 } from 'lucide-react';
 
 // Importaciones de módulos modernos
-import MultiEmpresa_Moderno from './MultiEmpresa_Moderno';
-import MRP_Moderno from './MRP_Moderno';
+tatusimport MultiEmpresa from './MultiEmpresa';
+import MRP from './MRP';
 import Dashboard_Moderno from './Dashboard_Moderno';
-import Ventas_Moderno from './Ventas';
+import Ventas from './Ventas';
 import CRM from './CRM';
-import Inventario_Moderno from './Inventario_Moderno';
-import Compras_Moderno from './Compras_Moderno';
-import Logistica_Moderno from './Logistica_Moderno';
+import Inventario from './Inventario';
+import Compras from './Compras';
+import Logistica from './Logistica';
 import RRHH from './RRHH';
 import Nomina from './Nomina';
-import POS_Moderno from './POS';
+import POS from './POS';
 
 // Definición de módulos con diseño moderno
 const modules = [
@@ -29,7 +29,7 @@ const modules = [
         description: 'Gestión multi-compañía',             
         icon: Building2,       
         color: '#6366F1', 
-        component: MultiEmpresa_Moderno,
+        component: MultiEmpresa,
         category: 'administración'
     },
     { 
@@ -38,7 +38,7 @@ const modules = [
         description: 'Material Requirements Planning',     
         icon: Factory,         
         color: '#DC2626', 
-        component: MRP_Moderno,
+        component: MRP,
         category: 'producción'
     },
     { 
@@ -56,7 +56,7 @@ const modules = [
         description: 'Punto de Venta Panadería',
         icon: MonitorSmartphone,
         color: '#ec4899',
-        component: POS_Moderno,
+        component: POS,
         category: 'comercial'
     },
     { 
@@ -65,7 +65,7 @@ const modules = [
         description: 'Gestión de órdenes y ventas',        
         icon: TrendingUp,      
         color: '#10B981', 
-        component: Ventas_Moderno,
+        component: Ventas,
         category: 'comercial'
     },
     { 
@@ -83,7 +83,7 @@ const modules = [
         description: 'Control de productos y stock',       
         icon: PackageOpen,     
         color: '#F59E0B', 
-        component: Inventario_Moderno,
+        component: Inventario,
         category: 'operaciones'
     },
     { 
@@ -92,7 +92,7 @@ const modules = [
         description: 'Órdenes de compra a proveedores',    
         icon: ShoppingCart,    
         color: '#8B5CF6', 
-        component: Compras_Moderno,
+        component: Compras,
         category: 'operaciones'
     },
     { 
@@ -101,7 +101,7 @@ const modules = [
         description: 'Gestión de envíos y entregas',       
         icon: Truck,           
         color: '#EC4899', 
-        component: Logistica_Moderno,
+        component: Logistica,
         category: 'operaciones'
     },
     { 

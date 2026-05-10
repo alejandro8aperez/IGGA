@@ -6,14 +6,14 @@ import { ERP_MODULES_NAV } from '../pages/Home-complete';
 
 // Importación de los componentes de página para el enrutamiento directo
 import HomeModerno from '../pages/Home_Moderno';
-import MultiEmpresa_Moderno from '../pages/MultiEmpresa_Moderno';
-import MRP_Moderno from '../pages/MRP_Moderno';
+import MultiEmpresa from '../pages/MultiEmpresa';
+import MRP from '../pages/MRP';
 import Dashboard_Moderno from '../pages/Dashboard_Moderno';
 import Ventas from '../pages/Ventas';
 import CRM from '../pages/CRM';
 import Inventario from '../pages/Inventario';
-import Compras_Moderno from '../pages/Compras_Moderno';
-import Logistica_Moderno from '../pages/Logistica_Moderno';
+import Compras from '../pages/Compras';
+import Logistica from '../pages/Logistica';
 import RRHH from '../pages/RRHH';
 import Nomina from '../pages/Nomina';
 import POS from '../pages/POS';
@@ -38,14 +38,14 @@ import FormDesignerPage from '../pages/FormDesignerPage';
 // Mapeo de rutas a componentes reales para renderizado dinámico
 const moduleComponentMap = {
     '/': HomeModerno,
-    '/multi-empresa': MultiEmpresa_Moderno,
-    '/mrp': MRP_Moderno,
+    '/multi-empresa': MultiEmpresa,
+    '/mrp': MRP,
     '/dashboard': Dashboard_Moderno,
     '/ventas': Ventas,
     '/crm': CRM,
     '/inventario': Inventario,
-    '/compras': Compras_Moderno,
-    '/logistica': Logistica_Moderno,
+    '/compras': Compras,
+    '/logistica': Logistica,
     '/rrhh': RRHH,
     '/nomina': Nomina,
     '/pos': POS,
