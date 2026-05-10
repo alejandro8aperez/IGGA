@@ -7,8 +7,9 @@ import {
     Activity, TrendingUp, Users, FileText, BarChart3, Target
 } from 'lucide-react';
 
-const API_ORDENES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/ordenes/';
-const API_EQUIPOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/';
+// Usamos rutas relativas para garantizar compatibilidad con la configuración de Axios en producción
+const API_ORDENES = '/mantenimiento/ordenes/';
+const API_EQUIPOS = '/mantenimiento/equipos/';
 
 export default function Mantenimiento() {
     const navigate = useNavigate();
@@ -42,12 +43,17 @@ export default function Mantenimiento() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [ordenesRes, equipoRes] = await Promise.all([
+                // Intentamos cargar equipos específicos y también productos del inventario que puedan ser activos
+                const [ordenesRes, equipoRes, productosRes] = await Promise.all([
                 axios.get(API_ORDENES),
-                axios.get(API_EQUIPOS)
+                    axios.get(API_EQUIPOS),
+                    axios.get('/inventarios/productos/').catch(() => ({ data: [] }))
             ]);
-            setOrdenes(ordenesRes.data);
-            setEquipos(equipoRes.data);
+                setOrdenes(Array.isArray(ordenesRes.data) ? ordenesRes.data : []);
+                
+                // Si no hay equipos en mantenimiento, intentamos mostrar los "Activos" del inventario
+                setEquipos(equipoRes.data?.length > 0 ? equipoRes.data : productosRes.data);
+                
             setLoading(false);
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -963,7 +969,7 @@ export default function Mantenimiento() {
                                         <option value="">Seleccionar equipo</option>
                                         {equipos.map(equipo => (
                                             <option key={equipo.id} value={equipo.id}>
-                                                {equipo.nombre}
+                                            {equipo.codigo || equipo.codigo_sku ? `[${equipo.codigo || equipo.codigo_sku}] ` : ''}{equipo.nombre || equipo.modelo || 'Equipo sin nombre'}
                                             </option>
                                         ))}
                                     </select>
