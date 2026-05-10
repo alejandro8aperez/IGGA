@@ -132,7 +132,7 @@ export default function CotizacionesCRM() {
         
         // Si cambia el producto, auto-llenar unidad y precio
         if (field === 'producto') {
-            const prod = productosInventario.find(p => p.id === parseInt(value) || p.nombre === value);
+            const prod = productosInventario.find(p => String(p.id) === String(value));
             if (prod) {
                 newDetalles[index].unidad = prod.unidad_medida || 'Und';
                 newDetalles[index].valor_unitario = prod.precio_venta || 0;
@@ -1081,7 +1081,7 @@ PRODUCTOS:\n${itemsInfo}`);
                                                     </td>
                                                     <td style={{ padding: '0.75rem' }}>
                                                         <select
-                                                            value={productosInventario.find(p => p.nombre === detalle.producto)?.id || ''}
+                                                            value={detalle.producto_id || productosInventario.find(p => p.nombre === detalle.producto)?.id || ''}
                                                             onChange={(e) => handleDetalleChange(index, 'producto', e.target.value)}
                                                             required
                                                             style={{ 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target } from 'lucide-react';
+import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target, Calendar, DollarSign, BarChart3, ChevronLeft } from 'lucide-react';
 
 const API_CAMPANAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/campanas/';
 const API_LEADS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/leads/';
@@ -62,6 +62,14 @@ const s = {
         minWidth: '160px',
         flex: '1'
     }),
+    card: {
+        background: 'white',
+        borderRadius: '16px',
+        padding: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '2rem',
+        border: '1px solid #e2e8f0'
+    },
     table: {
         width: '100%',
         borderCollapse: 'collapse'
@@ -272,96 +280,91 @@ function Marketing() {
         }
     };
 
-    if (loading) return <div className="container" style={{ position: 'relative' }}>
-                <button
-                    onClick={() => navigate('/')} 
-                    className="btn btn-ghost modal-close-btn" 
-                    title="Cerrar Módulo"
-                    style={{ 
-                        position: 'absolute', 
-                        top: '1rem', 
-                        right: '1rem',
-                        backgroundColor: '#ff0000',
-                        color: '#ffffff',
-                        fontSize: '2rem',
-                        padding: '0.75rem',
-                        border: '2px solid #ff0000',
-                        borderRadius: '8px',
-                        zIndex: 99999,
-                        minWidth: '60px',
-                        minHeight: '60px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 8px 16px rgba(255, 0, 0, 0.8)'
-                    }}
-                >
-                    X
-                </button><div className="loading">Cargando Marketing...</div></div>;
-    if (error) return <div className="container"><div className="error"><AlertCircle size={20} />{error}</div></div>;
+    if (loading) return (
+        <div style={{ ...s.container, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ textAlign: 'center', color: '#667eea' }}>
+                <RefreshCw size={48} className="animate-spin" style={{ margin: '0 auto 1rem' }} />
+                <p style={{ fontWeight: '600' }}>Cargando Marketing...</p>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="container" style={{ 
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            minHeight: '100vh',
-            padding: '2rem'
-        }}>
-            <div className="header" style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '2rem',
-                marginBottom: '2rem',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
-            }}>
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a202c', margin: '0 0 0.5rem 0' }}>
-                    <Megaphone size={32} style={{ marginRight: '1rem', verticalAlign: 'middle' }} /> 
-                    Marketing y Ventas
-                </h1>
-                <button className="btn-primary" onClick={() => openCampModal()}>
+        <div style={s.container}>
+            <div style={s.header}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button onClick={() => navigate('/')} style={{ background: '#f1f5f9', border: 'none', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer', color: '#64748b' }}>
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 style={s.title}>Marketing y Ventas</h1>
+                        <p style={s.subtitle}>Gestión de campañas y seguimiento de leads</p>
+                    </div>
+                </div>
+                <button style={s.btnPrimary} onClick={() => openCampModal()}>
                     <Plus size={20} /> Nueva Campaña
                 </button>
             </div>
 
-            <div className="stats-grid" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                <div className="stat-card" style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flex: 1 }}>
-                    <h3 style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>Campañas Totales</h3>
-                    <p className="stat-number" style={{ fontSize: '2rem', fontWeight: 700, color: '#667eea', margin: 0 }}>{campanas.length}</p>
+            {error && (
+                <div style={{ background: '#fed7d7', color: '#c53030', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AlertCircle size={20} /> {error}
                 </div>
-                <div className="stat-card" style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flex: 1 }}>
-                    <h3 style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>Campañas Activas</h3>
-                    <p className="stat-number" style={{ fontSize: '2rem', fontWeight: 700, color: '#48bb78', margin: 0 }}>{campanas.filter(c => c.estado === 'activa').length}</p>
+            )}
+
+            <div style={s.statsGrid}>
+                <div style={s.statCard('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')}>
+                    <Megaphone size={24} />
+                    <div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{campanas.length}</div>
+                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Campañas Totales</div>
+                    </div>
                 </div>
-                <div className="stat-card" style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', flex: 1 }}>
-                    <h3 style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>Leads Generados</h3>
-                    <p className="stat-number" style={{ fontSize: '2rem', fontWeight: 700, color: '#ed8936', margin: 0 }}>{leads.length}</p>
+                <div style={s.statCard('linear-gradient(135deg, #48bb78 0%, #38a169 100%)')}>
+                    <Target size={24} />
+                    <div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{campanas.filter(c => c.estado === 'activa').length}</div>
+                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Campañas Activas</div>
+                    </div>
+                </div>
+                <div style={s.statCard('linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)')}>
+                    <Users size={24} />
+                    <div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{leads.length}</div>
+                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Leads Generados</div>
+                    </div>
                 </div>
             </div>
 
-            <div className="section" style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '2rem' }}>
-                <h2 style={{ color: '#1a202c', fontSize: '1.5rem', fontWeight: 600, margin: '0 0 1.5rem 0' }}>Campañas de Marketing</h2>
-                <div className="table-container" style={{ overflowX: 'auto' }}>
-                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={s.card}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2d3748', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <BarChart3 size={20} style={{ color: '#667eea' }} /> Campañas de Marketing
+                </h2>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={s.table}>
                         <thead>
                             <tr>
-                                <th>Nombre</th>
-                                <th>Segmento</th>
-                                <th>Fecha Inicio</th>
-                                <th>Estado</th>
-                                <th>Presupuesto</th>
-                                <th>Acciones</th>
+                                <th style={s.th}>Nombre</th>
+                                <th style={s.th}>Segmento</th>
+                                <th style={s.th}>Fecha Inicio</th>
+                                <th style={s.th}>Estado</th>
+                                <th style={s.th}>Presupuesto</th>
+                                <th style={{ ...s.th, textAlign: 'center' }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {campanas.map(camp => (
-                                <tr key={camp.id}>
-                                    <td>{camp.nombre}</td>
-                                    <td>{camp.segmento}</td>
-                                    <td>{camp.fecha_inicio}</td>
-                                    <td><span className={`status ${camp.estado}`}>{camp.estado}</span></td>
-                                    <td>${camp.presupuesto}</td>
-                                    <td>
-                                        <button className="btn-icon" onClick={() => openCampModal(camp)}><Edit3 size={16} /></button>
-                                        <button className="btn-icon danger" onClick={() => deleteCamp(camp.id)}><Trash2 size={16} /></button>
+                                <tr key={camp.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                    <td style={{ ...s.td, fontWeight: '600' }}>{camp.nombre}</td>
+                                    <td style={s.td}>{camp.segmento}</td>
+                                    <td style={s.td}>{camp.fecha_inicio}</td>
+                                    <td style={s.td}><span style={s.badge(camp.estado)}>{camp.estado}</span></td>
+                                    <td style={{ ...s.td, fontWeight: '700', color: '#667eea' }}>${Number(camp.presupuesto).toLocaleString()}</td>
+                                    <td style={s.td}>
+                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                            <button style={{ background: '#f1f5f9', border: 'none', padding: '0.4rem', borderRadius: '6px', cursor: 'pointer', color: '#64748b' }} onClick={() => openCampModal(camp)}><Edit3 size={16} /></button>
+                                            <button style={{ background: '#fee2e2', border: 'none', padding: '0.4rem', borderRadius: '6px', cursor: 'pointer', color: '#ef4444' }} onClick={() => deleteCamp(camp.id)}><Trash2 size={16} /></button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -370,149 +373,61 @@ function Marketing() {
                 </div>
             </div>
 
-            <div className="section" style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                <h2 style={{ color: '#1a202c', fontSize: '1.5rem', fontWeight: 600, margin: '0 0 1.5rem 0' }}>Leads Recientes</h2>
-                <div className="table-container" style={{ overflowX: 'auto' }}>
-                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Empresa</th>
-                                <th>Fuente</th>
-                                <th>Estado</th>
-                                <th>Puntuación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {leads.slice(0, 10).map(lead => (
-                                <tr key={lead.id}>
-                                    <td>{lead.nombre}</td>
-                                    <td>{lead.email}</td>
-                                    <td>{lead.empresa}</td>
-                                    <td>{lead.fuente}</td>
-                                    <td><span className={`status ${lead.estado}`}>{lead.estado}</span></td>
-                                    <td>{lead.puntuacion}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Modal Campaña */}
             {isCampModalOpen && (
-                <div className="modal-overlay" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}>
-                    <div className="modal" style={{ position: 'relative', backgroundColor: 'white', color: '#1a202c' }}>
-                        <div className="modal-header">
+                <div style={s.modalOverlay}>
+                    <div style={s.modal}>
+                        <div style={s.modalHeader}>
+                            <h2 style={{ ...s.modalTitle, color: 'white' }}>{currentCamp ? 'Editar' : 'Nueva'} Campaña</h2>
                             <button 
-                                className="btn btn-ghost modal-close-btn" 
                                 onClick={() => setIsCampModalOpen(false)}
-                                style={{ 
-                                    position: 'absolute', 
-                                    top: '0.5rem', 
-                                    right: '0.5rem',
-                                    background: '#ff0000',
-                                    backgroundColor: '#ff0000',
-                                    color: '#ffffff',
-                                    fontSize: '2rem',
-                                    padding: '0.75rem',
-                                    border: '2px solid #ff0000',
-                                    borderRadius: '8px',
-                                    zIndex: 999999999,
-                                    width: '60px',
-                                    height: '60px',
-                                    minWidth: '60px',
-                                    minHeight: '60px',
-                                    maxWidth: '60px',
-                                    maxHeight: '60px',
-                                    visibility: 'visible',
-                                    opacity: 1,
-                                    display: 'block',
-                                    pointerEvents: 'auto',
-                                    transform: 'none',
-                                    transition: 'none',
-                                    animation: 'none',
-                                    textAlign: 'center',
-                                    lineHeight: '60px'
-                                }}
+                                style={s.modalCloseButton}
                             >
-                                X
-                            </button>
-                            <h3>{currentCamp ? 'Editar' : 'Nueva'} Campaña</h3>
-                            <button 
-                                className="btn btn-ghost" 
-                                onClick={() => setIsCampModalOpen(false)}
-                                style={{ 
-                                    position: 'absolute', 
-                                    top: '0.5rem', 
-                                    right: '0.5rem', 
-                                    padding: '0.75rem',
-                                    background: 'rgba(239, 68, 68, 0.2)',
-                                    border: '1px solid rgba(239, 68, 68, 0.5)',
-                                    borderRadius: '8px',
-                                    zIndex: 1000,
-                                    color: '#fca5a5',
-                                    fontSize: '1.5rem',
-                                    fontWeight: 'bold',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.target.style.background = 'rgba(239, 68, 68, 0.3)';
-                                    e.target.style.transform = 'scale(1.1)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.target.style.background = 'rgba(239, 68, 68, 0.2)';
-                                    e.target.style.transform = 'scale(1)';
-                                }}
-                            >
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleCampSubmit}>
-                            <div className="form-group">
-                                <label>Nombre:</label>
-                                <input type="text" value={campForm.nombre} onChange={(e) => setCampForm({...campForm, nombre: e.target.value})} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Descripción:</label>
-                                <textarea value={campForm.descripcion} onChange={(e) => setCampForm({...campForm, descripcion: e.target.value})} />
-                            </div>
-                            <div className="form-group">
-                                <label>Segmento ID:</label>
-                                <input type="number" value={campForm.segmento} onChange={(e) => setCampForm({...campForm, segmento: e.target.value})} required />
-                            </div>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Fecha Inicio:</label>
-                                    <input type="date" value={campForm.fecha_inicio} onChange={(e) => setCampForm({...campForm, fecha_inicio: e.target.value})} required />
+                        <form onSubmit={handleCampSubmit} style={{ padding: '2rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={s.formLabel}>Nombre de la Campaña *</label>
+                                    <input type="text" style={s.formInput} value={campForm.nombre} onChange={(e) => setCampForm({...campForm, nombre: e.target.value})} required />
                                 </div>
-                                <div className="form-group">
-                                    <label>Fecha Fin:</label>
-                                    <input type="date" value={campForm.fecha_fin} onChange={(e) => setCampForm({...campForm, fecha_fin: e.target.value})} />
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={s.formLabel}>Descripción</label>
+                                    <textarea style={s.formTextarea} value={campForm.descripcion} onChange={(e) => setCampForm({...campForm, descripcion: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label style={s.formLabel}>Segmento ID</label>
+                                    <input type="number" style={s.formInput} value={campForm.segmento} onChange={(e) => setCampForm({...campForm, segmento: e.target.value})} required />
+                                </div>
+                                <div>
+                                    <label style={s.formLabel}>Presupuesto ($)</label>
+                                    <input type="number" step="0.01" style={s.formInput} value={campForm.presupuesto} onChange={(e) => setCampForm({...campForm, presupuesto: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label style={s.formLabel}>Fecha Inicio</label>
+                                    <input type="date" style={s.formInput} value={campForm.fecha_inicio} onChange={(e) => setCampForm({...campForm, fecha_inicio: e.target.value})} required />
+                                </div>
+                                <div>
+                                    <label style={s.formLabel}>Fecha Fin</label>
+                                    <input type="date" style={s.formInput} value={campForm.fecha_fin} onChange={(e) => setCampForm({...campForm, fecha_fin: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label style={s.formLabel}>Estado</label>
+                                    <select style={s.formSelect} value={campForm.estado} onChange={(e) => setCampForm({...campForm, estado: e.target.value})}>
+                                        <option value="planificada">Planificada</option>
+                                        <option value="activa">Activa</option>
+                                        <option value="pausada">Pausada</option>
+                                        <option value="finalizada">Finalizada</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={s.formLabel}>Canales</label>
+                                    <input type="text" style={s.formInput} value={Array.isArray(campForm.canales) ? campForm.canales.join(', ') : campForm.canales} onChange={(e) => setCampForm({...campForm, canales: e.target.value.split(', ')})} placeholder="email, redes, sms" />
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label>Presupuesto:</label>
-                                <input type="number" step="0.01" value={campForm.presupuesto} onChange={(e) => setCampForm({...campForm, presupuesto: e.target.value})} />
-                            </div>
-                            <div className="form-group">
-                                <label>Estado:</label>
-                                <select value={campForm.estado} onChange={(e) => setCampForm({...campForm, estado: e.target.value})}>
-                                    <option value="planificada">Planificada</option>
-                                    <option value="activa">Activa</option>
-                                    <option value="pausada">Pausada</option>
-                                    <option value="finalizada">Finalizada</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Canales (separados por coma):</label>
-                                <input type="text" value={campForm.canales.join(', ')} onChange={(e) => setCampForm({...campForm, canales: e.target.value.split(', ')})} placeholder="email, redes_sociales, publicidad" />
-                            </div>
-                            <div className="modal-actions">
-                                <button type="button" onClick={() => setIsCampModalOpen(false)}>Cancelar</button>
-                                <button type="submit" className="btn-primary">Guardar</button>
+                            <div style={s.modalActions}>
+                                <button type="button" style={s.btnSecondary} onClick={() => setIsCampModalOpen(false)}>Cancelar</button>
+                                <button type="submit" style={s.btnPrimary}>Guardar Campaña</button>
                             </div>
                         </form>
                     </div>

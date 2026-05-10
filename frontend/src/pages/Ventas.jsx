@@ -138,11 +138,7 @@ export default function Ventas() {
       setOrdenes(Array.isArray(ordRes.data) ? ordRes.data : []);
       setFacturas(factRes.data);
       setClientes(cliRes.data);
-      setProductos((prodRes.data || []).filter(p => 
-        p.tipo_producto === 'producto_terminado' || 
-        p.tipo_producto === 'semielaborado' ||
-        !p.tipo_producto // Por si hay datos antiguos sin tipo
-      ));
+      setProductos(prodRes.data || []); // Cargamos todos los productos para permitir órdenes de cualquier tipo
       setNotasCredito(ncRes.data || []);
       setLoading(false);
         } catch (err) {
@@ -307,7 +303,7 @@ export default function Ventas() {
       newDetalles[index] = { ...newDetalles[index], [field]: value };
       
       if (field === 'producto') {
-        const prod = productos.find(p => p.id === parseInt(value));
+        const prod = productos.find(p => String(p.id) === String(value));
         if (prod) {
           newDetalles[index].nombre_producto = prod.nombre;
           newDetalles[index].valor_unitario = parseFloat(prod.precio_venta || 0);
