@@ -6,6 +6,202 @@ import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target } from 'l
 const API_CAMPANAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/campanas/';
 const API_LEADS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/leads/';
 
+// ── Estilos CRM-style ─────────────────────────────────
+const s = {
+    container: { 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        padding: '2rem',
+        fontFamily: 'Inter, sans-serif'
+    },
+    header: {
+        background: 'white',
+        borderRadius: '16px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    title: {
+        fontSize: '2.5rem',
+        fontWeight: 700,
+        color: '#1a202c',
+        margin: '0 0 0.5rem 0'
+    },
+    subtitle: {
+        fontSize: '1.1rem',
+        color: '#718096',
+        margin: 0
+    },
+    btnPrimary: {
+        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+        color: 'white',
+        border: 'none',
+        padding: '0.75rem 1.5rem',
+        borderRadius: '12px',
+        fontSize: '1rem',
+        fontWeight: 600,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        transition: 'transform 0.2s, box-shadow 0.2s'
+    },
+    statCard: (color) => ({
+        background: color,
+        padding: '1rem 1.5rem',
+        borderRadius: '12px',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+        minWidth: '160px',
+        flex: '1'
+    }),
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse'
+    },
+    th: {
+        padding: '1rem',
+        textAlign: 'left',
+        fontSize: '0.75rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        color: '#64748b',
+        background: '#f8fafc',
+        borderBottom: '1px solid #e2e8f0'
+    },
+    td: {
+        padding: '1rem',
+        borderBottom: '1px solid #e2e8f0',
+        fontSize: '0.9rem',
+        color: '#334155'
+    },
+    badge: (estado) => {
+        let bgColor, textColor;
+        switch (estado) {
+            case 'planificada': bgColor = '#dbeafe'; textColor = '#1e40af'; break;
+            case 'activa': bgColor = '#d1fae5'; textColor = '#065f46'; break;
+            case 'pausada': bgColor = '#fef3c7'; textColor = '#92400e'; break;
+            case 'finalizada': bgColor = '#e2e8f0'; textColor = '#4a5568'; break;
+            default: bgColor = '#f3f4f6'; textColor = '#374151'; break;
+        }
+        return {
+            padding: '4px 12px',
+            borderRadius: '9999px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            background: bgColor,
+            color: textColor
+        };
+    },
+    modalOverlay: {
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10000,
+        padding: '1rem'
+    },
+    modal: {
+        background: 'white',
+        borderRadius: '16px',
+        padding: '2rem',
+        width: '100%',
+        maxWidth: '700px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+    },
+    modalHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1.5rem',
+        borderBottom: '1px solid #e2e8f0',
+        paddingBottom: '1rem'
+    },
+    modalTitle: {
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        color: '#1a202c',
+        margin: 0
+    },
+    modalCloseButton: {
+        background: '#e2e8f0',
+        color: '#4a5568',
+        border: 'none',
+        padding: '0.5rem',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        transition: 'all 0.2s'
+    },
+    formGroup: {
+        marginBottom: '1rem'
+    },
+    formLabel: {
+        display: 'block',
+        marginBottom: '0.5rem',
+        fontWeight: '600',
+        color: '#4a5568'
+    },
+    formInput: {
+        width: '100%',
+        padding: '0.75rem',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        fontSize: '0.9rem',
+        outline: 'none',
+        transition: 'border-color 0.2s'
+    },
+    formSelect: {
+        width: '100%',
+        padding: '0.75rem',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        fontSize: '0.9rem',
+        outline: 'none',
+        background: 'white'
+    },
+    formTextarea: {
+        width: '100%',
+        padding: '0.75rem',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        fontSize: '0.9rem',
+        outline: 'none',
+        resize: 'vertical',
+        minHeight: '80px'
+    },
+    modalActions: {
+        display: 'flex',
+        gap: '1rem',
+        justifyContent: 'flex-end',
+        marginTop: '1.5rem'
+    },
+    btnSecondary: {
+        padding: '0.75rem 1.5rem',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        background: 'white',
+        color: '#718096',
+        cursor: 'pointer',
+        fontWeight: '600'
+    }
+};
+
 function Marketing() {
     const navigate = useNavigate();
     const [campanas, setCampanas] = useState([]);
@@ -77,7 +273,7 @@ function Marketing() {
     };
 
     if (loading) return <div className="container" style={{ position: 'relative' }}>
-                <button 
+                <button
                     onClick={() => navigate('/')} 
                     className="btn btn-ghost modal-close-btn" 
                     title="Cerrar Módulo"
