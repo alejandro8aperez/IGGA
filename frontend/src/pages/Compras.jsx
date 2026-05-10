@@ -394,9 +394,10 @@ export default function Compras() {
 
         if (ord) {
             setCurrentOrd(ord);
-            fetchProductosProveedorActual(ord.proveedor);
+            const provId = ord.proveedor?.id || ord.proveedor;
+            fetchProductosProveedorActual(provId);
             setOrdForm({
-                proveedor: ord.proveedor,
+                proveedor: provId || '',
                 fecha_entrega_esperada: ord.fecha_entrega_esperada || '',
                 estado: ord.estado,
                 condicion_pago: ord.condicion_pago || '',
@@ -405,7 +406,7 @@ export default function Compras() {
                 descuento: ord.descuento || 0,
                 detalles: (ord.detalles || []).map(d => ({
                     id: d.id || Math.random(),
-                    producto: d.producto,
+                    producto: d.producto?.id || d.producto || '',
                     nombre_producto: d.producto_nombre || '',
                     unidad: d.unidad_medida || d.unidad || 'UND',
                     cantidad: d.cantidad || 1,
@@ -481,13 +482,17 @@ export default function Compras() {
         try {
             // Limpiar detalles para el backend
             const cleanDetalles = ordForm.detalles.map(d => ({
-                producto: d.producto,
-                cantidad: d.cantidad,
-                precio_unitario: d.precio_unitario,
+                producto: parseInt(d.producto),
+                cantidad: parseFloat(d.cantidad),
+                precio_unitario: parseFloat(d.precio_unitario),
                 notas: d.notas || ''
             }));
 
-            const payload = { ...ordForm, detalles: cleanDetalles };
+            const payload = { 
+                ...ordForm, 
+                proveedor: parseInt(ordForm.proveedor),
+                detalles: cleanDetalles 
+            };
 
             if (currentOrd) {
                 await axios.put(`${API_ORD}${currentOrd.id}/`, payload);
@@ -2665,7 +2670,7 @@ export default function Compras() {
                                             <tr key={det.id}>
                                                 <td style={{ padding: '0.5rem' }}>
                                                     <select
-                                                        value={det.producto}
+                                                        value={String(det.producto || '')}
                                                         onChange={(e) => updateProductoInOrden(det.id, 'producto', e.target.value)}
                                                         required
                                                         style={{ width: '100%', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '6px' }}

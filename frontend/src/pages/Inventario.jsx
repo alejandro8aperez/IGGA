@@ -33,7 +33,8 @@ export default function Inventario() {
         stock_actual: 0,
         stock_minimo: 0,
         unidad_medida: 'unidad',
-        activo: true
+        activo: true,
+        tipo_producto: 'producto_terminado'
     });
 
     const [productos, setProductos] = useState([]);
@@ -124,6 +125,7 @@ export default function Inventario() {
                 stock_minimo: prod.stock_minimo,
                 unidad_medida: prod.unidad_medida || 'UN',
                 activo: prod.activo ?? true,
+                tipo_producto: prod.tipo_producto || 'producto_terminado',
                 imagen: null
             });
         } else {
@@ -139,6 +141,7 @@ export default function Inventario() {
                 stock_minimo: 0,
                 unidad_medida: 'UN',
                 activo: true,
+                tipo_producto: 'producto_terminado',
                 imagen: null
             });
         }
@@ -719,9 +722,10 @@ export default function Inventario() {
                         value={filterCategory}
                         onChange={(e) => setFilterCategory(e.target.value)}
                     >
-                        <option value="todos">Todas las categorías</option>
-                        {[...new Set(productos.map(p => p.categoria_nombre).filter(Boolean))].map(catName => (
+                        <option value="todos">Todas las categorías</option                        {[...new Set(productos.map(p => p.categoria_nombre).filter(Boolean))].map(catName => (
                             <option key={catName} value={catName}>{catName}</option>
+                        {categorias.map(cat => (
+                            <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
                         ))}
                     </select>
                     <select
@@ -767,6 +771,7 @@ export default function Inventario() {
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '12%' }}>Código</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '25%' }}>Producto</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '12%' }}>Categoría</th>
+                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Tipo</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Stock Actual</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Stock Mínimo</th>
                                 <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '8%' }}>Unidad</th>
@@ -837,6 +842,11 @@ export default function Inventario() {
                                                 border: '1px solid #dce4ff'
                                             }}>
                                                 {product.categoria_nombre || 'Sin Categoría'}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
+                                            <span style={{ fontSize: '0.75rem', color: '#718096', textTransform: 'capitalize' }}>
+                                                {product.tipo_producto?.replace('_', ' ')}
                                             </span>
                                         </td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -1101,6 +1111,20 @@ export default function Inventario() {
                                             style={{ fontSize: '0.65rem', width: '100%' }}
                                         />
                                     </div>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.2rem', color: '#4a5568', fontWeight: '600', fontSize: '0.8rem' }}>Tipo de Producto</label>
+                                    <select
+                                        value={prodForm.tipo_producto}
+                                        onChange={(e) => setProdForm({...prodForm, tipo_producto: e.target.value})}
+                                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
+                                    >
+                                        <option value="materia_prima">Materia Prima</option>
+                                        <option value="producto_terminado">Producto Terminado</option>
+                                        <option value="insumo">Insumo / Empaque</option>
+                                        <option value="semielaborado">Semielaborado</option>
+                                        <option value="activo_fijo">Activo Fijo</option>
+                                    </select>
                                 </div>
 
                                 {/* Fila 2: Descripción */}

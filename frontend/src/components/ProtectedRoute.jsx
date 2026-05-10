@@ -15,7 +15,8 @@ function ProtectedRoute({ children }) {
         return <div>Cargando autenticación...</div>; // Or a more sophisticated spinner
     }
 
-    if (!user) { // If not loading and no user, then redirect
+    // Verificamos que el usuario exista y tenga un token de acceso válido
+    if (!user || (!user.access && !user.token)) { 
         // Guardamos la ruta a la que intentaba acceder
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
