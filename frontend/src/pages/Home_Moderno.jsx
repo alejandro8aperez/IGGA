@@ -5,8 +5,7 @@ import {
     ShoppingCart, Briefcase, UserCheck, Truck, ShieldCheck, 
     Megaphone, TrendingUp, FileText, BarChart3, Building2, 
     Factory, Search, Bell, User, LogOut, Menu, Grid,
-    Activity, Calendar, Clock, Star, ArrowRight, MonitorSmartphone,
-    HeartHandshake
+    Activity, Calendar, Clock, Star, ArrowRight, MonitorSmartphone, HeartHandshake
 } from 'lucide-react';
 
 // Importaciones de módulos modernos
@@ -73,7 +72,7 @@ const modules = [
         id: 'crm',                
         name: 'CRM y Clientes',       
         description: 'Gestión de clientes y relaciones',   
-        icon: HeartHandshake,           
+        icon: Users,           
         color: '#3B82F6', 
         component: CRM,
         category: 'comercial'
@@ -109,7 +108,7 @@ const modules = [
         id: 'rrhh',                
         name: 'RRHH',                 
         description: 'Gestión de empleados y perfiles',   
-        icon: Users,           
+        icon: HeartHandshake,           
         color: '#F472B6', 
         component: RRHH,
         category: 'administración'
