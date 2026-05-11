@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import AllowAny
 from django.db.models import Sum, Count, Q
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
@@ -25,11 +26,13 @@ class ObraViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['codigo', 'nombre', 'cliente']
     ordering_fields = ['nombre', 'codigo', 'creado_en']
+    permission_classes = [AllowAny]
 
 
 class CategoriaRecursoViewSet(viewsets.ModelViewSet):
     queryset = CategoriaRecurso.objects.all()
     serializer_class = CategoriaRecursoSerializer
+    permission_classes = [AllowAny]
 
 
 class RecursoViewSet(viewsets.ModelViewSet):
@@ -37,6 +40,7 @@ class RecursoViewSet(viewsets.ModelViewSet):
     serializer_class = RecursoSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre', 'categoria__nombre']
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -52,9 +56,11 @@ class RecursoViewSet(viewsets.ModelViewSet):
 class CategoriaActividadViewSet(viewsets.ModelViewSet):
     queryset = CategoriaActividad.objects.all()
     serializer_class = CategoriaActividadSerializer
+    permission_classes = [AllowAny]
 
 
 class InformeDiarioViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = InformeDiario.objects.select_related('obra').prefetch_related(
         'detalles__recurso__categoria',
         'reportes_lluvia',
