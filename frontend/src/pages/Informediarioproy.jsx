@@ -61,9 +61,6 @@ const tabStyle = (active) => ({
 
 // ─── Helpers API ─────────────────────────────────────────────────────────────
 const api = {
-    proyectos: {
-        list: () => axios.get(API.OPERACIONES.PROYECTOS).then(r => r.data),
-    },
     obras: {
         list: () => axios.get(ID.OBRAS).then(r => r.data),
         create: (d) => axios.post(ID.OBRAS, d).then(r => r.data),
@@ -813,45 +810,8 @@ const Informediarioproy = () => {
     const [recursos, setRecursos] = useState([]);
     const [catAct, setCatAct] = useState([]);
 
-    const getOrCreateObraFromProyecto = useCallback(async (proyecto) => {
-        const existingObras = await api.obras.list();
-        let obra = existingObras.find(o => o.codigo === `PROY-${proyecto.id}`);
-        if (!obra) {
-            obra = await api.obras.create({
-                codigo: `PROY-${proyecto.id}`,
-                nombre: proyecto.nombre,
-                cliente: proyecto.cliente_nombre || '',
-                ubicacion: '',
-                activo: true
-            });
-        }
-        return obra;
-    }, []);
-
     const reloadCatalogos = useCallback(() => {
-        Promise.all([
-            api.obras.list().catch(() => []),
-            api.proyectos.list().catch(() => [])
-        ]).then(async ([obrasList, proyectosList]) => {
-            const existingCodigos = new Set(obrasList.map(o => o.codigo));
-            const obrasToCreate = proyectosList
-                .filter(p => !existingCodigos.has(`PROY-${p.id}`))
-                .map(p => ({
-                    codigo: `PROY-${p.id}`,
-                    nombre: p.nombre,
-                    cliente: p.cliente_nombre || '',
-                    ubicacion: '',
-                    activo: true
-                }));
-            
-            const newObras = await Promise.all(
-                obrasToCreate.map(obra => api.obras.create(obra).catch(() => null))
-            );
-            
-            const allObras = await api.obras.list().catch(() => []);
-            setObras(allObras);
-        });
-        
+        api.obras.list().then(setObras).catch(() => {});
         api.catRec.list().then(setCatRec).catch(() => {});
         api.recursos.list().then(setRecursos).catch(() => {});
         api.catAct.list().then(setCatAct).catch(() => {});
