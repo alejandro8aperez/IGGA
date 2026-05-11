@@ -126,6 +126,7 @@ export const API = {
 
     // ── Operaciones ───────────────────────────────────────────────────────────
     OPERACIONES: {
+        PROYECTOS:      `${B}/operaciones/proyectos/`,
         PROCESOS:       `${B}/operaciones/procesos/`,
         TAREAS:         `${B}/operaciones/tareas/`,
         INDICADORES:    `${B}/operaciones/indicadores/`,
