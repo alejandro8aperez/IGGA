@@ -67,6 +67,41 @@ def run_migrations(request):
             'traceback': traceback.format_exc()[:2000]
         }, status=500)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def seed_informe_diario(request):
+    """
+    Endpoint para ejecutar seed_informe_diario command.
+    Protegido por ADMIN_SETUP_KEY para evitar acceso no autorizado.
+    """
+    admin_key = request.headers.get('X-Admin-Setup-Key', '')
+    expected_key = os.getenv('ADMIN_SETUP_KEY', 'erp8amperios2024')
+    
+    if admin_key != expected_key:
+        return JsonResponse({'error': 'Unauthorized. Invalid admin key.'}, status=403)
+    
+    print("[OK] Iniciando seed_informe_diario desde endpoint...")
+    try:
+        from django.core.management import call_command
+        
+        print("  - Ejecutando seed_informe_diario...")
+        call_command('seed_informe_diario', verbosity=1)
+
+        print("[OK] Seed informe diario completado exitosamente.")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Seed informe diario completed successfully'
+        })
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()[:2000]
+        }, status=500)
+
 @api_view(['POST'])
 @permission_classes([IsAdminUser]) # SOLO administradores autenticados
 def create_initial_superuser(request):
