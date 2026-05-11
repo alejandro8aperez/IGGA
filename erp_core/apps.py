@@ -16,6 +16,6 @@ class ErpCoreConfig(AppConfig):
             try:
                 Cliente = apps.get_model('crm', 'Cliente')
                 Cliente.objects.get_or_create(id=1, defaults={'nombre': 'Consumidor Final', 'nit': '222222222222'})
-                print("✅ Cliente 'Consumidor Final' asegurado.")
+                print("[OK] Cliente 'Consumidor Final' asegurado.")
             except Exception as e:
-                print(f"⚠️ Error al asegurar cliente 'Consumidor Final': {e}")
+                print(f"[ERROR] Error al asegurar cliente 'Consumidor Final': {e}")
