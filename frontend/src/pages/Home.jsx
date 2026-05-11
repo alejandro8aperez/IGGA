@@ -7,7 +7,7 @@ import {
     Menu, X, Plus, Edit3, Trash2, Search, Filter, Calendar,
     Clock, CheckCircle, AlertCircle, Activity, Target, Building2, FormInput,
     Factory, Shield, Users2, ClipboardList, Cog, Calculator as CalcIcon, 
-    CreditCard, Megaphone, MonitorSmartphone
+    CreditCard, Megaphone, MonitorSmartphone, HeartHandshake, FolderOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API } from '../config/api';
