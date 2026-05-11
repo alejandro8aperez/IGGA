@@ -314,17 +314,27 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
     const [nuevoAnexo, setNuevoAnexo] = useState({ descripcion: '', seccion: 'actividades', file: null });
 
     useEffect(() => {
-        if (!isEdit) return;
-        api.informes.get(informeId).then(d => {
-            setForm({
-                ...d,
-                detalles: d.detalles || [],
-                reportes_lluvia: d.reportes_lluvia || [],
-                actividades: d.actividades || [],
+        if (!isEdit) {
+            const detallesIniciales = recursos.map(r => ({
+                recurso: r.id,
+                cantidad: 0
+            }));
+            setForm(prev => ({
+                ...prev,
+                detalles: detallesIniciales
+            }));
+        } else {
+            api.informes.get(informeId).then(d => {
+                setForm({
+                    ...d,
+                    detalles: d.detalles || [],
+                    reportes_lluvia: d.reportes_lluvia || [],
+                    actividades: d.actividades || [],
+                });
+                setAnexos(d.anexos || []);
             });
-            setAnexos(d.anexos || []);
-        });
-    }, [informeId, isEdit]);
+        }
+    }, [informeId, isEdit, recursos]);
 
     const horasLluvia = useMemo(() => {
         const map = {};
