@@ -597,6 +597,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                             const personalCategoria = categoriasRec.find(c => c.nombre.toUpperCase().includes('PERSONAL'));
                             if (!personalCategoria) return null;
                             const recursosCat = recursosPorCategoria[personalCategoria.id] || [];
+                            const detallesCustom = form.detalles.filter(d => !d.recurso || d.nombre_custom);
                             return (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -614,6 +615,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                             <tr>
                                                 <th style={thStyle}>Descripcion</th>
                                                 <th style={thQty}>Cantidad</th>
+                                                <th style={{ ...thQty, width: '40px' }}></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -628,6 +630,45 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                             style={tdQtyInput}
                                                         />
                                                     </td>
+                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}></td>
+                                                </tr>
+                                            ))}
+                                            {detallesCustom.map((det, idx) => (
+                                                <tr key={`custom-${idx}`} style={{ background: (recursosCat.length + idx) % 2 === 0 ? 'white' : '#f8fafc' }}>
+                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0' }}>
+                                                        <input
+                                                            type="text"
+                                                            value={det.nombre_custom || ''}
+                                                            onChange={e => {
+                                                                const arr = [...form.detalles];
+                                                                const customIdx = form.detalles.indexOf(det);
+                                                                arr[customIdx] = { ...arr[customIdx], nombre_custom: e.target.value };
+                                                                setForm(f => ({ ...f, detalles: arr }));
+                                                            }}
+                                                            style={{ ...input, padding: '0.35rem 0.5rem', fontSize: '0.82rem' }}
+                                                            placeholder="Ingrese nombre del personal..."
+                                                        />
+                                                    </td>
+                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+                                                        <input
+                                                            type="number" min={0} step={1}
+                                                            value={det.cantidad || 0}
+                                                            onChange={e => {
+                                                                const arr = [...form.detalles];
+                                                                const customIdx = form.detalles.indexOf(det);
+                                                                arr[customIdx] = { ...arr[customIdx], cantidad: parseInt(e.target.value) || 0 };
+                                                                setForm(f => ({ ...f, detalles: arr }));
+                                                            }}
+                                                            style={tdQtyInput}
+                                                        />
+                                                    </td>
+                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+                                                        <button type="button"
+                                                            onClick={() => setForm(f => ({ ...f, detalles: f.detalles.filter((_, i) => i !== form.detalles.indexOf(det)) }))}
+                                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: '0.25rem' }}>
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))}
                                             <tr style={{ background: '#f0fdf4' }}>
@@ -637,6 +678,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                 <td style={{ padding: '0.45rem 0.5rem', borderTop: '2px solid #86efac', textAlign: 'center', fontWeight: 700, fontSize: '0.95rem', color: '#15803d' }}>
                                                     {totalPersonal}
                                                 </td>
+                                                <td></td>
                                             </tr>
                                             <tr style={{ background: '#fffbeb' }}>
                                                 <td style={{ padding: '0.55rem 0.75rem', fontSize: '0.82rem', fontWeight: 600, color: '#92400e', borderBottom: '1px solid #fcd34d' }}>
@@ -658,6 +700,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                         </label>
                                                     </div>
                                                 </td>
+                                                <td></td>
                                             </tr>
                                         </tbody>
                                     </table>
