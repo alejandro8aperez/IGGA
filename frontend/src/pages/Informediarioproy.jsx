@@ -3,6 +3,10 @@
 // Módulo Informe Diario de Obra (Formato F-141-IN)
 // Conectado al backend Django app `informe_diario` en /api/informe-diario/
 // Incluye: Dashboard, Lista, Formulario completo, Catálogos en una sola página.
+// 
+// *** VERSIÓN CORREGIDA ***
+// - Agregada función setCantidadRecurso que faltaba
+// - Los recursos de Maquinaria y Personal ahora funcionan correctamente
 // =============================================================================
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
@@ -20,21 +24,6 @@ import { API } from '../config/api';
 const ID = API.INFORME_DIARIO;
 const HORAS = Array.from({ length: 24 }, (_, i) => i);
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
-// ─── Listas fijas: Maquinaria y Personal ─────────────────────────────────────
-// (Comentadas, ahora se usan recursos dinámicos del backend)
-// const MAQUINARIA_ITEMS = [
-//     { key: 'camionetas_siemens',  nombre: 'CAMIONETAS' },
-//     // ... resto comentado
-// ];
-// const PERSONAL_ITEMS = [
-//     { key: 'coordinadora_sst', nombre: 'Coordinadora SST' },
-//     // ... resto comentado
-// ];
-
-// Estado inicial vacío para maquinaria y personal (ahora obsoleto)
-// const maquinariaInit = () => ({}); // Object.fromEntries(MAQUINARIA_ITEMS.filter(i => !i.isHeader).map(i => [i.key, 0]));
-// const personalInit = () => ({}); // Object.fromEntries(PERSONAL_ITEMS.map(i => [i.key, 0]));
 
 // ─── Estilos reusables ───────────────────────────────────────────────────────
 const card = {
@@ -267,7 +256,7 @@ function VistaLista({ obras, onNuevo, onEditar }) {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando…</td></tr>
+                            <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando...</td></tr>
                         ) : informes.length === 0 ? (
                             <tr><td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                                 <FileText size={40} style={{ margin: '0 auto 0.75rem', color: '#cbd5e1' }} />
@@ -379,13 +368,51 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         return det ? det.cantidad : 0;
     };
 
+    // =========================================================================
+    // *** FUNCIÓN CORREGIDA - ESTA FUNCIÓN FALTABA EN EL CÓDIGO ORIGINAL ***
+    // Función para establecer la cantidad de un recurso
+    // =========================================================================
+    const setCantidadRecurso = (recursoId, cantidad) => {
+        setForm(prevForm => {
+            const detallesActuales = prevForm.detalles || [];
+            const indiceExistente = detallesActuales.findIndex(d => d.recurso === recursoId);
+            
+            let nuevosDetalles;
+            if (indiceExistente >= 0) {
+                // Si ya existe, actualizar la cantidad
+                nuevosDetalles = detallesActuales.map((d, idx) => 
+                    idx === indiceExistente ? { ...d, cantidad } : d
+                );
+            } else {
+                // Si no existe, agregar nuevo detalle
+                nuevosDetalles = [...detallesActuales, { recurso: recursoId, cantidad }];
+            }
+            
+            return { ...prevForm, detalles: nuevosDetalles };
+        });
+    };
+
     // Total personal calculado automáticamente desde detalles
     const totalPersonal = useMemo(() => {
         const personalCategoria = categoriasRec.find(c => c.nombre.toUpperCase().includes('PERSONAL'));
         if (!personalCategoria) return 0;
         return recursosPorCategoria[personalCategoria.id]?.reduce((sum, recurso) => {
             const det = form.detalles.find(d => d.recurso === recurso.id);
-            return sum + (det ? det.cantidad : 0);
+            return sum + (det ? Number(det.cantidad) || 0 : 0);
+        }, 0) || 0;
+    }, [form.detalles, categoriasRec, recursosPorCategoria]);
+
+    // Total maquinaria calculado automáticamente
+    const totalMaquinaria = useMemo(() => {
+        const maquinariaCategoria = categoriasRec.find(c => 
+            c.nombre.toUpperCase().includes('MAQUINARIA') || 
+            c.nombre.toUpperCase().includes('EQUIPO') ||
+            c.nombre.toUpperCase().includes('VEHICULO')
+        );
+        if (!maquinariaCategoria) return 0;
+        return recursosPorCategoria[maquinariaCategoria.id]?.reduce((sum, recurso) => {
+            const det = form.detalles.find(d => d.recurso === recurso.id);
+            return sum + (det ? Number(det.cantidad) || 0 : 0);
         }, 0) || 0;
     }, [form.detalles, categoriasRec, recursosPorCategoria]);
 
@@ -445,12 +472,6 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         fontWeight: bold ? 700 : 400,
         borderBottom: '1px solid #e2e8f0',
     });
-    const tdHeader = {
-        padding: '0.45rem 0.75rem', fontSize: '0.78rem', fontWeight: 700,
-        color: '#0f172a', background: '#dbeafe',
-        borderBottom: '1px solid #bfdbfe', letterSpacing: '0.03em',
-        textTransform: 'uppercase',
-    };
     const tdQtyInput = {
         padding: '0.35rem', border: '1px solid #cbd5e0', borderRadius: '6px',
         width: '58px', textAlign: 'center', fontSize: '0.85rem',
@@ -467,11 +488,11 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                         <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
                             {isEdit ? `Editar Informe #${informeId}` : 'Nuevo Informe Diario'}
                         </h2>
-                        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Libro Diario de Obra · Formato {form.codigo_formato}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Libro Diario de Obra - Formato {form.codigo_formato}</div>
                     </div>
                 </div>
                 <button style={btnPrimary} onClick={guardar} disabled={saving}>
-                    <Save size={14} /> {saving ? 'Guardando…' : 'Guardar Informe'}
+                    <Save size={14} /> {saving ? 'Guardando...' : 'Guardar Informe'}
                 </button>
             </div>
 
@@ -487,7 +508,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     <div>
                         <label style={label}>Obra *</label>
                         <select required value={form.obra} onChange={e => setForm({ ...form, obra: e.target.value })} style={input}>
-                            <option value="">Seleccione obra…</option>
+                            <option value="">Seleccione obra...</option>
                             {obras.map(o => <option key={o.id} value={o.id}>{o.codigo} - {o.nombre}</option>)}
                         </select>
                     </div>
@@ -496,7 +517,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                         <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} style={input} />
                     </div>
                     <div>
-                        <label style={label}>N° páginas</label>
+                        <label style={label}>N Paginas</label>
                         <input type="number" min={1} value={form.numero_paginas} onChange={e => setForm({ ...form, numero_paginas: parseInt(e.target.value || 1, 10) })} style={input} />
                     </div>
                 </div>
@@ -538,14 +559,39 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem',
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
                 }}>
-                    <Truck size={14} /> Maquinaria · Equipos · Herramientas · Personal de Obra
+                    <Truck size={14} /> Maquinaria - Equipos - Herramientas - Personal de Obra
                 </h3>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem', overflowX: 'auto' }}>
+                {/* Mensaje de advertencia si no hay categorías configuradas */}
+                {categoriasRec.length === 0 && (
+                    <div style={{ 
+                        background: '#fef3c7', 
+                        border: '1px solid #fcd34d', 
+                        color: '#92400e', 
+                        padding: '1rem', 
+                        borderRadius: '10px', 
+                        marginBottom: '1rem',
+                        fontSize: '0.9rem'
+                    }}>
+                        <strong>No hay categorias de recursos configuradas.</strong><br/>
+                        Ve a la pestana "Catalogos" y crea las categorias:<br/>
+                        - "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS"<br/>
+                        - "PERSONAL DE OBRA"<br/>
+                        Luego agrega los recursos (items) dentro de cada categoria.
+                    </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.25rem', overflowX: 'auto' }}>
                     {/* ── Tablas Dinámicas por Categoría ── */}
                     {categoriasRec.map((categoria) => {
                         const recursosCat = recursosPorCategoria[categoria.id] || [];
                         if (recursosCat.length === 0) return null;
+                        
+                        const esPersonal = categoria.nombre.toUpperCase().includes('PERSONAL');
+                        const esMaquinaria = categoria.nombre.toUpperCase().includes('MAQUINARIA') || 
+                                            categoria.nombre.toUpperCase().includes('EQUIPO') ||
+                                            categoria.nombre.toUpperCase().includes('VEHICULO');
+                        
                         return (
                             <div key={categoria.id}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
@@ -569,8 +615,21 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                 </td>
                                             </tr>
                                         ))}
+                                        
+                                        {/* Total para Maquinaria */}
+                                        {esMaquinaria && (
+                                            <tr style={{ background: '#dbeafe' }}>
+                                                <td style={{ ...tdName(true), color: '#1e40af', borderTop: '2px solid #93c5fd' }}>
+                                                    Total Maquinaria/Equipos
+                                                </td>
+                                                <td style={{ padding: '0.45rem 0.5rem', borderTop: '2px solid #93c5fd', textAlign: 'center', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af' }}>
+                                                    {totalMaquinaria}
+                                                </td>
+                                            </tr>
+                                        )}
+                                        
                                         {/* Total Personal si es la categoría de personal */}
-                                        {categoria.nombre.toUpperCase().includes('PERSONAL') && (
+                                        {esPersonal && (
                                             <>
                                                 <tr style={{ background: '#f0fdf4' }}>
                                                     <td style={{ ...tdName(true), color: '#15803d', borderTop: '2px solid #86efac' }}>
@@ -583,7 +642,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                 {/* Comisión de Topografía */}
                                                 <tr style={{ background: '#fffbeb' }}>
                                                     <td style={{ padding: '0.55rem 0.75rem', fontSize: '0.82rem', fontWeight: 600, color: '#92400e', borderBottom: '1px solid #fcd34d' }}>
-                                                        COMISIÓN DE TOPOGRAFÍA
+                                                        COMISION DE TOPOGRAFIA
                                                     </td>
                                                     <td style={{ padding: '0.45rem 0.5rem', borderBottom: '1px solid #fcd34d', textAlign: 'center' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', fontSize: '0.82rem', fontWeight: 600 }}>
@@ -591,7 +650,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                                 <input type="radio" name="comision_topografia"
                                                                     checked={form.comision_topografia === true}
                                                                     onChange={() => setForm(f => ({ ...f, comision_topografia: true }))} />
-                                                                SÍ
+                                                                SI
                                                             </label>
                                                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', color: '#dc2626' }}>
                                                                 <input type="radio" name="comision_topografia"
@@ -618,7 +677,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 <textarea rows={3} value={form.observaciones_generales}
                     onChange={e => setForm({ ...form, observaciones_generales: e.target.value })}
                     style={{ ...input, minHeight: '80px', fontFamily: 'inherit', resize: 'vertical' }}
-                    placeholder="Observaciones generales del día…" />
+                    placeholder="Observaciones generales del dia..." />
             </Seccion>
 
             {/* Estado del terreno */}
@@ -629,20 +688,20 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                         <textarea rows={3} value={form.estado_terreno_inicio}
                             onChange={e => setForm({ ...form, estado_terreno_inicio: e.target.value })}
                             style={{ ...input, minHeight: '80px', fontFamily: 'inherit', resize: 'vertical' }}
-                            placeholder="Riesgo físico y locativo al inicio…" />
+                            placeholder="Riesgo fisico y locativo al inicio..." />
                     </div>
                     <div>
                         <label style={label}>Al final de la jornada</label>
                         <textarea rows={3} value={form.estado_terreno_final}
                             onChange={e => setForm({ ...form, estado_terreno_final: e.target.value })}
                             style={{ ...input, minHeight: '80px', fontFamily: 'inherit', resize: 'vertical' }}
-                            placeholder="Riesgo físico y locativo al final…" />
+                            placeholder="Riesgo fisico y locativo al final..." />
                     </div>
                 </div>
             </Seccion>
 
             {/* Actividades del día */}
-            <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Actividades del día</>}>
+            <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Actividades del dia</>}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {categoriasAct.filter(c => c.activo !== false).map(cat => {
                         const items = form.actividades.map((a, idx) => ({ a, idx })).filter(({ a }) => String(a.categoria) === String(cat.id));
@@ -664,7 +723,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                 <textarea rows={1} value={a.descripcion}
                                                     onChange={e => { const c = [...form.actividades]; c[idx] = { ...c[idx], descripcion: e.target.value }; setForm({ ...form, actividades: c }); }}
                                                     style={{ ...input, flex: 1, minHeight: '38px', fontFamily: 'inherit', resize: 'vertical' }}
-                                                    placeholder="Describa la actividad…" />
+                                                    placeholder="Describa la actividad..." />
                                                 <button type="button" onClick={() => setForm({ ...form, actividades: form.actividades.filter((_, i) => i !== idx) })}
                                                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: '0.5rem' }}>
                                                     <Trash2 size={14} />
@@ -691,17 +750,17 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
             {/* Anexos fotográficos */}
             {isEdit ? (
-                <Seccion title={<><ImageIcon size={14} style={{ display: 'inline', marginRight: 6 }} />Anexos fotográficos</>}>
+                <Seccion title={<><ImageIcon size={14} style={{ display: 'inline', marginRight: 6 }} />Anexos fotograficos</>}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
                         <div>
-                            <label style={label}>Sección</label>
+                            <label style={label}>Seccion</label>
                             <select style={input} value={nuevoAnexo.seccion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, seccion: e.target.value })}>
                                 <option value="actividades">Actividades</option>
                                 <option value="sst">SST y Medio Ambiente</option>
                             </select>
                         </div>
                         <div>
-                            <label style={label}>Descripción</label>
+                            <label style={label}>Descripcion</label>
                             <input style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} />
                         </div>
                         <div>
@@ -733,7 +792,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </Seccion>
             ) : (
                 <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                    💡 Guarda primero el informe para poder subir anexos fotográficos.
+                    Guarda primero el informe para poder subir anexos fotograficos.
                 </div>
             )}
         </div>
@@ -775,7 +834,7 @@ function Catalogo({ titulo, items, columns, onCreate, onUpdate, onDelete }) {
                                 <td key={c.key} style={{ padding: '0.4rem' }}>
                                     {c.type === 'select' ? (
                                         <select style={input} value={editing[c.key] ?? ''} onChange={e => setEditing({ ...editing, [c.key]: e.target.value })}>
-                                            <option value="">—</option>
+                                            <option value="">-</option>
                                             {c.options?.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                                         </select>
                                     ) : c.type === 'boolean' ? (
@@ -797,7 +856,7 @@ function Catalogo({ titulo, items, columns, onCreate, onUpdate, onDelete }) {
                                 <td key={c.key} style={{ padding: '0.4rem' }}>
                                     {c.type === 'select' ? (
                                         <select style={input} value={editing[c.key] ?? ''} onChange={e => setEditing({ ...editing, [c.key]: e.target.value })}>
-                                            <option value="">—</option>
+                                            <option value="">-</option>
                                             {c.options?.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                                         </select>
                                     ) : c.type === 'boolean' ? (
@@ -816,12 +875,12 @@ function Catalogo({ titulo, items, columns, onCreate, onUpdate, onDelete }) {
                         <tr key={item.id} style={{ borderTop: '1px solid #f1f5f9' }}>
                             {columns.map(c => (
                                 <td key={c.key} style={{ padding: '0.7rem', color: '#475569' }}>
-                                    {c.render ? c.render(item) : c.type === 'boolean' ? (item[c.key] ? 'Sí' : 'No') : item[c.key]}
+                                    {c.render ? c.render(item) : c.type === 'boolean' ? (item[c.key] ? 'Si' : 'No') : item[c.key]}
                                 </td>
                             ))}
                             <td style={{ textAlign: 'right', padding: '0.5rem' }}>
                                 <button style={{ ...btnGhost, background: '#fffbeb', color: '#b45309', marginRight: '0.25rem' }} onClick={() => setEditing({ ...item })}><Edit3 size={12} /></button>
-                                <button style={{ ...btnGhost, background: '#fef2f2', color: '#b91c1c' }} onClick={() => { if (window.confirm('¿Eliminar?')) onDelete(item.id); }}><Trash2 size={12} /></button>
+                                <button style={{ ...btnGhost, background: '#fef2f2', color: '#b91c1c' }} onClick={() => { if (window.confirm('Eliminar?')) onDelete(item.id); }}><Trash2 size={12} /></button>
                             </td>
                         </tr>
                     ))}
@@ -852,12 +911,30 @@ function VistaCatalogos({ obras, catRec, recursos, catAct, reload }) {
                     </button>
                 ))}
             </div>
+            
+            {/* Instrucciones para configurar los catálogos */}
+            <div style={{ 
+                background: '#eff6ff', 
+                border: '1px solid #bfdbfe', 
+                color: '#1e40af', 
+                padding: '1rem', 
+                borderRadius: '10px',
+                fontSize: '0.85rem'
+            }}>
+                <strong>IMPORTANTE:</strong> Para que el formulario de Informe Diario funcione correctamente, debes crear:
+                <ol style={{ margin: '0.5rem 0 0 1.25rem', padding: 0 }}>
+                    <li><strong>Cat. Recursos:</strong> Crea las categorias "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS" y "PERSONAL DE OBRA"</li>
+                    <li><strong>Recursos:</strong> Agrega los items dentro de cada categoria (ej: Camionetas, Grua, Coordinadora SST, Director de proyecto, etc.)</li>
+                    <li><strong>Cat. Actividades:</strong> Crea las categorias de actividades (ej: Administrativas, Cableado, Obra Civil, SST, etc.)</li>
+                </ol>
+            </div>
+            
             {tab === 'obras' && (
                 <Catalogo titulo="Obras" items={obras}
                     columns={[
-                        { key: 'codigo', label: 'Código' },
+                        { key: 'codigo', label: 'Codigo' },
                         { key: 'nombre', label: 'Nombre' },
-                        { key: 'ubicacion', label: 'Ubicación' },
+                        { key: 'ubicacion', label: 'Ubicacion' },
                         { key: 'cliente', label: 'Cliente' },
                         { key: 'activo', label: 'Activo', type: 'boolean', default: true },
                     ]}
@@ -866,7 +943,7 @@ function VistaCatalogos({ obras, catRec, recursos, catAct, reload }) {
                     onDelete={id => api.obras.remove(id).then(reload)} />
             )}
             {tab === 'catRec' && (
-                <Catalogo titulo="Categorías de Recursos" items={catRec}
+                <Catalogo titulo="Categorias de Recursos" items={catRec}
                     columns={[
                         { key: 'nombre', label: 'Nombre' },
                         { key: 'orden', label: 'Orden', type: 'number', default: 0 },
@@ -878,7 +955,7 @@ function VistaCatalogos({ obras, catRec, recursos, catAct, reload }) {
             {tab === 'recursos' && (
                 <Catalogo titulo="Recursos" items={recursos}
                     columns={[
-                        { key: 'categoria', label: 'Categoría', type: 'select',
+                        { key: 'categoria', label: 'Categoria', type: 'select',
                             options: catRec.map(c => ({ id: c.id, label: c.nombre })),
                             render: item => item.categoria_nombre },
                         { key: 'nombre', label: 'Nombre' },
@@ -891,7 +968,7 @@ function VistaCatalogos({ obras, catRec, recursos, catAct, reload }) {
                     onDelete={id => api.recursos.remove(id).then(reload)} />
             )}
             {tab === 'catAct' && (
-                <Catalogo titulo="Categorías de Actividades" items={catAct}
+                <Catalogo titulo="Categorias de Actividades" items={catAct}
                     columns={[
                         { key: 'nombre', label: 'Nombre' },
                         { key: 'orden', label: 'Orden', type: 'number', default: 0 },
@@ -930,7 +1007,7 @@ const Informediarioproy = () => {
     const tabs = [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { key: 'lista', label: 'Informes', icon: FileText },
-        { key: 'catalogos', label: 'Catálogos', icon: Settings },
+        { key: 'catalogos', label: 'Catalogos', icon: Settings },
     ];
 
     return (
@@ -942,7 +1019,7 @@ const Informediarioproy = () => {
                             Informe Diario de Obra
                         </h1>
                         <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0.25rem 0 0' }}>
-                            Libro Diario de Obra · Formato F-141-IN · Interventoría
+                            Libro Diario de Obra - Formato F-141-IN - Interventoria
                         </p>
                     </div>
                 </div>
