@@ -378,6 +378,11 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         }, 0) || 0;
     }, [form.detalles, categoriasRec, recursosPorCategoria]);
 
+    // ─── Optimización: Memoizar onChange para observaciones_generales ────
+    const handleObservacionesChange = useCallback((e) => {
+        setForm(prevForm => ({ ...prevForm, observaciones_generales: e.target.value }));
+    }, []);
+
     const totalPersonal = useMemo(() => {
         const personalCategoria = categoriasRec.find(c => c.nombre.toUpperCase().includes('PERSONAL'));
         if (!personalCategoria) return 0;
@@ -519,152 +524,16 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* ── Maquinaria (izq) + Personal de Obra (der) ── */}
-            <div style={{ ...card, padding: '1.25rem' }}>
-                <h3 style={{
-                    fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
-                    marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.08em',
-                    borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem',
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                }}>
-                    <Truck size={14} /> Maquinaria - Equipos - Herramientas - Personal de Obra
-                </h3>
-
-                {categoriasRec.length === 0 && (
-                    <div style={{
-                        background: '#fef3c7', border: '1px solid #fcd34d',
-                        color: '#92400e', padding: '1rem', borderRadius: '10px',
-                        marginBottom: '1rem', fontSize: '0.9rem',
-                    }}>
-                        <strong>No hay categorias de recursos configuradas.</strong><br />
-                        Configura los catálogos desde el backend o el admin de Django.
-                    </div>
-                )}
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', overflowX: 'auto' }}>
-
-                    {/* ── Tabla izquierda: Maquinaria ── */}
-                    <div>
-                        {categoriasRec
-                            .filter(c => !c.nombre.toUpperCase().includes('PERSONAL'))
-                            .map((categoria) => {
-                                const recursosCat = recursosPorCategoria[categoria.id] || [];
-                                if (recursosCat.length === 0) return null;
-                                const esMaquinaria = categoria.nombre.toUpperCase().includes('MAQUINARIA') ||
-                                    categoria.nombre.toUpperCase().includes('EQUIPO') ||
-                                    categoria.nombre.toUpperCase().includes('VEHICULO');
-                                return (
-                                    <table key={categoria.id} style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: '1rem' }}>
-                                        <thead>
-                                            <tr>
-                                                <th style={thStyle}>{categoria.nombre}</th>
-                                                <th style={thQty}>Cantidad</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {recursosCat.map((recurso, idx) => (
-                                                <tr key={recurso.id} style={{ background: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
-                                                    <td style={tdName(false)}>{recurso.nombre}</td>
-                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
-                                                        <input
-                                                            type="number" min={0} step={1}
-                                                            value={getCantidadRecurso(recurso.id)}
-                                                            onChange={e => setCantidadRecurso(recurso.id, parseInt(e.target.value) || 0)}
-                                                            style={tdQtyInput}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {esMaquinaria && (
-                                                <tr style={{ background: '#dbeafe' }}>
-                                                    <td style={{ ...tdName(true), color: '#1e40af', borderTop: '2px solid #93c5fd' }}>
-                                                        TOTAL
-                                                    </td>
-                                                    <td style={{ padding: '0.45rem 0.5rem', borderTop: '2px solid #93c5fd', textAlign: 'center', fontWeight: 700, fontSize: '0.95rem', color: '#1e40af' }}>
-                                                        {totalMaquinaria}
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                );
-                            })}
-                    </div>
-
-                    {/* ── Tabla derecha: Personal de Obra ── */}
-                    <div>
-                        {(() => {
-                            const personalCategoria = categoriasRec.find(c => c.nombre.toUpperCase().includes('PERSONAL'));
-                            if (!personalCategoria) return null;
-                            const recursosCat = recursosPorCategoria[personalCategoria.id] || [];
-                            return (
-                                <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                                    <thead>
-                                        <tr>
-                                            <th style={thStyle}>Personal de Obra</th>
-                                            <th style={thQty}>Cantidad</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {recursosCat.map((recurso, idx) => (
-                                            <tr key={recurso.id} style={{ background: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
-                                                <td style={tdName(false)}>{recurso.nombre}</td>
-                                                <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
-                                                    <input
-                                                        type="number" min={0} step={1}
-                                                        value={getCantidadRecurso(recurso.id)}
-                                                        onChange={e => setCantidadRecurso(recurso.id, parseInt(e.target.value) || 0)}
-                                                        style={tdQtyInput}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        <tr style={{ background: '#f0fdf4' }}>
-                                            <td style={{ ...tdName(true), color: '#15803d', borderTop: '2px solid #86efac' }}>
-                                                Total Personal
-                                            </td>
-                                            <td style={{ padding: '0.45rem 0.5rem', borderTop: '2px solid #86efac', textAlign: 'center', fontWeight: 700, fontSize: '0.95rem', color: '#15803d' }}>
-                                                {totalPersonal}
-                                            </td>
-                                        </tr>
-                                        <tr style={{ background: '#fffbeb' }}>
-                                            <td style={{ padding: '0.55rem 0.75rem', fontSize: '0.82rem', fontWeight: 600, color: '#92400e', borderBottom: '1px solid #fcd34d' }}>
-                                                COMISION DE TOPOGRAFIA
-                                            </td>
-                                            <td style={{ padding: '0.45rem 0.5rem', borderBottom: '1px solid #fcd34d', textAlign: 'center' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', fontSize: '0.82rem', fontWeight: 600 }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', color: '#15803d' }}>
-                                                        <input type="radio" name="comision_topografia"
-                                                            checked={form.comision_topografia === true}
-                                                            onChange={() => setForm(f => ({ ...f, comision_topografia: true }))} />
-                                                        SI
-                                                    </label>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', color: '#dc2626' }}>
-                                                        <input type="radio" name="comision_topografia"
-                                                            checked={form.comision_topografia === false}
-                                                            onChange={() => setForm(f => ({ ...f, comision_topografia: false }))} />
-                                                        NO
-                                                    </label>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            );
-                        })()}
-                    </div>
-                </div>
-            </div>
-
-            {/* ── Tabla ITEM / DESCRIPCION / EMPRESA / CANTIDAD ── */}
+            {/* ── Maquinaria / Equipos / Herramientas - ITEMS DE OBRA ── */}
             <div style={{ ...card, padding: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h3 style={{
                         fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
                         textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0,
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
                     }}>
-                        <ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />
-                        Items de Obra
+                        <Truck size={14} />
+                        Maquinaria - Equipos - Herramientas
                     </h3>
                     <button type="button" style={btnGhost}
                         onClick={() => setForm(f => ({
@@ -760,7 +629,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
             {/* Observaciones generales */}
             <Seccion title="Observaciones generales">
                 <textarea rows={3} value={form.observaciones_generales}
-                    onChange={e => setForm({ ...form, observaciones_generales: e.target.value })}
+                    onChange={handleObservacionesChange}
                     style={{ ...input, minHeight: '80px', fontFamily: 'inherit', resize: 'vertical' }}
                     placeholder="Observaciones generales del dia..." />
             </Seccion>
