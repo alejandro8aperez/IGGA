@@ -381,10 +381,14 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
     const totalPersonal = useMemo(() => {
         const personalCategoria = categoriasRec.find(c => c.nombre.toUpperCase().includes('PERSONAL'));
         if (!personalCategoria) return 0;
-        return recursosPorCategoria[personalCategoria.id]?.reduce((sum, recurso) => {
+        const deRecursos = recursosPorCategoria[personalCategoria.id]?.reduce((sum, recurso) => {
             const det = form.detalles.find(d => d.recurso === recurso.id);
             return sum + (det ? Number(det.cantidad) || 0 : 0);
         }, 0) || 0;
+        const deCustom = form.detalles.filter(d => !d.recurso || d.nombre_custom).reduce((sum, det) => {
+            return sum + (Number(det.cantidad) || 0);
+        }, 0);
+        return deRecursos + deCustom;
     }, [form.detalles, categoriasRec, recursosPorCategoria]);
 
     const guardar = async () => {
@@ -649,6 +653,20 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                                             }}
                                                             style={{ ...input, padding: '0.35rem 0.5rem', fontSize: '0.82rem' }}
                                                             placeholder="Ingrese nombre del personal..."
+                                                        />
+                                                    </td>
+                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0' }}>
+                                                        <input
+                                                            type="text"
+                                                            value={det.empresa_custom || ''}
+                                                            onChange={e => {
+                                                                const arr = [...form.detalles];
+                                                                const customIdx = form.detalles.indexOf(det);
+                                                                arr[customIdx] = { ...arr[customIdx], empresa_custom: e.target.value };
+                                                                setForm(f => ({ ...f, detalles: arr }));
+                                                            }}
+                                                            style={{ ...input, padding: '0.35rem 0.5rem', fontSize: '0.82rem' }}
+                                                            placeholder="Empresa..."
                                                         />
                                                     </td>
                                                     <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
