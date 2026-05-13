@@ -176,6 +176,113 @@ function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
 }
 
 // =============================================================================
+// SUB-VISTA: Fotos
+// =============================================================================
+function VistaFotos({ obras }) {
+    const [informes, setInformes] = useState([]);
+    const [filtros, setFiltros] = useState({ obra: '', fecha_desde: '', fecha_hasta: '' });
+    const [loading, setLoading] = useState(false);
+
+    const load = useCallback(() => {
+        setLoading(true);
+        const params = {};
+        Object.entries(filtros).forEach(([k, v]) => { if (v) params[k] = v; });
+        api.informes.list(params)
+            .then(d => setInformes(Array.isArray(d) ? d : d.results || []))
+            .finally(() => setLoading(false));
+    }, [filtros]);
+
+    useEffect(() => { load(); }, [load]);
+
+    const informesConFotos = informes.filter(inf => inf.anexos && inf.anexos.length > 0);
+    const todasLasFotos = informesConFotos.flatMap((inf, idx) =>
+        (inf.anexos || []).map((anexo, i) => ({
+            id: `${inf.id}-${anexo.id}`,
+            item: idx + 1,
+            informe_fecha: inf.fecha,
+            informe_obra: inf.obra_codigo,
+            archivo: anexo.archivo || 'N/A',
+            imagen_url: anexo.imagen_url,
+            descripcion: anexo.descripcion,
+            seccion: anexo.seccion,
+        }))
+    );
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ ...card, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
+                <div>
+                    <label style={label}>Obra</label>
+                    <select style={input} value={filtros.obra} onChange={e => setFiltros({ ...filtros, obra: e.target.value })}>
+                        <option value="">Todas</option>
+                        {obras.map(o => <option key={o.id} value={o.id}>{o.codigo} - {o.nombre}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label style={label}>Desde</label>
+                    <input type="date" style={input} value={filtros.fecha_desde} onChange={e => setFiltros({ ...filtros, fecha_desde: e.target.value })} />
+                </div>
+                <div>
+                    <label style={label}>Hasta</label>
+                    <input type="date" style={input} value={filtros.fecha_hasta} onChange={e => setFiltros({ ...filtros, fecha_hasta: e.target.value })} />
+                </div>
+                <div>
+                    <button style={btnSecondary} onClick={() => setFiltros({ obra: '', fecha_desde: '', fecha_hasta: '' })}>
+                        <Filter size={14} /> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <thead style={{ background: '#f8fafc' }}>
+                        <tr>
+                            {['Item', 'Fecha', 'Obra', 'Foto', 'Descripción', 'Sección'].map(h => (
+                                <th key={h} style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase' }}>{h}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando...</td></tr>
+                        ) : todasLasFotos.length === 0 ? (
+                            <tr><td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                                <ImageIcon size={40} style={{ margin: '0 auto 0.75rem', color: '#cbd5e1' }} />
+                                <div>No hay fotos disponibles</div>
+                            </td></tr>
+                        ) : todasLasFotos.map((foto, idx) => (
+                            <tr key={foto.id} style={{ borderTop: '1px solid #f1f5f9' }}
+                                onMouseOver={e => e.currentTarget.style.background = '#fafbff'}
+                                onMouseOut={e => e.currentTarget.style.background = 'white'}>
+                                <td style={{ padding: '0.8rem 1rem', fontWeight: 500, width: '60px' }}>{idx + 1}</td>
+                                <td style={{ padding: '0.8rem 1rem', fontWeight: 500 }}>{foto.informe_fecha}</td>
+                                <td style={{ padding: '0.8rem 1rem' }}>
+                                    <div style={{ fontWeight: 500 }}>{foto.informe_obra}</div>
+                                </td>
+                                <td style={{ padding: '0.8rem 1rem', width: '80px' }}>
+                                    {foto.imagen_url ? (
+                                        <a href={foto.imagen_url} target="_blank" rel="noopener noreferrer"
+                                            style={{ display: 'inline-block', width: '60px', height: '60px', borderRadius: '6px', overflow: 'hidden' }}>
+                                            <img src={foto.imagen_url} alt={foto.descripcion} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </a>
+                                    ) : (
+                                        <div style={{ width: '60px', height: '60px', background: '#f1f5f9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <ImageIcon size={24} color="#94a3b8" />
+                                        </div>
+                                    )}
+                                </td>
+                                <td style={{ padding: '0.8rem 1rem', color: '#64748b', maxWidth: '250px' }}>{foto.descripcion || 'Sin descripción'}</td>
+                                <td style={{ padding: '0.8rem 1rem', fontSize: '0.78rem', color: '#667eea', fontWeight: 600, textTransform: 'uppercase' }}>{foto.seccion}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+// =============================================================================
 // SUB-VISTA: Lista de Informes
 // =============================================================================
 function VistaLista({ obras, onNuevo, onEditar }) {
@@ -982,6 +1089,7 @@ const Informediarioproy = () => {
     const tabs = [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { key: 'lista', label: 'Informes', icon: FileText },
+        { key: 'fotos', label: 'Fotos', icon: ImageIcon },
     ];
 
     return (
@@ -1015,6 +1123,9 @@ const Informediarioproy = () => {
                 <VistaLista obras={obras}
                     onNuevo={() => { setInformeId(null); setVista('form'); }}
                     onEditar={id => { setInformeId(id); setVista('form'); }} />
+            )}
+            {vista === 'fotos' && (
+                <VistaFotos obras={obras} />
             )}
             {vista === 'form' && (
                 <VistaFormulario informeId={informeId} obras={obras}
