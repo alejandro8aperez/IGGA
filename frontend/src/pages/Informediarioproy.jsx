@@ -519,11 +519,11 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* ── Maquinaria, Equipos y Herramientas ── */}
+            {/* ── Maquinaria, Equipos, Herramientas e Items de Obra ── */}
             <div style={{ ...card, padding: '1.25rem' }}>
                 <h3 style={{
                     fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
-                    marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.08em',
+                    marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '0.08em',
                     borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem',
                     display: 'flex', alignItems: 'center', gap: '0.5rem',
                 }}>
@@ -614,6 +614,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                         <thead>
                                             <tr>
                                                 <th style={thStyle}>Descripcion</th>
+                                                <th style={{ ...thStyle, width: '150px' }}>Empresa</th>
                                                 <th style={thQty}>Cantidad</th>
                                                 <th style={{ ...thQty, width: '40px' }}></th>
                                             </tr>
@@ -622,6 +623,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                             {recursosCat.map((recurso, idx) => (
                                                 <tr key={recurso.id} style={{ background: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
                                                     <td style={tdName(false)}>{recurso.nombre}</td>
+                                                    <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', fontSize: '0.82rem', color: '#64748b' }}>—</td>
                                                     <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
                                                         <input
                                                             type="number" min={0} step={1}
@@ -709,10 +711,8 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                         })()}
                     </div>
                 </div>
-            </div>
 
-            {/* ── Tabla ITEM / DESCRIPCION / EMPRESA / CANTIDAD ── */}
-            <div style={{ ...card, padding: '1.25rem' }}>
+                {/* ── Tabla ITEM / DESCRIPCION / EMPRESA / CANTIDAD ── */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h3 style={{
                         fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
