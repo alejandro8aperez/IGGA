@@ -108,6 +108,7 @@ class InformeDiario(models.Model):
     cargo_elaborado = models.CharField(max_length=200, blank=True)
     revisado_por = models.CharField(max_length=200, blank=True)
     cargo_revisado = models.CharField(max_length=200, blank=True)
+    comision_topografia = models.BooleanField(default=False, help_text="Comisión de Topografía presente")
 
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)

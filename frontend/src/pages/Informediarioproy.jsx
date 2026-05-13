@@ -524,17 +524,110 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* ── Maquinaria / Equipos / Herramientas - ITEMS DE OBRA ── */}
-            <div style={{ ...card, padding: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{
-                        fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
-                        textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0,
-                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                        <Truck size={14} />
-                        Maquinaria - Equipos - Herramientas
-                    </h3>
+            {/* ── MAQUINARIA - EQUIPOS - HERRAMIENTAS ── */}
+            <Seccion title={<><Truck size={14} style={{ display: 'inline', marginRight: 6 }} />Maquinaria - Equipos - Herramientas</>}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                    <thead>
+                        <tr>
+                            <th style={thStyle}>Descripción</th>
+                            <th style={{ ...thQty }}>Cantidad</th>
+                            <th style={{ ...thStyle, width: '180px' }}>Empresa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {categoriasRec.filter(c => 
+                            c.nombre.toUpperCase().includes('MAQUINARIA') || 
+                            c.nombre.toUpperCase().includes('EQUIPO') || 
+                            c.nombre.toUpperCase().includes('HERRAMIENTA') ||
+                            c.nombre.toUpperCase().includes('VEHICULO')
+                        ).map(cat => (
+                            recursosPorCategoria[cat.id]?.map(recurso => (
+                                <tr key={recurso.id} style={{ background: '#f8fafc' }}>
+                                    <td style={tdName(true)}>{recurso.nombre}</td>
+                                    <td style={{ ...tdName(), textAlign: 'center' }}>
+                                        <input
+                                            type="number" min={0}
+                                            value={getCantidadRecurso(recurso.id)}
+                                            onChange={e => setCantidadRecurso(recurso.id, e.target.value)}
+                                            style={tdQtyInput}
+                                        />
+                                    </td>
+                                    <td style={tdName()}></td>
+                                </tr>
+                            ))
+                        ))}
+                    </tbody>
+                </table>
+            </Seccion>
+
+            {/* ── PERSONAL DE OBRA ── */}
+            <Seccion title={<><Users size={14} style={{ display: 'inline', marginRight: 6 }} />Personal de Obra</>}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                    <thead>
+                        <tr>
+                            <th style={thStyle}>Descripción</th>
+                            <th style={{ ...thQty }}>Cantidad</th>
+                            <th style={{ ...thStyle, width: '180px' }}>Empresa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {categoriasRec.filter(c => c.nombre.toUpperCase().includes('PERSONAL')).map(cat => (
+                            recursosPorCategoria[cat.id]?.map(recurso => (
+                                <tr key={recurso.id} style={{ background: '#f8fafc' }}>
+                                    <td style={tdName(true)}>{recurso.nombre}</td>
+                                    <td style={{ ...tdName(), textAlign: 'center' }}>
+                                        <input
+                                            type="number" min={0}
+                                            value={getCantidadRecurso(recurso.id)}
+                                            onChange={e => setCantidadRecurso(recurso.id, e.target.value)}
+                                            style={tdQtyInput}
+                                        />
+                                    </td>
+                                    <td style={tdName()}></td>
+                                </tr>
+                            ))
+                        ))}
+                        <tr style={{ background: '#fefce8' }}>
+                            <td style={{ ...tdName(true), fontWeight: 700 }}>Total Personal</td>
+                            <td style={{ ...tdName(), textAlign: 'center', fontWeight: 700, fontSize: '1rem', color: '#1e3a5f' }}>{totalPersonal}</td>
+                            <td style={tdName()}></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Seccion>
+
+            {/* ── COMISIÓN DE TOPOGRAFÍA ── */}
+            <Seccion title="Comisión de Topografía">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', background: '#fefce8', padding: '1rem', borderRadius: '10px' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>¿Hubo Comisión de Topografía?</span>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                            type="radio"
+                            name="comision_topografia"
+                            value="true"
+                            checked={form.comision_topografia === true}
+                            onChange={() => setForm({ ...form, comision_topografia: true })}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>SÍ</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                            type="radio"
+                            name="comision_topografia"
+                            value="false"
+                            checked={form.comision_topografia === false}
+                            onChange={() => setForm({ ...form, comision_topografia: false })}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>NO</span>
+                    </label>
+                </div>
+            </Seccion>
+
+            {/* ── ITEMS DE OBRA ── */}
+            <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Items de Obra</>}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
                     <button type="button" style={btnGhost}
                         onClick={() => setForm(f => ({
                             ...f,
@@ -624,7 +717,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </Seccion>
 
             {/* Observaciones generales */}
             <Seccion title="Observaciones generales">
@@ -756,6 +849,221 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 // =============================================================================
 // COMPONENTE PRINCIPAL
 // =============================================================================
+// =============================================================================
+// SUB-VISTA: Fotos
+// =============================================================================
+function VistaFotos({ obras }) {
+    const [informes, setInformes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [filtros, setFiltros] = useState({ obra: '', fecha_desde: '', fecha_hasta: '' });
+    const [informeSeleccionado, setInformeSeleccionado] = useState(null);
+    const [anexos, setAnexos] = useState([]);
+    const [nuevoAnexo, setNuevoAnexo] = useState({ item: '', descripcion: '', seccion: 'actividades', file: null });
+    const [subiendo, setSubiendo] = useState(false);
+
+    const loadInformes = useCallback(() => {
+        setLoading(true);
+        const params = {};
+        Object.entries(filtros).forEach(([k, v]) => { if (v) params[k] = v; });
+        api.informes.list(params)
+            .then(d => setInformes(Array.isArray(d) ? d : d.results || []))
+            .finally(() => setLoading(false));
+    }, [filtros]);
+
+    useEffect(() => { loadInformes(); }, [loadInformes]);
+
+    const seleccionarInforme = (informe) => {
+        setInformeSeleccionado(informe);
+        api.informes.get(informe.id).then(d => setAnexos(d.anexos || []));
+    };
+
+    const subirFoto = async () => {
+        if (!informeSeleccionado || !nuevoAnexo.file || !nuevoAnexo.item) return;
+        setSubiendo(true);
+        try {
+            const fd = new FormData();
+            fd.append('imagen', nuevoAnexo.file);
+            fd.append('descripcion', nuevoAnexo.descripcion || `Item ${nuevoAnexo.item}`);
+            fd.append('seccion', nuevoAnexo.seccion);
+            const saved = await api.informes.subirAnexo(informeSeleccionado.id, fd);
+            setAnexos([...anexos, saved]);
+            setNuevoAnexo({ item: '', descripcion: '', seccion: 'actividades', file: null });
+        } finally {
+            setSubiendo(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Filtros */}
+            <div style={{ ...card, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
+                <div>
+                    <label style={label}>Obra</label>
+                    <select style={input} value={filtros.obra} onChange={e => setFiltros({ ...filtros, obra: e.target.value })}>
+                        <option value="">Todas</option>
+                        {obras.map(o => <option key={o.id} value={o.id}>{o.codigo} - {o.nombre}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label style={label}>Desde</label>
+                    <input type="date" style={input} value={filtros.fecha_desde} onChange={e => setFiltros({ ...filtros, fecha_desde: e.target.value })} />
+                </div>
+                <div>
+                    <label style={label}>Hasta</label>
+                    <input type="date" style={input} value={filtros.fecha_hasta} onChange={e => setFiltros({ ...filtros, fecha_hasta: e.target.value })} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button style={btnSecondary} onClick={() => setFiltros({ obra: '', fecha_desde: '', fecha_hasta: '' })}>
+                        <Filter size={14} /> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '1.25rem' }}>
+                {/* Lista de informes */}
+                <div style={card}>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        Seleccionar Informe
+                    </h3>
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando...</div>
+                    ) : informes.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8', fontSize: '0.85rem' }}>
+                            No hay informes disponibles
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '500px', overflowY: 'auto' }}>
+                            {informes.map(inf => (
+                                <button
+                                    key={inf.id}
+                                    onClick={() => seleccionarInforme(inf)}
+                                    style={{
+                                        width: '100%',
+                                        textAlign: 'left',
+                                        padding: '0.75rem',
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        background: informeSeleccionado?.id === inf.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#f8fafc',
+                                        color: informeSeleccionado?.id === inf.id ? 'white' : '#475569',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 600 }}>{inf.fecha}</div>
+                                    <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>{inf.obra_codigo} - {inf.obra_nombre}</div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Fotos del informe seleccionado */}
+                <div style={{ ...card, minHeight: '400px' }}>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        <ImageIcon size={16} style={{ display: 'inline', marginRight: 6 }} />
+                        Fotos del Informe
+                    </h3>
+                    
+                    {!informeSeleccionado ? (
+                        <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                            <ImageIcon size={48} style={{ margin: '0 auto 0.75rem', color: '#cbd5e1' }} />
+                            <div>Selecciona un informe para ver sus fotos</div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Formulario para agregar foto */}
+                            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '10px', marginBottom: '1rem' }}>
+                                <h4 style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    Agregar nueva foto
+                                </h4>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
+                                    <div>
+                                        <label style={label}>Item</label>
+                                        <input type="text" style={input} value={nuevoAnexo.item} onChange={e => setNuevoAnexo({ ...nuevoAnexo, item: e.target.value })} placeholder="1" />
+                                    </div>
+                                    <div>
+                                        <label style={label}>Descripción</label>
+                                        <input type="text" style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} placeholder="Descripción..." />
+                                    </div>
+                                    <div>
+                                        <label style={label}>Sección</label>
+                                        <select style={input} value={nuevoAnexo.seccion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, seccion: e.target.value })}>
+                                            <option value="actividades">Actividades</option>
+                                            <option value="sst">SST y Medio Ambiente</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={label}>Archivo</label>
+                                        <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })} style={{ ...input, padding: '0.4rem' }} />
+                                    </div>
+                                    <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file || !nuevoAnexo.item || subiendo}>
+                                        <Upload size={14} /> {subiendo ? 'Subiendo...' : 'Subir'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Tabla de fotos */}
+                            <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...thStyle, width: '80px' }}>Item</th>
+                                        <th style={thStyle}>Descripción</th>
+                                        <th style={{ ...thStyle, width: '180px' }}>Archivo</th>
+                                        <th style={{ ...thStyle, width: '120px' }}>Foto</th>
+                                        <th style={{ ...thStyle, width: '40px' }}></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {anexos.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8', fontSize: '0.85rem' }}>
+                                                <ImageIcon size={32} style={{ margin: '0 auto 0.5rem', color: '#cbd5e1' }} />
+                                                <div>No hay fotos. Agrega la primera!</div>
+                                            </td>
+                                        </tr>
+                                    ) : anexos.map((anexo, idx) => (
+                                        <tr key={anexo.id} style={{ background: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
+                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center', fontWeight: 600 }}>{idx + 1}</td>
+                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0' }}>
+                                                <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>{anexo.descripcion}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#667eea', textTransform: 'uppercase', fontWeight: 600 }}>{anexo.seccion}</div>
+                                            </td>
+                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#475569' }}>
+                                                {anexo.imagen_url ? (
+                                                    <a href={anexo.imagen_url} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none' }}>
+                                                        Ver archivo
+                                                    </a>
+                                                ) : '—'}
+                                            </td>
+                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0' }}>
+                                                {anexo.imagen_url ? (
+                                                    <img src={anexo.imagen_url} alt={anexo.descripcion} style={{ width: '100px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' }} />
+                                                ) : (
+                                                    <div style={{ width: '100px', height: '60px', background: '#f1f5f9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <ImageIcon size={20} color="#94a3b8" />
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+                                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: '0.25rem' }}>
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// =============================================================================
+// COMPONENTE PRINCIPAL
+// =============================================================================
 const Informediarioproy = () => {
     const [vista, setVista] = useState('dashboard');
     const [informeId, setInformeId] = useState(null);
@@ -778,6 +1086,7 @@ const Informediarioproy = () => {
     const tabs = [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { key: 'lista', label: 'Informes', icon: FileText },
+        { key: 'fotos', label: 'Fotos', icon: ImageIcon },
     ];
 
     return (
@@ -811,6 +1120,9 @@ const Informediarioproy = () => {
                 <VistaLista obras={obras}
                     onNuevo={() => { setInformeId(null); setVista('form'); }}
                     onEditar={id => { setInformeId(id); setVista('form'); }} />
+            )}
+            {vista === 'fotos' && (
+                <VistaFotos obras={obras} />
             )}
             {vista === 'form' && (
                 <VistaFormulario informeId={informeId} obras={obras}

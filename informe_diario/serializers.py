@@ -103,6 +103,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'estado_terreno_final',
             'elaborado_por', 'cargo_elaborado',
             'revisado_por', 'cargo_revisado',
+            'comision_topografia',
             'detalles', 'reportes_lluvia', 'actividades', 'anexos',
             'creado_en', 'actualizado_en',
         ]
