@@ -396,7 +396,13 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         setSaving(true); setError('');
         try {
             const payload = {
-                ...form,
+                obra: form.obra, fecha: form.fecha, numero_paginas: form.numero_paginas,
+                codigo_formato: form.codigo_formato,
+                observaciones_generales: form.observaciones_generales,
+                estado_terreno_inicio: form.estado_terreno_inicio,
+                estado_terreno_final: form.estado_terreno_final,
+                elaborado_por: form.elaborado_por, cargo_elaborado: form.cargo_elaborado,
+                revisado_por: form.revisado_por, cargo_revisado: form.cargo_revisado,
                 detalles: form.detalles.filter(d => d.recurso).map(d => ({ recurso: d.recurso, cantidad: Number(d.cantidad || 0) })),
                 actividades: form.actividades.filter(a => a.descripcion?.trim()).map((a, i) => ({ categoria: a.categoria, descripcion: a.descripcion, orden: i })),
                 reportes_lluvia: (form.reportes_lluvia || []).filter(r => r.con_lluvia),
@@ -407,18 +413,24 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 ? await api.informes.update(informeId, payload)
                 : await api.informes.create(payload);
             onSaved(saved.id);
+            return saved.id;
         } catch (err) {
             setError(err.response?.data ? JSON.stringify(err.response.data) : err.message);
         } finally { setSaving(false); }
     };
 
     const subirFoto = async () => {
-        if (!isEdit || !nuevoAnexo.file) return;
+        if (!nuevoAnexo.file) return;
+        let id = informeId;
+        if (!id) {
+            id = await guardar();
+            if (!id) return;
+        }
         const fd = new FormData();
         fd.append('imagen', nuevoAnexo.file);
         fd.append('descripcion', nuevoAnexo.descripcion);
         fd.append('seccion', nuevoAnexo.seccion);
-        const saved = await api.informes.subirAnexo(informeId, fd);
+        const saved = await api.informes.subirAnexo(id, fd);
         setAnexos([...anexos, saved]);
         setNuevoAnexo({ descripcion: '', seccion: 'actividades', file: null });
     };
@@ -625,7 +637,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* ── ITEMS DE OBRA ── */}
+            {/* ── ITEMS── */}
             <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Items de Obra</>}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
                     <button type="button" style={btnGhost}
@@ -796,52 +808,51 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
             </Seccion>
 
             {/* Anexos fotográficos */}
-            {isEdit ? (
-                <Seccion title={<><ImageIcon size={14} style={{ display: 'inline', marginRight: 6 }} />Anexos fotograficos</>}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
-                        <div>
-                            <label style={label}>Seccion</label>
-                            <select style={input} value={nuevoAnexo.seccion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, seccion: e.target.value })}>
-                                <option value="actividades">Actividades</option>
-                                <option value="sst">SST y Medio Ambiente</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style={label}>Descripcion</label>
-                            <input style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} />
-                        </div>
-                        <div>
-                            <label style={label}>Archivo</label>
-                            <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })}
-                                style={{ ...input, padding: '0.4rem' }} />
-                        </div>
-                        <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file}>
-                            <Upload size={14} /> Subir foto
-                        </button>
+            <Seccion title={<><ImageIcon size={14} style={{ display: 'inline', marginRight: 6 }} />Anexos fotograficos</>}>
+                {!isEdit && (
+                    <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                        Las fotos se subirán después de guardar el informe por primera vez.
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem', marginTop: '1.25rem' }}>
-                        {anexos.map(a => (
-                            <div key={a.id} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', background: 'white' }}>
-                                {a.imagen_url ? (
-                                    <img src={a.imagen_url} alt={a.descripcion} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
-                                ) : (
-                                    <div style={{ height: '120px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <ImageIcon size={28} color="#94a3b8" />
-                                    </div>
-                                )}
-                                <div style={{ padding: '0.5rem' }}>
-                                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#667eea', textTransform: 'uppercase' }}>{a.seccion}</div>
-                                    <div style={{ fontSize: '0.78rem', color: '#475569', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.descripcion}</div>
-                                </div>
-                            </div>
-                        ))}
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
+                    <div>
+                        <label style={label}>Seccion</label>
+                        <select style={input} value={nuevoAnexo.seccion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, seccion: e.target.value })}>
+                            <option value="actividades">Actividades</option>
+                            <option value="sst">SST y Medio Ambiente</option>
+                        </select>
                     </div>
-                </Seccion>
-            ) : (
-                <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                    Guarda primero el informe para poder subir anexos fotograficos.
+                    <div>
+                        <label style={label}>Descripcion</label>
+                        <input style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} />
+                    </div>
+                    <div>
+                        <label style={label}>Archivo</label>
+                        <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })}
+                            style={{ ...input, padding: '0.4rem' }} />
+                    </div>
+                    <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file}>
+                        <Upload size={14} /> Subir foto
+                    </button>
                 </div>
-            )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem', marginTop: '1.25rem' }}>
+                    {anexos.map(a => (
+                        <div key={a.id} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', background: 'white' }}>
+                            {a.imagen_url ? (
+                                <img src={a.imagen_url} alt={a.descripcion} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
+                            ) : (
+                                <div style={{ height: '120px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <ImageIcon size={28} color="#94a3b8" />
+                                </div>
+                            )}
+                            <div style={{ padding: '0.5rem' }}>
+                                <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#667eea', textTransform: 'uppercase' }}>{a.seccion}</div>
+                                <div style={{ fontSize: '0.78rem', color: '#475569', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.descripcion}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Seccion>
         </div>
     );
 }
