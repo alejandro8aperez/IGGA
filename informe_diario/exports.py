@@ -116,6 +116,36 @@ def generar_excel(informe) -> bytes:
             bottom += 1
         bottom += 1
 
+    # Items de obra
+    items_obra = list(informe.items_obra.all().order_by('orden'))
+    if items_obra:
+        bottom += 1
+        ws.cell(bottom, 1, 'ÍTEMS DE OBRA').font = bold
+        ws.cell(bottom, 1).fill = header_fill
+        bottom += 1
+        
+        ws.cell(bottom, 1, 'Item').font = bold
+        ws.cell(bottom, 2, 'Descripción').font = bold
+        ws.cell(bottom, 6, 'Empresa').font = bold
+        ws.cell(bottom, 9, 'Cantidad').font = bold
+        
+        ws.merge_cells(start_row=bottom, start_column=2, end_row=bottom, end_column=5)
+        ws.merge_cells(start_row=bottom, start_column=6, end_row=bottom, end_column=8)
+        ws.merge_cells(start_row=bottom, start_column=9, end_row=bottom, end_column=10)
+        
+        bottom += 1
+        
+        for it in items_obra:
+            ws.cell(bottom, 1, it.item).alignment = center
+            ws.cell(bottom, 2, it.descripcion).alignment = left
+            ws.cell(bottom, 6, it.empresa).alignment = left
+            ws.cell(bottom, 9, float(it.cantidad)).alignment = center
+            
+            ws.merge_cells(start_row=bottom, start_column=2, end_row=bottom, end_column=5)
+            ws.merge_cells(start_row=bottom, start_column=6, end_row=bottom, end_column=8)
+            ws.merge_cells(start_row=bottom, start_column=9, end_row=bottom, end_column=10)
+            bottom += 1
+
     for col in range(1, 26):
         ws.column_dimensions[get_column_letter(col)].width = 13
 
@@ -235,6 +265,29 @@ def generar_pdf(informe) -> bytes:
         for idx, item in enumerate(items, 1):
             flow.append(Paragraph(f"{idx}. {item}".replace('\n', '<br/>'), body))
         flow.append(Spacer(1, 4))
+
+    # Items de obra
+    items_obra = list(informe.items_obra.all().order_by('orden'))
+    if items_obra:
+        flow.append(Paragraph('ÍTEMS DE OBRA', h2))
+        data_items = [['Item', 'Descripción', 'Empresa', 'Cantidad']]
+        for it in items_obra:
+            data_items.append([
+                Paragraph(it.item, body),
+                Paragraph(it.descripcion.replace('\n', '<br/>'), body),
+                Paragraph(it.empresa, body),
+                Paragraph(str(float(it.cantidad)), body)
+            ])
+        t_items = Table(data_items, colWidths=[2 * cm, 12 * cm, 6 * cm, 4 * cm])
+        t_items.setStyle(TableStyle([
+            ('FONT', (0, 0), (-1, -1), 'Helvetica', 7),
+            ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 7),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        flow.append(t_items)
+        flow.append(Spacer(1, 6))
 
     # Anexos
     anexos = list(informe.anexos.all())

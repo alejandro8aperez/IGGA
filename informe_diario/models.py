@@ -187,6 +187,26 @@ class Actividad(models.Model):
         ordering = ['categoria__orden', 'orden', 'id']
 
 
+class ItemObra(models.Model):
+    """Free-text work item line for a given report (table in F-141-IN)."""
+    informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE,
+                                related_name='items_obra')
+    item = models.CharField(max_length=50, blank=True,
+                            help_text="Número/código de ítem")
+    descripcion = models.TextField()
+    empresa = models.CharField(max_length=200, blank=True)
+    cantidad = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    orden = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden', 'id']
+        verbose_name = 'Ítem de Obra'
+        verbose_name_plural = 'Ítems de Obra'
+
+    def __str__(self):
+        return f"{self.informe} - Item {self.item}"
+
+
 class AnexoFoto(models.Model):
     """Photo annex stored in Cloudinary (or local in dev)."""
     informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE,

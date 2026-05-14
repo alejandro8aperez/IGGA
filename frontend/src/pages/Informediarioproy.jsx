@@ -406,7 +406,12 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 detalles: form.detalles.filter(d => d.recurso).map(d => ({ recurso: d.recurso, cantidad: Number(d.cantidad || 0) })),
                 actividades: form.actividades.filter(a => a.descripcion?.trim()).map((a, i) => ({ categoria: a.categoria, descripcion: a.descripcion, orden: i })),
                 reportes_lluvia: (form.reportes_lluvia || []).filter(r => r.con_lluvia),
-                items_obra: (form.items_obra || []).filter(i => i.descripcion?.trim()),
+                items_obra: (form.items_obra || []).filter(i => i.descripcion?.trim()).map(i => ({
+                    item: i.item || '',
+                    descripcion: i.descripcion,
+                    empresa: i.empresa || '',
+                    cantidad: parseFloat(i.cantidad) || 0,
+                })),
                 comision_topografia: form.comision_topografia,
             };
             const saved = isEdit

@@ -10,7 +10,7 @@ from datetime import date, timedelta
 
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
-    InformeDiario, AnexoFoto, ReporteLluvia,
+    InformeDiario, AnexoFoto, ReporteLluvia, ItemObra,
 )
 from .serializers import (
     ObraSerializer, CategoriaRecursoSerializer, RecursoSerializer,
@@ -65,6 +65,7 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         'detalles__recurso__categoria',
         'reportes_lluvia',
         'actividades__categoria',
+        'items_obra',
         'anexos',
     ).all()
     parser_classes = [JSONParser, MultiPartParser, FormParser]
