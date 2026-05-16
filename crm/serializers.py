@@ -2,9 +2,24 @@ from rest_framework import serializers
 from .models import Cliente, Oportunidad, Cotizacion, CotizacionDetalle
 
 class ClienteSerializer(serializers.ModelSerializer):
+    logotipo_url = serializers.SerializerMethodField()
+    tipo_cliente_display = serializers.CharField(source='get_tipo_cliente_display', read_only=True)
+    regimen_tributario_display = serializers.CharField(source='get_regimen_tributario_display', read_only=True)
+    clasificacion_display = serializers.CharField(source='get_clasificacion_display', read_only=True)
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+    tipo_cuenta_display = serializers.CharField(source='get_tipo_cuenta_display', read_only=True)
+
     class Meta:
         model = Cliente
         fields = '__all__'
+    
+    def get_logotipo_url(self, obj):
+        if obj.logotipo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.logotipo.url)
+            return obj.logotipo.url
+        return None
 
 class OportunidadSerializer(serializers.ModelSerializer):
     cliente_nombre = serializers.ReadOnlyField(source='cliente.nombre')
