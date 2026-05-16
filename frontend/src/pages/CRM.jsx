@@ -27,8 +27,45 @@ function CRM() {
         telefono: '',
         direccion: '',
         notas: '',
-        adjunto_archivos: null
+        adjunto_archivos: null,
+        // additional fields
+        tipo_cliente: 'empresa',
+        regimen_tributario: 'comun',
+        responsable_iva: false,
+        gran_contribuyente: false,
+        agente_retenedor: false,
+        clasificacion: 'B',
+        sector_industria: '',
+        credito_maximo: 0,
+        dias_credito: 0,
+        descuento_general: 0,
+        condicion_pago: '',
+        lista_precios: '',
+        contacto_principal: '',
+        cargo_contacto: '',
+        email_contacto: '',
+        telefono_contacto: '',
+        representante_legal: '',
+        cedula_representante: '',
+        banco_nombre: '',
+        numero_cuenta: '',
+        tipo_cuenta: '',
+        titular_cuenta: '',
+        codigo_bancario: '',
+        fecha_constitucion: '',
+        fecha_ultimo_contacto: '',
+        estado: 'activo',
+        pais: 'Colombia',
+        ciudad: '',
+        departamento: '',
+        codigo_postal: '',
+        direccion_entrega: '',
+        ciudad_entrega: '',
+        numero_resolucion_dian: '',
+        fecha_resolucion_dian: ''
     });
+
+    const [showAdditional, setShowAdditional] = useState(false);
 
     useEffect(() => {
         fetchClientes();
@@ -66,8 +103,43 @@ function CRM() {
                 telefono: client.telefono || '',
                 direccion: client.direccion || '',
                 notas: client.notas || '',
-                adjunto_archivos: null
+                adjunto_archivos: null,
+                tipo_cliente: client.tipo_cliente || 'empresa',
+                regimen_tributario: client.regimen_tributario || 'comun',
+                responsable_iva: !!client.responsable_iva,
+                gran_contribuyente: !!client.gran_contribuyente,
+                agente_retenedor: !!client.agente_retenedor,
+                clasificacion: client.clasificacion || 'B',
+                sector_industria: client.sector_industria || '',
+                credito_maximo: client.credito_maximo || 0,
+                dias_credito: client.dias_credito || 0,
+                descuento_general: client.descuento_general || 0,
+                condicion_pago: client.condicion_pago || '',
+                lista_precios: client.lista_precios || '',
+                contacto_principal: client.contacto_principal || '',
+                cargo_contacto: client.cargo_contacto || '',
+                email_contacto: client.email_contacto || '',
+                telefono_contacto: client.telefono_contacto || '',
+                representante_legal: client.representante_legal || '',
+                cedula_representante: client.cedula_representante || '',
+                banco_nombre: client.banco_nombre || '',
+                numero_cuenta: client.numero_cuenta || '',
+                tipo_cuenta: client.tipo_cuenta || '',
+                titular_cuenta: client.titular_cuenta || '',
+                codigo_bancario: client.codigo_bancario || '',
+                fecha_constitucion: client.fecha_constitucion || '',
+                fecha_ultimo_contacto: client.fecha_ultimo_contacto || '',
+                estado: client.estado || 'activo',
+                pais: client.pais || 'Colombia',
+                ciudad: client.ciudad || '',
+                departamento: client.departamento || '',
+                codigo_postal: client.codigo_postal || '',
+                direccion_entrega: client.direccion_entrega || '',
+                ciudad_entrega: client.ciudad_entrega || '',
+                numero_resolucion_dian: client.numero_resolucion_dian || '',
+                fecha_resolucion_dian: client.fecha_resolucion_dian || ''
             });
+            setShowAdditional(true);
         } else {
             setCurrentClient(null);
             setFormData({
@@ -79,8 +151,43 @@ function CRM() {
                 telefono: '',
                 direccion: '',
                 notas: '',
-                adjunto_archivos: null
+                adjunto_archivos: null,
+                tipo_cliente: 'empresa',
+                regimen_tributario: 'comun',
+                responsable_iva: false,
+                gran_contribuyente: false,
+                agente_retenedor: false,
+                clasificacion: 'B',
+                sector_industria: '',
+                credito_maximo: 0,
+                dias_credito: 0,
+                descuento_general: 0,
+                condicion_pago: '',
+                lista_precios: '',
+                contacto_principal: '',
+                cargo_contacto: '',
+                email_contacto: '',
+                telefono_contacto: '',
+                representante_legal: '',
+                cedula_representante: '',
+                banco_nombre: '',
+                numero_cuenta: '',
+                tipo_cuenta: '',
+                titular_cuenta: '',
+                codigo_bancario: '',
+                fecha_constitucion: '',
+                fecha_ultimo_contacto: '',
+                estado: 'activo',
+                pais: 'Colombia',
+                ciudad: '',
+                departamento: '',
+                codigo_postal: '',
+                direccion_entrega: '',
+                ciudad_entrega: '',
+                numero_resolucion_dian: '',
+                fecha_resolucion_dian: ''
             });
+            setShowAdditional(false);
         }
         setIsModalOpen(true);
     };
@@ -91,10 +198,14 @@ function CRM() {
     };
 
     const handleInputChange = (e) => {
-        const { name, value, type, files } = e.target;
+        const { name, value, type, files, checked } = e.target;
+        let newValue;
+        if (type === 'file') newValue = files[0];
+        else if (type === 'checkbox') newValue = checked;
+        else newValue = value;
         setFormData({ 
             ...formData, 
-            [name]: type === 'file' ? files[0] : value 
+            [name]: newValue
         });
     };
 
@@ -779,6 +890,126 @@ function CRM() {
                                     style={{ width: '100%', padding: '0.5rem 0' }}
                                 />
                             </div>
+                            <div style={{ marginTop: '1rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAdditional(!showAdditional)}
+                                    style={{
+                                        background: '#f1f5f9',
+                                        color: '#334155',
+                                        border: '1px solid #e2e8f0',
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    {showAdditional ? 'Ocultar Datos Adicionales' : 'Mostrar Datos Adicionales'}
+                                </button>
+                            </div>
+
+                            {showAdditional && (
+                                <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Tipo de Cliente</label>
+                                        <select name="tipo_cliente" value={formData.tipo_cliente} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="persona_natural">Persona Natural</option>
+                                            <option value="empresa">Empresa</option>
+                                            <option value="empresa_unipersonal">Empresa Unipersonal</option>
+                                            <option value="cooperativa">Cooperativa</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Estado</label>
+                                        <select name="estado" value={formData.estado} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="activo">Activo</option>
+                                            <option value="inactivo">Inactivo</option>
+                                            <option value="suspendido">Suspendido</option>
+                                            <option value="bloqueado">Bloqueado</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Régimen Tributario</label>
+                                        <select name="regimen_tributario" value={formData.regimen_tributario} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="comun">Régimen Común</option>
+                                            <option value="simplificado">Régimen Simplificado</option>
+                                            <option value="especial">Régimen Especial</option>
+                                        </select>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <input type="checkbox" name="responsable_iva" checked={formData.responsable_iva} onChange={handleInputChange} />
+                                            Responsable IVA
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <input type="checkbox" name="gran_contribuyente" checked={formData.gran_contribuyente} onChange={handleInputChange} />
+                                            Gran contribuyente
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <input type="checkbox" name="agente_retenedor" checked={formData.agente_retenedor} onChange={handleInputChange} />
+                                            Agente retenedor
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Clasificación</label>
+                                        <select name="clasificacion" value={formData.clasificacion} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="A">A - Premium</option>
+                                            <option value="B">B - Estándar</option>
+                                            <option value="C">C - Básico</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Crédito Máximo (COP)</label>
+                                        <input type="number" name="credito_maximo" value={formData.credito_maximo} onChange={handleInputChange} step="0.01" style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Días de Crédito</label>
+                                        <input type="number" name="dias_credito" value={formData.dias_credito} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Descuento General (%)</label>
+                                        <input type="number" name="descuento_general" value={formData.descuento_general} onChange={handleInputChange} step="0.01" style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Contacto Principal</label>
+                                        <input type="text" name="contacto_principal" value={formData.contacto_principal} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Cargo Contacto</label>
+                                        <input type="text" name="cargo_contacto" value={formData.cargo_contacto} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Representante Legal</label>
+                                        <input type="text" name="representante_legal" value={formData.representante_legal} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Banco</label>
+                                        <input type="text" name="banco_nombre" value={formData.banco_nombre} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Número de Cuenta</label>
+                                        <input type="text" name="numero_cuenta" value={formData.numero_cuenta} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Tipo de Cuenta</label>
+                                        <select name="tipo_cuenta" value={formData.tipo_cuenta} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="">--</option>
+                                            <option value="corriente">Cuenta Corriente</option>
+                                            <option value="ahorros">Cuenta de Ahorros</option>
+                                            <option value="nomina">Cuenta Nómina</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Fecha Constitución</label>
+                                        <input type="date" name="fecha_constitucion" value={formData.fecha_constitucion || ''} onChange={handleInputChange} style={{ width: '100%', padding: '0.5rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Último Contacto</label>
+                                        <input type="date" name="fecha_ultimo_contacto" value={formData.fecha_ultimo_contacto || ''} onChange={handleInputChange} style={{ width: '100%', padding: '0.5rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                </div>
+                            )}
+
                             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                                 <button 
                                     type="button" 
