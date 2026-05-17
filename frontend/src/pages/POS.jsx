@@ -123,9 +123,10 @@ function POS() {
             return;
         }
 
-        // Lógica de Pesaje SAP: Detectar si el producto es por KG/GR/LB
-        const unidadesPeso = ['KG', 'KILOGRAMO', 'GR', 'GRAMO', 'LB', 'LIBRA'];
-        const esPesable = unidadesPeso.includes(product.unidad_medida?.toUpperCase());
+        // Lógica de Pesaje Robusta: Detectar unidades de masa (KG, GR, LB) inclusive en plural o con puntos
+        const unidadesPeso = ['KG', 'KILOGRAMO', 'KILOGRAMOS', 'GR', 'GRAMO', 'GRAMOS', 'LB', 'LIBRA', 'LIBRAS', 'KG.', 'GR.'];
+        const unidadLimpia = product.unidad_medida?.toUpperCase().trim() || '';
+        const esPesable = unidadesPeso.includes(unidadLimpia);
 
         if (esPesable) {
             setPendingWeightProduct(product);
@@ -843,10 +844,21 @@ function ProductCard({ product, onClick }) {
                     <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: '700', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.nombre}</h3>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '1rem', fontWeight: '800', color: '#10b981' }}>${Number(product.precio_venta).toLocaleString()}</span>
-                    <div style={{ background: '#ec4899', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Plus size={18} />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: '800', color: '#10b981' }}>${Number(product.precio_venta).toLocaleString()}</span>
+                        <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>por {product.unidad_medida || 'unidad'}</span>
                     </div>
+                    
+                    {/* Indicador de Pesaje (Báscula) */}
+                    {['KG', 'KILOGRAMO', 'GR', 'GRAMO', 'LB', 'LIBRA'].includes(product.unidad_medida?.toUpperCase().trim()) ? (
+                        <div style={{ background: '#8b5cf6', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Venta por peso">
+                            <Gauge size={16} />
+                        </div>
+                    ) : (
+                        <div style={{ background: '#ec4899', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Plus size={18} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
