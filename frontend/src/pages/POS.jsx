@@ -24,6 +24,12 @@ function POS() {
     const [activeCategory, setActiveCategory] = useState('Todas');
     const [searchTerm, setSearchTerm] = useState('');
     const [barcodeBusy, setBarcodeBusy] = useState(false);
+    
+    // Peso / Granel states
+    const [showWeightModal, setShowWeightModal] = useState(false);
+    const [pendingWeightProduct, setPendingWeightProduct] = useState(null);
+    const [manualWeight, setManualWeight] = useState('');
+
     const searchInputRef = useRef(null);
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -116,15 +122,43 @@ function POS() {
             alert('Este producto está inactivo y no se puede vender.');
             return;
         }
+
+        // Lógica de Pesaje SAP: Detectar si el producto es por KG/GR/LB
+        const unidadesPeso = ['KG', 'KILOGRAMO', 'GR', 'GRAMO', 'LB', 'LIBRA'];
+        const esPesable = unidadesPeso.includes(product.unidad_medida?.toUpperCase());
+
+        if (esPesable) {
+            setPendingWeightProduct(product);
+            setManualWeight('');
+            setShowWeightModal(true);
+        } else {
+            setCart(prev => {
+                const existing = prev.find(item => item.id === product.id);
+                if (existing) {
+                    return prev.map(item => 
+                        item.id === product.id ? { ...item, cantidad: item.cantidad + 1 } : item
+                    );
+                }
+                return [...prev, { ...product, cantidad: 1 }];
+            });
+        }
+    };
+
+    const confirmWeightEntry = () => {
+        const weight = parseFloat(manualWeight);
+        if (isNaN(weight) || weight <= 0) return alert("Ingrese un peso válido");
+        
         setCart(prev => {
-            const existing = prev.find(item => item.id === product.id);
+            const existing = prev.find(item => item.id === pendingWeightProduct.id);
             if (existing) {
                 return prev.map(item => 
-                    item.id === product.id ? { ...item, cantidad: item.cantidad + 1 } : item
+                    item.id === pendingWeightProduct.id ? { ...item, cantidad: item.cantidad + weight } : item
                 );
             }
-            return [...prev, { ...product, cantidad: 1 }];
+            return [...prev, { ...pendingWeightProduct, cantidad: weight }];
         });
+        setShowWeightModal(false);
+        setPendingWeightProduct(null);
     };
 
     const handleBarcodeScan = async (codigo) => {
@@ -319,6 +353,63 @@ function POS() {
                     </button>
                 </div>
             </div>
+
+            {/* SAP-Style Weight Modal (Pesaje) */}
+            {showWeightModal && (
+                <div style={modalOverlayStyle} onClick={() => setShowWeightModal(false)}>
+                    <div style={{ ...paymentModalStyle, maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                            <Package size={48} style={{ color: '#ec4899', marginBottom: '1rem' }} />
+                            <h2 style={{ margin: 0 }}>Entrada de Pesaje</h2>
+                            <p style={{ color: '#64748b' }}>{pendingWeightProduct?.nombre}</p>
+                        </div>
+                        
+                        <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem', textAlign: 'center' }}>
+                                Cantidad ({pendingWeightProduct?.unidad_medida})
+                            </div>
+                            <input 
+                                type="number" 
+                                step="0.001"
+                                value={manualWeight}
+                                onChange={e => setManualWeight(e.target.value)}
+                                style={{ ...paymentInputStyle, textAlign: 'center', fontSize: '3rem' }}
+                                placeholder="0.000"
+                                autoFocus
+                                onKeyDown={e => e.key === 'Enter' && confirmWeightEntry()}
+                            />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'C'].map(d => (
+                                <button 
+                                    key={d}
+                                    onClick={() => {
+                                        if (d === 'C') setManualWeight('');
+                                        else if (d === '.' && manualWeight.includes('.')) return;
+                                        else setManualWeight(prev => prev + d);
+                                    }}
+                                    style={{ padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontSize: '1.25rem', fontWeight: 800, cursor: 'pointer' }}
+                                >
+                                    {d}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button onClick={() => setShowWeightModal(false)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white' }}>
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={confirmWeightEntry}
+                                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: '#ec4899', color: 'white', fontWeight: 800 }}
+                            >
+                                CONFIRMAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 {/* Left Side: Categories & Products */}
