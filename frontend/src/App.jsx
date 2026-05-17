@@ -28,6 +28,7 @@ const Ventas_Moderno       = lazy(() => import('./pages/Ventas'));
 const CRM_Moderno          = lazy(() => import('./pages/CRM'));
 const Inventario_Moderno   = lazy(() => import('./pages/Inventario'));
 const Compras_Moderno      = lazy(() => import('./pages/Compras'));
+const Proveedores_Moderno  = lazy(() => import('./pages/Proveedores'));
 const Logistica_Moderno    = lazy(() => import('./pages/Logistica'));
 const Finanzas_Moderno     = lazy(() => import('./pages/Finanzas'));
 const Activos              = lazy(() => import('./pages/Activos'));
@@ -74,6 +75,7 @@ const NAV_GROUPS = [
             { path: '/produccion',    name: 'Producción',    icon: Factory },
             { path: '/mrp',           name: 'MRP',           icon: Cpu },
             { path: '/inventario',    name: 'Inventarios',   icon: Package },
+            { path: '/proveedores',   name: 'Proveedores',   icon: Users },
             { path: '/compras',       name: 'Compras',       icon: ShoppingCart },
             { path: '/logistica',     name: 'Logística',     icon: Truck },
             { path: '/operaciones',   name: 'Operaciones',   icon: ClipboardList },
@@ -379,6 +381,7 @@ function AppContent() {
                         <Route path="/ventas"        element={<P><Ventas_Moderno/></P>}/>
                         <Route path="/crm"           element={<P><CRM_Moderno/></P>}/>
                         <Route path="/inventario"    element={<P><Inventario_Moderno/></P>}/>
+                        <Route path="/proveedores"   element={<P><Proveedores_Moderno/></P>}/>
                         <Route path="/compras"       element={<P><Compras_Moderno/></P>}/>
                         <Route path="/logistica"     element={<P><Logistica_Moderno/></P>}/>
                         <Route path="/activos"       element={<P><Activos/></P>}/>
