@@ -22,6 +22,7 @@ const API_BASE = import.meta.env.VITE_API_URL || API.BASE || `http://${window.lo
 const MEDIA_BASE = API_BASE.replace(/\/api\/?$/, ''); 
 console.log('API_BASE detectada:', API_BASE);
 console.log('MEDIA_BASE detectada:', MEDIA_BASE);
+
 function POS() {
     const navigate = useNavigate();
     const [productos, setProductos] = useState([]);
@@ -34,6 +35,12 @@ function POS() {
     const [showWeightModal, setShowWeightModal] = useState(false);
     const [pendingWeightProduct, setPendingWeightProduct] = useState(null);
     const [manualWeight, setManualWeight] = useState('');
+
+    // Báscula Serial
+    const [serialPort, setSerialPort] = useState(null);
+    const [basiclaConectada, setBasiclaConectada] = useState(false);
+    const [pesoEnVivo, setPesoEnVivo] = useState('');
+    const serialReaderRef = useRef(null);
 
     const searchInputRef = useRef(null);
     const [cart, setCart] = useState([]);
@@ -100,7 +107,7 @@ function POS() {
     const handleOpenSession = async () => {
         try {
             const res = await axios.post(`${API_BASE}/pos/sesiones/`, {
-                monto_inicial: 50000, // Base sugerida
+                monto_inicial: 50000,
                 estado: 'abierta'
             });
             setSesionActiva(res.data);
@@ -121,6 +128,54 @@ function POS() {
             alert('Error al cerrar caja.');
         }
     };
+
+    // ── Báscula USB/Serial ─────────────────────────────────────────────────────
+    const conectarBascula = async () => {
+        try {
+            const port = await navigator.serial.requestPort();
+            await port.open({ baudRate: 9600, dataBits: 8, stopBits: 1, parity: 'none' });
+            setSerialPort(port);
+            setBasiclaConectada(true);
+
+            const decoder = new TextDecoderStream();
+            port.readable.pipeTo(decoder.writable);
+            const reader = decoder.readable.getReader();
+            serialReaderRef.current = reader;
+
+            (async () => {
+                let buffer = '';
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += value;
+                    if (buffer.includes('\n')) {
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop();
+                        for (const line of lines) {
+                            const num = parseFloat(line.replace(/[^0-9.]/g, ''));
+                            if (!isNaN(num) && num > 0) {
+                                setPesoEnVivo(num.toFixed(3));
+                                setManualWeight(num.toFixed(3));
+                            }
+                        }
+                    }
+                }
+            })();
+        } catch (err) {
+            alert('No se pudo conectar la báscula: ' + err.message);
+        }
+    };
+
+    const desconectarBascula = async () => {
+        try {
+            serialReaderRef.current?.cancel();
+            await serialPort?.close();
+        } catch {}
+        setSerialPort(null);
+        setBasiclaConectada(false);
+        setPesoEnVivo('');
+    };
+    // ──────────────────────────────────────────────────────────────────────────
 
     const addToCart = (product) => {
         if (product.activo === false) {
@@ -214,7 +269,6 @@ function POS() {
         setCart(prev => prev.map(item => {
             if (item.id === productId) {
                 const esPesable = UNIDADES_PESO.includes(item.unidad_medida?.toUpperCase().trim());
-                // Si es por peso, los botones +/- ajustan de a 0.1 (100g) o 10g dependiendo de la unidad
                 const step = esPesable ? (item.unidad_medida?.toUpperCase().includes('GR') ? 10 : 0.1) : 1;
                 const newQty = Math.max(esPesable ? 0.001 : 1, item.cantidad + (delta * step));
                 return { ...item, cantidad: newQty };
@@ -244,10 +298,8 @@ function POS() {
         } else if (val === 'back') {
             setMontoRecibido(prev => prev.slice(0, -1));
         } else if (typeof val === 'number') {
-            // Quick amount
             setMontoRecibido(val.toString());
         } else {
-            // Digit
             setMontoRecibido(prev => prev + val);
         }
     };
@@ -273,7 +325,6 @@ function POS() {
             setMontoRecibido('');
             setShowPaymentModal(false);
         } catch (err) {
-            // ⚠️ DEBUG TEMPORAL — expone traceback completo del servidor
             const data = err.response?.data;
             console.error('=== ERROR VENTA COMPLETO ===');
             console.error('Status:', err.response?.status);
@@ -360,17 +411,37 @@ function POS() {
                 </div>
             </div>
 
-            {/* SAP-Style Weight Modal (Pesaje) */}
+            {/* ── Modal Báscula Digital ─────────────────────────────────────────── */}
             {showWeightModal && (
                 <div style={modalOverlayStyle} onClick={() => setShowWeightModal(false)}>
                     <div style={{ ...paymentModalStyle, maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
                         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                             <Scale size={48} style={{ color: '#8b5cf6', marginBottom: '1rem' }} />
                             <h2 style={{ margin: 0, color: '#1e293b' }}>Báscula Digital</h2>
-                            <p style={{ color: '#64748b' }}>{pendingWeightProduct?.nombre}</p>
+                            <p style={{ color: '#64748b', margin: '0.25rem 0 0' }}>{pendingWeightProduct?.nombre}</p>
                         </div>
 
-                        <div style={{ background: '#0f172a', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '4px solid #334155' }}>
+                        {/* Estado de conexión báscula */}
+                        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                            {basiclaConectada ? (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', background: '#f0fdf4', padding: '0.6rem 1rem', borderRadius: 12 }}>
+                                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} />
+                                    <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>
+                                        Báscula conectada {pesoEnVivo ? `— ${pesoEnVivo} ${pendingWeightProduct?.unidad_medida}` : '— esperando peso...'}
+                                    </span>
+                                    <button onClick={desconectarBascula} style={{ background: '#fee2e2', border: 'none', borderRadius: 8, padding: '4px 10px', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}>
+                                        Desconectar
+                                    </button>
+                                </div>
+                            ) : (
+                                <button onClick={conectarBascula} style={{ background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                    <Zap size={14} /> Conectar Báscula USB/Serial
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Display peso */}
+                        <div style={{ background: '#0f172a', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: basiclaConectada ? '4px solid #10b981' : '4px solid #334155', transition: 'border-color 0.3s' }}>
                             <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem', textAlign: 'center' }}>
                                 Cantidad ({pendingWeightProduct?.unidad_medida})
                             </div>
@@ -379,13 +450,14 @@ function POS() {
                                 step="0.001"
                                 value={manualWeight}
                                 onChange={e => setManualWeight(e.target.value)}
-                                style={{ ...paymentInputStyle, textAlign: 'center', fontSize: '4rem', background: 'transparent', color: '#34d399', border: 'none', fontFamily: 'monospace' }}
+                                style={{ ...paymentInputStyle, textAlign: 'center', fontSize: '4rem', background: 'transparent', color: basiclaConectada ? '#34d399' : '#facc15', border: 'none', fontFamily: 'monospace', width: '100%' }}
                                 placeholder="0.000"
-                                autoFocus
+                                autoFocus={!basiclaConectada}
                                 onKeyDown={e => e.key === 'Enter' && confirmWeightEntry()}
                             />
                         </div>
 
+                        {/* Numpad manual */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'C'].map(d => (
                                 <button 
@@ -403,12 +475,12 @@ function POS() {
                         </div>
 
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button onClick={() => setShowWeightModal(false)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white' }}>
+                            <button onClick={() => setShowWeightModal(false)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>
                                 Cancelar
                             </button>
                             <button 
                                 onClick={confirmWeightEntry}
-                                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: '#ec4899', color: 'white', fontWeight: 800 }}
+                                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: '#ec4899', color: 'white', fontWeight: 800, cursor: 'pointer' }}
                             >
                                 CONFIRMAR
                             </button>
@@ -487,16 +559,16 @@ function POS() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                 {cart.map(item => (
                                     <CartItem 
-                                                key={item.id} item={item}
+                                        key={item.id} item={item}
                                         onRemove={() => removeFromCart(item.id)}
                                         onUpdateQty={(d) => updateQuantity(item.id, d)}
-                                                onReweigh={() => { setPendingWeightProduct(item); setManualWeight(''); setShowWeightModal(true); }}
-                                                onForceWeight={() => { 
-                                                    setPendingWeightProduct(item); 
-                                                    setManualWeight(item.cantidad.toString()); 
-                                                    setShowWeightModal(true); 
-                                                }}
-                                                isPesable={UNIDADES_PESO.includes(item.unidad_medida?.toUpperCase().trim())}
+                                        onReweigh={() => { setPendingWeightProduct(item); setManualWeight(''); setShowWeightModal(true); }}
+                                        onForceWeight={() => { 
+                                            setPendingWeightProduct(item); 
+                                            setManualWeight(item.cantidad.toString()); 
+                                            setShowWeightModal(true); 
+                                        }}
+                                        isPesable={UNIDADES_PESO.includes(item.unidad_medida?.toUpperCase().trim())}
                                     />
                                 ))}
                             </div>
@@ -579,7 +651,6 @@ function POS() {
                                             </div>
                                         )}
                                         
-                                        {/* Numpad Integration */}
                                         <div style={{ marginTop: '1.5rem' }}>
                                             <Numpad onInput={handleNumpad} />
                                         </div>
@@ -650,34 +721,21 @@ function POS() {
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                             <button 
                                 onClick={() => window.print()}
-                                style={{
-                                    flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0',
-                                    background: 'white', color: '#1e293b', fontWeight: '700', cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
-                                }}
+                                style={{ flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', color: '#1e293b', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                             >
-                                <Printer size={18} />
-                                Imprimir / PDF
+                                <Printer size={18} /> Imprimir / PDF
                             </button>
                             <button 
                                 onClick={() => navigate('/facturacion')}
-                                style={{
-                                    flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0',
-                                    background: 'white', color: '#1e293b', fontWeight: '700', cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
-                                }}
+                                style={{ flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', color: '#1e293b', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                             >
-                                <FileText size={18} />
-                                Ver Factura
+                                <FileText size={18} /> Ver Factura
                             </button>
                         </div>
 
                         <button 
                             onClick={() => setLastSaleReceipt(null)}
-                            style={{
-                                width: '100%', padding: '1rem', borderRadius: '12px', border: 'none',
-                                background: '#10b981', color: 'white', fontWeight: '700', cursor: 'pointer'
-                            }}
+                            style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: 'none', background: '#10b981', color: 'white', fontWeight: '700', cursor: 'pointer' }}
                         >
                             Nueva Venta
                         </button>
@@ -715,23 +773,20 @@ function POS() {
                             <input 
                                 type="number" style={paymentInputStyle} 
                                 value={montoContado} onChange={e => setMontoContado(e.target.value)}
-                                placeholder="Efectivo real en cajon..."
+                                placeholder="Efectivo real en cajón..."
                             />
                         </div>
 
                         <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                             <button 
                                 onClick={() => setShowCloseSessionModal(false)}
-                                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white' }}
+                                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}
                             >
                                 Seguir Vendiendo
                             </button>
                             <button 
                                 onClick={handleCloseSession}
-                                style={{ 
-                                    flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', 
-                                    background: '#ef4444', color: 'white', fontWeight: '800' 
-                                }}
+                                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: '#ef4444', color: 'white', fontWeight: '800', cursor: 'pointer' }}
                             >
                                 CERRAR TURNO
                             </button>
@@ -743,7 +798,8 @@ function POS() {
     );
 }
 
-// Subcomponents
+// ── Subcomponents ──────────────────────────────────────────────────────────────
+
 function CategoryChip({ active, onClick, label, icon: Icon }) {
     return (
         <button 
@@ -784,7 +840,6 @@ function ProductCard({ product, onClick }) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
 
-    // Construir URL completa si la ruta es relativa
     const rawImage = product.imagen_url || product.imagen;
     let imageUrl = null;
 
@@ -808,10 +863,9 @@ function ProductCard({ product, onClick }) {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', 
                 justifyContent: 'space-between', border: '1px solid #f1f5f9',
                 transform: isPressed ? 'scale(0.95)' : 'none', transition: 'all 0.1s',
-                height: '260px'
+                height: '260px', position: 'relative'
             }}
         >
-            {/* Imagen del producto */}
             <div style={{
                 width: '100%', height: '140px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', overflow: 'hidden',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
@@ -824,24 +878,12 @@ function ProductCard({ product, onClick }) {
                         src={imageUrl} 
                         alt={product.nombre}
                         onLoad={() => setImageLoaded(true)}
-                        onError={() => {
-                            setImageLoaded(true);
-                            setImageError(true);
-                        }}
-                        style={{
-                            width: '100%', height: '100%', objectFit: 'cover',
-                            padding: '0',
-                            opacity: imageLoaded ? 1 : 0,
-                            transition: 'opacity 0.3s ease'
-                        }}
+                        onError={() => { setImageLoaded(true); setImageError(true); }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', padding: '0', opacity: imageLoaded ? 1 : 0, transition: 'opacity 0.3s ease' }}
                     />
                 ) : null}
                 {(!imageUrl || imageError) && (
-                    <div className="fallback-icon" style={{
-                        position: 'absolute', inset: 0, display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-                        color: '#8b5cf6', gap: '0.5rem'
-                    }}>
+                    <div className="fallback-icon" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#8b5cf6', gap: '0.5rem' }}>
                         <Package size={48} />
                         <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>{product.codigo_sku || 'SIN IMG'}</span>
                     </div>
@@ -867,8 +909,6 @@ function ProductCard({ product, onClick }) {
                             por {product.unidad_medida || 'unidad'}
                         </span>
                     </div>
-
-                    {/* Indicador de Pesaje (Báscula) */}
                     {UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim()) ? (
                         <div style={{ background: '#8b5cf6', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Venta por peso">
                             <Scale size={16} />
@@ -896,23 +936,12 @@ function CartItem({ item, onRemove, onUpdateQty, onReweigh, onForceWeight, isPes
     
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
-            {/* Miniatura de imagen */}
-            <div style={{
-                width: '50px', height: '50px', borderRadius: '8px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0
-            }}>
+            <div style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                 {imageUrl ? (
                     <img 
-                        src={imageUrl} 
-                        alt={item.nombre}
-                        style={{
-                            width: '100%', height: '100%', objectFit: 'contain',
-                            padding: '4px'
-                        }}
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                        }}
+                        src={imageUrl} alt={item.nombre}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }}
+                        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                     />
                 ) : (
                     <Package size={24} color="#8b5cf6" />
@@ -936,9 +965,9 @@ function CartItem({ item, onRemove, onUpdateQty, onReweigh, onForceWeight, isPes
                 </button>
             )}
             {!isPesable && (
-                 <button onClick={onForceWeight} style={{ ...iconBtnStyle, color: '#94a3b8' }} title="Cambiar a pesaje manual">
+                <button onClick={onForceWeight} style={{ ...iconBtnStyle, color: '#94a3b8' }} title="Cambiar a pesaje manual">
                     <Weight size={16} />
-                 </button>
+                </button>
             )}
             <button onClick={onRemove} style={{ ...iconBtnStyle, color: '#ef4444' }}><Trash2 size={16}/></button>
         </div>
@@ -967,40 +996,21 @@ function Numpad({ onInput }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {/* Quick Amounts */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem' }}>
                 {quickAmounts.map(val => (
                     <button 
-                        key={val}
-                        onClick={() => onInput(val)}
-                        style={{
-                            padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0',
-                            background: '#f8fafc', color: '#64748b', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}
+                        key={val} onClick={() => onInput(val)}
+                        style={{ padding: '0.5rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#64748b', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                         ${(val/1000)}k
                     </button>
                 ))}
             </div>
-
-            {/* Main Numpad */}
-            <div style={{ 
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem',
-                background: '#f1f5f9', padding: '0.5rem', borderRadius: '16px' 
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', background: '#f1f5f9', padding: '0.5rem', borderRadius: '16px' }}>
                 {digits.map(d => (
                     <button 
-                        key={d}
-                        onClick={() => onInput(d === 'back' ? 'back' : d)}
-                        style={{
-                            padding: '0.75rem', borderRadius: '10px', border: 'none',
-                            background: d === 'C' ? '#fee2e2' : (d === 'back' ? '#f1f5f9' : 'white'),
-                            color: d === 'C' ? '#ef4444' : '#1e293b',
-                            fontSize: '1rem', fontWeight: '800', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.1s'
-                        }}
+                        key={d} onClick={() => onInput(d === 'back' ? 'back' : d)}
+                        style={{ padding: '0.75rem', borderRadius: '10px', border: 'none', background: d === 'C' ? '#fee2e2' : (d === 'back' ? '#f1f5f9' : 'white'), color: d === 'C' ? '#ef4444' : '#1e293b', fontSize: '1rem', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.1s' }}
                         onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
                         onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
                     >
@@ -1012,7 +1022,7 @@ function Numpad({ onInput }) {
     );
 }
 
-// Styles
+// ── Styles ─────────────────────────────────────────────────────────────────────
 const iconBtnStyle = { background: '#f1f5f9', border: 'none', borderRadius: '10px', padding: '0.5rem', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const searchContainerStyle = { background: '#f1f5f9', borderRadius: '12px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', width: '35%', maxWidth: '500px' };
 const searchInputStyle = { background: 'none', border: 'none', outline: 'none', fontSize: '0.9rem', width: '100%' };
@@ -1021,7 +1031,7 @@ const qtyBtnStyle = { background: 'white', border: 'none', borderRadius: '6px', 
 const modalOverlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' };
 const paymentModalStyle = { background: 'white', borderRadius: '24px', padding: '1.5rem', width: '95%', maxWidth: '720px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', maxHeight: '95vh', overflowY: 'auto' };
 const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: '700', color: '#475569', marginBottom: '0.75rem' };
-const paymentInputStyle = { width: '100%', padding: '1rem', background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '16px', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1e293b' };
+const paymentInputStyle = { width: '100%', padding: '1rem', background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '16px', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1e293b', boxSizing: 'border-box' };
 const formGroupStyle = { marginBottom: '1.5rem' };
 
 export default POS;
