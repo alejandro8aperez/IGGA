@@ -62,7 +62,14 @@ function CRM() {
         direccion_entrega: '',
         ciudad_entrega: '',
         numero_resolucion_dian: '',
-        fecha_resolucion_dian: ''
+        fecha_resolucion_dian: '',
+        tipo_documento: 'NIT',
+        codigo_barras: '',
+        digito_verificacion: '',
+        actividad_economica_ciiu: '',
+        responsabilidades_fiscales: '',
+        matricula_mercantil: '',
+        correo_facturacion_electronica: ''
     });
 
     const [showAdditional, setShowAdditional] = useState(false);
@@ -137,7 +144,14 @@ function CRM() {
                 direccion_entrega: client.direccion_entrega || '',
                 ciudad_entrega: client.ciudad_entrega || '',
                 numero_resolucion_dian: client.numero_resolucion_dian || '',
-                fecha_resolucion_dian: client.fecha_resolucion_dian || ''
+                fecha_resolucion_dian: client.fecha_resolucion_dian || '',
+                tipo_documento: client.tipo_documento || 'NIT',
+                codigo_barras: client.codigo_barras || '',
+                digito_verificacion: client.digito_verificacion || '',
+                actividad_economica_ciiu: client.actividad_economica_ciiu || '',
+                responsabilidades_fiscales: client.responsabilidades_fiscales || '',
+                matricula_mercantil: client.matricula_mercantil || '',
+                correo_facturacion_electronica: client.correo_facturacion_electronica || ''
             });
             setShowAdditional(true);
         } else {
@@ -185,7 +199,14 @@ function CRM() {
                 direccion_entrega: '',
                 ciudad_entrega: '',
                 numero_resolucion_dian: '',
-                fecha_resolucion_dian: ''
+                fecha_resolucion_dian: '',
+                tipo_documento: 'NIT',
+                codigo_barras: '',
+                digito_verificacion: '',
+                actividad_economica_ciiu: '',
+                responsabilidades_fiscales: '',
+                matricula_mercantil: '',
+                correo_facturacion_electronica: ''
             });
             setShowAdditional(false);
         }
@@ -927,6 +948,39 @@ function CRM() {
                                             <option value="suspendido">Suspendido</option>
                                             <option value="bloqueado">Bloqueado</option>
                                         </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Tipo de Documento</label>
+                                        <select name="tipo_documento" value={formData.tipo_documento} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="NIT">NIT</option>
+                                            <option value="CC">Cédula de Ciudadanía</option>
+                                            <option value="CE">Cédula de Extranjería</option>
+                                            <option value="PAS">Pasaporte</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Dígito Verificación</label>
+                                        <input type="text" name="digito_verificacion" value={formData.digito_verificacion} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Código de Barras</label>
+                                        <input type="text" name="codigo_barras" value={formData.codigo_barras} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Actividad Económica (CIIU)</label>
+                                        <input type="text" name="actividad_economica_ciiu" value={formData.actividad_economica_ciiu} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Responsabilidades Fiscales</label>
+                                        <input type="text" name="responsabilidades_fiscales" value={formData.responsabilidades_fiscales} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Matrícula Mercantil</label>
+                                        <input type="text" name="matricula_mercantil" value={formData.matricula_mercantil} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Correo Facturación Electrónica</label>
+                                        <input type="email" name="correo_facturacion_electronica" value={formData.correo_facturacion_electronica} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Régimen Tributario</label>

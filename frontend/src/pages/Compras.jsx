@@ -38,7 +38,18 @@ export default function Compras() {
         contacto_telefono: '', 
         direccion: '',
         tipo: 'nacional',
-        estado: 'activo'
+        estado: 'activo',
+        tipo_documento: 'NIT',
+        digito_verificacion: '',
+        codigo_barras: '',
+        actividad_economica_ciiu: '',
+        responsabilidades_fiscales: '',
+        matricula_mercantil: '',
+        correo_facturacion_electronica: '',
+        regimen_tributario: 'comun',
+        responsable_iva: false,
+        gran_contribuyente: false,
+        agente_retenedor: false
     });
 
     // Modal Recepciones
@@ -143,7 +154,18 @@ export default function Compras() {
                 contacto_telefono: '', 
                 direccion: '',
                 tipo: 'nacional',
-                estado: 'activo'
+                estado: 'activo',
+                tipo_documento: 'NIT',
+                digito_verificacion: '',
+                codigo_barras: '',
+                actividad_economica_ciiu: '',
+                responsabilidades_fiscales: '',
+                matricula_mercantil: '',
+                correo_facturacion_electronica: '',
+                regimen_tributario: 'comun',
+                responsable_iva: false,
+                gran_contribuyente: false,
+                agente_retenedor: false
             });
         }
         setIsProvModalOpen(true);
@@ -1956,6 +1978,66 @@ export default function Compras() {
                                             e.target.style.borderColor = '#e2e8f0';
                                         }}
                                     />
+                                </div>
+                            </div>
+                            <div style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                                <h4 style={{ margin: '0 0 1rem 0', color: '#2d3748' }}>Información DIAN</h4>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Tipo de Documento</label>
+                                        <select value={provForm.tipo_documento} onChange={(e) => setProvForm({...provForm, tipo_documento: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="NIT">NIT</option>
+                                            <option value="CC">Cédula de Ciudadanía</option>
+                                            <option value="CE">Cédula de Extranjería</option>
+                                            <option value="PAS">Pasaporte</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Dígito Verificación</label>
+                                        <input type="text" value={provForm.digito_verificacion} onChange={(e) => setProvForm({...provForm, digito_verificacion: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Código de Barras</label>
+                                        <input type="text" value={provForm.codigo_barras} onChange={(e) => setProvForm({...provForm, codigo_barras: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Actividad Económica (CIIU)</label>
+                                        <input type="text" value={provForm.actividad_economica_ciiu} onChange={(e) => setProvForm({...provForm, actividad_economica_ciiu: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Responsabilidades Fiscales</label>
+                                        <input type="text" value={provForm.responsabilidades_fiscales} onChange={(e) => setProvForm({...provForm, responsabilidades_fiscales: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Matrícula Mercantil</label>
+                                        <input type="text" value={provForm.matricula_mercantil} onChange={(e) => setProvForm({...provForm, matricula_mercantil: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Correo Facturación Electrónica</label>
+                                        <input type="email" value={provForm.correo_facturacion_electronica} onChange={(e) => setProvForm({...provForm, correo_facturacion_electronica: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Régimen Tributario</label>
+                                        <select value={provForm.regimen_tributario} onChange={(e) => setProvForm({...provForm, regimen_tributario: e.target.value})} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                                            <option value="comun">Régimen Común</option>
+                                            <option value="simplificado">Régimen Simplificado</option>
+                                            <option value="especial">Régimen Especial</option>
+                                        </select>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2d3748' }}>
+                                            <input type="checkbox" checked={provForm.responsable_iva} onChange={(e) => setProvForm({...provForm, responsable_iva: e.target.checked})} />
+                                            Responsable IVA
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2d3748' }}>
+                                            <input type="checkbox" checked={provForm.gran_contribuyente} onChange={(e) => setProvForm({...provForm, gran_contribuyente: e.target.checked})} />
+                                            Gran contribuyente
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2d3748' }}>
+                                            <input type="checkbox" checked={provForm.agente_retenedor} onChange={(e) => setProvForm({...provForm, agente_retenedor: e.target.checked})} />
+                                            Agente retenedor
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             <div style={{ 

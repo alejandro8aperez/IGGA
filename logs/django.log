@@ -16529,3 +16529,153 @@ INFO 2026-05-14 13:57:44,920 autoreload 14940 34696 C:\Postgres\ERP-8AMPERIOS\in
 INFO 2026-05-14 13:57:48,767 autoreload 2320 12888 Watching for file changes with StatReloader
 INFO 2026-05-14 13:58:06,866 basehttp 2320 24180 "GET /api/informe-diario/informes/ HTTP/1.1" 200 2
 INFO 2026-05-14 13:58:06,876 basehttp 2320 24180 "GET /api/informe-diario/informes/ HTTP/1.1" 200 2
+INFO 2026-05-15 10:31:52,800 basehttp 2320 5972 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:55,615 basehttp 2320 5972 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-05-15 10:31:56,814 basehttp 2320 5972 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,817 basehttp 2320 34888 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,844 basehttp 2320 5972 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,849 basehttp 2320 34888 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,852 basehttp 2320 5972 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,857 basehttp 2320 34888 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,858 basehttp 2320 5972 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,862 basehttp 2320 34888 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,864 basehttp 2320 5972 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,867 basehttp 2320 34888 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,872 basehttp 2320 5972 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,875 basehttp 2320 34888 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,879 basehttp 2320 5972 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:56,879 basehttp 2320 34888 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-15 10:31:57,088 basehttp 2320 34888 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-15 10:31:57,090 basehttp 2320 5972 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-15 10:31:57,156 basehttp 2320 34888 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-15 10:31:57,281 basehttp 2320 34888 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-15 10:31:57,282 basehttp 2320 5972 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-15 10:31:57,307 basehttp 2320 31832 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-15 10:31:57,319 basehttp 2320 34888 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-15 10:31:57,325 basehttp 2320 5972 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-15 10:31:57,354 basehttp 2320 31832 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-15 10:31:57,355 basehttp 2320 38336 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-15 10:31:57,370 basehttp 2320 31560 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-15 10:31:57,382 basehttp 2320 23852 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-15 10:31:57,387 basehttp 2320 31832 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-15 10:31:57,396 basehttp 2320 31560 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 06:24:11,881 basehttp 2320 24156 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,890 basehttp 2320 26464 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,890 basehttp 2320 2476 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,893 basehttp 2320 34644 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,894 basehttp 2320 29732 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,941 basehttp 2320 37520 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,945 basehttp 2320 2476 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,947 basehttp 2320 24156 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,950 basehttp 2320 34644 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,950 basehttp 2320 26464 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,951 basehttp 2320 2476 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,951 basehttp 2320 29732 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:11,951 basehttp 2320 37520 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:12,099 basehttp 2320 24156 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-16 06:24:13,134 basehttp 2320 34644 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 06:24:13,135 basehttp 2320 37520 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 06:24:13,152 basehttp 2320 29732 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 06:24:13,168 basehttp 2320 26464 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 06:24:13,222 basehttp 2320 24156 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 06:24:13,394 basehttp 2320 34644 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 06:24:13,397 basehttp 2320 37520 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 06:24:13,402 basehttp 2320 29732 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 06:24:13,405 basehttp 2320 2476 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 06:24:13,411 basehttp 2320 26464 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 06:24:13,411 basehttp 2320 24156 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 06:24:13,441 basehttp 2320 37520 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 06:24:13,461 basehttp 2320 34644 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 06:24:13,555 basehttp 2320 29732 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 07:50:55,317 basehttp 2320 33716 - Broken pipe from ('127.0.0.1', 55766)
+INFO 2026-05-16 07:50:55,299 basehttp 2320 35632 - Broken pipe from ('127.0.0.1', 52650)
+INFO 2026-05-16 07:50:55,681 basehttp 2320 38000 - Broken pipe from ('127.0.0.1', 56986)
+INFO 2026-05-16 07:50:55,874 basehttp 2320 19944 - Broken pipe from ('127.0.0.1', 63140)
+INFO 2026-05-16 07:50:56,061 basehttp 2320 10676 - Broken pipe from ('127.0.0.1', 58852)
+INFO 2026-05-16 07:50:56,763 basehttp 2320 38848 - Broken pipe from ('127.0.0.1', 57096)
+INFO 2026-05-16 11:59:25,355 basehttp 2320 33440 "OPTIONS /api/token/refresh/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:25,360 basehttp 2320 25104 "OPTIONS /api/token/refresh/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:25,888 basehttp 2320 33440 "POST /api/token/refresh/ HTTP/1.1" 200 489
+INFO 2026-05-16 11:59:25,889 basehttp 2320 25104 "POST /api/token/refresh/ HTTP/1.1" 200 489
+INFO 2026-05-16 11:59:27,161 basehttp 2320 25104 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,164 basehttp 2320 33440 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,171 basehttp 2320 25104 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,172 basehttp 2320 9432 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,176 basehttp 2320 33440 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,216 basehttp 2320 9432 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,289 basehttp 2320 9432 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,305 basehttp 2320 9432 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,313 basehttp 2320 9432 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,317 basehttp 2320 33440 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 11:59:27,360 basehttp 2320 25104 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 11:59:27,385 basehttp 2320 9432 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,392 basehttp 2320 25104 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,392 basehttp 2320 33440 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 11:59:27,583 basehttp 2320 33440 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 11:59:27,586 basehttp 2320 25104 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 11:59:27,753 basehttp 2320 33440 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 11:59:27,845 basehttp 2320 14032 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 11:59:27,864 basehttp 2320 9432 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 11:59:27,906 basehttp 2320 26328 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 11:59:27,924 basehttp 2320 33440 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 11:59:27,928 basehttp 2320 25104 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 11:59:27,951 basehttp 2320 31856 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 11:59:27,977 basehttp 2320 14032 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 11:59:27,992 basehttp 2320 9432 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 11:59:28,013 basehttp 2320 26328 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 17:48:01,989 basehttp 2320 7752 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:01,991 basehttp 2320 30540 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:01,992 basehttp 2320 22020 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,003 basehttp 2320 6952 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,004 basehttp 2320 7752 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,005 basehttp 2320 30540 "OPTIONS /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,006 basehttp 2320 39080 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,007 basehttp 2320 22020 "OPTIONS /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,008 basehttp 2320 6952 "OPTIONS /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,010 basehttp 2320 30048 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,010 basehttp 2320 7752 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,011 basehttp 2320 30540 "OPTIONS /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,023 basehttp 2320 39080 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,024 basehttp 2320 22020 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-05-16 17:48:02,169 basehttp 2320 30540 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 17:48:02,174 basehttp 2320 22020 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 17:48:02,176 basehttp 2320 39080 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 17:48:02,176 basehttp 2320 7752 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 17:48:02,180 basehttp 2320 30048 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 17:48:02,210 basehttp 2320 22020 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 17:48:02,212 basehttp 2320 30540 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 17:48:02,212 basehttp 2320 39080 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 17:48:02,212 basehttp 2320 7752 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 17:48:02,213 basehttp 2320 6952 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 17:48:02,215 basehttp 2320 30048 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 17:48:02,224 basehttp 2320 22020 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 17:48:02,233 basehttp 2320 39080 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 17:48:02,242 basehttp 2320 30540 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 17:54:04,573 autoreload 2320 12888 C:\Postgres\ERP-8AMPERIOS\crm\models.py changed, reloading.
+INFO 2026-05-16 17:54:10,174 autoreload 34980 29740 Watching for file changes with StatReloader
+INFO 2026-05-16 17:54:18,904 autoreload 34980 29740 C:\Postgres\ERP-8AMPERIOS\crm\serializers.py changed, reloading.
+INFO 2026-05-16 17:54:20,965 autoreload 24824 16676 Watching for file changes with StatReloader
+INFO 2026-05-16 17:59:53,129 autoreload 24824 16676 C:\Postgres\ERP-8AMPERIOS\crm\models.py changed, reloading.
+INFO 2026-05-16 17:59:55,252 autoreload 31856 31800 Watching for file changes with StatReloader
+INFO 2026-05-16 18:00:12,466 autoreload 31856 31800 C:\Postgres\ERP-8AMPERIOS\crm\admin.py changed, reloading.
+INFO 2026-05-16 18:00:14,071 autoreload 33776 29852 Watching for file changes with StatReloader
+INFO 2026-05-16 18:03:10,692 autoreload 33776 29852 C:\Postgres\ERP-8AMPERIOS\crm\serializers.py changed, reloading.
+INFO 2026-05-16 18:03:11,906 autoreload 22568 38708 Watching for file changes with StatReloader
+INFO 2026-05-16 19:00:52,638 basehttp 22568 37652 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 19:00:52,638 basehttp 22568 14244 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 19:00:52,653 basehttp 22568 36664 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 19:00:52,658 basehttp 22568 35372 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 19:00:52,689 basehttp 22568 1316 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 19:00:52,690 basehttp 22568 14244 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 19:00:52,690 basehttp 22568 37652 "GET /api/informe-diario/dashboard/lluvia-mensual/ HTTP/1.1" 200 2
+INFO 2026-05-16 19:00:52,691 basehttp 22568 36664 "GET /api/informe-diario/categorias-recursos/ HTTP/1.1" 200 120
+INFO 2026-05-16 19:00:52,692 basehttp 22568 35372 "GET /api/informe-diario/dashboard/personal-por-rol/ HTTP/1.1" 200 2
+INFO 2026-05-16 19:00:52,708 basehttp 22568 14592 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 19:00:52,719 basehttp 22568 14244 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-16 19:00:52,721 basehttp 22568 1316 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-16 19:00:52,730 basehttp 22568 35372 "GET /api/informe-diario/obras/ HTTP/1.1" 200 173
+INFO 2026-05-16 19:00:52,735 basehttp 22568 37652 "GET /api/informe-diario/dashboard/resumen/ HTTP/1.1" 200 122
+INFO 2026-05-16 19:05:24,232 autoreload 22568 38708 C:\Postgres\ERP-8AMPERIOS\crm\models.py changed, reloading.
+INFO 2026-05-16 19:05:28,530 autoreload 38232 32244 Watching for file changes with StatReloader
+INFO 2026-05-16 19:05:45,364 autoreload 38232 32244 C:\Postgres\ERP-8AMPERIOS\compras\models.py changed, reloading.
+INFO 2026-05-16 19:05:47,968 autoreload 35952 39724 Watching for file changes with StatReloader

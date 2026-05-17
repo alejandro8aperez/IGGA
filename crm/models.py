@@ -40,6 +40,14 @@ class Cliente(models.Model):
         ('nomina', 'Cuenta Nómina'),
     ]
     
+    # Tipo de documento
+    TIPO_DOCUMENTO_CHOICES = [
+        ('NIT', 'NIT'),
+        ('CC', 'Cédula de Ciudadanía'),
+        ('CE', 'Cédula de Extranjería'),
+        ('PAS', 'Pasaporte'),
+    ]
+    
     # ═══════════════════════════════════════════════════════════════
     # INFORMACIÓN BÁSICA
     # ═══════════════════════════════════════════════════════════════
@@ -52,6 +60,7 @@ class Cliente(models.Model):
     # ═══════════════════════════════════════════════════════════════
     # IDENTIFICACIÓN Y TRIBUTACIÓN (DIAN - COLOMBIA)
     # ═══════════════════════════════════════════════════════════════
+    tipo_documento = models.CharField(max_length=5, choices=TIPO_DOCUMENTO_CHOICES, default='NIT', verbose_name="Tipo de Documento")
     cedula = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="Cédula")
     nit = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="NIT")
     digito_verificacion = models.CharField(max_length=1, blank=True, null=True, verbose_name="Dígito Verificación")
@@ -64,6 +73,11 @@ class Cliente(models.Model):
     
     numero_resolucion_dian = models.CharField(max_length=50, blank=True, null=True, verbose_name="Resolución DIAN")
     fecha_resolucion_dian = models.DateField(blank=True, null=True, verbose_name="Fecha Resolución DIAN")
+    
+    actividad_economica_ciiu = models.CharField(max_length=10, blank=True, null=True, verbose_name="Actividad Económica (CIIU)")
+    responsabilidades_fiscales = models.CharField(max_length=100, blank=True, null=True, verbose_name="Responsabilidades Fiscales (DIAN)")
+    matricula_mercantil = models.CharField(max_length=50, blank=True, null=True, verbose_name="Matrícula Mercantil")
+    correo_facturacion_electronica = models.EmailField(blank=True, null=True, verbose_name="Correo para Facturación Electrónica")
     
     # ═══════════════════════════════════════════════════════════════
     # INFORMACIÓN COMERCIAL

@@ -40,6 +40,33 @@ class Proveedor(models.Model):
     # Información básica (campos originales preservados)
     razon_social = models.CharField(max_length=200, verbose_name="Razón Social")
     nit = models.CharField(max_length=50, unique=True, verbose_name="NIT / Documento")
+    
+    # ═══════════════════════════════════════════════════════════════
+    # IDENTIFICACIÓN Y TRIBUTACIÓN (DIAN - COLOMBIA)
+    # ═══════════════════════════════════════════════════════════════
+    digito_verificacion = models.CharField(max_length=1, blank=True, null=True, verbose_name="Dígito Verificación")
+    codigo_barras = models.CharField(max_length=50, blank=True, null=True, unique=True, verbose_name="Código de Barras")
+    
+    responsable_iva = models.BooleanField(default=False, verbose_name="¿Responsable de IVA?")
+    gran_contribuyente = models.BooleanField(default=False, verbose_name="¿Gran Contribuyente?")
+    agente_retenedor = models.BooleanField(default=False, verbose_name="¿Agente Retenedor?")
+    
+    REGIMEN_CHOICES = [
+        ('comun', 'Régimen Común'),
+        ('simplificado', 'Régimen Simplificado'),
+        ('especial', 'Régimen Especial'),
+    ]
+    regimen_tributario = models.CharField(max_length=20, choices=REGIMEN_CHOICES, default='comun', verbose_name="Régimen Tributario")
+    
+    numero_resolucion_dian = models.CharField(max_length=50, blank=True, null=True, verbose_name="Resolución DIAN")
+    fecha_resolucion_dian = models.DateField(blank=True, null=True, verbose_name="Fecha Resolución DIAN")
+    
+    actividad_economica_ciiu = models.CharField(max_length=10, blank=True, null=True, verbose_name="Actividad Económica (CIIU)")
+    responsabilidades_fiscales = models.CharField(max_length=100, blank=True, null=True, verbose_name="Responsabilidades Fiscales (DIAN)")
+    matricula_mercantil = models.CharField(max_length=50, blank=True, null=True, verbose_name="Matrícula Mercantil")
+    correo_facturacion_electronica = models.EmailField(blank=True, null=True, verbose_name="Correo para Facturación Electrónica")
+    
+    # Contactos
     contacto_nombre = models.CharField(max_length=100, verbose_name="Nombre del Contacto")
     contacto_email = models.EmailField(verbose_name="Email del Contacto")
     contacto_telefono = models.CharField(max_length=20, blank=True, verbose_name="Teléfono")
