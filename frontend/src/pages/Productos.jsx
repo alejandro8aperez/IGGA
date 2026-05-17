@@ -118,22 +118,34 @@ export default function Productos() {
             if (filterGrupo) params.grupo_material = filterGrupo;
             if (filterTipo) params.tipo = filterTipo;
 
-            const [prodRes, catRes, grpRes, famRes, empRes, almRes, resRes] = await Promise.all([
-                axios.get(API.INVENTARIOS.PRODUCTOS, { params }),
-                axios.get(API.INVENTARIOS.CATEGORIAS),
-                axios.get(API.PRODUCTOS.GRUPOS_MATERIAL),
-                axios.get(API.PRODUCTOS.FAMILIAS),
-                axios.get(API.PRODUCTOS.TIPOS_EMPAQUE),
-                axios.get(API.INVENTARIOS.ALMACENES),
-                axios.get(API.PRODUCTOS.RESUMEN),
+            // Usamos allSettled para que si falla un endpoint secundario (ej. Grupos SAP), 
+            // los productos principales se carguen de todos modos.
+            const results = await Promise.allSettled([
+                axios.get(API.INVENTARIOS.PRODUCTOS, { params }), // 0
+                axios.get(API.INVENTARIOS.CATEGORIAS),            // 1
+                axios.get(API.PRODUCTOS.GRUPOS_MATERIAL),         // 2
+                axios.get(API.PRODUCTOS.FAMILIAS),                // 3
+                axios.get(API.PRODUCTOS.TIPOS_EMPAQUE),           // 4
+                axios.get(API.INVENTARIOS.ALMACENES),             // 5
+                axios.get(API.PRODUCTOS.RESUMEN),                 // 6
             ]);
-            setProductos(prodRes.data);
-            setCategorias(catRes.data);
-            setGrupos(grpRes.data);
-            setFamilias(famRes.data);
-            setTiposEmpaque(empRes.data);
-            setAlmacenes(almRes.data);
-            setResumen(resRes.data);
+
+            // Validamos la respuesta de productos (esencial)
+            if (results[0].status === 'fulfilled') {
+                const data = results[0].value.data;
+                setProductos(Array.isArray(data) ? data : data.results || []);
+            } else {
+                throw new Error('No se pudo conectar con el inventario');
+            }
+
+            // Carga de metadatos (opcionales)
+            if (results[1].status === 'fulfilled') setCategorias(results[1].value.data);
+            if (results[2].status === 'fulfilled') setGrupos(results[2].value.data);
+            if (results[3].status === 'fulfilled') setFamilias(results[3].value.data);
+            if (results[4].status === 'fulfilled') setTiposEmpaque(results[4].value.data);
+            if (results[5].status === 'fulfilled') setAlmacenes(results[5].value.data);
+            if (results[6].status === 'fulfilled') setResumen(results[6].value.data);
+            
             setError(null);
         } catch (err) {
             console.error(err);
