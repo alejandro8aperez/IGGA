@@ -284,6 +284,20 @@ function VistaLista({ obras, onNuevo, onEditar }) {
 }
 
 // =============================================================================
+// COMPONENTE AUXILIAR: Seccion
+// =============================================================================
+const Seccion = ({ title, children }) => (
+    <div style={card}>
+        <h3 style={{
+            fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
+            marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.08em',
+            borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem',
+        }}>{title}</h3>
+        {children}
+    </div>
+);
+
+// =============================================================================
 // SUB-VISTA: Formulario
 // =============================================================================
 function VistaFormulario({ informeId, obras, recursos, categoriasRec, categoriasAct, onBack, onSaved }) {
@@ -366,16 +380,15 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
     };
 
     const totalMaquinaria = useMemo(() => {
-        const maquinariaCategoria = categoriasRec.find(c =>
-            c.nombre.toUpperCase().includes('MAQUINARIA') ||
-            c.nombre.toUpperCase().includes('EQUIPO') ||
-            c.nombre.toUpperCase().includes('VEHICULO')
+        const machineryCategories = categoriasRec.filter(c =>
+            !c.nombre.toUpperCase().includes('PERSONAL')
         );
-        if (!maquinariaCategoria) return 0;
-        return recursosPorCategoria[maquinariaCategoria.id]?.reduce((sum, recurso) => {
-            const det = form.detalles.find(d => d.recurso === recurso.id);
-            return sum + (det ? Number(det.cantidad) || 0 : 0);
-        }, 0) || 0;
+        return machineryCategories.reduce((sum, cat) => {
+            return sum + (recursosPorCategoria[cat.id]?.reduce((s, recurso) => {
+                const det = form.detalles.find(d => d.recurso === recurso.id);
+                return s + (det ? Number(det.cantidad) || 0 : 0);
+            }, 0) || 0);
+        }, 0);
     }, [form.detalles, categoriasRec, recursosPorCategoria]);
 
     // ─── Optimización: Memoizar onChange para observaciones_generales ────
@@ -384,12 +397,13 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
     }, []);
 
     const totalPersonal = useMemo(() => {
-        const personalCategoria = categoriasRec.find(c => c.nombre.toUpperCase().includes('PERSONAL'));
-        if (!personalCategoria) return 0;
-        return recursosPorCategoria[personalCategoria.id]?.reduce((sum, recurso) => {
-            const det = form.detalles.find(d => d.recurso === recurso.id);
-            return sum + (det ? Number(det.cantidad) || 0 : 0);
-        }, 0) || 0;
+        const personalCategories = categoriasRec.filter(c => c.nombre.toUpperCase().includes('PERSONAL'));
+        return personalCategories.reduce((sum, cat) => {
+            return sum + (recursosPorCategoria[cat.id]?.reduce((s, recurso) => {
+                const det = form.detalles.find(d => d.recurso === recurso.id);
+                return s + (det ? Number(det.cantidad) || 0 : 0);
+            }, 0) || 0);
+        }, 0);
     }, [form.detalles, categoriasRec, recursosPorCategoria]);
 
     const guardar = async () => {
@@ -439,17 +453,6 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         setAnexos([...anexos, saved]);
         setNuevoAnexo({ descripcion: '', seccion: 'actividades', file: null });
     };
-
-    const Seccion = ({ title, children }) => (
-        <div style={card}>
-            <h3 style={{
-                fontSize: '0.8rem', fontWeight: 700, color: '#667eea',
-                marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.08em',
-                borderBottom: '2px solid #f1f5f9', paddingBottom: '0.5rem',
-            }}>{title}</h3>
-            {children}
-        </div>
-    );
 
     const thStyle = {
         padding: '0.55rem 0.75rem',
@@ -553,10 +556,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     </thead>
                     <tbody>
                         {categoriasRec.filter(c => 
-                            c.nombre.toUpperCase().includes('MAQUINARIA') || 
-                            c.nombre.toUpperCase().includes('EQUIPO') || 
-                            c.nombre.toUpperCase().includes('HERRAMIENTA') ||
-                            c.nombre.toUpperCase().includes('VEHICULO')
+                            !c.nombre.toUpperCase().includes('PERSONAL')
                         ).map(cat => (
                             recursosPorCategoria[cat.id]?.map(recurso => (
                                 <tr key={recurso.id} style={{ background: '#f8fafc' }}>
