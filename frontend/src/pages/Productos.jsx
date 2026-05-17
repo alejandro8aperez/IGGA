@@ -119,7 +119,7 @@ export default function Productos() {
             if (filterTipo) params.tipo = filterTipo;
 
             const [prodRes, catRes, grpRes, famRes, empRes, almRes, resRes] = await Promise.all([
-                axios.get(API.PRODUCTOS.MAESTRO, { params }),
+                axios.get(API.INVENTARIOS.PRODUCTOS, { params }),
                 axios.get(API.INVENTARIOS.CATEGORIAS),
                 axios.get(API.PRODUCTOS.GRUPOS_MATERIAL),
                 axios.get(API.PRODUCTOS.FAMILIAS),
@@ -149,7 +149,7 @@ export default function Productos() {
         setActiveTab('general');
         if (prod?.id) {
             try {
-                const res = await axios.get(`${API.PRODUCTOS.MAESTRO}${prod.id}/`);
+                const res = await axios.get(`${API.INVENTARIOS.PRODUCTOS}${prod.id}/`);
                 const p = res.data;
                 setCurrent(p);
                 setForm({
@@ -250,9 +250,9 @@ export default function Productos() {
         try {
             const payload = buildPayload();
             if (current?.id) {
-                await axios.put(`${API.PRODUCTOS.MAESTRO}${current.id}/`, payload);
+                await axios.put(`${API.INVENTARIOS.PRODUCTOS}${current.id}/`, payload);
             } else {
-                await axios.post(API.PRODUCTOS.MAESTRO, payload);
+                await axios.post(API.INVENTARIOS.PRODUCTOS, payload);
             }
             setModalOpen(false);
             loadData();
@@ -266,7 +266,7 @@ export default function Productos() {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Eliminar o desactivar este producto?')) return;
         try {
-            await axios.delete(`${API.PRODUCTOS.MAESTRO}${id}/`);
+            await axios.delete(`${API.INVENTARIOS.PRODUCTOS}${id}/`);
             loadData();
         } catch {
             alert('No se pudo eliminar');
