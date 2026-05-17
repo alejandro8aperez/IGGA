@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { 
-    MonitorSmartphone, ShoppingCart, Search, X, 
+    MonitorSmartphone, ShoppingCart, X, 
     CreditCard, DollarSign, ArrowLeft, RefreshCw, 
     Plus, Minus, Trash2, Printer, CheckCircle2,
     ChevronRight, Wallet, Coffee, Cake, ShoppingBag,
-    Package, AlertCircle, Smartphone, FileText
+    Package, AlertCircle, Smartphone, FileText, ScanLine
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
+import { buscarProductoPorCodigoBarras, productoParaPOS } from '../utils/productoBarcode';
 import './POS.css';
 
 // Usar URL absoluta para evitar que el POS busque datos en el puerto equivocado (5173) en Render
@@ -22,6 +23,8 @@ function POS() {
     const [categorias, setCategorias] = useState([]);
     const [activeCategory, setActiveCategory] = useState('Todas');
     const [searchTerm, setSearchTerm] = useState('');
+    const [barcodeBusy, setBarcodeBusy] = useState(false);
+    const searchInputRef = useRef(null);
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -109,6 +112,10 @@ function POS() {
     };
 
     const addToCart = (product) => {
+        if (product.activo === false) {
+            alert('Este producto está inactivo y no se puede vender.');
+            return;
+        }
         setCart(prev => {
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
@@ -118,6 +125,48 @@ function POS() {
             }
             return [...prev, { ...product, cantidad: 1 }];
         });
+    };
+
+    const handleBarcodeScan = async (codigo) => {
+        const trimmed = (codigo ?? searchTerm).trim();
+        if (!trimmed || barcodeBusy) return;
+
+        setBarcodeBusy(true);
+        try {
+            const maestro = await buscarProductoPorCodigoBarras(trimmed);
+            if (maestro) {
+                addToCart(productoParaPOS(maestro));
+                setSearchTerm('');
+                searchInputRef.current?.focus();
+                return;
+            }
+
+            const local = productos.find(p =>
+                p.activo !== false && (
+                    p.codigo_sku?.toLowerCase() === trimmed.toLowerCase() ||
+                    p.codigo_barras_principal === trimmed
+                )
+            );
+            if (local) {
+                addToCart(local);
+                setSearchTerm('');
+                searchInputRef.current?.focus();
+                return;
+            }
+
+            alert(`No se encontró producto para: ${trimmed}`);
+        } catch {
+            alert('Error al buscar por código de barras. Verifique la conexión.');
+        } finally {
+            setBarcodeBusy(false);
+        }
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleBarcodeScan();
+        }
     };
 
     const removeFromCart = (productId) => {
@@ -141,7 +190,11 @@ function POS() {
 
     const filteredProducts = productos.filter(p => {
         const matchesCategory = activeCategory === 'Todas' || p.categoria_nombre === activeCategory;
-        const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || p.codigo_sku.toLowerCase().includes(searchTerm.toLowerCase());
+        const q = searchTerm.toLowerCase();
+        const matchesSearch = !q ||
+            p.nombre?.toLowerCase().includes(q) ||
+            p.codigo_sku?.toLowerCase().includes(q) ||
+            p.codigo_barras_principal?.includes(searchTerm);
         return matchesCategory && matchesSearch && p.activo !== false;
     });
 
@@ -222,12 +275,32 @@ function POS() {
                 </div>
 
                 <div style={searchContainerStyle}>
-                    <Search size={18} style={{ color: '#94a3b8' }} />
-                    <input 
-                        type="text" placeholder="Buscar pan, pasteles o SKU..." 
-                        value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                    <ScanLine size={18} style={{ color: barcodeBusy ? '#ec4899' : '#94a3b8' }} />
+                    <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Escanear código de barras, SKU o buscar..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearchKeyDown}
                         style={searchInputStyle}
+                        autoComplete="off"
                     />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => handleBarcodeScan()}
+                            disabled={barcodeBusy}
+                            title="Buscar y agregar al carrito (Enter)"
+                            style={{
+                                background: '#ec4899', color: 'white', border: 'none',
+                                borderRadius: 8, padding: '0.35rem 0.65rem', fontSize: '0.72rem',
+                                fontWeight: 700, cursor: barcodeBusy ? 'wait' : 'pointer', whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {barcodeBusy ? '...' : '+ Agregar'}
+                        </button>
+                    )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

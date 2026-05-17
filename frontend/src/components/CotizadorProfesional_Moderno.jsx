@@ -5,9 +5,10 @@ import {
     Calculator, FileText, Save, Download, Upload, Plus, X, Edit3, Trash2,
     Search, Filter, User, Mail, Phone, Building, DollarSign, Calendar,
     AlertCircle, CheckCircle, TrendingUp, BarChart3, Activity,
-    Target, Zap, Settings, Wrench, Package, Truck, Users, Clock
+    Target, Zap, Settings, Wrench, Package, Truck, Users, Clock, ScanLine, Barcode
 } from 'lucide-react';
 import API from '../config/api';
+import { buscarProductoPorCodigoBarras, productoParaCotizacion } from '../utils/productoBarcode';
 
 const API_CLIENTES = API.CRM.CLIENTES;
 const API_COTIZACIONES = API.CRM.COTIZACIONES;
@@ -42,6 +43,8 @@ export default function CotizadorProfesional() {
 
     const [showClienteModal, setShowClienteModal] = useState(false);
     const [editingCotizacion, setEditingCotizacion] = useState(null);
+    const [barcodeInput, setBarcodeInput] = useState('');
+    const [barcodeBusy, setBarcodeBusy] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -85,6 +88,52 @@ export default function CotizadorProfesional() {
             ...prev,
             productos: [...prev.productos, nuevoProducto]
         }));
+    };
+
+    const agregarProductoDesdeMaestro = (linea) => {
+        setFormData(prev => {
+            const nuevosProductos = [...prev.productos, linea];
+            const subtotal = nuevosProductos.reduce((sum, prod) => sum + prod.total, 0);
+            const impuestos = subtotal * 0.19;
+            return {
+                ...prev,
+                productos: nuevosProductos,
+                subtotal,
+                impuestos,
+                total: subtotal + impuestos,
+            };
+        });
+    };
+
+    const handleBarcodeAdd = async (codigoOverride) => {
+        const codigo = (codigoOverride ?? barcodeInput).trim();
+        if (!codigo || barcodeBusy) return;
+
+        setBarcodeBusy(true);
+        try {
+            const maestro = await buscarProductoPorCodigoBarras(codigo);
+            if (!maestro) {
+                alert(`No se encontró producto para el código: ${codigo}`);
+                return;
+            }
+            if (maestro.activo === false) {
+                alert('El producto está inactivo.');
+                return;
+            }
+            agregarProductoDesdeMaestro(productoParaCotizacion(maestro, 1));
+            setBarcodeInput('');
+        } catch {
+            alert('Error al buscar por código de barras.');
+        } finally {
+            setBarcodeBusy(false);
+        }
+    };
+
+    const handleBarcodeKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleBarcodeAdd();
+        }
     };
 
     const handleProductoChange = (index, field, value) => {
@@ -731,6 +780,41 @@ export default function CotizadorProfesional() {
 
                     {/* Products Table */}
                     <div style={{ marginBottom: '1rem' }}>
+                        <div style={{
+                            display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem',
+                            padding: '0.75rem', background: '#f0f9ff', borderRadius: '10px',
+                            border: '1px solid #bae6fd', flexWrap: 'wrap',
+                        }}>
+                            <Barcode size={20} style={{ color: '#0284c7', flexShrink: 0 }} />
+                            <input
+                                type="text"
+                                value={barcodeInput}
+                                onChange={(e) => setBarcodeInput(e.target.value)}
+                                onKeyDown={handleBarcodeKeyDown}
+                                placeholder="Escanear código de barras o escribir SKU / GTIN..."
+                                style={{
+                                    flex: 1, minWidth: 220, padding: '0.6rem 0.75rem',
+                                    border: '1px solid #7dd3fc', borderRadius: '8px', fontSize: '0.9rem',
+                                }}
+                                autoComplete="off"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleBarcodeAdd()}
+                                disabled={barcodeBusy || !barcodeInput.trim()}
+                                style={{
+                                    background: barcodeBusy ? '#94a3b8' : '#0284c7',
+                                    color: 'white', border: 'none', padding: '0.6rem 1rem',
+                                    borderRadius: '8px', cursor: barcodeBusy ? 'wait' : 'pointer',
+                                    fontWeight: 600, fontSize: '0.85rem',
+                                    display: 'flex', alignItems: 'center', gap: '0.35rem',
+                                }}
+                            >
+                                <ScanLine size={16} />
+                                {barcodeBusy ? 'Buscando...' : 'Agregar por código'}
+                            </button>
+                        </div>
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: '#1a202c' }}>
                                 Productos
@@ -763,6 +847,7 @@ export default function CotizadorProfesional() {
                             }}>
                                 <thead>
                                     <tr style={{ background: '#f8fafc' }}>
+                                        <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', width: 90 }}>SKU</th>
                                         <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Descripción</th>
                                         <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Cantidad</th>
                                         <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Precio Unitario</th>
@@ -774,6 +859,16 @@ export default function CotizadorProfesional() {
                                 <tbody>
                                     {formData.productos.map((producto, index) => (
                                         <tr key={producto.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                            <td style={{ padding: '1rem', verticalAlign: 'middle' }}>
+                                                {producto.codigo_sku ? (
+                                                    <span style={{
+                                                        fontFamily: 'monospace', fontSize: '0.78rem',
+                                                        background: '#e0e7ff', color: '#3730a3', padding: '2px 6px', borderRadius: 4,
+                                                    }}>{producto.codigo_sku}</span>
+                                                ) : (
+                                                    <span style={{ color: '#cbd5e0', fontSize: '0.75rem' }}>—</span>
+                                                )}
+                                            </td>
                                             <td style={{ padding: '1rem', verticalAlign: 'middle' }}>
                                                 <input
                                                     type="text"

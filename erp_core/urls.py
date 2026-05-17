@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/crm/', include('crm.urls')),
     path('api/inventarios/', include('inventarios.urls')),
     path('api/inventario/', include('inventarios.urls')),  # Alias para el frontend
+    path('api/productos/', include('productos.urls')),
     path('api/finanzas/', include('finanzas.urls')),
     path('api/compras/', include('compras.urls')),
     path('api/operaciones/', include('operaciones.urls')),

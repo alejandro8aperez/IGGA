@@ -70,6 +70,19 @@ export const API = {
         AJUSTES:        `${B}/inventarios/ajustes/`,
     },
 
+    // ── Productos (Maestro SAP MM) ─────────────────────────────────────────────
+    PRODUCTOS: {
+        MAESTRO:            `${B}/productos/maestro/`,
+        RESUMEN:            `${B}/productos/maestro/resumen/`,
+        POR_CODIGO_BARRAS:  `${B}/productos/maestro/por-codigo-barras/`,
+        GRUPOS_MATERIAL:    `${B}/productos/grupos-material/`,
+        FAMILIAS:           `${B}/productos/familias/`,
+        TIPOS_EMPAQUE:      `${B}/productos/tipos-empaque/`,
+        CODIGOS_BARRAS:     `${B}/productos/codigos-barras/`,
+        UNIDADES_EMPAQUE:   `${B}/productos/unidades-empaque/`,
+        UNIDADES_ALT:       `${B}/productos/unidades-alternativas/`,
+    },
+
     // ── Compras ───────────────────────────────────────────────────────────────
     COMPRAS: {
         PROVEEDORES:    `${B}/compras/proveedores/`,

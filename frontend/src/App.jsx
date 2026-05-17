@@ -2,7 +2,7 @@ import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate } from
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import {
     LayoutDashboard, Menu, LogOut, X, FileText, MonitorSmartphone,
-    Users, ShoppingCart, Package, TrendingUp, Truck, Wrench,
+    Users, ShoppingCart, Package, Boxes, TrendingUp, Truck, Wrench,
     DollarSign, BookOpen, Wallet, BarChart3, Settings, Building2,
     ClipboardList, Cpu, Award, Megaphone, HeartHandshake,
     FolderOpen, Zap, Factory, MapPin, ChevronDown, ChevronRight
@@ -27,6 +27,7 @@ const MRP_Moderno          = lazy(() => import('./pages/MRP'));
 const Ventas_Moderno       = lazy(() => import('./pages/Ventas'));
 const CRM_Moderno          = lazy(() => import('./pages/CRM'));
 const Inventario_Moderno   = lazy(() => import('./pages/Inventario'));
+const Productos_Moderno    = lazy(() => import('./pages/Productos'));
 const Compras_Moderno      = lazy(() => import('./pages/Compras'));
 const Proveedores_Moderno  = lazy(() => import('./pages/Proveedores'));
 const Logistica_Moderno    = lazy(() => import('./pages/Logistica'));
@@ -74,6 +75,7 @@ const NAV_GROUPS = [
         items: [
             { path: '/produccion',    name: 'Producción',    icon: Factory },
             { path: '/mrp',           name: 'MRP',           icon: Cpu },
+            { path: '/productos',     name: 'Productos',     icon: Boxes },
             { path: '/inventario',    name: 'Inventarios',   icon: Package },
             { path: '/proveedores',   name: 'Proveedores',   icon: Users },
             { path: '/compras',       name: 'Compras',       icon: ShoppingCart },
@@ -380,6 +382,7 @@ function AppContent() {
                         <Route path="/mrp"           element={<P><MRP_Moderno/></P>}/>
                         <Route path="/ventas"        element={<P><Ventas_Moderno/></P>}/>
                         <Route path="/crm"           element={<P><CRM_Moderno/></P>}/>
+                        <Route path="/productos"     element={<P><Productos_Moderno/></P>}/>
                         <Route path="/inventario"    element={<P><Inventario_Moderno/></P>}/>
                         <Route path="/proveedores"   element={<P><Proveedores_Moderno/></P>}/>
                         <Route path="/compras"       element={<P><Compras_Moderno/></P>}/>

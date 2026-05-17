@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'mrp',
     'crm',
     'inventarios',
+    'productos',
     'compras',
     'logistica',
     'operaciones',
