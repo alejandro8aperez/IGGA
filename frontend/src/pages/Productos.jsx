@@ -16,6 +16,7 @@ const TABS = [
     { id: 'ventas', label: 'Ventas', icon: TrendingUp },
     { id: 'mrp', label: 'MRP', icon: Factory },
     { id: 'almacen', label: 'Almacén', icon: Warehouse },
+    { id: 'contabilidad', label: 'Contabilidad', icon: DollarSign },
 ];
 
 const TIPOS_PRODUCTO = [
@@ -32,6 +33,14 @@ const ESTADOS_MATERIAL = [
     { value: 'bloqueado', label: 'Bloqueado' },
     { value: 'obsoleto', label: 'Obsoleto' },
     { value: 'en_desarrollo', label: 'En desarrollo' },
+];
+
+const GRUPOS_CONTABLES = [
+    { value: 'mercancia_no_fab', label: 'Mercancía no fabricada' },
+    { value: 'prod_terminado', label: 'Producto Terminado (BOM)' },
+    { value: 'materia_prima', label: 'Materia Prima' },
+    { value: 'repuestos', label: 'Repuestos / Consumibles' },
+    { value: 'servicios', label: 'Servicios de Ingeniería' },
 ];
 
 const TIPOS_BARRAS = ['EAN13', 'EAN8', 'UPC', 'CODE128', 'CODE39', 'QR', 'INTERNO', 'GTIN14'];
@@ -53,6 +62,10 @@ const emptyFicha = () => ({
     proveedor_habitual: '', lead_time_dias: '', cantidad_minima_compra: '',
     moneda_compra: 'COP', ultimo_precio_compra: '', lista_precios: 'General',
     iva_porcentaje: 19, precio_sugerido: '', permite_descuento: true, es_vendible: true,
+    categoria_valoracion: 'mercancia_no_fab', // Equivalente a SAP Valuation Class
+    centro_costo_por_defecto: '',
+    indicador_impuestos: 'IVA_19',
+    sujeto_retencion: false,
     politica_inventario: 'punto_reorden', planificador: '', tiempo_produccion_dias: '',
     lote_minimo_produccion: '', lote_estandar: '', gestion_lote: false, gestion_serie: false,
     temperatura_almacenamiento: '', clase_abc: '', estado_material: 'activo',
@@ -553,8 +566,40 @@ export default function Productos() {
                         <Field label="Lote estándar">
                             <input style={inp} type="number" value={form.ficha.lote_estandar} onChange={e => setFicha('lote_estandar', e.target.value)} />
                         </Field>
-                        <Field label="Punto de reorden">
-                            <input style={inp} type="number" value={form.punto_reorden} onChange={e => setField('punto_reorden', e.target.value)} />
+                        <Field label="Stock de Seguridad (Safety Stock)">
+                            <input style={inp} type="number" value={form.ficha.stock_seguridad || 0} onChange={e => setFicha('stock_seguridad', e.target.value)} />
+                        </Field>
+                        <Field label="Punto de Pedido / Reorden">
+                            <input style={inp} type="number" value={form.punto_reorden || 0} onChange={e => setField('punto_reorden', e.target.value)} />
+                        </Field>
+                        <Field label="Plazo Entrega Previsto (días)">
+                            <input style={inp} type="number" value={form.ficha.lead_time_dias} onChange={e => setFicha('lead_time_dias', e.target.value)} />
+                        </Field>
+                    </div>
+                );
+            case 'contabilidad':
+                return (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
+                        <Field label="Clase de valoración (SAP Valuation Class)">
+                            <select style={inp} value={form.ficha.categoria_valoracion} onChange={e => setFicha('categoria_valoracion', e.target.value)}>
+                                {GRUPOS_CONTABLES.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+                            </select>
+                        </Field>
+                        <Field label="Indicador de impuestos">
+                            <select style={inp} value={form.ficha.indicador_impuestos} onChange={e => setFicha('indicador_impuestos', e.target.value)}>
+                                <option value="IVA_19">IVA 19% (Gravado)</option>
+                                <option value="IVA_5">IVA 5% (Reducido)</option>
+                                <option value="IVA_0">Exento / No sujeto</option>
+                            </select>
+                        </Field>
+                        <Field label="Centro de costo por defecto">
+                            <input style={inp} value={form.ficha.centro_costo_por_defecto} onChange={e => setFicha('centro_costo_por_defecto', e.target.value)} placeholder="Ej: 100-PROD" />
+                        </Field>
+                        <Field label="Sujeto a retención">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '38px' }}>
+                                <input type="checkbox" checked={form.ficha.sujeto_retencion} onChange={e => setFicha('sujeto_retencion', e.target.checked)} style={{ width: 18, height: 18 }} />
+                                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Aplica Retefuente / ReteICA</span>
+                            </div>
                         </Field>
                     </div>
                 );

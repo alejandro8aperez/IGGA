@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation, Routes, Route } from 'react-router-dom';
-import { LayoutDashboard, LogOut, LayoutTemplate, Menu, X } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { NavLink, Outlet, useLocation, Routes, Route, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, LogOut, LayoutTemplate, Menu, X, Command } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ERP_MODULES_NAV } from '../pages/Home-complete';
 
@@ -78,7 +78,27 @@ const moduleComponentMap = {
 export default function ErpLayout() {
     const { user, logoutUser } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
+    const [command, setCommand] = useState('');
+
+    const handleCommand = useCallback((e) => {
+        if (e.key === 'Enter') {
+            const cmd = command.toLowerCase().trim();
+            const module = ERP_MODULES_NAV.find(m => 
+                m.name.toLowerCase().includes(cmd) || 
+                m.path.includes(cmd)
+            );
+            if (module) {
+                navigate(module.path);
+                setCommand('');
+            } else if (cmd === 'home' || cmd === 'inicio') {
+                navigate('/');
+                setCommand('');
+            }
+        }
+    }, [command, navigate]);
+
     useEffect(() => {
         setIsOpen(false);
     }, [location.pathname]);
@@ -112,6 +132,19 @@ export default function ErpLayout() {
                     >
                         <X size={18} />
                     </button>
+                </div>
+                <div style={{ padding: '0 1rem 1rem' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Command size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                        <input 
+                            type="text" 
+                            placeholder="Saltar a módulo..." 
+                            value={command}
+                            onChange={(e) => setCommand(e.target.value)}
+                            onKeyDown={handleCommand}
+                            style={{ width: '100%', padding: '8px 10px 8px 30px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white', fontSize: '0.8rem', outline: 'none' }}
+                        />
+                    </div>
                 </div>
                 {user && (
                     <div className="erp-user-box">
