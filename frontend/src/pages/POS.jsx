@@ -6,7 +6,8 @@ import {
     Plus, Minus, Trash2, Printer, CheckCircle2,
     ChevronRight, Wallet, Coffee, Cake, ShoppingBag,
     Package, AlertCircle, Smartphone, FileText, ScanLine,
-    Gauge
+    Scale, Weight,
+    Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
@@ -28,7 +29,7 @@ function POS() {
     const [activeCategory, setActiveCategory] = useState('Todas');
     const [searchTerm, setSearchTerm] = useState('');
     const [barcodeBusy, setBarcodeBusy] = useState(false);
-    
+
     // Peso / Granel states
     const [showWeightModal, setShowWeightModal] = useState(false);
     const [pendingWeightProduct, setPendingWeightProduct] = useState(null);
@@ -364,12 +365,12 @@ function POS() {
                 <div style={modalOverlayStyle} onClick={() => setShowWeightModal(false)}>
                     <div style={{ ...paymentModalStyle, maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
                         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                            <Package size={48} style={{ color: '#ec4899', marginBottom: '1rem' }} />
-                            <h2 style={{ margin: 0 }}>Entrada de Pesaje</h2>
+                            <Scale size={48} style={{ color: '#8b5cf6', marginBottom: '1rem' }} />
+                            <h2 style={{ margin: 0, color: '#1e293b' }}>Báscula Digital</h2>
                             <p style={{ color: '#64748b' }}>{pendingWeightProduct?.nombre}</p>
                         </div>
-                        
-                        <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem' }}>
+
+                        <div style={{ background: '#0f172a', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '4px solid #334155' }}>
                             <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem', textAlign: 'center' }}>
                                 Cantidad ({pendingWeightProduct?.unidad_medida})
                             </div>
@@ -378,7 +379,7 @@ function POS() {
                                 step="0.001"
                                 value={manualWeight}
                                 onChange={e => setManualWeight(e.target.value)}
-                                style={{ ...paymentInputStyle, textAlign: 'center', fontSize: '3rem' }}
+                                style={{ ...paymentInputStyle, textAlign: 'center', fontSize: '4rem', background: 'transparent', color: '#34d399', border: 'none', fontFamily: 'monospace' }}
                                 placeholder="0.000"
                                 autoFocus
                                 onKeyDown={e => e.key === 'Enter' && confirmWeightEntry()}
@@ -486,10 +487,15 @@ function POS() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                 {cart.map(item => (
                                     <CartItem 
-                                        key={item.id} item={item} 
+                                                key={item.id} item={item}
                                         onRemove={() => removeFromCart(item.id)}
                                         onUpdateQty={(d) => updateQuantity(item.id, d)}
                                                 onReweigh={() => { setPendingWeightProduct(item); setManualWeight(''); setShowWeightModal(true); }}
+                                                onForceWeight={() => { 
+                                                    setPendingWeightProduct(item); 
+                                                    setManualWeight(item.cantidad.toString()); 
+                                                    setShowWeightModal(true); 
+                                                }}
                                                 isPesable={UNIDADES_PESO.includes(item.unidad_medida?.toUpperCase().trim())}
                                     />
                                 ))}
@@ -849,16 +855,23 @@ function ProductCard({ product, onClick }) {
                     </div>
                     <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: '700', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.nombre}</h3>
                 </div>
+                {UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim()) && (
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#8b5cf6', color: 'white', fontSize: '0.6rem', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', zIndex: 2 }}>
+                        GRANEL
+                    </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '1rem', fontWeight: '800', color: '#10b981' }}>${Number(product.precio_venta).toLocaleString()}</span>
-                        <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>por {product.unidad_medida || 'unidad'}</span>
+                        <span style={{ fontSize: '0.65rem', color: UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim()) ? '#8b5cf6' : '#94a3b8', fontWeight: UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim()) ? 'bold' : 'normal' }}>
+                            por {product.unidad_medida || 'unidad'}
+                        </span>
                     </div>
-                    
+
                     {/* Indicador de Pesaje (Báscula) */}
                     {UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim()) ? (
                         <div style={{ background: '#8b5cf6', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Venta por peso">
-                            <Gauge size={16} />
+                            <Scale size={16} />
                         </div>
                     ) : (
                         <div style={{ background: '#ec4899', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -871,7 +884,7 @@ function ProductCard({ product, onClick }) {
     );
 }
 
-function CartItem({ item, onRemove, onUpdateQty, onReweigh, isPesable }) {
+function CartItem({ item, onRemove, onUpdateQty, onReweigh, onForceWeight, isPesable }) {
     const rawImage = item.imagen_url || item.imagen;
     let imageUrl = null;
     if (rawImage?.startsWith('http')) {
@@ -919,8 +932,13 @@ function CartItem({ item, onRemove, onUpdateQty, onReweigh, isPesable }) {
             </div>
             {isPesable && (
                 <button onClick={onReweigh} style={{ ...iconBtnStyle, color: '#8b5cf6' }} title="Pesar de nuevo">
-                    <Gauge size={16} />
+                    <Scale size={16} />
                 </button>
+            )}
+            {!isPesable && (
+                 <button onClick={onForceWeight} style={{ ...iconBtnStyle, color: '#94a3b8' }} title="Cambiar a pesaje manual">
+                    <Weight size={16} />
+                 </button>
             )}
             <button onClick={onRemove} style={{ ...iconBtnStyle, color: '#ef4444' }}><Trash2 size={16}/></button>
         </div>
