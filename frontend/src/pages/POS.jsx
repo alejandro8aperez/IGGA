@@ -5,7 +5,8 @@ import {
     CreditCard, DollarSign, ArrowLeft, RefreshCw, 
     Plus, Minus, Trash2, Printer, CheckCircle2,
     ChevronRight, Wallet, Coffee, Cake, ShoppingBag,
-    Package, AlertCircle, Smartphone, FileText, ScanLine
+    Package, AlertCircle, Smartphone, FileText, ScanLine,
+    Gauge
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';

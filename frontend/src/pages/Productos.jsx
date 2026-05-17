@@ -140,10 +140,9 @@ export default function Productos() {
                 axios.get(API.PRODUCTOS.FAMILIAS),                // 3
                 axios.get(API.PRODUCTOS.TIPOS_EMPAQUE),           // 4
                 axios.get(API.INVENTARIOS.ALMACENES),             // 5
-                axios.get(API.PRODUCTOS.RESUMEN).catch(() => ({ data: {} })), // 6 - Fallback silencioso
             ]);
 
-            // Validamos la respuesta de productos (esencial)
+            // Validamos la respuesta de productos (índice 0)
             if (results[0].status === 'fulfilled') {
                 const data = results[0].value.data;
                 const lista = Array.isArray(data) ? data : (data.results || []);
@@ -162,7 +161,6 @@ export default function Productos() {
             if (results[3].status === 'fulfilled') setFamilias(results[3].value.data);
             if (results[4].status === 'fulfilled') setTiposEmpaque(results[4].value.data);
             if (results[5].status === 'fulfilled') setAlmacenes(results[5].value.data);
-            if (results[6].status === 'fulfilled') setResumen(results[6].value.data);
             
             setError(null);
         } catch (err) {
