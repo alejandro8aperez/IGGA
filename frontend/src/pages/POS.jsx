@@ -13,6 +13,9 @@ import { API } from '../config/api';
 import { buscarProductoPorCodigoBarras, productoParaPOS } from '../utils/productoBarcode';
 import './POS.css';
 
+// Unidades que activan el módulo de pesaje SAP
+const UNIDADES_PESO = ['KG', 'KILOGRAMO', 'KILOGRAMOS', 'KILOS', 'GR', 'GRAMO', 'GRAMOS', 'LB', 'LIBRA', 'LIBRAS', 'KG.', 'GR.', 'G.', 'GRA'];
+
 // Usar URL absoluta para evitar que el POS busque datos en el puerto equivocado (5173) en Render
 const API_BASE = import.meta.env.VITE_API_URL || API.BASE || `http://${window.location.hostname}:8000/api`;
 const MEDIA_BASE = API_BASE.replace(/\/api\/?$/, ''); 
@@ -124,10 +127,7 @@ function POS() {
             return;
         }
 
-        // Lógica de Pesaje Robusta: Detectar unidades de masa (KG, GR, LB) inclusive en plural o con puntos
-        const unidadesPeso = ['KG', 'KILOGRAMO', 'KILOGRAMOS', 'GR', 'GRAMO', 'GRAMOS', 'LB', 'LIBRA', 'LIBRAS', 'KG.', 'GR.'];
-        const unidadLimpia = product.unidad_medida?.toUpperCase().trim() || '';
-        const esPesable = unidadesPeso.includes(unidadLimpia);
+        const esPesable = UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim());
 
         if (esPesable) {
             setPendingWeightProduct(product);
@@ -212,7 +212,10 @@ function POS() {
     const updateQuantity = (productId, delta) => {
         setCart(prev => prev.map(item => {
             if (item.id === productId) {
-                const newQty = Math.max(1, item.cantidad + delta);
+                const esPesable = UNIDADES_PESO.includes(item.unidad_medida?.toUpperCase().trim());
+                // Si es por peso, los botones +/- ajustan de a 0.1 (100g) o 10g dependiendo de la unidad
+                const step = esPesable ? (item.unidad_medida?.toUpperCase().includes('GR') ? 10 : 0.1) : 1;
+                const newQty = Math.max(esPesable ? 0.001 : 1, item.cantidad + (delta * step));
                 return { ...item, cantidad: newQty };
             }
             return item;
@@ -486,6 +489,8 @@ function POS() {
                                         key={item.id} item={item} 
                                         onRemove={() => removeFromCart(item.id)}
                                         onUpdateQty={(d) => updateQuantity(item.id, d)}
+                                                onReweigh={() => { setPendingWeightProduct(item); setManualWeight(''); setShowWeightModal(true); }}
+                                                isPesable={UNIDADES_PESO.includes(item.unidad_medida?.toUpperCase().trim())}
                                     />
                                 ))}
                             </div>
@@ -851,7 +856,7 @@ function ProductCard({ product, onClick }) {
                     </div>
                     
                     {/* Indicador de Pesaje (Báscula) */}
-                    {['KG', 'KILOGRAMO', 'GR', 'GRAMO', 'LB', 'LIBRA'].includes(product.unidad_medida?.toUpperCase().trim()) ? (
+                    {UNIDADES_PESO.includes(product.unidad_medida?.toUpperCase().trim()) ? (
                         <div style={{ background: '#8b5cf6', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Venta por peso">
                             <Gauge size={16} />
                         </div>
@@ -866,7 +871,7 @@ function ProductCard({ product, onClick }) {
     );
 }
 
-function CartItem({ item, onRemove, onUpdateQty }) {
+function CartItem({ item, onRemove, onUpdateQty, onReweigh, isPesable }) {
     const rawImage = item.imagen_url || item.imagen;
     let imageUrl = null;
     if (rawImage?.startsWith('http')) {
@@ -903,13 +908,20 @@ function CartItem({ item, onRemove, onUpdateQty }) {
             
             <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1e293b' }}>{item.nombre}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>${Number(item.precio_venta).toLocaleString()} / u</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>${Number(item.precio_venta).toLocaleString()} / {item.unidad_medida || 'u'}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f1f5f9', borderRadius: '8px', padding: '2px' }}>
                 <button onClick={() => onUpdateQty(-1)} style={qtyBtnStyle}><Minus size={14}/></button>
-                <span style={{ fontSize: '0.875rem', fontWeight: '800', width: '20px', textAlign: 'center' }}>{item.cantidad}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '800', minWidth: '40px', textAlign: 'center' }}>
+                    {isPesable ? Number(item.cantidad).toFixed(3) : item.cantidad}
+                </span>
                 <button onClick={() => onUpdateQty(1)} style={qtyBtnStyle}><Plus size={14}/></button>
             </div>
+            {isPesable && (
+                <button onClick={onReweigh} style={{ ...iconBtnStyle, color: '#8b5cf6' }} title="Pesar de nuevo">
+                    <Gauge size={16} />
+                </button>
+            )}
             <button onClick={onRemove} style={{ ...iconBtnStyle, color: '#ef4444' }}><Trash2 size={16}/></button>
         </div>
     );
