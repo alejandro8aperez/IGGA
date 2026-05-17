@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
     Package, Plus, Edit3, Trash2, Search, X, Barcode, Box,
     ShoppingCart, TrendingUp, Factory, Warehouse, FileText,
-    Save, ScanLine, Layers
+    Save, ScanLine, Layers, DollarSign
 } from 'lucide-react';
 import { API } from '../config/api';
 

@@ -33,6 +33,7 @@ import Informediarioproy from '../pages/Informediarioproy';
 import Mantenimiento from '../pages/Mantenimiento';
 import Planeacion from '../pages/Planeacion';
 import Proyectos from '../pages/Proyectos';
+import ProyectosPS from '../pages/ProyectosPS';
 import FormDesignerPage from '../pages/FormDesignerPage';
 
 // Mapeo de rutas a componentes reales para renderizado dinámico
@@ -68,8 +69,8 @@ const moduleComponentMap = {
     '/form-designer': FormDesignerPage,
     // Rutas adicionales de ERP_MODULES_NAV que puedan variar
     '/activos': Inventario, // O el componente que corresponda
-    '/operaciones': Informediarioproy,
-    '/proyectos-ps': Proyectos,
+    '/operaciones': Operaciones,
+    '/proyectos-ps': ProyectosPS,
     '/reportes': Dashboard_Moderno,
     '/reportes-avanzados': Dashboard_Moderno,
     '/tesoreria': Finanzas,
