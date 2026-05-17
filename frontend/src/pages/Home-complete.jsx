@@ -9,6 +9,8 @@ export const ERP_MODULES_NAV = [
         { path: '/ventas', name: 'Ventas', icon: TrendingUp, color: '#10B981', description: 'Gestión de órdenes y ventas' },
         { path: '/crm', name: 'CRM y Clientes', icon: Users, color: '#3B82F6', description: 'Gestión de clientes y relaciones' },
         { path: '/inventario', name: 'Inventarios', icon: PackageOpen, color: '#64748B', description: 'Control de inventario' },
+        { path: '/productos', name: 'Productos', icon: PackageOpen, color: '#7C3AED', description: 'Maestro de materiales SAP' },
+        { path: '/proveedores', name: 'Proveedores', icon: Users, color: '#0D9488', description: 'Maestro de proveedores' },
         { path: '/activos', name: 'Activos Fijos', icon: PackageOpen, color: '#64748B', description: 'Gestión de activos fijos' },
         { path: '/compras', name: 'Compras', icon: ShoppingCart, color: '#F59E0B', description: 'Gestión de compras' },
         { path: '/logistica', name: 'Logística', icon: Truck, color: '#059669', description: 'Gestión logística' },

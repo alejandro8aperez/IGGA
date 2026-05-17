@@ -7,7 +7,7 @@ import {
     Menu, X, Plus, Edit3, Trash2, Search, Filter, Calendar,
     Clock, CheckCircle, AlertCircle, Activity, Target, Building2, FormInput,
     Factory, Shield, Users2, ClipboardList, Cog, Calculator as CalcIcon, 
-    CreditCard, Megaphone, MonitorSmartphone, HeartHandshake, FolderOpen
+    CreditCard, Megaphone, MonitorSmartphone, HeartHandshake, FolderOpen, Boxes
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API } from '../config/api';
@@ -73,11 +73,27 @@ const modules = [
     },
     {
         name: 'Inventario',
-        description: 'Control de existencias',
+        description: 'Control de existencias y movimientos',
         icon: Database,
         color: '#8b5cf6',
         path: '/inventario',
         stats: { total: 234, growth: '+18%' }
+    },
+    {
+        name: 'Productos',
+        description: 'Maestro de materiales SAP — barras, empaque, MRP',
+        icon: Boxes,
+        color: '#7c3aed',
+        path: '/productos',
+        stats: { total: 0, growth: 'SAP MM' }
+    },
+    {
+        name: 'Proveedores',
+        description: 'Maestro de proveedores',
+        icon: Users,
+        color: '#0d9488',
+        path: '/proveedores',
+        stats: { total: 0, growth: 'Nuevo' }
     },
     {
         name: 'Activos',
@@ -299,6 +315,14 @@ export default function Home() {
             const getValue = (result) => 
                 result.status === 'fulfilled' ? (result.value.data.length || 0) : 0;
 
+            let totalProductosMaestro = getValue(results[6]);
+            try {
+                const resumen = await axios.get(API.PRODUCTOS.RESUMEN);
+                totalProductosMaestro = resumen.data?.total_productos ?? totalProductosMaestro;
+            } catch {
+                /* usar conteo de inventarios si el maestro no responde */
+            }
+
             setStats({
                 clientes: getValue(results[0]),
                 cotizaciones: getValue(results[1]),
@@ -306,7 +330,7 @@ export default function Home() {
                 facturas: getValue(results[3]),
                 proveedores: getValue(results[4]),
                 ordenes: getValue(results[5]),
-                productos: getValue(results[6]),
+                productos: totalProductosMaestro,
                 proyectos: getValue(results[7]),
                 diseños: getValue(results[8])
             });
@@ -319,6 +343,16 @@ export default function Home() {
         module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         module.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const moduleStats = (module) => {
+        if (module.path === '/productos') {
+            return { total: stats.productos, growth: 'SAP MM' };
+        }
+        if (module.path === '/proveedores') {
+            return { total: stats.proveedores, growth: 'Nuevo' };
+        }
+        return module.stats;
+    };
 
     const openModule = (module) => {
         setSelectedModule(module);
@@ -474,7 +508,7 @@ export default function Home() {
                 maxWidth: '1400px',
                 margin: '0 auto'
             }}>
-                {modules.map((module, index) => (
+                {filteredModules.map((module, index) => (
                     <div
                         key={module.name}
                         onClick={() => openModule(module)}
@@ -538,14 +572,14 @@ export default function Home() {
                                 fontSize: '0.7rem',
                                 color: 'rgba(255,255,255,0.7)'
                             }}>
-                                {module.stats.total} reg.
+                                {moduleStats(module).total} reg.
                             </span>
                             <span style={{
                                 fontSize: '0.65rem',
                                 color: '#10b981',
                                 fontWeight: '600'
                             }}>
-                                {module.stats.growth}
+                                {moduleStats(module).growth}
                             </span>
                         </div>
                     </div>
