@@ -118,24 +118,29 @@ export default function Productos() {
             if (filterGrupo) params.grupo_material = filterGrupo;
             if (filterTipo) params.tipo = filterTipo;
 
-            // Usamos allSettled para que si falla un endpoint secundario (ej. Grupos SAP), 
-            // los productos principales se carguen de todos modos.
             const results = await Promise.allSettled([
-                axios.get(API.INVENTARIOS.PRODUCTOS, { params }), // 0
+                axios.get(API.INVENTARIOS.PRODUCTOS, { 
+                    params: search ? { search } : {} 
+                }), // 0 - Simplificamos params para asegurar compatibilidad
                 axios.get(API.INVENTARIOS.CATEGORIAS),            // 1
                 axios.get(API.PRODUCTOS.GRUPOS_MATERIAL),         // 2
                 axios.get(API.PRODUCTOS.FAMILIAS),                // 3
                 axios.get(API.PRODUCTOS.TIPOS_EMPAQUE),           // 4
                 axios.get(API.INVENTARIOS.ALMACENES),             // 5
-                axios.get(API.PRODUCTOS.RESUMEN),                 // 6
+                axios.get(API.PRODUCTOS.RESUMEN).catch(() => ({ data: {} })), // 6 - Fallback silencioso
             ]);
 
             // Validamos la respuesta de productos (esencial)
             if (results[0].status === 'fulfilled') {
                 const data = results[0].value.data;
-                setProductos(Array.isArray(data) ? data : data.results || []);
+                const lista = Array.isArray(data) ? data : (data.results || []);
+                setProductos(lista);
+                
+                if (lista.length === 0) {
+                    console.warn("La API devolvió 0 productos.");
+                }
             } else {
-                throw new Error('No se pudo conectar con el inventario');
+                throw new Error(results[0].reason?.message || 'Error de conexión con Inventarios');
             }
 
             // Carga de metadatos (opcionales)
@@ -148,7 +153,7 @@ export default function Productos() {
             
             setError(null);
         } catch (err) {
-            console.error(err);
+            console.error("Error en Maestro de Productos:", err);
             setError('Error al cargar el maestro de productos');
         } finally {
             setLoading(false);
@@ -693,9 +698,9 @@ export default function Productos() {
                                         onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
                                         <td style={{ padding: '0.6rem', fontFamily: 'monospace', color: '#a5b4fc' }}>{p.codigo_sku}</td>
                                         <td style={{ padding: '0.6rem' }}>{p.nombre}</td>
-                                        <td style={{ padding: '0.6rem', color: '#94a3b8' }}>{p.tipo_producto_display}</td>
-                                        <td style={{ padding: '0.6rem', color: '#94a3b8' }}>{p.grupo_material || '—'}</td>
-                                        <td style={{ padding: '0.6rem', color: '#94a3b8' }}>{p.tipo_empaque || '—'}</td>
+                                        <td style={{ padding: '0.6rem', color: '#94a3b8', textTransform: 'capitalize' }}>{p.tipo_producto_display || p.tipo_producto?.replace('_', ' ') || '—'}</td>
+                                        <td style={{ padding: '0.6rem', color: '#94a3b8' }}>{p.grupo_material_nombre || p.grupo_material || '—'}</td>
+                                        <td style={{ padding: '0.6rem', color: '#94a3b8' }}>{p.tipo_empaque_nombre || p.tipo_empaque || '—'}</td>
                                         <td style={{ padding: '0.6rem' }}>
                                             {p.codigo_barras_principal
                                                 ? <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#34d399' }}>{p.codigo_barras_principal}</span>
