@@ -304,6 +304,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
     const isEdit = !!informeId;
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [vistaReporte, setVistaReporte] = useState(false);
     const [form, setForm] = useState({
         obra: '', fecha: new Date().toISOString().substring(0, 10),
         numero_paginas: 1, codigo_formato: 'F-141-IN',
@@ -495,6 +496,189 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         fontWeight: 600, background: 'white',
     };
 
+    // Estilos para reporte tipo PDF
+    const reportHeaderStyle = {
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem',
+        padding: '1rem 0', borderBottom: '2px solid #1e3a5f', marginBottom: '1rem',
+    };
+    const reportLabelStyle = {
+        fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+    };
+    const reportValueStyle = {
+        fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginTop: '0.25rem',
+    };
+    const reportTableStyle = {
+        width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem',
+        marginBottom: '1.5rem',
+    };
+    const reportThStyle = {
+        padding: '0.4rem 0.6rem', background: '#f0f4f8', borderBottom: '2px solid #1e3a5f',
+        color: '#1e293b', fontWeight: 700, textAlign: 'left', fontSize: '0.72rem',
+    };
+    const reportTdStyle = {
+        padding: '0.4rem 0.6rem', borderBottom: '1px solid #e2e8f0', fontSize: '0.75rem',
+    };
+
+    // Función para obtener nombre de obra
+    const getNombreObra = () => {
+        const obra = obras.find(o => String(o.id) === String(form.obra));
+        return obra ? { codigo: obra.codigo, nombre: obra.nombre } : { codigo: '', nombre: '' };
+    };
+
+    const obraInfo = getNombreObra();
+
+    if (vistaReporte) {
+        return (
+            <div style={{ background: 'white', padding: '2rem', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
+                {/* Header de reporte */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <div>
+                        <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', margin: '0 0 0.5rem' }}>
+                            LIBRO DIARIO DE OBRA - {form.codigo_formato}
+                        </h1>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                            Obra: {obraInfo.codigo} - {obraInfo.nombre}
+                        </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <div style={reportLabelStyle}>FECHA</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>{form.fecha}</div>
+                    </div>
+                </div>
+
+                {/* Tabla de Maquinaria */}
+                <div>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                        Maquinaria - Equipos - Herramientas
+                    </h3>
+                    <table style={reportTableStyle}>
+                        <thead>
+                            <tr>
+                                <th style={reportThStyle}>DESCRIPCIÓN</th>
+                                <th style={{ ...reportThStyle, width: '80px', textAlign: 'center' }}>CANTIDAD</th>
+                                <th style={{ ...reportThStyle, width: '150px' }}>EMPRESA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categoriasRec.filter(c => !c.nombre.toUpperCase().includes('PERSONAL')).map(cat => (
+                                recursosPorCategoria[cat.id]?.map((recurso, idx) => (
+                                    <tr key={recurso.id} style={{ background: idx % 2 === 0 ? 'white' : '#f9fafb' }}>
+                                        <td style={reportTdStyle}>{recurso.nombre}</td>
+                                        <td style={{ ...reportTdStyle, textAlign: 'center' }}>{getCantidadRecurso(recurso.id) || 0}</td>
+                                        <td style={reportTdStyle}>{getEmpresaRecurso(recurso.id) || '—'}</td>
+                                    </tr>
+                                ))
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Tabla de Personal */}
+                <div>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                        Personal de Obra
+                    </h3>
+                    <table style={reportTableStyle}>
+                        <thead>
+                            <tr>
+                                <th style={reportThStyle}>DESCRIPCIÓN</th>
+                                <th style={{ ...reportThStyle, width: '80px', textAlign: 'center' }}>CANTIDAD</th>
+                                <th style={{ ...reportThStyle, width: '150px' }}>EMPRESA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categoriasRec.filter(c => c.nombre.toUpperCase().includes('PERSONAL')).map(cat => (
+                                recursosPorCategoria[cat.id]?.map((recurso, idx) => (
+                                    <tr key={recurso.id} style={{ background: idx % 2 === 0 ? 'white' : '#f9fafb' }}>
+                                        <td style={reportTdStyle}>{recurso.nombre}</td>
+                                        <td style={{ ...reportTdStyle, textAlign: 'center' }}>{getCantidadRecurso(recurso.id) || 0}</td>
+                                        <td style={reportTdStyle}>{getEmpresaRecurso(recurso.id) || '—'}</td>
+                                    </tr>
+                                ))
+                            ))}
+                            <tr style={{ background: '#fffacd', fontWeight: 700 }}>
+                                <td style={reportTdStyle}>TOTAL PERSONAL</td>
+                                <td style={{ ...reportTdStyle, textAlign: 'center' }}>{totalPersonal}</td>
+                                <td style={reportTdStyle}></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Reporte de lluvia */}
+                <div>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                        Reporte de lluvia (horas)
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: '2px', marginBottom: '1.5rem' }}>
+                        {HORAS.map(h => {
+                            const active = horasLluvia[h];
+                            return (
+                                <div key={h} style={{
+                                    textAlign: 'center', fontSize: '0.65rem', fontWeight: 600,
+                                    padding: '0.25rem', borderRadius: '4px',
+                                    background: active ? '#0284c7' : '#f1f5f9',
+                                    color: active ? 'white' : '#94a3b8',
+                                    border: `1px solid ${active ? '#0284c7' : '#e2e8f0'}`,
+                                }}>
+                                    {h}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#475569', marginBottom: '1.5rem' }}>
+                        Total horas con lluvia: <strong>{Object.values(horasLluvia).filter(Boolean).length}</strong>
+                    </div>
+                </div>
+
+                {/* Observaciones */}
+                {form.observaciones_generales && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                            Observaciones Generales
+                        </h3>
+                        <p style={{ fontSize: '0.8rem', color: '#334155', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>
+                            {form.observaciones_generales}
+                        </p>
+                    </div>
+                )}
+
+                {/* Footer */}
+                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                    <div>
+                        <div style={reportLabelStyle}>ELABORADO POR</div>
+                        <div style={reportValueStyle}>{form.elaborado_por || '—'}</div>
+                        <div style={{ ...reportLabelStyle, marginTop: '0.5rem' }}>CARGO</div>
+                        <div style={reportValueStyle}>{form.cargo_elaborado || '—'}</div>
+                    </div>
+                    <div>
+                        <div style={reportLabelStyle}>REVISADO POR</div>
+                        <div style={reportValueStyle}>{form.revisado_por || '—'}</div>
+                        <div style={{ ...reportLabelStyle, marginTop: '0.5rem' }}>CARGO</div>
+                        <div style={reportValueStyle}>{form.cargo_revisado || '—'}</div>
+                    </div>
+                </div>
+
+                {/* Botones */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', justifyContent: 'flex-start' }}>
+                    <button style={btnSecondary} onClick={() => setVistaReporte(false)}>
+                        <Edit3 size={14} /> Editar
+                    </button>
+                    <button style={btnPrimary} onClick={guardar} disabled={saving}>
+                        <Save size={14} /> {saving ? 'Guardando...' : 'Guardar'}
+                    </button>
+                    <button style={btnSecondary} onClick={onBack}>
+                        <ArrowLeft size={14} /> Volver
+                    </button>
+                    <a href={api.informes.pdfUrl(informeId)} target="_blank" rel="noopener noreferrer" style={{ ...btnSecondary, textDecoration: 'none' }}>
+                        <Download size={14} /> Descargar PDF
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Header */}
@@ -508,9 +692,14 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                         <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Libro Diario de Obra - Formato {form.codigo_formato}</div>
                     </div>
                 </div>
-                <button style={btnPrimary} onClick={guardar} disabled={saving}>
-                    <Save size={14} /> {saving ? 'Guardando...' : 'Guardar Informe'}
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button style={btnSecondary} onClick={() => setVistaReporte(true)}>
+                        <FileText size={14} /> Ver Reporte
+                    </button>
+                    <button style={btnPrimary} onClick={guardar} disabled={saving}>
+                        <Save size={14} /> {saving ? 'Guardando...' : 'Guardar Informe'}
+                    </button>
+                </div>
             </div>
 
             {error && (
