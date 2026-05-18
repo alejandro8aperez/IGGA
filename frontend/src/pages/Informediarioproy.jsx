@@ -363,6 +363,11 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         return det ? det.cantidad : 0;
     };
 
+    const getEmpresaRecurso = (recursoId) => {
+        const det = form.detalles.find(d => d.recurso === recursoId);
+        return det ? det.empresa || '' : '';
+    };
+
     const setCantidadRecurso = (recursoId, cantidad) => {
         setForm(prevForm => {
             const detallesActuales = prevForm.detalles || [];
@@ -373,7 +378,23 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     idx === indiceExistente ? { ...d, cantidad } : d
                 );
             } else {
-                nuevosDetalles = [...detallesActuales, { recurso: recursoId, cantidad }];
+                nuevosDetalles = [...detallesActuales, { recurso: recursoId, cantidad, empresa: '' }];
+            }
+            return { ...prevForm, detalles: nuevosDetalles };
+        });
+    };
+
+    const setEmpresaRecurso = (recursoId, empresa) => {
+        setForm(prevForm => {
+            const detallesActuales = prevForm.detalles || [];
+            const indiceExistente = detallesActuales.findIndex(d => d.recurso === recursoId);
+            let nuevosDetalles;
+            if (indiceExistente >= 0) {
+                nuevosDetalles = detallesActuales.map((d, idx) =>
+                    idx === indiceExistente ? { ...d, empresa } : d
+                );
+            } else {
+                nuevosDetalles = [...detallesActuales, { recurso: recursoId, cantidad: 0, empresa }];
             }
             return { ...prevForm, detalles: nuevosDetalles };
         });
@@ -417,7 +438,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 estado_terreno_final: form.estado_terreno_final,
                 elaborado_por: form.elaborado_por, cargo_elaborado: form.cargo_elaborado,
                 revisado_por: form.revisado_por, cargo_revisado: form.cargo_revisado,
-                detalles: form.detalles.filter(d => d.recurso).map(d => ({ recurso: d.recurso, cantidad: Number(d.cantidad || 0) })),
+                detalles: form.detalles.filter(d => d.recurso).map(d => ({ recurso: d.recurso, cantidad: Number(d.cantidad || 0), empresa: d.empresa || '' })),
                 actividades: form.actividades.filter(a => a.descripcion?.trim()).map((a, i) => ({ categoria: a.categoria, descripcion: a.descripcion, orden: i })),
                 reportes_lluvia: (form.reportes_lluvia || []).filter(r => r.con_lluvia),
                 items_obra: (form.items_obra || []).filter(i => i.descripcion?.trim()).map(i => ({
@@ -569,7 +590,14 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                             style={tdQtyInput}
                                         />
                                     </td>
-                                    <td style={tdName()}></td>
+                                    <td style={tdName()}>
+                                        <input
+                                            type="text"
+                                            value={getEmpresaRecurso(recurso.id)}
+                                            onChange={e => setEmpresaRecurso(recurso.id, e.target.value)}
+                                            style={input}
+                                        />
+                                    </td>
                                 </tr>
                             ))
                         ))}
@@ -600,7 +628,14 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                             style={tdQtyInput}
                                         />
                                     </td>
-                                    <td style={tdName()}></td>
+                                    <td style={tdName()}>
+                                        <input
+                                            type="text"
+                                            value={getEmpresaRecurso(recurso.id)}
+                                            onChange={e => setEmpresaRecurso(recurso.id, e.target.value)}
+                                            style={input}
+                                        />
+                                    </td>
                                 </tr>
                             ))
                         ))}

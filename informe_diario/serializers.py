@@ -38,7 +38,7 @@ class DetalleRecursoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetalleRecurso
         fields = ['id', 'recurso', 'recurso_nombre', 'categoria_nombre',
-                  'cantidad', 'observacion']
+                  'cantidad', 'empresa', 'observacion']
 
 
 class ReporteLluviaSerializer(serializers.ModelSerializer):

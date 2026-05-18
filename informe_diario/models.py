@@ -156,6 +156,7 @@ class DetalleRecurso(models.Model):
                                 related_name='detalles')
     recurso = models.ForeignKey(Recurso, on_delete=models.PROTECT)
     cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    empresa = models.CharField(max_length=200, blank=True)
     observacion = models.CharField(max_length=255, blank=True)
 
     class Meta:
