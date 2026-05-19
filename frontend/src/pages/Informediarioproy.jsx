@@ -1,9 +1,16 @@
-// =============================================================================
+//
 // Informediarioproy.jsx — ERP 8AMPERIOS
-// Módulo Informe Diario de Obra (Formato F-141-IN)
+// Modulo Informe Diario de Obra (Formato F-141-IN)
 // Conectado al backend Django app `informe_diario` en /api/informe-diario/
-// Incluye: Dashboard, Lista, Formulario completo en una sola página.
-// =============================================================================
+// Incluye: Dashboard, Lista, Formulario completo en una sola
+//
+// MODIFICADO PARA SOPORTAR:
+// ✔ Agregar filas manuales en MAQUINARIA
+// ✔ Agregar filas manuales en PERSONAL
+// ✔ Botones dinamicos Agregar fila
+// ✔ Eliminacion de filas
+//
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import {
@@ -17,10 +24,10 @@ import {
 } from 'recharts';
 import { API } from '../config/api';
 
-const ID = API.INFORME_DIARIO;
+const ID = API;
 const HORAS = Array.from({ length: 24 }, (_, i) => i);
 
-// ─── Estilos reusables ───────────────────────────────────────────────────────
+// ─── Estilos reusables ───
 const card = {
     background: 'white', borderRadius: '16px', padding: '1.5rem',
     boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0',
@@ -31,15 +38,12 @@ const input = {
 };
 const label = {
     display: 'block', fontSize: '0.78rem', fontWeight: 600,
-    color: '#475569', marginBottom: '0.35rem', textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    color: '#475569', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em',
 };
 const btnPrimary = {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white', border: 'none', padding: '0.6rem 1.2rem',
+    background: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)', color: 'white', border: 'none', padding: '0.6rem 1.2rem',
     borderRadius: '10px', fontSize: '0.9rem', fontWeight: 600,
-    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-    transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(102,126,234,0.3)',
 };
 const btnSecondary = {
     ...btnPrimary,
@@ -58,7 +62,7 @@ const tabStyle = (active) => ({
     transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
 });
 
-// ─── Helpers API ─────────────────────────────────────────────────────────────
+// ─── Helpers API ───
 const api = {
     obras: {
         list: () => axios.get(ID.OBRAS).then(r => r.data),
@@ -91,9 +95,9 @@ const api = {
     },
 };
 
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 // SUB-VISTA: Dashboard
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
     const [resumen, setResumen] = useState(null);
     const [lluvia, setLluvia] = useState([]);
@@ -101,16 +105,16 @@ function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
 
     useEffect(() => {
         const params = obraFiltro ? { obra: obraFiltro } : {};
-        api.dashboard.resumen(params).then(setResumen).catch(() => {});
+        api.dashboard.resumen(params).then(setResumen).catch(() => { });
         api.dashboard.lluvia(params).then(setLluvia).catch(() => setLluvia([]));
         api.dashboard.personal(params).then(setPersonal).catch(() => setPersonal([]));
     }, [obraFiltro]);
 
     const kpis = [
         { icon: FileText, label: 'Total Informes', value: resumen?.total_informes ?? 0, color: '#667eea' },
-        { icon: Calendar, label: 'Últimos 30 días', value: resumen?.informes_ultimos_30_dias ?? 0, color: '#f59e0b' },
+        { icon: Calendar, label: 'Ultimos 30 dias', value: resumen?.informes_ultimos_30_dias ?? 0, color: '#f59e0b' },
         { icon: CloudRain, label: 'Horas lluvia (30d)', value: resumen?.horas_lluvia_ultimos_30_dias ?? 0, color: '#0284c7' },
-        { icon: Users, label: 'Personal prom. (30d)', value: resumen?.personal_promedio_ultimos_30_dias ?? 0, color: '#10b981' },
+        { icon: Users, label: 'Personal prom.(30d)', value: resumen?.personal_promedio_ultimos_30_dias ?? 0, color: '#10b981' },
     ];
 
     return (
@@ -122,7 +126,6 @@ function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
                     {obras.map(o => <option key={o.id} value={o.id}>{o.codigo} - {o.nombre}</option>)}
                 </select>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
                 {kpis.map((k, idx) => (
                     <div key={idx} style={{ ...card, display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -139,12 +142,9 @@ function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
                     </div>
                 ))}
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '1rem' }}>
                 <div style={card}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>
-                        Horas de lluvia por mes
-                    </h3>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>Horas de lluvia por mes</h3>
                     <ResponsiveContainer width="100%" height={260}>
                         <LineChart data={lluvia}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -157,16 +157,14 @@ function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
                     </ResponsiveContainer>
                 </div>
                 <div style={card}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>
-                        Personal por rol (Top 8)
-                    </h3>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>Personal por rol (Top 8)</h3>
                     <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={personal.slice(0, 8)}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                             <XAxis dataKey="rol" fontSize={9} angle={-25} textAnchor="end" height={70} />
                             <YAxis fontSize={11} />
                             <Tooltip />
-                            <Bar dataKey="total" fill="#667eea" name="Personas-día" />
+                            <Bar dataKey="total" fill="#667eea" name="Personas-dia" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -175,9 +173,9 @@ function VistaDashboard({ obras, obraFiltro, setObraFiltro }) {
     );
 }
 
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 // SUB-VISTA: Lista de Informes
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 function VistaLista({ obras, onNuevo, onEditar }) {
     const [informes, setInformes] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -195,7 +193,7 @@ function VistaLista({ obras, onNuevo, onEditar }) {
     useEffect(() => { load(); }, [load]);
 
     const eliminar = async (id) => {
-        if (!window.confirm('¿Eliminar este informe?')) return;
+        if (!window.confirm('Eliminar este informe?')) return;
         await api.informes.remove(id);
         load();
     };
@@ -219,20 +217,15 @@ function VistaLista({ obras, onNuevo, onEditar }) {
                     <input type="date" style={input} value={filtros.fecha_hasta} onChange={e => setFiltros({ ...filtros, fecha_hasta: e.target.value })} />
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button style={btnSecondary} onClick={() => setFiltros({ obra: '', fecha_desde: '', fecha_hasta: '' })}>
-                        <Filter size={14} /> Limpiar
-                    </button>
-                    <button style={btnPrimary} onClick={onNuevo}>
-                        <Plus size={14} /> Nuevo
-                    </button>
+                    <button style={btnSecondary} onClick={() => setFiltros({ obra: '', fecha_desde: '', fecha_hasta: '' })}><Filter size={14} /> Limpiar</button>
+                    <button style={btnPrimary} onClick={onNuevo}><Plus size={14} /> Nuevo</button>
                 </div>
             </div>
-
             <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                     <thead style={{ background: '#f8fafc' }}>
                         <tr>
-                            {['Fecha', 'Día', 'Obra', 'Elaborado por', 'Personal', 'H. Lluvia', 'Acciones'].map(h => (
+                            {['Fecha', 'Dia', 'Obra', 'Elaborado por', 'Personal', 'H.Lluvia', 'Acciones'].map(h => (
                                 <th key={h} style={{ padding: '0.85rem 1rem', textAlign: h === 'Acciones' ? 'right' : 'left', color: '#475569', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase' }}>{h}</th>
                             ))}
                         </tr>
@@ -259,20 +252,10 @@ function VistaLista({ obras, onNuevo, onEditar }) {
                                 <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}>{inf.total_personal}</td>
                                 <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}>{inf.total_horas_lluvia}</td>
                                 <td style={{ padding: '0.8rem 1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                    <a href={api.informes.pdfUrl(inf.id)} target="_blank" rel="noopener noreferrer"
-                                        style={{ ...btnGhost, background: '#fef2f2', color: '#b91c1c', textDecoration: 'none', marginRight: '0.25rem' }}>
-                                        <FileText size={12} /> PDF
-                                    </a>
-                                    <a href={api.informes.excelUrl(inf.id)} target="_blank" rel="noopener noreferrer"
-                                        style={{ ...btnGhost, background: '#f0fdf4', color: '#15803d', textDecoration: 'none', marginRight: '0.25rem' }}>
-                                        <FileSpreadsheet size={12} /> Excel
-                                    </a>
-                                    <button style={{ ...btnGhost, background: '#fffbeb', color: '#b45309', marginRight: '0.25rem' }} onClick={() => onEditar(inf.id)}>
-                                        <Edit3 size={12} />
-                                    </button>
-                                    <button style={{ ...btnGhost, background: '#fef2f2', color: '#b91c1c' }} onClick={() => eliminar(inf.id)}>
-                                        <Trash2 size={12} />
-                                    </button>
+                                    <a href={api.informes.pdfUrl(inf.id)} target="_blank" rel="noopener noreferrer" style={{ ...btnGhost, background: '#fef2f2', color: '#b91c1c', textDecoration: 'none', marginRight: '0.25rem' }}><FileText size={12} /> PDF</a>
+                                    <a href={api.informes.excelUrl(inf.id)} target="_blank" rel="noopener noreferrer" style={{ ...btnGhost, background: '#f0fdf4', color: '#15803d', textDecoration: 'none', marginRight: '0.25rem' }}><FileSpreadsheet size={12} /> Excel</a>
+                                    <button style={{ ...btnGhost, background: '#fffbeb', color: '#b45309', marginRight: '0.25rem' }} onClick={() => onEditar(inf.id)}><Edit3 size={12} /></button>
+                                    <button style={{ ...btnGhost, background: '#fef2f2', color: '#b91c1c' }} onClick={() => eliminar(inf.id)}><Trash2 size={12} /></button>
                                 </td>
                             </tr>
                         ))}
@@ -283,9 +266,9 @@ function VistaLista({ obras, onNuevo, onEditar }) {
     );
 }
 
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 // COMPONENTE AUXILIAR: Seccion
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 const Seccion = ({ title, children }) => (
     <div style={card}>
         <h3 style={{
@@ -297,21 +280,33 @@ const Seccion = ({ title, children }) => (
     </div>
 );
 
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 // SUB-VISTA: Formulario
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 function VistaFormulario({ informeId, obras, recursos, categoriasRec, categoriasAct, onBack, onSaved }) {
     const isEdit = !!informeId;
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [vistaReporte, setVistaReporte] = useState(false);
     const [form, setForm] = useState({
-        obra: '', fecha: new Date().toISOString().substring(0, 10),
-        numero_paginas: 1, codigo_formato: 'F-141-IN',
-        observaciones_generales: '', estado_terreno_inicio: '', estado_terreno_final: '',
-        elaborado_por: '', cargo_elaborado: '', revisado_por: '', cargo_revisado: '',
-        detalles: [], reportes_lluvia: [], actividades: [],
+        obra: '',
+        fecha: new Date().toISOString().substring(0, 10),
+        numero_paginas: 1,
+        codigo_formato: 'F-141-IN',
+        observaciones_generales: '',
+        estado_terreno_inicio: '',
+        estado_terreno_final: '',
+        elaborado_por: '',
+        cargo_elaborado: '',
+        revisado_por: '',
+        cargo_revisado: '',
+        detalles: [],
+        reportes_lluvia: [],
+        actividades: [],
         items_obra: [],
+        // NUEVO: Filas libres para maquinaria y personal
+        maquinaria_libre: [],
+        personal_libre: [],
         comision_topografia: false,
     });
     const [anexos, setAnexos] = useState([]);
@@ -328,6 +323,9 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     reportes_lluvia: d.reportes_lluvia || [],
                     actividades: d.actividades || [],
                     items_obra: d.items_obra || [],
+                    // NUEVO: Cargar filas libres
+                    maquinaria_libre: d.maquinaria_libre || [],
+                    personal_libre: d.personal_libre || [],
                     comision_topografia: d.comision_topografia ?? false,
                 });
                 setAnexos(d.anexos || []);
@@ -413,13 +411,14 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         }, 0);
     }, [form.detalles, categoriasRec, recursosPorCategoria]);
 
-    // ─── Optimización: Memoizar onChange para observaciones_generales ────
+    // ─── Optimizacion: Memoizar onChange para observaciones_generales ────
     const handleObservacionesChange = useCallback((e) => {
         setForm(prevForm => ({ ...prevForm, observaciones_generales: e.target.value }));
     }, []);
 
     const totalPersonal = useMemo(() => {
-        const personalCategories = categoriasRec.filter(c => c.nombre.toUpperCase().includes('PERSONAL'));
+        const personalCategories = categoriasRec.filter(c =>
+            c.nombre.toUpperCase().includes('PERSONAL'));
         return personalCategories.reduce((sum, cat) => {
             return sum + (recursosPorCategoria[cat.id]?.reduce((s, recurso) => {
                 const det = form.detalles.find(d => d.recurso === recurso.id);
@@ -432,15 +431,27 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         setSaving(true); setError('');
         try {
             const payload = {
-                obra: form.obra, fecha: form.fecha, numero_paginas: form.numero_paginas,
+                obra: form.obra,
+                fecha: form.fecha,
+                numero_paginas: form.numero_paginas,
                 codigo_formato: form.codigo_formato,
                 observaciones_generales: form.observaciones_generales,
                 estado_terreno_inicio: form.estado_terreno_inicio,
                 estado_terreno_final: form.estado_terreno_final,
-                elaborado_por: form.elaborado_por, cargo_elaborado: form.cargo_elaborado,
-                revisado_por: form.revisado_por, cargo_revisado: form.cargo_revisado,
-                detalles: form.detalles.filter(d => d.recurso).map(d => ({ recurso: d.recurso, cantidad: Number(d.cantidad || 0), empresa: d.empresa || '' })),
-                actividades: form.actividades.filter(a => a.descripcion?.trim()).map((a, i) => ({ categoria: a.categoria, descripcion: a.descripcion, orden: i })),
+                elaborado_por: form.elaborado_por,
+                cargo_elaborado: form.cargo_elaborado,
+                revisado_por: form.revisado_por,
+                cargo_revisado: form.cargo_revisado,
+                detalles: form.detalles.filter(d => d.recurso).map(d => ({
+                    recurso: d.recurso,
+                    cantidad: Number(d.cantidad || 0),
+                    empresa: d.empresa || ''
+                })),
+                actividades: form.actividades.filter(a => a.descripcion?.trim()).map((a, i) => ({
+                    categoria: a.categoria,
+                    descripcion: a.descripcion,
+                    orden: i
+                })),
                 reportes_lluvia: (form.reportes_lluvia || []).filter(r => r.con_lluvia),
                 items_obra: (form.items_obra || []).filter(i => i.descripcion?.trim()).map(i => ({
                     item: i.item || '',
@@ -448,8 +459,24 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     empresa: i.empresa || '',
                     cantidad: parseFloat(i.cantidad) || 0,
                 })),
+                // NUEVO: Payload para filas libres
+                maquinaria_libre: (form.maquinaria_libre || [])
+                    .filter(i => i.descripcion?.trim())
+                    .map(i => ({
+                        descripcion: i.descripcion,
+                        cantidad: Number(i.cantidad || 0),
+                        empresa: i.empresa || '',
+                    })),
+                personal_libre: (form.personal_libre || [])
+                    .filter(i => i.descripcion?.trim())
+                    .map(i => ({
+                        descripcion: i.descripcion,
+                        cantidad: Number(i.cantidad || 0),
+                        empresa: i.empresa || '',
+                    })),
                 comision_topografia: form.comision_topografia,
             };
+
             const saved = isEdit
                 ? await api.informes.update(informeId, payload)
                 : await api.informes.create(payload);
@@ -478,23 +505,18 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
     const thStyle = {
         padding: '0.55rem 0.75rem',
-        background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
+        background: 'linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%)',
         color: 'white', fontWeight: 700, fontSize: '0.72rem',
         textTransform: 'uppercase', letterSpacing: '0.06em',
         textAlign: 'left',
     };
     const thQty = { ...thStyle, textAlign: 'center', width: '80px' };
     const tdName = (bold) => ({
-        padding: '0.45rem 0.75rem', fontSize: '0.82rem',
-        color: bold ? '#1e293b' : '#334155',
+        padding: '0.45rem 0.75rem', fontSize: '0.82rem', color: bold ? '#1e293b' : '#334155',
         fontWeight: bold ? 700 : 400,
         borderBottom: '1px solid #e2e8f0',
     });
-    const tdQtyInput = {
-        padding: '0.35rem', border: '1px solid #cbd5e0', borderRadius: '6px',
-        width: '58px', textAlign: 'center', fontSize: '0.85rem',
-        fontWeight: 600, background: 'white',
-    };
+    const tdQtyInput = { padding: '0.35rem', border: '1px solid #cbd5e0', borderRadius: '6px', width: '58px', textAlign: 'center', fontSize: '0.82rem', fontWeight: 600, background: 'white' };
 
     // Estilos para reporte tipo PDF
     const reportHeaderStyle = {
@@ -502,8 +524,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         padding: '1rem 0', borderBottom: '2px solid #1e3a5f', marginBottom: '1rem',
     };
     const reportLabelStyle = {
-        fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase',
-        letterSpacing: '0.04em',
+        fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em',
     };
     const reportValueStyle = {
         fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginTop: '0.25rem',
@@ -513,19 +534,17 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
         marginBottom: '1.5rem',
     };
     const reportThStyle = {
-        padding: '0.4rem 0.6rem', background: '#f0f4f8', borderBottom: '2px solid #1e3a5f',
-        color: '#1e293b', fontWeight: 700, textAlign: 'left', fontSize: '0.72rem',
+        padding: '0.4rem 0.6rem', background: '#f0f4f8', borderBottom: '2px solid #1e3a5f', color: '#1e293b', fontWeight: 700, textAlign: 'left', fontSize: '0.72rem',
     };
     const reportTdStyle = {
         padding: '0.4rem 0.6rem', borderBottom: '1px solid #e2e8f0', fontSize: '0.75rem',
     };
 
-    // Función para obtener nombre de obra
+    // Funcion para obtener nombre de obra
     const getNombreObra = () => {
         const obra = obras.find(o => String(o.id) === String(form.obra));
         return obra ? { codigo: obra.codigo, nombre: obra.nombre } : { codigo: '', nombre: '' };
     };
-
     const obraInfo = getNombreObra();
 
     if (vistaReporte) {
@@ -535,7 +554,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div>
                         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', margin: '0 0 0.5rem' }}>
-                            LIBRO DIARIO DE OBRA - {form.codigo_formato}
+                            LIBRO DIARIO DE OBRA - {obraInfo.codigo}
                         </h1>
                         <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
                             Obra: {obraInfo.codigo} - {obraInfo.nombre}
@@ -549,13 +568,11 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
                 {/* Tabla de Maquinaria */}
                 <div>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                        Maquinaria - Equipos - Herramientas
-                    </h3>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Maquinaria - Equipos - Herramientas</h3>
                     <table style={reportTableStyle}>
                         <thead>
                             <tr>
-                                <th style={reportThStyle}>DESCRIPCIÓN</th>
+                                <th style={reportThStyle}>DESCRIPCION</th>
                                 <th style={{ ...reportThStyle, width: '80px', textAlign: 'center' }}>CANTIDAD</th>
                                 <th style={{ ...reportThStyle, width: '150px' }}>EMPRESA</th>
                             </tr>
@@ -570,19 +587,25 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                     </tr>
                                 ))
                             ))}
+                            {/* NUEVO: Filas libres de maquinaria en reporte */}
+                            {(form.maquinaria_libre || []).map((it, idx) => (
+                                <tr key={`maq-libre-${idx}`} style={{ background: (categoriasRec.filter(c => !c.nombre.toUpperCase().includes('PERSONAL')).length + idx) % 2 === 0 ? 'white' : '#f9fafb' }}>
+                                    <td style={reportTdStyle}>{it.descripcion}</td>
+                                    <td style={{ ...reportTdStyle, textAlign: 'center' }}>{it.cantidad || 0}</td>
+                                    <td style={reportTdStyle}>{it.empresa || '—'}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
 
                 {/* Tabla de Personal */}
                 <div>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                        Personal de Obra
-                    </h3>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Personal de Obra</h3>
                     <table style={reportTableStyle}>
                         <thead>
                             <tr>
-                                <th style={reportThStyle}>DESCRIPCIÓN</th>
+                                <th style={reportThStyle}>DESCRIPCION</th>
                                 <th style={{ ...reportThStyle, width: '80px', textAlign: 'center' }}>CANTIDAD</th>
                                 <th style={{ ...reportThStyle, width: '150px' }}>EMPRESA</th>
                             </tr>
@@ -597,9 +620,17 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                     </tr>
                                 ))
                             ))}
+                            {/* NUEVO: Filas libres de personal en reporte */}
+                            {(form.personal_libre || []).map((it, idx) => (
+                                <tr key={`per-libre-${idx}`} style={{ background: (categoriasRec.filter(c => c.nombre.toUpperCase().includes('PERSONAL')).length + idx) % 2 === 0 ? 'white' : '#f9fafb' }}>
+                                    <td style={reportTdStyle}>{it.descripcion}</td>
+                                    <td style={{ ...reportTdStyle, textAlign: 'center' }}>{it.cantidad || 0}</td>
+                                    <td style={reportTdStyle}>{it.empresa || '—'}</td>
+                                </tr>
+                            ))}
                             <tr style={{ background: '#fffacd', fontWeight: 700 }}>
                                 <td style={reportTdStyle}>TOTAL PERSONAL</td>
-                                <td style={{ ...reportTdStyle, textAlign: 'center' }}>{totalPersonal}</td>
+                                <td style={{ ...reportTdStyle, textAlign: 'center' }}>{totalPersonal + (form.personal_libre || []).reduce((s, it) => s + (Number(it.cantidad) || 0), 0)}</td>
                                 <td style={reportTdStyle}></td>
                             </tr>
                         </tbody>
@@ -608,9 +639,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
                 {/* Reporte de lluvia */}
                 <div>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                        Reporte de lluvia (horas)
-                    </h3>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Reporte de lluvia (horas)</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: '2px', marginBottom: '1.5rem' }}>
                         {HORAS.map(h => {
                             const active = horasLluvia[h];
@@ -635,12 +664,8 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 {/* Observaciones */}
                 {form.observaciones_generales && (
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                            Observaciones Generales
-                        </h3>
-                        <p style={{ fontSize: '0.8rem', color: '#334155', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>
-                            {form.observaciones_generales}
-                        </p>
+                        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Observaciones Generales</h3>
+                        <p style={{ fontSize: '0.8rem', color: '#334155', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>{form.observaciones_generales}</p>
                     </div>
                 )}
 
@@ -662,18 +687,10 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
                 {/* Botones */}
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', justifyContent: 'flex-start' }}>
-                    <button style={btnSecondary} onClick={() => setVistaReporte(false)}>
-                        <Edit3 size={14} /> Editar
-                    </button>
-                    <button style={btnPrimary} onClick={guardar} disabled={saving}>
-                        <Save size={14} /> {saving ? 'Guardando...' : 'Guardar'}
-                    </button>
-                    <button style={btnSecondary} onClick={onBack}>
-                        <ArrowLeft size={14} /> Volver
-                    </button>
-                    <a href={api.informes.pdfUrl(informeId)} target="_blank" rel="noopener noreferrer" style={{ ...btnSecondary, textDecoration: 'none' }}>
-                        <Download size={14} /> Descargar PDF
-                    </a>
+                    <button style={btnSecondary} onClick={() => setVistaReporte(false)}><Edit3 size={14} /> Editar</button>
+                    <button style={btnPrimary} onClick={guardar} disabled={saving}><Save size={14} />{saving ? 'Guardando...' : 'Guardar'}</button>
+                    <button style={btnSecondary} onClick={onBack}><ArrowLeft size={14} /> Volver</button>
+                    <a href={api.informes.pdfUrl(informeId)} target="_blank" rel="noopener noreferrer" style={{ ...btnSecondary, textDecoration: 'none' }}><Download size={14} /> Descargar PDF</a>
                 </div>
             </div>
         );
@@ -693,12 +710,8 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button style={btnSecondary} onClick={() => setVistaReporte(true)}>
-                        <FileText size={14} /> Ver Reporte
-                    </button>
-                    <button style={btnPrimary} onClick={guardar} disabled={saving}>
-                        <Save size={14} /> {saving ? 'Guardando...' : 'Guardar Informe'}
-                    </button>
+                    <button style={btnSecondary} onClick={() => setVistaReporte(true)}><FileText size={14} /> Ver Reporte</button>
+                    <button style={btnPrimary} onClick={guardar} disabled={saving}><Save size={14} />{saving ? 'Guardando...' : 'Guardar Informe'}</button>
                 </div>
             </div>
 
@@ -724,7 +737,8 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     </div>
                     <div>
                         <label style={label}>N Paginas</label>
-                        <input type="number" min={1} value={form.numero_paginas} onChange={e => setForm({ ...form, numero_paginas: parseInt(e.target.value || 1, 10) })} style={input} />
+                        <input type="number" min={1} value={form.numero_paginas}
+                            onChange={e => setForm({ ...form, numero_paginas: parseInt(e.target.value || 1, 10) })} style={input} />
                     </div>
                 </div>
             </Seccion>
@@ -735,13 +749,12 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     {HORAS.map(h => {
                         const active = horasLluvia[h];
                         return (
-                            <button type="button" key={h} onClick={() => toggleHora(h)}
-                                title={`${h}:00 - ${h + 1}:00`}
+                            <button type="button" key={h} onClick={() => toggleHora(h)} title={`${h}:00-${h + 1}:00`}
                                 style={{
                                     width: '48px', height: '48px', borderRadius: '10px',
                                     fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
                                     transition: 'all 0.15s',
-                                    background: active ? 'linear-gradient(135deg, #0284c7 0%, #075985 100%)' : 'white',
+                                    background: active ? 'linear-gradient(135deg,#0284c7 0%,#075985 100%)' : 'white',
                                     color: active ? 'white' : '#475569',
                                     border: `1px solid ${active ? '#0284c7' : '#cbd5e0'}`,
                                     boxShadow: active ? '0 4px 12px rgba(2,132,199,0.3)' : 'none',
@@ -756,39 +769,118 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
             {/* ── MAQUINARIA - EQUIPOS - HERRAMIENTAS ── */}
             <Seccion title={<><Truck size={14} style={{ display: 'inline', marginRight: 6 }} />Maquinaria - Equipos - Herramientas</>}>
+                {/* NUEVO: Boton agregar fila */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+                    <button
+                        type="button"
+                        style={btnGhost}
+                        onClick={() =>
+                            setForm(f => ({
+                                ...f,
+                                maquinaria_libre: [
+                                    ...(f.maquinaria_libre || []),
+                                    { descripcion: '', cantidad: 0, empresa: '' }
+                                ]
+                            }))
+                        }
+                    >
+                        <Plus size={12} /> Agregar fila
+                    </button>
+                </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                     <thead>
                         <tr>
-                            <th style={thStyle}>Descripción</th>
-                            <th style={{ ...thQty }}>Cantidad</th>
+                            <th style={thStyle}>Descripcion</th>
+                            <th style={thQty}>Cantidad</th>
                             <th style={{ ...thStyle, width: '180px' }}>Empresa</th>
+                            <th style={{ ...thStyle, width: '40px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {categoriasRec.filter(c => 
-                            !c.nombre.toUpperCase().includes('PERSONAL')
-                        ).map(cat => (
-                            recursosPorCategoria[cat.id]?.map(recurso => (
-                                <tr key={recurso.id} style={{ background: '#f8fafc' }}>
-                                    <td style={tdName(true)}>{recurso.nombre}</td>
-                                    <td style={{ ...tdName(), textAlign: 'center' }}>
-                                        <input
-                                            type="number" min={0}
-                                            value={getCantidadRecurso(recurso.id)}
-                                            onChange={e => setCantidadRecurso(recurso.id, e.target.value)}
-                                            style={tdQtyInput}
-                                        />
-                                    </td>
-                                    <td style={tdName()}>
-                                        <input
-                                            type="text"
-                                            value={getEmpresaRecurso(recurso.id)}
-                                            onChange={e => setEmpresaRecurso(recurso.id, e.target.value)}
-                                            style={input}
-                                        />
-                                    </td>
-                                </tr>
-                            ))
+                        {/* RECURSOS DEL CATALOGO */}
+                        {categoriasRec
+                            .filter(c => !c.nombre.toUpperCase().includes('PERSONAL'))
+                            .map(cat =>
+                                recursosPorCategoria[cat.id]?.map(recurso => (
+                                    <tr key={recurso.id} style={{ background: '#f8fafc' }}>
+                                        <td style={tdName(true)}>{recurso.nombre}</td>
+                                        <td style={{ ...tdName(), textAlign: 'center' }}>
+                                            <input
+                                                type="number" min={0}
+                                                value={getCantidadRecurso(recurso.id)}
+                                                onChange={e => setCantidadRecurso(recurso.id, e.target.value)}
+                                                style={tdQtyInput}
+                                            />
+                                        </td>
+                                        <td style={tdName()}>
+                                            <input
+                                                type="text"
+                                                value={getEmpresaRecurso(recurso.id)}
+                                                onChange={e => setEmpresaRecurso(recurso.id, e.target.value)}
+                                                style={input}
+                                            />
+                                        </td>
+                                        <td style={tdName()}></td>
+                                    </tr>
+                                ))
+                            )}
+
+                        {/* NUEVO: FILAS LIBRES */}
+                        {(form.maquinaria_libre || []).map((it, idx) => (
+                            <tr key={`maq-${idx}`}>
+                                <td style={tdName()}>
+                                    <input
+                                        type="text"
+                                        value={it.descripcion}
+                                        placeholder="Descripcion..."
+                                        onChange={e => {
+                                            const arr = [...form.maquinaria_libre];
+                                            arr[idx] = { ...arr[idx], descripcion: e.target.value };
+                                            setForm(f => ({ ...f, maquinaria_libre: arr }));
+                                        }}
+                                        style={input}
+                                    />
+                                </td>
+                                <td style={{ ...tdName(), textAlign: 'center' }}>
+                                    <input
+                                        type="number" min={0}
+                                        value={it.cantidad}
+                                        onChange={e => {
+                                            const arr = [...form.maquinaria_libre];
+                                            arr[idx] = { ...arr[idx], cantidad: parseFloat(e.target.value) || 0 };
+                                            setForm(f => ({ ...f, maquinaria_libre: arr }));
+                                        }}
+                                        style={tdQtyInput}
+                                    />
+                                </td>
+                                <td style={tdName()}>
+                                    <input
+                                        type="text"
+                                        value={it.empresa}
+                                        placeholder="Empresa..."
+                                        onChange={e => {
+                                            const arr = [...form.maquinaria_libre];
+                                            arr[idx] = { ...arr[idx], empresa: e.target.value };
+                                            setForm(f => ({ ...f, maquinaria_libre: arr }));
+                                        }}
+                                        style={input}
+                                    />
+                                </td>
+                                <td style={{ ...tdName(), textAlign: 'center' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setForm(f => ({
+                                                ...f,
+                                                maquinaria_libre: f.maquinaria_libre.filter((_, i) => i !== idx)
+                                            }))
+                                        }
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </td>
+                            </tr>
                         ))}
                     </tbody>
                 </table>
@@ -796,12 +888,31 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
             {/* ── PERSONAL DE OBRA ── */}
             <Seccion title={<><Users size={14} style={{ display: 'inline', marginRight: 6 }} />Personal de Obra</>}>
+                {/* NUEVO: Boton agregar fila */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+                    <button
+                        type="button"
+                        style={btnGhost}
+                        onClick={() =>
+                            setForm(f => ({
+                                ...f,
+                                personal_libre: [
+                                    ...(f.personal_libre || []),
+                                    { descripcion: '', cantidad: 0, empresa: '' }
+                                ]
+                            }))
+                        }
+                    >
+                        <Plus size={12} /> Agregar fila
+                    </button>
+                </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                     <thead>
                         <tr>
-                            <th style={thStyle}>Descripción</th>
-                            <th style={{ ...thQty }}>Cantidad</th>
+                            <th style={thStyle}>Descripcion</th>
+                            <th style={thQty}>Cantidad</th>
                             <th style={{ ...thStyle, width: '180px' }}>Empresa</th>
+                            <th style={{ ...thStyle, width: '40px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -825,22 +936,83 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                             style={input}
                                         />
                                     </td>
+                                    <td style={tdName()}></td>
                                 </tr>
                             ))
                         ))}
+                        {/* NUEVO: FILAS LIBRES */}
+                        {(form.personal_libre || []).map((it, idx) => (
+                            <tr key={`per-${idx}`}>
+                                <td style={tdName()}>
+                                    <input
+                                        type="text"
+                                        value={it.descripcion}
+                                        placeholder="Cargo / Rol..."
+                                        onChange={e => {
+                                            const arr = [...form.personal_libre];
+                                            arr[idx] = { ...arr[idx], descripcion: e.target.value };
+                                            setForm(f => ({ ...f, personal_libre: arr }));
+                                        }}
+                                        style={input}
+                                    />
+                                </td>
+                                <td style={{ ...tdName(), textAlign: 'center' }}>
+                                    <input
+                                        type="number" min={0}
+                                        value={it.cantidad}
+                                        onChange={e => {
+                                            const arr = [...form.personal_libre];
+                                            arr[idx] = { ...arr[idx], cantidad: parseFloat(e.target.value) || 0 };
+                                            setForm(f => ({ ...f, personal_libre: arr }));
+                                        }}
+                                        style={tdQtyInput}
+                                    />
+                                </td>
+                                <td style={tdName()}>
+                                    <input
+                                        type="text"
+                                        value={it.empresa}
+                                        placeholder="Empresa..."
+                                        onChange={e => {
+                                            const arr = [...form.personal_libre];
+                                            arr[idx] = { ...arr[idx], empresa: e.target.value };
+                                            setForm(f => ({ ...f, personal_libre: arr }));
+                                        }}
+                                        style={input}
+                                    />
+                                </td>
+                                <td style={{ ...tdName(), textAlign: 'center' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setForm(f => ({
+                                                ...f,
+                                                personal_libre: f.personal_libre.filter((_, i) => i !== idx)
+                                            }))
+                                        }
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
                         <tr style={{ background: '#fefce8' }}>
                             <td style={{ ...tdName(true), fontWeight: 700 }}>Total Personal</td>
-                            <td style={{ ...tdName(), textAlign: 'center', fontWeight: 700, fontSize: '1rem', color: '#1e3a5f' }}>{totalPersonal}</td>
+                            <td style={{ ...tdName(), textAlign: 'center', fontWeight: 700, fontSize: '1rem', color: '#1e3a5f' }}>
+                                {totalPersonal + (form.personal_libre || []).reduce((s, it) => s + (Number(it.cantidad) || 0), 0)}
+                            </td>
+                            <td style={tdName()}></td>
                             <td style={tdName()}></td>
                         </tr>
                     </tbody>
                 </table>
             </Seccion>
 
-            {/* ── COMISIÓN DE TOPOGRAFÍA ── */}
-            <Seccion title="Comisión de Topografía">
+            {/* ── COMISION DE TOPOGRAFIA ── */}
+            <Seccion title="Comision de Topografia">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', background: '#fefce8', padding: '1rem', borderRadius: '10px' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>¿Hubo Comisión de Topografía?</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>Hubo Comision de Topografia?</span>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                         <input
                             type="radio"
@@ -850,7 +1022,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                             onChange={() => setForm({ ...form, comision_topografia: true })}
                             style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                         />
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>SÍ</span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>SI</span>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                         <input
@@ -866,7 +1038,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* ── ITEMS── */}
+            {/* ── ITEMS ── */}
             <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Items de Obra</>}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
                     <button type="button" style={btnGhost}
@@ -881,7 +1053,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     <thead>
                         <tr>
                             <th style={{ ...thStyle, width: '80px' }}>Item</th>
-                            <th style={thStyle}>Descripción</th>
+                            <th style={thStyle}>Descripcion</th>
                             <th style={{ ...thStyle, width: '180px' }}>Empresa</th>
                             <th style={{ ...thQty }}>Cantidad</th>
                             <th style={{ ...thStyle, width: '40px' }}></th>
@@ -919,7 +1091,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                                             setForm(f => ({ ...f, items_obra: arr }));
                                         }}
                                         style={{ ...input, padding: '0.35rem 0.5rem', fontSize: '0.82rem' }}
-                                        placeholder="Descripción del item..."
+                                        placeholder="Descripcion del item..."
                                     />
                                 </td>
                                 <td style={{ padding: '0.35rem 0.5rem', borderBottom: '1px solid #e2e8f0' }}>
@@ -962,8 +1134,7 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
 
             {/* Observaciones generales */}
             <Seccion title="Observaciones generales">
-                <textarea rows={3} value={form.observaciones_generales}
-                    onChange={handleObservacionesChange}
+                <textarea rows={3} value={form.observaciones_generales} onChange={handleObservacionesChange}
                     style={{ ...input, minHeight: '80px', fontFamily: 'inherit', resize: 'vertical' }}
                     placeholder="Observaciones generales del dia..." />
             </Seccion>
@@ -988,11 +1159,13 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* Actividades del día */}
+            {/* Actividades del dia */}
             <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Actividades del dia</>}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {categoriasAct.filter(c => c.activo !== false).map(cat => {
-                        const items = form.actividades.map((a, idx) => ({ a, idx })).filter(({ a }) => String(a.categoria) === String(cat.id));
+                        const items = form.actividades.map((a, idx) => ({ a, idx })).filter(({ a }) =>
+                            String(a.categoria) === String(cat.id)
+                        );
                         return (
                             <div key={cat.id} style={{ background: '#f8fafc', borderRadius: '10px', padding: '1rem', border: '1px solid #e2e8f0' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -1036,11 +1209,11 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                 </div>
             </Seccion>
 
-            {/* Anexos fotográficos */}
+            {/* Anexos fotograficos */}
             <Seccion title={<><ImageIcon size={14} style={{ display: 'inline', marginRight: 6 }} />Anexos fotograficos</>}>
                 {!isEdit && (
                     <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                        Las fotos se subirán después de guardar el informe por primera vez.
+                        Las fotos se subiran despues de guardar el informe por primera vez.
                     </div>
                 )}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
@@ -1057,12 +1230,9 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     </div>
                     <div>
                         <label style={label}>Archivo</label>
-                        <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })}
-                            style={{ ...input, padding: '0.4rem' }} />
+                        <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })} style={{ ...input, padding: '0.4rem' }} />
                     </div>
-                    <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file}>
-                        <Upload size={14} /> Subir foto
-                    </button>
+                    <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file}><Upload size={14} /> Subir foto</button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem', marginTop: '1.25rem' }}>
                     {anexos.map(a => (
@@ -1086,12 +1256,9 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
     );
 }
 
-// =============================================================================
-// COMPONENTE PRINCIPAL
-// =============================================================================
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 // SUB-VISTA: Fotos
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 function VistaFotos({ obras }) {
     const [informes, setInformes] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -1153,18 +1320,13 @@ function VistaFotos({ obras }) {
                     <input type="date" style={input} value={filtros.fecha_hasta} onChange={e => setFiltros({ ...filtros, fecha_hasta: e.target.value })} />
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button style={btnSecondary} onClick={() => setFiltros({ obra: '', fecha_desde: '', fecha_hasta: '' })}>
-                        <Filter size={14} /> Limpiar
-                    </button>
+                    <button style={btnSecondary} onClick={() => setFiltros({ obra: '', fecha_desde: '', fecha_hasta: '' })}><Filter size={14} /> Limpiar</button>
                 </div>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '1.25rem' }}>
                 {/* Lista de informes */}
                 <div style={card}>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        Seleccionar Informe
-                    </h3>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Seleccionar Informe</h3>
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Cargando...</div>
                     ) : informes.length === 0 ? (
@@ -1183,7 +1345,7 @@ function VistaFotos({ obras }) {
                                         padding: '0.75rem',
                                         borderRadius: '8px',
                                         border: 'none',
-                                        background: informeSeleccionado?.id === inf.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#f8fafc',
+                                        background: informeSeleccionado?.id === inf.id ? 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)' : '#f8fafc',
                                         color: informeSeleccionado?.id === inf.id ? 'white' : '#475569',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
@@ -1196,14 +1358,12 @@ function VistaFotos({ obras }) {
                         </div>
                     )}
                 </div>
-
                 {/* Fotos del informe seleccionado */}
                 <div style={{ ...card, minHeight: '400px' }}>
                     <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         <ImageIcon size={16} style={{ display: 'inline', marginRight: 6 }} />
                         Fotos del Informe
                     </h3>
-                    
                     {!informeSeleccionado ? (
                         <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', fontSize: '0.9rem' }}>
                             <ImageIcon size={48} style={{ margin: '0 auto 0.75rem', color: '#cbd5e1' }} />
@@ -1222,11 +1382,11 @@ function VistaFotos({ obras }) {
                                         <input type="text" style={input} value={nuevoAnexo.item} onChange={e => setNuevoAnexo({ ...nuevoAnexo, item: e.target.value })} placeholder="1" />
                                     </div>
                                     <div>
-                                        <label style={label}>Descripción</label>
-                                        <input type="text" style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} placeholder="Descripción..." />
+                                        <label style={label}>Descripcion</label>
+                                        <input type="text" style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} placeholder="Descripcion..." />
                                     </div>
                                     <div>
-                                        <label style={label}>Sección</label>
+                                        <label style={label}>Seccion</label>
                                         <select style={input} value={nuevoAnexo.seccion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, seccion: e.target.value })}>
                                             <option value="actividades">Actividades</option>
                                             <option value="sst">SST y Medio Ambiente</option>
@@ -1237,17 +1397,16 @@ function VistaFotos({ obras }) {
                                         <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })} style={{ ...input, padding: '0.4rem' }} />
                                     </div>
                                     <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file || !nuevoAnexo.item || subiendo}>
-                                        <Upload size={14} /> {subiendo ? 'Subiendo...' : 'Subir'}
+                                        <Upload size={14} />{subiendo ? 'Subiendo...' : 'Subir'}
                                     </button>
                                 </div>
                             </div>
-
                             {/* Tabla de fotos */}
                             <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                                 <thead>
                                     <tr>
                                         <th style={{ ...thStyle, width: '80px' }}>Item</th>
-                                        <th style={thStyle}>Descripción</th>
+                                        <th style={thStyle}>Descripcion</th>
                                         <th style={{ ...thStyle, width: '180px' }}>Archivo</th>
                                         <th style={{ ...thStyle, width: '120px' }}>Foto</th>
                                         <th style={{ ...thStyle, width: '40px' }}></th>
@@ -1270,9 +1429,7 @@ function VistaFotos({ obras }) {
                                             </td>
                                             <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#475569' }}>
                                                 {anexo.imagen_url ? (
-                                                    <a href={anexo.imagen_url} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none' }}>
-                                                        Ver archivo
-                                                    </a>
+                                                    <a href={anexo.imagen_url} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none' }}>Ver archivo</a>
                                                 ) : '—'}
                                             </td>
                                             <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0' }}>
@@ -1301,24 +1458,23 @@ function VistaFotos({ obras }) {
     );
 }
 
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
-// =============================================================================
+// ═════════════════════════════════════════════════════════════════════════════
 const Informediarioproy = () => {
     const [vista, setVista] = useState('dashboard');
     const [informeId, setInformeId] = useState(null);
     const [obraFiltro, setObraFiltro] = useState('');
-
     const [obras, setObras] = useState([]);
     const [catRec, setCatRec] = useState([]);
     const [recursos, setRecursos] = useState([]);
     const [catAct, setCatAct] = useState([]);
 
     const reloadCatalogos = useCallback(() => {
-        api.obras.list().then(setObras).catch(() => {});
-        api.catRec.list().then(setCatRec).catch(() => {});
-        api.recursos.list().then(setRecursos).catch(() => {});
-        api.catAct.list().then(setCatAct).catch(() => {});
+        api.obras.list().then(setObras).catch(() => { });
+        api.catRec.list().then(setCatRec).catch(() => { });
+        api.recursos.list().then(setRecursos).catch(() => { });
+        api.catAct.list().then(setCatAct).catch(() => { });
     }, []);
 
     useEffect(() => { reloadCatalogos(); }, [reloadCatalogos]);
@@ -1346,13 +1502,12 @@ const Informediarioproy = () => {
                     <div style={{ display: 'flex', gap: '0.25rem', marginTop: '1rem', borderBottom: '1px solid #e2e8f0' }}>
                         {tabs.map(t => (
                             <button key={t.key} onClick={() => setVista(t.key)} style={tabStyle(vista === t.key)}>
-                                <t.icon size={14} /> {t.label}
+                                <t.icon size={14} />{t.label}
                             </button>
                         ))}
                     </div>
                 )}
             </div>
-
             {vista === 'dashboard' && (
                 <VistaDashboard obras={obras} obraFiltro={obraFiltro} setObraFiltro={setObraFiltro} />
             )}

@@ -357,7 +357,8 @@ class FacturatechService:
         """
         Usa Ollama para traducir un error técnico de la DIAN a lenguaje humano
         """
-        if ollama is None:
+        # Si la librería no se cargó o no hay servidor de Ollama (entornos Cloud)
+        if ollama is None or not settings.DEBUG:
             return f"Error técnico (IA no disponible): {mensaje_error}"
 
         try:
