@@ -356,14 +356,12 @@ class FacturatechService:
         """
         try:
             prompt = (
-                "### SISTEMA KAVE - SOPORTE DIAN ###\n"
-                "Actúa como un experto en impuestos DIAN Colombia.\n"
-                "INSTRUCCIÓN: Traduce el error técnico a lenguaje administrativo simple.\n"
-                "REGLA: Máximo 200 caracteres, sé amable y directo.\n"
-                f"ERROR TÉCNICO: {mensaje_error}"
+                "Eres un asistente experto de soporte para facturación electrónica en Colombia. "
+                "Traduce el siguiente error técnico de la DIAN a una explicación amigable para "
+                "un usuario de oficina. Dile exactamente qué revisar (ej. NIT, Ciudad, IVA). "
+                "No uses tecnicismos. Máximo 50 palabras. "
+                f"Error: {mensaje_error}"
             )
-            
-            # Usamos un timeout corto para no bloquear el proceso de facturación
             response = ollama.chat(model='phi3', messages=[
                 {
                     'role': 'user',
@@ -376,9 +374,9 @@ class FacturatechService:
             logger.error(f"Error de respuesta de Ollama (Posible saturación): {e}")
             return "El servidor de IA está saturado. Por favor, verifique el NIT y los datos básicos manualmente."
         except Exception as e:
-            # Fallback seguro: Si Ollama no está disponible, el ERP sigue funcionando perfectamente
-            logger.warning(f"Ollama no disponible o error de conexión: {e}")
-            return f"Se detectó un error técnico. Por favor revise los datos del cliente y el prefijo de facturación."
+            # Si Ollama no está corriendo, devolvemos un mensaje genérico sin romper el flujo
+            logger.error(f"Error de conexión con Ollama: {e}")
+            return f"Error técnico detectado. Revise los campos: {mensaje_error}"
 
 
 class UBLGenerator:
