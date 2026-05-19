@@ -1,0 +1,15 @@
+{
+  "models": [
+    {
+      "title": "Claude",
+      "provider": "ollama",
+      "model": "claude"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Claude",
+    "provider": "ollama",
+    "model": "claude"
+  },
+  "allowAnonymousTelemetry": false
+}

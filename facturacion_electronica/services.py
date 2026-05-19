@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any, Tuple
 from zeep import Client, Settings
 from zeep.exceptions import Fault, TransportError, XMLSyntaxError
 from lxml import etree
+import ollama
 
 from django.conf import settings
 from .models import FacturaElectronicaLog, ConfiguracionFacturatech
@@ -276,6 +277,11 @@ class FacturatechService:
             else:
                 log.estado_interno = 'rechazada'
                 log.estado_dian = 'Rechazada'
+                # Intentar obtener una explicación amigable del error
+                if resultado['mensaje']:
+                    resultado['explicacion_ia'] = self.explicar_error_con_ia(resultado['mensaje'])
+                else:
+                    resultado['explicacion_ia'] = None
             
             log.fecha_respuesta = datetime.now()
             log.intentos_envio += 1
@@ -341,6 +347,23 @@ class FacturatechService:
                 'exito': False,
                 'error': str(e)
             }
+
+    def explicar_error_con_ia(self, mensaje_error: str) -> str:
+        """
+        Usa Ollama para traducir un error técnico de la DIAN a lenguaje humano
+        """
+        try:
+            prompt = f"Como experto en facturación electrónica en Colombia, explica de forma breve y amable este error técnico para que un usuario administrativo sepa qué corregir: {mensaje_error}"
+            response = ollama.chat(model='phi3', messages=[
+                {
+                    'role': 'user',
+                    'content': prompt,
+                },
+            ])
+            return response['message']['content']
+        except Exception as e:
+            logger.error(f"No se pudo consultar a Ollama: {e}")
+            return "No se pudo generar una explicación simplificada en este momento."
 
 
 class UBLGenerator:
