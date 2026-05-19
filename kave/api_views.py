@@ -1,3 +1,4 @@
+import logging
 from rest_framework.decorators import api_view
 from erp_core.permissions import IsIngenieriaUser
 from rest_framework.response import Response
@@ -11,6 +12,8 @@ from decimal import Decimal
 import datetime
 from django.http import HttpResponse
 from .pdf_generator import generar_ficha_tecnica_pdf
+
+logger = logging.getLogger(__name__)
 
 try:
     from mrp.models import PlanMaestroProduccion, RequerimientoMaterial
@@ -39,10 +42,8 @@ def design_transformer(request):
         result = api_design_and_quote(data)
         
         if result['status'] == 'error':
-            print(f"API: Error en cálculos: {result.get('error', 'unknown')}")
+            logger.error(f"Error en cálculos de transformador: {result.get('error')}")
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
-        
-        print(f"API: Cálculos exitosos, intentando guardar en base de datos")
         
         # Guardar diseño del transformador
         try:
@@ -73,9 +74,8 @@ def design_transformer(request):
                 costo=result['resultado']['costo_estimado'],
                 disenador=request.user if request.user.is_authenticated else None
             )
-            print(f"API: TransformerDesign guardado exitosamente con ID: {transformer_design.id}")
         except Exception as db_error:
-            print(f"API: Error al guardar TransformerDesign: {db_error}")
+            logger.exception("Error al guardar TransformerDesign")
             raise db_error
         
         # Guardar cálculos detallados
@@ -107,16 +107,13 @@ def design_transformer(request):
                 perdidas_cobre=result['resultado']['perdidas']['cobre_w'],
                 perdidas_totales=result['resultado']['perdidas']['totales_w']
             )
-            print(f"API: CalculoTransformador guardado exitosamente con ID: {calculo.id}")
         except Exception as db_error:
-            print(f"API: Error al guardar CalculoTransformador: {db_error}")
+            logger.exception("Error al guardar CalculoTransformador")
             raise db_error
         
         # Serializar y devolver respuesta
         try:
             serializer = TransformerDesignSerializer(transformer_design)
-            print(f"API: Serialización exitosa")
-            
             response_data = {
                 'diseño': serializer.data,
                 'calculos': CalculoTransformadorSerializer(calculo).data,
@@ -124,18 +121,14 @@ def design_transformer(request):
                 'status': 'success',
                 'mensaje': 'Diseño de transformador completado y guardado exitosamente'
             }
-            print(f"API: Respuesta construida exitosamente")
             
             return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as serializer_error:
-            print(f"API: Error en serialización: {serializer_error}")
+            logger.exception("Error en serialización de respuesta")
             raise serializer_error
         
     except Exception as e:
-        print(f"API: Error general en design_transformer: {e}")
-        print(f"API: Tipo de error: {type(e).__name__}")
-        import traceback
-        print(f"API: Traceback completo: {traceback.format_exc()}")
+        logger.exception("Error inesperado en design_transformer")
         
         return Response({
             'error': f'Error en el diseño del transformador: {str(e)}',

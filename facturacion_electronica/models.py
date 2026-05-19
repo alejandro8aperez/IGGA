@@ -52,6 +52,7 @@ class FacturaElectronicaLog(models.Model):
     # Error tracking
     error_detalle = models.TextField(blank=True, help_text="Detalle del error si falla")
     error_codigo = models.CharField(max_length=20, blank=True, help_text="Código de error interno")
+    explicacion_ia = models.TextField(null=True, blank=True, help_text="Explicación amigable del error de la DIAN generada por IA.")
     
     # Ambiente (demo/producción)
     es_produccion = models.BooleanField(default=False, help_text="True=Producción, False=Demo")

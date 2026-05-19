@@ -10,7 +10,10 @@ from typing import Optional, Dict, Any, Tuple
 from zeep import Client, Settings
 from zeep.exceptions import Fault, TransportError, XMLSyntaxError
 from lxml import etree
-import ollama
+try:
+    import ollama
+except ImportError:
+    ollama = None
 
 from django.conf import settings
 from .models import FacturaElectronicaLog, ConfiguracionFacturatech
@@ -354,13 +357,16 @@ class FacturatechService:
         """
         Usa Ollama para traducir un error técnico de la DIAN a lenguaje humano
         """
+        if ollama is None:
+            return f"Error técnico (IA no disponible): {mensaje_error}"
+
         try:
             prompt = (
-                "Eres un asistente experto de soporte para facturación electrónica en Colombia. "
-                "Traduce el siguiente error técnico de la DIAN a una explicación amigable para "
-                "un usuario de oficina. Dile exactamente qué revisar (ej. NIT, Ciudad, IVA). "
-                "No uses tecnicismos. Máximo 50 palabras. "
-                f"Error: {mensaje_error}"
+                "### SISTEMA KAVE - SOPORTE DIAN ###\n"
+                "Actúa como un experto en impuestos DIAN Colombia.\n"
+                "INSTRUCCIÓN: Traduce el error técnico a lenguaje administrativo simple.\n"
+                "REGLA: Máximo 200 caracteres, sé amable y directo.\n"
+                f"ERROR TÉCNICO: {mensaje_error}"
             )
             response = ollama.chat(model='phi3', messages=[
                 {
@@ -375,8 +381,8 @@ class FacturatechService:
             return "El servidor de IA está saturado. Por favor, verifique el NIT y los datos básicos manualmente."
         except Exception as e:
             # Si Ollama no está corriendo, devolvemos un mensaje genérico sin romper el flujo
-            logger.error(f"Error de conexión con Ollama: {e}")
-            return f"Error técnico detectado. Revise los campos: {mensaje_error}"
+            logger.warning(f"Ollama no disponible o error de conexión: {e}")
+            return f"Se detectó un error técnico. Por favor revise los datos del cliente y el prefijo de facturación."
 
 
 class UBLGenerator:

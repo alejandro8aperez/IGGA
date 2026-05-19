@@ -23,6 +23,9 @@ requests==2.32.3
 django-storages==1.14.2
 boto3==1.34.0
 
+# Ollama (para integración local de IA)
+ollama==0.1.0 # O la versión que estés usando localmente
+
 # ── Módulo Informe Diario de Obra (F-141-IN) ─────────────────────────────
 # reportlab ya está incluido arriba (4.4.10) — usado por informe_diario.exports
 # openpyxl ya está incluido arriba (3.1.5)
