@@ -353,7 +353,13 @@ class FacturatechService:
         Usa Ollama para traducir un error técnico de la DIAN a lenguaje humano
         """
         try:
-            prompt = f"Como experto en facturación electrónica en Colombia, explica de forma breve y amable este error técnico para que un usuario administrativo sepa qué corregir: {mensaje_error}"
+            prompt = (
+                "Actúa como un experto en impuestos de la DIAN Colombia. "
+                "Traduce el siguiente error técnico a un lenguaje sencillo para un administrativo, "
+                "indicando qué campo debe revisar en el software. "
+                "Sé breve (máximo 2 párrafos) y amable. "
+                f"Error: {mensaje_error}"
+            )
             response = ollama.chat(model='phi3', messages=[
                 {
                     'role': 'user',
@@ -361,6 +367,9 @@ class FacturatechService:
                 },
             ])
             return response['message']['content']
+        except ollama.ResponseError as e:
+            logger.error(f"Error de respuesta de Ollama: {e}")
+            return "El servidor de IA está saturado. Por favor, verifique el NIT y los datos básicos manualmente."
         except Exception as e:
             logger.error(f"No se pudo consultar a Ollama: {e}")
             return "No se pudo generar una explicación simplificada en este momento."

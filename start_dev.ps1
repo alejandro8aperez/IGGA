@@ -43,6 +43,11 @@ Start-Sleep -Seconds 3
 # Iniciar Frontend Vite en la carpeta frontend
 Write-Host "Iniciando Frontend Vite (puerto 5173)..." -ForegroundColor Yellow
 Set-Location frontend
+if (-not (Test-Path "node_modules")) {
+    Write-Host "node_modules no encontrado. Ejecutando npm install..." -ForegroundColor Cyan
+    npm install
+}
+
 try {
     npm run dev
 }

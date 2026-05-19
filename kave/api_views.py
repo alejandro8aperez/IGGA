@@ -25,23 +25,14 @@ def design_transformer(request):
     """
     try:
         data = request.data
-        print(f"API: Datos recibidos en design_transformer: {data}")
         
-        # Validar datos de entrada
-        required_fields = ['potencia_kva', 'vp', 'vs', 'tipo', 'material']
-        for field in required_fields:
-            if field not in data:
-                print(f"API: Campo faltante: {field}")
-                return Response({
-                    'error': f'El campo {field} es requerido',
-                    'status': 'error'
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
-        print(f"API: Validación de campos exitosa")
+        # Usar el serializador para validación de entrada
+        temp_serializer = TransformerDesignSerializer(data=data)
+        if not temp_serializer.is_valid():
+            return Response(temp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         # Realizar cálculos
         result = api_design_and_quote(data)
-        print(f"API: Resultado de api_design_and_quote: {result.get('status', 'unknown')}")
         
         if result['status'] == 'error':
             print(f"API: Error en cálculos: {result.get('error', 'unknown')}")
