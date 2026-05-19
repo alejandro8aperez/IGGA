@@ -26,10 +26,14 @@ def design_transformer(request):
     try:
         data = request.data
         
-        # Usar el serializador para validación de entrada
+        # Validación profesional usando el serializador
         temp_serializer = TransformerDesignSerializer(data=data)
         if not temp_serializer.is_valid():
-            return Response(temp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'status': 'error',
+                'errors': temp_serializer.errors,
+                'mensaje': 'Datos de diseño inválidos'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Realizar cálculos
         result = api_design_and_quote(data)

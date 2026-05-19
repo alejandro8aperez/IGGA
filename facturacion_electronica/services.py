@@ -280,8 +280,10 @@ class FacturatechService:
                 # Intentar obtener una explicación amigable del error
                 if resultado['mensaje']:
                     resultado['explicacion_ia'] = self.explicar_error_con_ia(resultado['mensaje'])
+                    log.explicacion_ia = resultado['explicacion_ia']
                 else:
                     resultado['explicacion_ia'] = None
+                    log.explicacion_ia = None
             
             log.fecha_respuesta = datetime.now()
             log.intentos_envio += 1
@@ -354,25 +356,29 @@ class FacturatechService:
         """
         try:
             prompt = (
-                "Actúa como un experto en impuestos de la DIAN Colombia. "
-                "Traduce el siguiente error técnico a un lenguaje sencillo para un administrativo, "
-                "indicando qué campo debe revisar en el software. "
-                "Sé breve (máximo 2 párrafos) y amable. "
-                f"Error: {mensaje_error}"
+                "### SISTEMA KAVE - SOPORTE DIAN ###\n"
+                "Actúa como un experto en impuestos DIAN Colombia.\n"
+                "INSTRUCCIÓN: Traduce el error técnico a lenguaje administrativo simple.\n"
+                "REGLA: Máximo 200 caracteres, sé amable y directo.\n"
+                f"ERROR TÉCNICO: {mensaje_error}"
             )
+            
+            # Usamos un timeout corto para no bloquear el proceso de facturación
             response = ollama.chat(model='phi3', messages=[
                 {
                     'role': 'user',
                     'content': prompt,
                 },
             ])
-            return response['message']['content']
+            # Extraer contenido de forma segura
+            return response.get('message', {}).get('content', "No se pudo obtener una explicación detallada.")
         except ollama.ResponseError as e:
-            logger.error(f"Error de respuesta de Ollama: {e}")
+            logger.error(f"Error de respuesta de Ollama (Posible saturación): {e}")
             return "El servidor de IA está saturado. Por favor, verifique el NIT y los datos básicos manualmente."
         except Exception as e:
-            logger.error(f"No se pudo consultar a Ollama: {e}")
-            return "No se pudo generar una explicación simplificada en este momento."
+            # Fallback seguro: Si Ollama no está disponible, el ERP sigue funcionando perfectamente
+            logger.warning(f"Ollama no disponible o error de conexión: {e}")
+            return f"Se detectó un error técnico. Por favor revise los datos del cliente y el prefijo de facturación."
 
 
 class UBLGenerator:
