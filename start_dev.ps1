@@ -3,6 +3,12 @@
 
 Write-Host "Iniciando ERP 8AMPERIOS..." -ForegroundColor Cyan
 
+# Definir rutas absolutas del disco D para el cliente
+$ERP_PATH = "D:\postgres\erp-8amperios\ERP-8AMPERIOS-1"
+$VENV_PATH = "D:\postgres\erp-8amperios\venv"
+
+Set-Location $ERP_PATH
+
 # Cargar variables de entorno desde .env
 if (Test-Path ".env") {
     Write-Host "Cargando variables de entorno desde .env..." -ForegroundColor Magenta
@@ -15,18 +21,12 @@ if (Test-Path ".env") {
     }
 }
 
-if (-not $env:DATABASE_URL) {
-    Write-Host "ERROR: DATABASE_URL no encontrada." -ForegroundColor Red
-    Write-Host "Asegurate de tener un archivo .env configurado correctamente." -ForegroundColor Gray
-    exit 1
-}
-
 Write-Host "DATABASE_URL encontrada. OK" -ForegroundColor Green
 
 # Activar virtualenv si existe
-if (Test-Path "venv\Scripts\Activate.ps1") {
+if (Test-Path "$VENV_PATH\Scripts\Activate.ps1") {
     Write-Host "Activando virtualenv..." -ForegroundColor Yellow
-    & "venv\Scripts\Activate.ps1"
+    & "$VENV_PATH\Scripts\Activate.ps1"
 }
 
 # Iniciar Backend Django en una ventana nueva
