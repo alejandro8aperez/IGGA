@@ -24,7 +24,7 @@ import {
 } from 'recharts';
 import { API } from '../config/api';
 
-const ID = API;
+const ID = API.INFORME_DIARIO;
 const HORAS = Array.from({ length: 24 }, (_, i) => i);
 
 // ─── Estilos reusables ───
@@ -87,6 +87,9 @@ const api = {
         subirAnexo: (id, fd) => axios.post(`${ID.INFORMES}${id}/subir-anexo/`, fd, {
             headers: { 'Content-Type': 'multipart/form-data' },
         }).then(r => r.data),
+    },
+    anexos: {
+        remove: (id) => axios.delete(`${ID.ANEXOS}${id}/`),
     },
     dashboard: {
         resumen: (params) => axios.get(ID.DASHBOARD_RESUMEN, { params }).then(r => r.data),
@@ -669,6 +672,57 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     </div>
                 )}
 
+                {/* Actividades del dia */}
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Actividades del Día</h3>
+                    {categoriasAct.filter(c => c.activo !== false).map(cat => {
+                        const items = (form.actividades || []).filter(a => String(a.categoria) === String(cat.id));
+                        if (items.length === 0) return null;
+                        return (
+                            <div key={cat.id} style={{ marginBottom: '0.75rem', paddingLeft: '0.5rem' }}>
+                                <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: '#667eea', textTransform: 'uppercase', marginBottom: '0.25rem' }}>{cat.nombre}</h4>
+                                <ol style={{ paddingLeft: '1.25rem', margin: 0 }}>
+                                    {items.map((it, idx) => (
+                                        <li key={idx} style={{ fontSize: '0.78rem', color: '#334155', marginBottom: '0.15rem', lineHeight: '1.4' }}>
+                                            {it.descripcion}
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        );
+                    })}
+                    {(form.actividades || []).filter(a => a.descripcion?.trim()).length === 0 && (
+                        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>Sin actividades registradas.</p>
+                    )}
+                </div>
+
+                {/* Items de obra */}
+                {(form.items_obra || []).filter(i => i.descripcion?.trim()).length > 0 && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Ítems de Obra Ejecutados</h3>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                                <tr style={{ background: '#f0f4f8' }}>
+                                    <th style={{ ...reportThStyle, width: '60px', textAlign: 'center' }}>ÍTEM</th>
+                                    <th style={reportThStyle}>DESCRIPCIÓN</th>
+                                    <th style={{ ...reportThStyle, width: '150px' }}>EMPRESA</th>
+                                    <th style={{ ...reportThStyle, width: '80px', textAlign: 'center' }}>CANTIDAD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(form.items_obra || []).filter(i => i.descripcion?.trim()).map((it, idx) => (
+                                    <tr key={idx} style={{ background: idx % 2 === 0 ? 'white' : '#f9fafb' }}>
+                                        <td style={{ ...reportTdStyle, textAlign: 'center', fontWeight: 'bold' }}>{it.item || '—'}</td>
+                                        <td style={reportTdStyle}>{it.descripcion}</td>
+                                        <td style={reportTdStyle}>{it.empresa || '—'}</td>
+                                        <td style={{ ...reportTdStyle, textAlign: 'center', fontWeight: 'bold' }}>{it.cantidad}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
                 {/* Footer */}
                 <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '2px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                     <div>
@@ -1162,40 +1216,46 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
             {/* Actividades del dia */}
             <Seccion title={<><ClipboardList size={14} style={{ display: 'inline', marginRight: 6 }} />Actividades del dia</>}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {categoriasAct.filter(c => c.activo !== false).map(cat => {
-                        const items = form.actividades.map((a, idx) => ({ a, idx })).filter(({ a }) =>
-                            String(a.categoria) === String(cat.id)
-                        );
-                        return (
-                            <div key={cat.id} style={{ background: '#f8fafc', borderRadius: '10px', padding: '1rem', border: '1px solid #e2e8f0' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>{cat.nombre}</h4>
-                                    <button type="button" style={btnGhost}
-                                        onClick={() => setForm({ ...form, actividades: [...form.actividades, { categoria: cat.id, descripcion: '', orden: form.actividades.length }] })}>
-                                        <Plus size={12} /> Agregar
-                                    </button>
+                    {categoriasAct.filter(c => c.activo !== false).length === 0 ? (
+                        <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', color: '#b45309', padding: '1rem', borderRadius: '10px', fontSize: '0.85rem' }}>
+                            <strong>⚠️ No hay categorías de actividades registradas:</strong> Para ingresar actividades, asegúrate de haber poblado la base de datos ejecutando el script de inicialización en el servidor (<code>python manage.py shell &lt; seed_informe_diario.py</code>) o agrégalas en el Django Admin.
+                        </div>
+                    ) : (
+                        categoriasAct.filter(c => c.activo !== false).map(cat => {
+                            const items = form.actividades.map((a, idx) => ({ a, idx })).filter(({ a }) =>
+                                String(a.categoria) === String(cat.id)
+                            );
+                            return (
+                                <div key={cat.id} style={{ background: '#f8fafc', borderRadius: '10px', padding: '1rem', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>{cat.nombre}</h4>
+                                        <button type="button" style={{ ...btnGhost, background: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)', color: 'white', border: 'none', boxShadow: '0 2px 6px rgba(102,126,234,0.2)', padding: '0.4rem 0.8rem' }}
+                                            onClick={() => setForm({ ...form, actividades: [...form.actividades, { categoria: cat.id, descripcion: '', orden: form.actividades.length }] })}>
+                                            <Plus size={12} /> Agregar fila
+                                        </button>
+                                    </div>
+                                    {items.length === 0 ? (
+                                        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>Sin actividades. Haz clic en "Agregar fila" para registrar una actividad en esta categoría.</p>
+                                    ) : (
+                                        <ol style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            {items.map(({ a, idx }) => (
+                                                <li key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                                    <textarea rows={1} value={a.descripcion}
+                                                        onChange={e => { const c = [...form.actividades]; c[idx] = { ...c[idx], descripcion: e.target.value }; setForm({ ...form, actividades: c }); }}
+                                                        style={{ ...input, flex: 1, minHeight: '38px', fontFamily: 'inherit', resize: 'vertical' }}
+                                                        placeholder="Describa la actividad..." />
+                                                    <button type="button" onClick={() => setForm({ ...form, actividades: form.actividades.filter((_, i) => i !== idx) })}
+                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: '0.5rem' }}>
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    )}
                                 </div>
-                                {items.length === 0 ? (
-                                    <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>Sin actividades.</p>
-                                ) : (
-                                    <ol style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        {items.map(({ a, idx }) => (
-                                            <li key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                                                <textarea rows={1} value={a.descripcion}
-                                                    onChange={e => { const c = [...form.actividades]; c[idx] = { ...c[idx], descripcion: e.target.value }; setForm({ ...form, actividades: c }); }}
-                                                    style={{ ...input, flex: 1, minHeight: '38px', fontFamily: 'inherit', resize: 'vertical' }}
-                                                    placeholder="Describa la actividad..." />
-                                                <button type="button" onClick={() => setForm({ ...form, actividades: form.actividades.filter((_, i) => i !== idx) })}
-                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: '0.5rem' }}>
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ol>
-                                )}
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    )}
                 </div>
             </Seccion>
 
@@ -1206,50 +1266,6 @@ function VistaFormulario({ informeId, obras, recursos, categoriasRec, categorias
                     <div><label style={label}>Cargo</label><input style={input} value={form.cargo_elaborado} onChange={e => setForm({ ...form, cargo_elaborado: e.target.value })} /></div>
                     <div><label style={label}>Revisado por</label><input style={input} value={form.revisado_por} onChange={e => setForm({ ...form, revisado_por: e.target.value })} /></div>
                     <div><label style={label}>Cargo</label><input style={input} value={form.cargo_revisado} onChange={e => setForm({ ...form, cargo_revisado: e.target.value })} /></div>
-                </div>
-            </Seccion>
-
-            {/* Anexos fotograficos */}
-            <Seccion title={<><ImageIcon size={14} style={{ display: 'inline', marginRight: 6 }} />Anexos fotograficos</>}>
-                {!isEdit && (
-                    <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                        Las fotos se subiran despues de guardar el informe por primera vez.
-                    </div>
-                )}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
-                    <div>
-                        <label style={label}>Seccion</label>
-                        <select style={input} value={nuevoAnexo.seccion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, seccion: e.target.value })}>
-                            <option value="actividades">Actividades</option>
-                            <option value="sst">SST y Medio Ambiente</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style={label}>Descripcion</label>
-                        <input style={input} value={nuevoAnexo.descripcion} onChange={e => setNuevoAnexo({ ...nuevoAnexo, descripcion: e.target.value })} />
-                    </div>
-                    <div>
-                        <label style={label}>Archivo</label>
-                        <input type="file" accept="image/*" onChange={e => setNuevoAnexo({ ...nuevoAnexo, file: e.target.files?.[0] || null })} style={{ ...input, padding: '0.4rem' }} />
-                    </div>
-                    <button type="button" style={btnPrimary} onClick={subirFoto} disabled={!nuevoAnexo.file}><Upload size={14} /> Subir foto</button>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem', marginTop: '1.25rem' }}>
-                    {anexos.map(a => (
-                        <div key={a.id} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', background: 'white' }}>
-                            {a.imagen_url ? (
-                                <img src={a.imagen_url} alt={a.descripcion} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
-                            ) : (
-                                <div style={{ height: '120px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <ImageIcon size={28} color="#94a3b8" />
-                                </div>
-                            )}
-                            <div style={{ padding: '0.5rem' }}>
-                                <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#667eea', textTransform: 'uppercase' }}>{a.seccion}</div>
-                                <div style={{ fontSize: '0.78rem', color: '#475569', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.descripcion}</div>
-                            </div>
-                        </div>
-                    ))}
                 </div>
             </Seccion>
         </div>
@@ -1297,6 +1313,16 @@ function VistaFotos({ obras }) {
             setNuevoAnexo({ item: '', descripcion: '', seccion: 'actividades', file: null });
         } finally {
             setSubiendo(false);
+        }
+    };
+
+    const eliminarFoto = async (anexoId) => {
+        if (!window.confirm('¿Seguro que deseas eliminar esta foto?')) return;
+        try {
+            await api.anexos.remove(anexoId);
+            setAnexos(prev => prev.filter(a => a.id !== anexoId));
+        } catch (err) {
+            alert('Error al eliminar la foto: ' + err.message);
         }
     };
 
@@ -1401,55 +1427,124 @@ function VistaFotos({ obras }) {
                                     </button>
                                 </div>
                             </div>
-                            {/* Tabla de fotos */}
-                            <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ ...thStyle, width: '80px' }}>Item</th>
-                                        <th style={thStyle}>Descripcion</th>
-                                        <th style={{ ...thStyle, width: '180px' }}>Archivo</th>
-                                        <th style={{ ...thStyle, width: '120px' }}>Foto</th>
-                                        <th style={{ ...thStyle, width: '40px' }}></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {anexos.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8', fontSize: '0.85rem' }}>
-                                                <ImageIcon size={32} style={{ margin: '0 auto 0.5rem', color: '#cbd5e1' }} />
-                                                <div>No hay fotos. Agrega la primera!</div>
-                                            </td>
-                                        </tr>
-                                    ) : anexos.map((anexo, idx) => (
-                                        <tr key={anexo.id} style={{ background: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
-                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center', fontWeight: 600 }}>{idx + 1}</td>
-                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0' }}>
-                                                <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>{anexo.descripcion}</div>
-                                                <div style={{ fontSize: '0.7rem', color: '#667eea', textTransform: 'uppercase', fontWeight: 600 }}>{anexo.seccion}</div>
-                                            </td>
-                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#475569' }}>
-                                                {anexo.imagen_url ? (
-                                                    <a href={anexo.imagen_url} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none' }}>Ver archivo</a>
-                                                ) : '—'}
-                                            </td>
-                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0' }}>
-                                                {anexo.imagen_url ? (
-                                                    <img src={anexo.imagen_url} alt={anexo.descripcion} style={{ width: '100px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' }} />
-                                                ) : (
-                                                    <div style={{ width: '100px', height: '60px', background: '#f1f5f9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <ImageIcon size={20} color="#94a3b8" />
+                            {/* Grid de fotos estilo POS */}
+                            {anexos.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                                    <ImageIcon size={48} style={{ margin: '0 auto 0.75rem', color: '#cbd5e1' }} />
+                                    <div>No hay fotos. ¡Agrega la primera!</div>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem', marginTop: '1rem' }}>
+                                    {anexos.map((anexo, idx) => {
+                                        const filename = anexo.imagen_url 
+                                            ? anexo.imagen_url.split('/').pop() 
+                                            : (anexo.imagen ? anexo.imagen.split('/').pop() : `foto_${anexo.id}.jpg`);
+                                        return (
+                                            <div 
+                                                key={anexo.id}
+                                                style={{
+                                                    background: 'white', borderRadius: '16px', overflow: 'hidden',
+                                                    boxShadow: '0 4px 15px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column',
+                                                    justifyContent: 'space-between', border: '1px solid #f1f5f9',
+                                                    height: '310px', position: 'relative', transition: 'all 0.2s',
+                                                    cursor: 'default'
+                                                }}
+                                                onMouseOver={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+                                                onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                                            >
+                                                {/* Contenedor de la Imagen */}
+                                                <div style={{
+                                                    width: '100%', height: '150px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+                                                    overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
+                                                }}>
+                                                    {anexo.imagen_url ? (
+                                                        <img 
+                                                            src={anexo.imagen_url} 
+                                                            alt={anexo.descripcion}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                    ) : (
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#8b5cf6' }}>
+                                                            <ImageIcon size={40} />
+                                                        </div>
+                                                    )}
+                                                    {/* Badge de Sección (estilo POS) */}
+                                                    <div style={{
+                                                        position: 'absolute', top: '10px', left: '10px',
+                                                        background: anexo.seccion === 'sst' ? '#10b981' : '#6366f1',
+                                                        color: 'white', fontSize: '0.65rem', fontWeight: 'bold',
+                                                        padding: '3px 8px', borderRadius: '8px', zIndex: 2, textTransform: 'uppercase'
+                                                    }}>
+                                                        {anexo.seccion === 'sst' ? 'SST' : 'Actividades'}
                                                     </div>
-                                                )}
-                                            </td>
-                                            <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
-                                                <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: '0.25rem' }}>
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                                    
+                                                    {/* Botón de Zoom/Ver Original */}
+                                                    {anexo.imagen_url && (
+                                                        <a 
+                                                            href={anexo.imagen_url} target="_blank" rel="noopener noreferrer"
+                                                            style={{
+                                                                position: 'absolute', top: '10px', right: '10px',
+                                                                background: 'rgba(255, 255, 255, 0.9)', color: '#475569',
+                                                                borderRadius: '50%', width: '26px', height: '26px',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', textDecoration: 'none',
+                                                                transition: 'transform 0.1s'
+                                                            }}
+                                                            title="Ver imagen original"
+                                                        >
+                                                            <ImageIcon size={14} />
+                                                        </a>
+                                                    )}
+                                                </div>
+
+                                                {/* Cuerpo de la Tarjeta */}
+                                                <div style={{ padding: '0.85rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
+                                                    <div>
+                                                        {/* Descripción */}
+                                                        <h4 style={{
+                                                            margin: '0 0 0.4rem 0', fontSize: '0.85rem', color: '#1e293b',
+                                                            fontWeight: '700', lineHeight: 1.3, display: '-webkit-box',
+                                                            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                                                        }}>
+                                                            {anexo.descripcion}
+                                                        </h4>
+                                                        
+                                                        {/* Nombre del Archivo (Monoespaciado) */}
+                                                        <div style={{
+                                                            fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.68rem',
+                                                            color: '#64748b', background: '#f8fafc', padding: '4px 6px',
+                                                            borderRadius: '6px', border: '1px solid #edf2f7',
+                                                            wordBreak: 'break-all', display: 'inline-block', width: '100%',
+                                                            boxSizing: 'border-box'
+                                                        }} title={filename}>
+                                                            📄 {filename}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Footer de Tarjeta (Delete button) */}
+                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '0.5rem' }}>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => eliminarFoto(anexo.id)}
+                                                            style={{
+                                                                background: '#fee2e2', color: '#ef4444', border: 'none',
+                                                                borderRadius: '50%', width: '28px', height: '28px',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                cursor: 'pointer', transition: 'all 0.2s'
+                                                            }}
+                                                            onMouseOver={e => e.currentTarget.style.background = '#fca5a5'}
+                                                            onMouseOut={e => e.currentTarget.style.background = '#fee2e2'}
+                                                            title="Eliminar foto"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
