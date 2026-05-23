@@ -109,7 +109,8 @@ MIDDLEWARE = [
 ]
 
 # ─── CORS ────────────────────────────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = False
+# Permitir todos los orígenes solo si estamos en modo DEBUG para facilitar desarrollo
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 CORS_ALLOWED_ORIGINS = [
     "https://erp-frontend-7798.onrender.com",
@@ -117,11 +118,19 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://erp-frontend-7798.onrender.com",
     "https://erp-backend-a37b.onrender.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
 ]
 # ─────────────────────────────────────────────────────────────────────────────
 
