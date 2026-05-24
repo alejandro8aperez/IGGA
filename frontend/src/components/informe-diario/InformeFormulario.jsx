@@ -220,6 +220,45 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       </Card>
 
       <Card>
+<<<<<<< HEAD
+=======
+        <CardHeader><CardTitle className="text-sm font-semibold">Reporte de lluvia</CardTitle></CardHeader>
+        <CardContent><HorasLluvia horas={form.horas_lluvia || Array(24).fill(false)} onChange={v => setField("horas_lluvia", v)} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">Recursos (Maquinaria y Personal)</CardTitle></CardHeader>
+        <CardContent><RecursosSection recursos={form.recursos || []} allRecursos={recursos} onChange={v => setField("recursos", v)} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">Actividades del día</CardTitle></CardHeader>
+        <CardContent><ActividadesSection actividades={form.actividades || []} categorias={categorias} onChange={v => setField("actividades", v)} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold">Ítems de obra</CardTitle>
+            <Button type="button" variant="outline" size="sm" onClick={addItemObra} className="gap-1 text-xs"><Plus className="h-3.5 w-3.5" />Agregar ítem</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {(form.items_obra || []).length === 0 && <p className="text-xs text-muted-foreground italic">Sin ítems de obra</p>}
+          {(form.items_obra || []).map((item, idx) => (
+            <div key={idx} className="grid grid-cols-12 gap-2 items-center text-sm">
+              <Input className="col-span-2 h-8 text-xs" value={item.item} onChange={e => updateItemObra(idx, "item", e.target.value)} placeholder="Ítem" />
+              <Textarea className="col-span-4 text-xs min-h-[32px] h-8 resize-none" value={item.descripcion} onChange={e => updateItemObra(idx, "descripcion", e.target.value)} placeholder="Descripción" />
+              <Input className="col-span-2 h-8 text-xs" value={item.empresa} onChange={e => updateItemObra(idx, "empresa", e.target.value)} placeholder="Empresa" />
+              <Input className="col-span-3 h-8 text-xs" value={item.responsable} onChange={e => updateItemObra(idx, "responsable", e.target.value)} placeholder="Responsable" />
+              <button type="button" onClick={() => removeItemObra(idx)} className="col-span-1 flex justify-center text-destructive hover:opacity-70"><X className="h-4 w-4" /></button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
         <CardHeader><CardTitle className="text-sm font-semibold">Condiciones y observaciones</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -230,6 +269,30 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </CardContent>
       </Card>
 
+<<<<<<< HEAD
+=======
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">Firmas</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Elaborado por</Label>
+            <Input value={form.elaborado_por} onChange={e => setField("elaborado_por", e.target.value)} placeholder="Nombre" />
+            <Input value={form.cargo_elaborado} onChange={e => setField("cargo_elaborado", e.target.value)} placeholder="Cargo" />
+          </div>
+          <div className="space-y-2">
+            <Label>Revisado por</Label>
+            <Input value={form.revisado_por} onChange={e => setField("revisado_por", e.target.value)} placeholder="Nombre" />
+            <Input value={form.cargo_revisado} onChange={e => setField("cargo_revisado", e.target.value)} placeholder="Cargo" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">Anexos fotográficos</CardTitle></CardHeader>
+        <CardContent><FotosSection fotos={form.fotos_urls || []} onChange={v => setField("fotos_urls", v)} /></CardContent>
+      </Card>
+
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
       <div className="flex justify-end gap-3 pb-8">
         <Button variant="outline" onClick={onCancelar}>Cancelar</Button>
         <Button onClick={() => saveMutation.mutate(form)} disabled={!form.obra_id || !form.fecha || saveMutation.isPending}>
@@ -239,4 +302,8 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       </div>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f

@@ -18,7 +18,11 @@ function ObrasCrud() {
 
   const { data: obras = [] } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
   const createMut = useMutation({ mutationFn: d => obraService.create(d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); } });
+<<<<<<< HEAD
   const updateMut = useMutation({ mutationFn: ({ id, d }) => { return obraService.update(id, d); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); setEditing(null); } });
+=======
+  const updateMut = useMutation({ mutationFn: ({ id, d }) => obraService.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); setEditing(null); } });
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
   const deleteMut = useMutation({ mutationFn: id => obraService.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["obras"] }) });
 
   const openNew = () => { setEditing(null); setForm({ codigo: "", nombre: "", ubicacion: "", cliente: "", activo: true }); setShowForm(true); };
@@ -69,7 +73,11 @@ function RecursosCrud() {
 
   const { data: recursos = [] } = useQuery({ queryKey: ["recursos"], queryFn: () => recursoService.list() });
   const createMut = useMutation({ mutationFn: d => recursoService.create(d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["recursos"] }); setShowForm(false); } });
+<<<<<<< HEAD
   const updateMut = useMutation({ mutationFn: ({ id, d }) => { return recursoService.update(id, d); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["recursos"] }); setShowForm(false); setEditing(null); } });
+=======
+  const updateMut = useMutation({ mutationFn: ({ id, d }) => recursoService.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["recursos"] }); setShowForm(false); setEditing(null); } });
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
   const deleteMut = useMutation({ mutationFn: id => recursoService.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["recursos"] }) });
 
   const openNew = () => { setEditing(null); setForm({ nombre: "", categoria: "PERSONAL DE OBRA", unidad: "persona", activo: true, orden: 0 }); setShowForm(true); };
@@ -131,6 +139,56 @@ function RecursosCrud() {
   );
 }
 
+<<<<<<< HEAD
+=======
+function CategoriasCrud() {
+  const queryClient = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ nombre: "", orden: 0, activo: true });
+
+  const { data: categorias = [] } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
+  const createMut = useMutation({ mutationFn: d => categoriaService.create(d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categorias-actividad"] }); setShowForm(false); } });
+  const updateMut = useMutation({ mutationFn: ({ id, d }) => categoriaService.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categorias-actividad"] }); setShowForm(false); setEditing(null); } });
+  const deleteMut = useMutation({ mutationFn: id => categoriaService.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categorias-actividad"] }) });
+
+  const openNew = () => { setEditing(null); setForm({ nombre: "", orden: categorias.length, activo: true }); setShowForm(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ nombre: c.nombre, orden: c.orden || 0, activo: c.activo !== false }); setShowForm(true); };
+  const save = () => editing ? updateMut.mutate({ id: editing.id, d: form }) : createMut.mutate(form);
+  const saving = createMut.isPending || updateMut.isPending;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end"><Button size="sm" onClick={openNew} className="gap-1"><Plus className="h-3.5 w-3.5" />Nueva categoría</Button></div>
+      <div className="space-y-1.5">
+        {categorias.map(c => (
+          <div key={c.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 text-sm">
+            <span>{c.nombre}</span>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(c)}><Pencil className="h-3 w-3" /></Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMut.mutate(c.id)}><Trash2 className="h-3 w-3" /></Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>{editing ? "Editar categoría" : "Nueva categoría"}</DialogTitle></DialogHeader>
+          <div className="grid gap-3 py-2">
+            <div className="space-y-1"><Label>Nombre *</Label><Input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Orden</Label><Input type="number" value={form.orden} onChange={e => setForm({ ...form, orden: parseInt(e.target.value) || 0 })} /></div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button onClick={save} disabled={!form.nombre || saving}>{saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}{editing ? "Guardar" : "Crear"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
 export default function InformeCatalogos() {
   return (
     <div className="space-y-4">
@@ -143,7 +201,15 @@ export default function InformeCatalogos() {
         </TabsList>
         <TabsContent value="obras" className="mt-4"><Card><CardContent className="pt-6"><ObrasCrud /></CardContent></Card></TabsContent>
         <TabsContent value="recursos" className="mt-4"><Card><CardContent className="pt-6"><RecursosCrud /></CardContent></Card></TabsContent>
+<<<<<<< HEAD
       </Tabs>
     </div>
   );
 }
+=======
+        <TabsContent value="categorias" className="mt-4"><Card><CardContent className="pt-6"><CategoriasCrud /></CardContent></Card></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f

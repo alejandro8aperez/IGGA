@@ -108,6 +108,36 @@ export default function InformeDashboard({ onNuevoInforme }) {
           </CardContent>
         </Card>
       </div>
+<<<<<<< HEAD
     </div>
   );
 }
+=======
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">Últimos informes</CardTitle></CardHeader>
+        <CardContent>
+          {filtrados.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No hay informes registrados</p>
+          ) : (
+            <div className="space-y-2">
+              {filtrados.slice(0, 8).map(inf => (
+                <div key={inf.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div>
+                    <p className="text-sm font-medium">{inf.obra_codigo} — {inf.obra_nombre}</p>
+                    <p className="text-xs text-muted-foreground">{inf.fecha} · {inf.dia_semana}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    inf.status === "aprobado" ? "bg-emerald-50 text-emerald-700" :
+                    inf.status === "enviado" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
+                  }`}>{inf.status || "borrador"}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+>>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
