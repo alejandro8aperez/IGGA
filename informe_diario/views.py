@@ -136,16 +136,6 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
         if informe_id:
             qs = qs.filter(informe_id=informe_id)
         return qs
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        informe_id = self.request.query_params.get('informe')
-        if informe_id:
-            qs = qs.filter(informe_id=informe_id)
-        return qs
-
-
 class DashboardViewSet(viewsets.ViewSet):
     """Read-only stats endpoints for the dashboard."""
 
