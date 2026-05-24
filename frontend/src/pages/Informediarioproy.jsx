@@ -14,7 +14,7 @@ function StatsHeader() {
   const { data: stats } = useQuery({
     queryKey: ['informe-status-counts'],
     queryFn: () => axios.get('/api/informe-diario/informes/status-counts/').then(res => res.data),
-    refetchInterval: 10000 // Feeling de POS: actualiza contadores automáticamente
+    refetchInterval: 10000 // Feeling de POS: actualiza contadores cada 10 segundos
   });
 
   const statCards = [
