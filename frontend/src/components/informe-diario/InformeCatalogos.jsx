@@ -73,11 +73,7 @@ function RecursosCrud() {
 
   const { data: recursos = [] } = useQuery({ queryKey: ["recursos"], queryFn: () => recursoService.list() });
   const createMut = useMutation({ mutationFn: d => recursoService.create(d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["recursos"] }); setShowForm(false); } });
-<<<<<<< HEAD
-  const updateMut = useMutation({ mutationFn: ({ id, d }) => { return recursoService.update(id, d); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["recursos"] }); setShowForm(false); setEditing(null); } });
-=======
   const updateMut = useMutation({ mutationFn: ({ id, d }) => recursoService.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["recursos"] }); setShowForm(false); setEditing(null); } });
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
   const deleteMut = useMutation({ mutationFn: id => recursoService.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["recursos"] }) });
 
   const openNew = () => { setEditing(null); setForm({ nombre: "", categoria: "PERSONAL DE OBRA", unidad: "persona", activo: true, orden: 0 }); setShowForm(true); };
@@ -201,15 +197,8 @@ export default function InformeCatalogos() {
         </TabsList>
         <TabsContent value="obras" className="mt-4"><Card><CardContent className="pt-6"><ObrasCrud /></CardContent></Card></TabsContent>
         <TabsContent value="recursos" className="mt-4"><Card><CardContent className="pt-6"><RecursosCrud /></CardContent></Card></TabsContent>
-<<<<<<< HEAD
-      </Tabs>
-    </div>
-  );
-}
-=======
         <TabsContent value="categorias" className="mt-4"><Card><CardContent className="pt-6"><CategoriasCrud /></CardContent></Card></TabsContent>
       </Tabs>
     </div>
   );
 }
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f

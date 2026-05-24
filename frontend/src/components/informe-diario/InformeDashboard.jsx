@@ -108,12 +108,6 @@ export default function InformeDashboard({ onNuevoInforme }) {
           </CardContent>
         </Card>
       </div>
-<<<<<<< HEAD
-    </div>
-  );
-}
-=======
-
       <Card>
         <CardHeader><CardTitle className="text-sm font-semibold">Últimos informes</CardTitle></CardHeader>
         <CardContent>
@@ -140,4 +134,3 @@ export default function InformeDashboard({ onNuevoInforme }) {
     </div>
   );
 }
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f

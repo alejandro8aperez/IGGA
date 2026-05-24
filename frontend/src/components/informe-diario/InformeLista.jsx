@@ -94,8 +94,4 @@ export default function InformeLista({ onNuevo, onEditar }) {
       )}
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
