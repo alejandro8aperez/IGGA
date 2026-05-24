@@ -18,11 +18,7 @@ function ObrasCrud() {
 
   const { data: obras = [] } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
   const createMut = useMutation({ mutationFn: d => obraService.create(d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); } });
-<<<<<<< HEAD
-  const updateMut = useMutation({ mutationFn: ({ id, d }) => { return obraService.update(id, d); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); setEditing(null); } });
-=======
   const updateMut = useMutation({ mutationFn: ({ id, d }) => obraService.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); setEditing(null); } });
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
   const deleteMut = useMutation({ mutationFn: id => obraService.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["obras"] }) });
 
   const openNew = () => { setEditing(null); setForm({ codigo: "", nombre: "", ubicacion: "", cliente: "", activo: true }); setShowForm(true); };
@@ -135,8 +131,6 @@ function RecursosCrud() {
   );
 }
 
-<<<<<<< HEAD
-=======
 function CategoriasCrud() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -184,7 +178,6 @@ function CategoriasCrud() {
   );
 }
 
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
 export default function InformeCatalogos() {
   return (
     <div className="space-y-4">

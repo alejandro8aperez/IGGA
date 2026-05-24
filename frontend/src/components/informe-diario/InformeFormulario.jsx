@@ -220,8 +220,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       </Card>
 
       <Card>
-<<<<<<< HEAD
-=======
         <CardHeader><CardTitle className="text-sm font-semibold">Reporte de lluvia</CardTitle></CardHeader>
         <CardContent><HorasLluvia horas={form.horas_lluvia || Array(24).fill(false)} onChange={v => setField("horas_lluvia", v)} /></CardContent>
       </Card>
@@ -258,7 +256,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       </Card>
 
       <Card>
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
         <CardHeader><CardTitle className="text-sm font-semibold">Condiciones y observaciones</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -269,8 +266,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </CardContent>
       </Card>
 
-<<<<<<< HEAD
-=======
       <Card>
         <CardHeader><CardTitle className="text-sm font-semibold">Firmas</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,7 +287,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         <CardContent><FotosSection fotos={form.fotos_urls || []} onChange={v => setField("fotos_urls", v)} /></CardContent>
       </Card>
 
->>>>>>> d8a607cfdc1d14289f2c24949c8fecb7a71c1d9f
       <div className="flex justify-end gap-3 pb-8">
         <Button variant="outline" onClick={onCancelar}>Cancelar</Button>
         <Button onClick={() => saveMutation.mutate(form)} disabled={!form.obra_id || !form.fecha || saveMutation.isPending}>
