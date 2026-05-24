@@ -68,6 +68,8 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         'actividades__categoria',
         'items_obra',
         'anexos',
+        'personal_libre',
+        'maquinaria_libre',
     ).all()
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -220,3 +222,14 @@ class DashboardViewSet(viewsets.ViewSet):
             {'rol': r['recurso__nombre'], 'total': float(r['total'] or 0)}
             for r in data
         ])
+
+    @action(detail=False, methods=['get'], url_path='status-counts')
+    def status_counts(self, request):
+        """Retorna el conteo por estado para tarjetas de resumen tipo POS."""
+        obra_id = request.query_params.get('obra')
+        qs = InformeDiario.objects.all()
+        if obra_id:
+            qs = qs.filter(obra_id=obra_id)
+        
+        counts = qs.values('status').annotate(total=Count('id'))
+        return Response({item['status']: item['total'] for item in counts})

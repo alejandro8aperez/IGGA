@@ -92,14 +92,28 @@ class AnexoFotoSerializer(serializers.ModelSerializer):
 class InformeDiarioListSerializer(serializers.ModelSerializer):
     obra_codigo = serializers.CharField(source='obra.codigo', read_only=True)
     obra_nombre = serializers.CharField(source='obra.nombre', read_only=True)
-    total_personal = serializers.IntegerField(read_only=True)
-    total_horas_lluvia = serializers.IntegerField(read_only=True)
+    total_personal = serializers.ReadOnlyField()
+    total_maquinaria = serializers.ReadOnlyField()
+    total_horas_lluvia = serializers.ReadOnlyField()
+    foto_principal = serializers.SerializerMethodField()
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = InformeDiario
         fields = ['id', 'obra', 'obra_codigo', 'obra_nombre', 'fecha',
                   'dia_semana', 'elaborado_por', 'total_personal',
-                  'total_horas_lluvia', 'creado_en']
+                  'total_maquinaria', 'total_horas_lluvia', 'creado_en',
+                  'status', 'status_label', 'foto_principal']
+
+    def get_foto_principal(self, obj):
+        # Retorna la primera foto del anexo para mostrarla como thumbnail en la card
+        foto = obj.anexos.first()
+        if foto and foto.imagen:
+            try:
+                return foto.imagen.url
+            except Exception:
+                return None
+        return None
 
 
 class InformeDiarioSerializer(serializers.ModelSerializer):
