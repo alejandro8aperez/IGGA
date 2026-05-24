@@ -10,7 +10,8 @@ from datetime import date, timedelta
 
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
-    InformeDiario, AnexoFoto, ReporteLluvia, ItemObra,
+    InformeDiario, AnexoFoto, ReporteLluvia, ItemObra, 
+    DetalleRecurso, PersonalLibre
 )
 from .serializers import (
     ObraSerializer, CategoriaRecursoSerializer, RecursoSerializer,
@@ -158,7 +159,6 @@ class DashboardViewSet(viewsets.ViewSet):
         ).count()
 
         # Personal promedio últimos 30 días (Catálogo + Libre)
-        from .models import DetalleRecurso, PersonalLibre
         personal_qs = DetalleRecurso.objects.filter(
             informe__in=qs, informe__fecha__gte=ult_30,
             recurso__categoria__nombre__icontains='PERSONAL',
@@ -199,7 +199,6 @@ class DashboardViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='personal-por-rol')
     def personal_por_rol(self, request):
-        from .models import DetalleRecurso
         obra_id = request.query_params.get('obra')
         fecha_desde = request.query_params.get('fecha_desde')
         fecha_hasta = request.query_params.get('fecha_hasta')
