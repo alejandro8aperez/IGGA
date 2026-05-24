@@ -109,6 +109,12 @@ class InformeDiario(models.Model):
     revisado_por = models.CharField(max_length=200, blank=True)
     cargo_revisado = models.CharField(max_length=200, blank=True)
     comision_topografia = models.BooleanField(default=False, help_text="Comisión de Topografía presente")
+    
+    status = models.CharField(max_length=20, default='borrador', choices=[
+        ('borrador', 'Borrador'),
+        ('enviado', 'Enviado'),
+        ('aprobado', 'Aprobado'),
+    ])
 
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
@@ -133,17 +139,21 @@ class InformeDiario(models.Model):
 
     @property
     def total_personal(self):
-        return sum(
+        total_cat = sum(
             d.cantidad for d in self.detalles.all()
             if d.recurso.categoria.nombre.upper().startswith('PERSONAL')
         )
+        total_libre = sum(p.cantidad for p in self.personal_libre.all())
+        return total_cat + total_libre
 
     @property
     def total_maquinaria(self):
-        return sum(
+        total_cat = sum(
             d.cantidad for d in self.detalles.all()
             if not d.recurso.categoria.nombre.upper().startswith('PERSONAL')
         )
+        total_libre = sum(m.cantidad for m in self.maquinaria_libre.all())
+        return total_cat + total_libre
 
     @property
     def total_horas_lluvia(self):
@@ -162,6 +172,24 @@ class DetalleRecurso(models.Model):
     class Meta:
         unique_together = [('informe', 'recurso')]
         ordering = ['recurso__categoria__orden', 'recurso__orden']
+
+
+class MaquinariaLibre(models.Model):
+    """Filas de maquinaria agregadas manualmente (no catálogo)."""
+    informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE, related_name='maquinaria_libre')
+    descripcion = models.CharField(max_length=255)
+    cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    empresa = models.CharField(max_length=200, blank=True)
+    orden = models.IntegerField(default=0)
+
+
+class PersonalLibre(models.Model):
+    """Filas de personal agregadas manualmente (no catálogo)."""
+    informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE, related_name='personal_libre')
+    descripcion = models.CharField(max_length=255)
+    cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    empresa = models.CharField(max_length=200, blank=True)
+    orden = models.IntegerField(default=0)
 
 
 class ReporteLluvia(models.Model):
@@ -222,7 +250,8 @@ class AnexoFoto(models.Model):
         ],
     )
     orden = models.IntegerField(default=0)
+    posicion = models.PositiveSmallIntegerField(default=0, help_text="Posición en la cuadrícula 4x6 (1-24)")
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['seccion', 'orden', 'id']
+        ordering = ['seccion', 'posicion', 'orden']

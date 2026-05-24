@@ -128,6 +128,22 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
     queryset = AnexoFoto.objects.all()
     serializer_class = AnexoFotoSerializer
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        informe_id = self.request.query_params.get('informe')
+        if informe_id:
+            qs = qs.filter(informe_id=informe_id)
+        return qs
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        informe_id = self.request.query_params.get('informe')
+        if informe_id:
+            qs = qs.filter(informe_id=informe_id)
+        return qs
 
 
 class DashboardViewSet(viewsets.ViewSet):
@@ -151,13 +167,18 @@ class DashboardViewSet(viewsets.ViewSet):
             informe__in=qs, informe__fecha__gte=ult_30, con_lluvia=True,
         ).count()
 
-        # Personal promedio últimos 30 días (suma de cantidades en categoría PERSONAL)
-        from .models import DetalleRecurso
+        # Personal promedio últimos 30 días (Catálogo + Libre)
+        from .models import DetalleRecurso, PersonalLibre
         personal_qs = DetalleRecurso.objects.filter(
             informe__in=qs, informe__fecha__gte=ult_30,
             recurso__categoria__nombre__icontains='PERSONAL',
         )
-        total_personal_30 = personal_qs.aggregate(s=Sum('cantidad'))['s'] or 0
+        personal_libre_qs = PersonalLibre.objects.filter(
+            informe__in=qs, informe__fecha__gte=ult_30
+        )
+        total_personal_30 = (personal_qs.aggregate(s=Sum('cantidad'))['s'] or 0) + \
+                           (personal_libre_qs.aggregate(s=Sum('cantidad'))['s'] or 0)
+
         n_dias = qs.filter(fecha__gte=ult_30).count() or 1
         personal_promedio = round(float(total_personal_30) / n_dias, 2)
 

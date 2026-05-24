@@ -72,15 +72,24 @@ def generar_excel(informe) -> bytes:
     detalles = list(informe.detalles.select_related('recurso__categoria'))
     maquinaria = [d for d in detalles if not d.recurso.categoria.nombre.upper().startswith('PERSONAL')]
     personal = [d for d in detalles if d.recurso.categoria.nombre.upper().startswith('PERSONAL')]
+    
+    # Unificar con recursos libres
+    maquinaria += list(informe.maquinaria_libre.all().order_by('orden'))
+    personal += list(informe.personal_libre.all().order_by('orden'))
+
     max_rows = max(len(maquinaria), len(personal))
     r = row + 1
     for i in range(max_rows):
         if i < len(maquinaria):
-            ws.cell(r + i, 1, maquinaria[i].recurso.nombre).alignment = left
-            ws.cell(r + i, 4, float(maquinaria[i].cantidad)).alignment = center
+            item = maquinaria[i]
+            nombre = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
+            ws.cell(r + i, 1, nombre).alignment = left
+            ws.cell(r + i, 4, float(item.cantidad)).alignment = center
         if i < len(personal):
-            ws.cell(r + i, 6, personal[i].recurso.nombre).alignment = left
-            ws.cell(r + i, 9, float(personal[i].cantidad)).alignment = center
+            item = personal[i]
+            nombre = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
+            ws.cell(r + i, 6, nombre).alignment = left
+            ws.cell(r + i, 9, float(item.cantidad)).alignment = center
 
     bottom = r + max_rows + 1
     ws.cell(bottom, 1, 'TOTAL').font = bold
@@ -210,19 +219,35 @@ def generar_pdf(informe) -> bytes:
     detalles = list(informe.detalles.select_related('recurso__categoria'))
     maquinaria = [d for d in detalles if not d.recurso.categoria.nombre.upper().startswith('PERSONAL')]
     personal = [d for d in detalles if d.recurso.categoria.nombre.upper().startswith('PERSONAL')]
+    
+    # Unificar con recursos libres (manuales)
+    maquinaria += list(informe.maquinaria_libre.all().order_by('orden'))
+    personal += list(informe.personal_libre.all().order_by('orden'))
+
     max_rows = max(len(maquinaria), len(personal), 1)
     data = [['MAQUINARIA - EQUIPOS - HERRAMIENTAS - VEHÍCULOS', 'CANT.',
              'PERSONAL DE OBRA', 'CANT.']]
     for i in range(max_rows):
-        l_name = maquinaria[i].recurso.nombre if i < len(maquinaria) else ''
-        l_qty = str(maquinaria[i].cantidad) if i < len(maquinaria) else ''
-        r_name = personal[i].recurso.nombre if i < len(personal) else ''
-        r_qty = str(personal[i].cantidad) if i < len(personal) else ''
+        # Maquinaria (Izquierda)
+        if i < len(maquinaria):
+            item = maquinaria[i]
+            l_name = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
+            l_qty = str(item.cantidad)
+        else:
+            l_name = l_qty = ''
+        # Personal (Derecha)
+        if i < len(personal):
+            item = personal[i]
+            r_name = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
+            r_qty = str(item.cantidad)
+        else:
+            r_name = r_qty = ''
         data.append([l_name, l_qty, r_name, r_qty])
+
     data.append(['TOTAL',
-                 str(sum(float(d.cantidad) for d in maquinaria)),
+                 str(sum(float(getattr(d, 'cantidad', 0)) for d in maquinaria)),
                  'Total Personal',
-                 str(sum(float(d.cantidad) for d in personal))])
+                 str(sum(float(getattr(d, 'cantidad', 0)) for d in personal))])
     t = Table(data, colWidths=[10 * cm, 2 * cm, 10 * cm, 2 * cm], repeatRows=1)
     t.setStyle(TableStyle([
         ('FONT', (0, 0), (-1, -1), 'Helvetica', 7),

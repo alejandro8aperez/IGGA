@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
     InformeDiario, DetalleRecurso, ReporteLluvia, Actividad, AnexoFoto, ItemObra,
+    MaquinariaLibre, PersonalLibre
 )
 
 
@@ -61,12 +62,22 @@ class ItemObraSerializer(serializers.ModelSerializer):
         fields = ['id', 'item', 'descripcion', 'empresa', 'cantidad', 'orden']
 
 
+class MaquinariaLibreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaquinariaLibre
+        fields = ['id', 'descripcion', 'cantidad', 'empresa', 'orden']
+
+class PersonalLibreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PersonalLibre
+        fields = ['id', 'descripcion', 'cantidad', 'empresa', 'orden']
+
 class AnexoFotoSerializer(serializers.ModelSerializer):
     imagen_url = serializers.SerializerMethodField()
 
     class Meta:
         model = AnexoFoto
-        fields = ['id', 'descripcion', 'imagen', 'imagen_url', 'seccion', 'orden', 'creado_en']
+        fields = ['id', 'informe', 'descripcion', 'imagen', 'imagen_url', 'seccion', 'orden', 'posicion', 'creado_en']
         read_only_fields = ['creado_en']
 
     def get_imagen_url(self, obj):
@@ -99,6 +110,8 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     reportes_lluvia = ReporteLluviaSerializer(many=True, required=False)
     actividades = ActividadSerializer(many=True, required=False)
     items_obra = ItemObraSerializer(many=True, required=False)
+    maquinaria_libre = MaquinariaLibreSerializer(many=True, required=False)
+    personal_libre = PersonalLibreSerializer(many=True, required=False)
     anexos = AnexoFotoSerializer(many=True, read_only=True)
 
     class Meta:
@@ -110,8 +123,9 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'estado_terreno_final',
             'elaborado_por', 'cargo_elaborado',
             'revisado_por', 'cargo_revisado',
-            'comision_topografia',
+            'comision_topografia', 'status',
             'detalles', 'reportes_lluvia', 'actividades', 'items_obra', 'anexos',
+            'maquinaria_libre', 'personal_libre',
             'creado_en', 'actualizado_en',
         ]
         read_only_fields = ['creado_en', 'actualizado_en', 'dia_semana']
@@ -121,6 +135,9 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
         lluvias = validated_data.pop('reportes_lluvia', [])
         actividades = validated_data.pop('actividades', [])
         items_obra = validated_data.pop('items_obra', [])
+        m_libre = validated_data.pop('maquinaria_libre', [])
+        p_libre = validated_data.pop('personal_libre', [])
+
         informe = InformeDiario.objects.create(**validated_data)
         for d in detalles:
             DetalleRecurso.objects.create(informe=informe, **d)
@@ -130,6 +147,10 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             Actividad.objects.create(informe=informe, **a)
         for i, it in enumerate(items_obra):
             ItemObra.objects.create(informe=informe, orden=i, **it)
+        for i, it in enumerate(m_libre):
+            MaquinariaLibre.objects.create(informe=informe, orden=i, **it)
+        for i, it in enumerate(p_libre):
+            PersonalLibre.objects.create(informe=informe, orden=i, **it)
         return informe
 
     def update(self, instance, validated_data):
@@ -137,6 +158,9 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
         lluvias = validated_data.pop('reportes_lluvia', None)
         actividades = validated_data.pop('actividades', None)
         items_obra = validated_data.pop('items_obra', None)
+        m_libre = validated_data.pop('maquinaria_libre', None)
+        p_libre = validated_data.pop('personal_libre', None)
+
         for attr, val in validated_data.items():
             setattr(instance, attr, val)
         instance.save()
@@ -156,4 +180,12 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             instance.items_obra.all().delete()
             for i, it in enumerate(items_obra):
                 ItemObra.objects.create(informe=instance, orden=i, **it)
+        if m_libre is not None:
+            instance.maquinaria_libre.all().delete()
+            for i, it in enumerate(m_libre):
+                MaquinariaLibre.objects.create(informe=instance, orden=i, **it)
+        if p_libre is not None:
+            instance.personal_libre.all().delete()
+            for i, it in enumerate(p_libre):
+                PersonalLibre.objects.create(informe=instance, orden=i, **it)
         return instance
