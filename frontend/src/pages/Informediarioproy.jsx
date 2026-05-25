@@ -2,24 +2,15 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
-  ClipboardList, 
-  LayoutDashboard, 
-  BookOpen, 
-  Settings, 
-  FileText, 
-  Send, 
-  CheckCircle, 
-  Plus, 
-  Image as ImageIcon,
-  Camera,
-  Trash2,
-  Upload
+  ClipboardList, LayoutDashboard, BookOpen, Settings, FileText, 
+  Send, CheckCircle, Plus, Image as ImageIcon, Camera, Trash2, Move
 } from "lucide-react";
 import InformeDashboard from "@/components/informe-diario/InformeDashboard";
 import InformeLista from "@/components/informe-diario/InformeLista";
 import InformeFormulario from "@/components/informe-diario/InformeFormulario";
 import InformeCatalogos from "@/components/informe-diario/InformeCatalogos";
 import axios from "axios";
+import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +21,7 @@ function StatsHeader() {
   const { data: stats } = useQuery({
     queryKey: ['informe-status-counts'],
     queryFn: () => axios.get('/api/informe-diario/dashboard/status-counts/').then(res => res.data),
-    refetchInterval: 10000
+    refetchInterval: 15000
   });
 
   const statCards = [
@@ -57,37 +48,64 @@ function StatsHeader() {
 }
 
 /**
- * COMPONENTE: InformeFotos (Cuadrícula 4x6 Estilo POS)
+ * COMPONENTE: Cuadrícula de Fotos 4x6 con Drag & Drop
  */
 function InformeFotos({ informeId }) {
   const queryClient = useQueryClient();
+  const [draggedItem, setDraggedItem] = useState(null);
+
   const { data: fotos, isLoading } = useQuery({
     queryKey: ['informe-fotos', informeId],
     queryFn: () => axios.get(`/api/informe-diario/anexos/?informe=${informeId}`).then(res => res.data),
     enabled: !!informeId
   });
 
-  // Generamos 24 slots (4 filas x 6 columnas)
+  const mutation = useMutation({
+    mutationFn: (payload) => axios.post('/api/informe-diario/anexos/reorganizar-cuadricula/', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['informe-fotos', informeId]);
+      toast.success("Cuadrícula actualizada");
+    }
+  });
+
+  const onDragStart = (foto) => setDraggedItem(foto);
+  
+  const onDragOver = (e) => e.preventDefault();
+
+  const onDrop = (targetPos) => {
+    if (!draggedItem || draggedItem.posicion === targetPos) return;
+
+    // Lógica de intercambio: Si el slot destino tiene foto, intercambian posiciones
+    const fotoDestino = fotos.find(f => f.posicion === targetPos);
+    const payload = [
+      { id: draggedItem.id, posicion: targetPos }
+    ];
+    
+    if (fotoDestino) {
+      payload.push({ id: fotoDestino.id, posicion: draggedItem.posicion });
+    }
+
+    mutation.mutate(payload);
+    setDraggedItem(null);
+  };
+
   const slots = Array.from({ length: 24 }, (_, i) => i + 1);
 
-  if (!informeId) {
-    return (
-      <div className="bg-slate-900 border-2 border-dashed border-slate-800 rounded-3xl p-20 text-center">
-        <ImageIcon className="h-16 w-16 text-slate-700 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-slate-500">Selecciona o crea un informe para gestionar la galería</h3>
-      </div>
-    );
-  }
+  if (!informeId) return (
+    <div className="bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-[3rem] p-20 text-center">
+      <ImageIcon className="h-16 w-16 text-slate-700 mx-auto mb-4" />
+      <h3 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Selecciona un informe para gestionar fotos</h3>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-black text-white flex items-center gap-2">
-          <Camera className="text-cyan-500" /> GALERÍA TÉCNICA (4x6)
+      <div className="flex items-center justify-between bg-slate-900 p-4 rounded-2xl border border-slate-800">
+        <h2 className="text-xl font-black text-white flex items-center gap-3">
+          <Camera className="text-cyan-500 h-6 w-6" /> 
+          CUADRÍCULA DE CAMPO <span className="text-cyan-500 font-mono underline">4x6</span>
         </h2>
-        <span className="text-slate-500 font-mono text-sm bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-          ID INFORME: {informeId}
-        </span>
+        <p className="text-xs text-slate-500 font-bold uppercase">Arrastra las fotos para organizar el reporte</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -97,34 +115,38 @@ function InformeFotos({ informeId }) {
           return (
             <div 
               key={slotNum} 
-              className={`group relative aspect-square rounded-2xl border-2 transition-all duration-300 overflow-hidden
+              onDragOver={onDragOver}
+              onDrop={() => onDrop(slotNum)}
+              className={`group relative aspect-square rounded-2xl border-2 transition-all duration-300 overflow-hidden cursor-pointer
                 ${foto 
                   ? 'border-slate-800 bg-slate-900 hover:border-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]' 
-                  : 'border-slate-800/50 border-dashed bg-slate-950/50 hover:bg-slate-900 hover:border-slate-700'
+                  : 'border-slate-800/30 border-dashed bg-slate-950 hover:bg-slate-900/50 hover:border-slate-700'
                 }`}
             >
               {foto ? (
-                <>
+                <div 
+                  draggable 
+                  onDragStart={() => onDragStart(foto)}
+                  className="w-full h-full"
+                >
                   <img 
                     src={foto.imagen_url || foto.imagen} 
-                    alt={foto.descripcion}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all group-hover:scale-105"
+                    alt=""
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-                    <p className="text-[10px] text-cyan-400 font-bold uppercase truncate">{foto.seccion_display}</p>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-white text-xs font-bold">Slot {slotNum}</span>
-                      <button className="text-red-400 hover:text-red-300 p-1">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent flex flex-col justify-end p-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black bg-cyan-500 text-slate-950 px-2 py-0.5 rounded-full">SLOT {slotNum}</span>
+                      <Move className="h-3 w-3 text-white opacity-0 group-hover:opacity-100" />
                     </div>
+                    <p className="text-[9px] text-white font-bold mt-1 truncate uppercase">{foto.seccion_display}</p>
                   </div>
-                </>
+                </div>
               ) : (
-                <button className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-700 hover:text-cyan-500 transition-colors">
-                  <Plus className="h-8 w-8" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Slot {slotNum}</span>
-                </button>
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-800 hover:text-cyan-500/50 transition-colors">
+                  <Plus className="h-6 w-6" />
+                  <span className="text-[10px] font-black uppercase tracking-tighter">Vacío {slotNum}</span>
+                </div>
               )}
             </div>
           );
@@ -135,105 +157,72 @@ function InformeFotos({ informeId }) {
 }
 
 /**
- * COMPONENTE PRINCIPAL (Estilo Gamer/Dark POS)
+ * CONTENEDOR PRINCIPAL
  */
 function InformeDiarioContent() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editingInforme, setEditingInforme] = useState(null);
 
-  const handleNuevoInforme = () => { 
-    setEditingInforme(null); 
-    setActiveTab("formulario"); 
-  };
-  
-  const handleEditarInforme = (informe) => { 
-    setEditingInforme(informe); 
-    setActiveTab("formulario"); 
-  };
-  
-  const handleGuardado = () => { 
-    setEditingInforme(null); 
-    setActiveTab("lista"); 
-  };
+  const handleNuevoInforme = () => { setEditingInforme(null); setActiveTab("formulario"); };
+  const handleEditarInforme = (inf) => { setEditingInforme(inf); setActiveTab("formulario"); };
+  const handleGuardado = () => { setEditingInforme(null); setActiveTab("lista"); };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-white">
-      <div className="max-w-[1600px] mx-auto space-y-6 p-6">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-6">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         
-        {/* Header Estilo POS - Dark Neon */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900/50 backdrop-blur-md p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden">
-          {/* Decoración de luz */}
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px]" />
-          
+        {/* Header estilo POS / Gamer */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[100px] rounded-full" />
           <div className="relative z-10">
             <h1 className="text-5xl font-black tracking-tighter text-white flex items-center gap-4">
-              <div className="bg-cyan-500 p-3 rounded-2xl text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+              <div className="bg-cyan-500 p-3 rounded-2xl text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]">
                 <ClipboardList className="h-10 w-10" />
               </div>
-              INFORME <span className="text-cyan-500">DIARIO</span> PROY
+              INFORME <span className="text-cyan-500">DIARIO</span>
             </h1>
-            <p className="text-slate-400 mt-2 font-bold text-lg flex items-center gap-2 uppercase tracking-widest opacity-80">
-              <CheckCircle className="h-5 w-5 text-emerald-500" /> Registro F-141-IN — Control de Campo
+            <p className="text-slate-500 mt-2 font-bold text-lg uppercase tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              Terminal de Control de Obra F-141-IN
             </p>
           </div>
-
           <button 
             onClick={handleNuevoInforme}
-            className="relative z-10 flex items-center justify-center gap-3 bg-cyan-500 text-slate-950 px-12 py-5 rounded-2xl font-black text-xl shadow-[0_10px_30px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all group overflow-hidden"
+            className="relative z-10 bg-cyan-500 text-slate-950 px-10 py-5 rounded-2xl font-black text-xl shadow-[0_10px_30px_rgba(6,182,212,0.2)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
           >
-            <Plus className="h-7 w-7 transition-transform group-hover:rotate-90" />
-            NUEVO REPORTE
+            <Plus className="h-6 w-6" /> NUEVO REGISTRO
           </button>
         </div>
 
-        {/* Indicadores en Tiempo Real */}
         <StatsHeader />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex flex-wrap h-auto bg-slate-900/80 p-2 rounded-[2rem] border border-slate-800 backdrop-blur-xl mb-8">
-            <TabsTrigger value="dashboard" className="flex-1 gap-2 rounded-2xl py-4 data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950 transition-all font-black uppercase tracking-tighter text-lg">
-              <LayoutDashboard className="h-5 w-5" /> Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="lista" className="flex-1 gap-2 rounded-2xl py-4 data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950 transition-all font-black uppercase tracking-tighter text-lg">
-              <BookOpen className="h-5 w-5" /> Historial
-            </TabsTrigger>
-            <TabsTrigger value="fotos" className="flex-1 gap-2 rounded-2xl py-4 data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950 transition-all font-black uppercase tracking-tighter text-lg">
-              <ImageIcon className="h-5 w-5" /> Fotos
-            </TabsTrigger>
-            <TabsTrigger value="formulario" className="flex-1 gap-2 rounded-2xl py-4 data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950 transition-all font-black uppercase tracking-tighter text-lg">
-              <ClipboardList className="h-5 w-5" /> {editingInforme ? "Editor" : "Redactar"}
-            </TabsTrigger>
-            <TabsTrigger value="catalogos" className="flex-1 gap-2 rounded-2xl py-4 data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950 transition-all font-black uppercase tracking-tighter text-lg">
-              <Settings className="h-5 w-5" /> Config
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-slate-900 border border-slate-800 p-2 rounded-[2rem] flex flex-wrap h-auto">
+            {[
+              { id: "dashboard", icon: LayoutDashboard, label: "Panel" },
+              { id: "lista", icon: BookOpen, label: "Historial" },
+              { id: "fotos", icon: ImageIcon, label: "Fotos POS" },
+              { id: "formulario", icon: ClipboardList, label: editingInforme ? "Editar" : "Nuevo" },
+              { id: "catalogos", icon: Settings, label: "Config" },
+            ].map(tab => (
+              <TabsTrigger 
+                key={tab.id} 
+                value={tab.id} 
+                className="flex-1 py-4 rounded-2xl font-black uppercase tracking-tighter text-base data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950 transition-all"
+              >
+                <tab.icon className="h-5 w-5 mr-2" /> {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          <div className="bg-slate-900/30 p-8 rounded-[3rem] border border-slate-800 min-h-[600px]">
-            <TabsContent value="dashboard" className="mt-0">
-              <InformeDashboard onNuevoInforme={handleNuevoInforme} />
+          <div className="bg-slate-900/30 border border-slate-800 p-8 rounded-[3rem] min-h-[500px]">
+            <TabsContent value="dashboard"><InformeDashboard onNuevoInforme={handleNuevoInforme} /></TabsContent>
+            <TabsContent value="lista"><InformeLista onEditar={handleEditarInforme} /></TabsContent>
+            <TabsContent value="fotos"><InformeFotos informeId={editingInforme?.id} /></TabsContent>
+            <TabsContent value="formulario">
+              <InformeFormulario informe={editingInforme} onGuardado={handleGuardado} onCancelar={() => setActiveTab("lista")} />
             </TabsContent>
-            
-            <TabsContent value="lista" className="mt-0">
-              <InformeLista onNuevo={handleNuevoInforme} onEditar={handleEditarInforme} />
-            </TabsContent>
-
-            <TabsContent value="fotos" className="mt-0">
-              <InformeFotos informeId={editingInforme?.id} />
-            </TabsContent>
-
-            <TabsContent value="formulario" className="mt-0">
-              <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800">
-                <InformeFormulario 
-                  informe={editingInforme} 
-                  onGuardado={handleGuardado} 
-                  onCancelar={() => setActiveTab("lista")} 
-                />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="catalogos" className="mt-0">
-              <InformeCatalogos />
-            </TabsContent>
+            <TabsContent value="catalogos"><InformeCatalogos /></TabsContent>
           </div>
         </Tabs>
       </div>
