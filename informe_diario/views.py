@@ -139,6 +139,25 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
         if informe_id:
             qs = qs.filter(informe_id=informe_id)
         return qs
+
+    @action(detail=False, methods=['post'], url_path='reorganizar-cuadricula')
+    def reorganizar_cuadricula(self, request):
+        """
+        Recibe un listado de {id, posicion} para actualizar la cuadrícula estilo POS.
+        """
+        datos = request.data  # Espera lista: [{"id": 1, "posicion": 5}, ...]
+        if not isinstance(datos, list):
+            return Response({"error": "Se esperaba una lista"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        actualizados = []
+        for item in datos:
+            foto_id = item.get('id')
+            nueva_pos = item.get('posicion')
+            AnexoFoto.objects.filter(id=foto_id).update(posicion=nueva_pos)
+            actualizados.append(foto_id)
+            
+        return Response({"status": "posiciones actualizadas", "ids": actualizados})
+
 class DashboardViewSet(viewsets.ViewSet):
     """Read-only stats endpoints for the dashboard."""
 

@@ -74,10 +74,11 @@ class PersonalLibreSerializer(serializers.ModelSerializer):
 
 class AnexoFotoSerializer(serializers.ModelSerializer):
     imagen_url = serializers.SerializerMethodField()
+    seccion_display = serializers.CharField(source='get_seccion_display', read_only=True)
 
     class Meta:
         model = AnexoFoto
-        fields = ['id', 'informe', 'descripcion', 'imagen', 'imagen_url', 'seccion', 'orden', 'posicion', 'creado_en']
+        fields = ['id', 'informe', 'descripcion', 'imagen', 'imagen_url', 'seccion', 'seccion_display', 'orden', 'posicion', 'creado_en']
         read_only_fields = ['creado_en']
 
     def get_imagen_url(self, obj):
