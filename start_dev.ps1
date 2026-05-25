@@ -1,59 +1,52 @@
 # Script para iniciar ERP localmente (Backend + Frontend)
-# Guardar como UTF-8 sin BOM
 
-Write-Host "Iniciando ERP 8AMPERIOS..." -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "   INICIANDO ERP 8AMPERIOS (PS)" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host ""
 
-# Definir rutas absolutas del disco D para el cliente
-$ERP_PATH = "D:\postgres\erp-8amperios\ERP-8AMPERIOS-1"
-$VENV_PATH = "D:\postgres\erp-8amperios\venv"
+# ==========================================
+# RUTAS
+# ==========================================
+$BASE = "D:\postgres\erp-8amperios"
+$ERP = "$BASE\erp-8amperios-1"
+$VENV = "$BASE\venv"
 
-Set-Location $ERP_PATH
-
-# Cargar variables de entorno desde .env
-if (Test-Path ".env") {
-    Write-Host "Cargando variables de entorno desde .env..." -ForegroundColor Magenta
-    Get-Content .env | ForEach-Object {
-        if ($_ -match '^([^#\s][^=]*)=(.*)$') {
-            $name = $matches[1].Trim()
-            $value = $matches[2].Trim()
-            [System.Environment]::SetEnvironmentVariable($name, $value, "Process")
-        }
-    }
+# ==========================================
+# VALIDAR
+# ==========================================
+if (-not (Test-Path "$ERP\manage.py")) {
+    Write-Host "ERROR: No existe manage.py en $ERP" -ForegroundColor Red
+    Pause
+    exit
 }
 
-Write-Host "DATABASE_URL encontrada. OK" -ForegroundColor Green
-
-# Activar virtualenv si existe
-if (Test-Path "$VENV_PATH\Scripts\Activate.ps1") {
-    Write-Host "Activando virtualenv..." -ForegroundColor Yellow
-    & "$VENV_PATH\Scripts\Activate.ps1"
+if (-not (Test-Path "$VENV\Scripts\activate.bat")) {
+    Write-Host "ERROR: No existe el VENV en $VENV" -ForegroundColor Red
+    Pause
+    exit
 }
 
-# Iniciar Backend Django en una ventana nueva
-Write-Host "Iniciando Backend Django (puerto 8000)..." -ForegroundColor Yellow
-$backend = Start-Process -FilePath "python" `
-    -ArgumentList "manage.py", "runserver", "8000" `
-    -PassThru -WindowStyle Normal
+# ==========================================
+# BACKEND
+# ==========================================
+Write-Host "[1/2] Iniciando Backend..." -ForegroundColor Yellow
+Start-Process cmd.exe -ArgumentList "/k", "title ERP BACKEND && cd /d `"$ERP`" && `"$VENV\Scripts\activate.bat`" && python manage.py runserver 8000"
 
-Write-Host "Backend PID: $($backend.Id)" -ForegroundColor Green
+Start-Sleep -Seconds 6
 
-# Esperar que el backend inicie
-Start-Sleep -Seconds 3
+# ==========================================
+# FRONTEND
+# ==========================================
+Write-Host "[2/2] Iniciando Frontend..." -ForegroundColor Yellow
+Start-Process cmd.exe -ArgumentList "/k", "title ERP FRONTEND && cd /d `"$ERP\frontend`" && npm run dev"
 
-# Iniciar Frontend Vite en la carpeta frontend
-Write-Host "Iniciando Frontend Vite (puerto 5173)..." -ForegroundColor Yellow
-Set-Location frontend
-if (-not (Test-Path "node_modules")) {
-    Write-Host "node_modules no encontrado. Ejecutando npm install..." -ForegroundColor Cyan
-    npm install
-}
+Start-Sleep -Seconds 6
 
-try {
-    npm run dev
-}
-finally {
-    Write-Host "Deteniendo servicios..." -ForegroundColor Red
-    Stop-Process -Id $backend.Id -Force -ErrorAction SilentlyContinue
-    Set-Location ..
-    Write-Host "ERP detenido" -ForegroundColor Cyan
-}
+# Abrir el navegador
+Start-Process "http://localhost:5173"
+
+Write-Host ""
+Write-Host "ERP iniciado correctamente." -ForegroundColor Green
+Write-Host ""
+Pause
