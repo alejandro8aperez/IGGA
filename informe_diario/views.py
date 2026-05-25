@@ -11,7 +11,7 @@ from datetime import date, timedelta
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
     InformeDiario, AnexoFoto, ReporteLluvia, ItemObra, 
-    DetalleRecurso, PersonalLibre
+    DetalleRecurso, PersonalLibre, MaquinariaLibre
 )
 from .serializers import (
     ObraSerializer, CategoriaRecursoSerializer, RecursoSerializer,
@@ -153,8 +153,10 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
         for item in datos:
             foto_id = item.get('id')
             nueva_pos = item.get('posicion')
-            AnexoFoto.objects.filter(id=foto_id).update(posicion=nueva_pos)
-            actualizados.append(foto_id)
+            # Safety check: only update if position is within the allowed POS grid range
+            if isinstance(nueva_pos, int) and 0 <= nueva_pos <= 24:
+                AnexoFoto.objects.filter(id=foto_id).update(posicion=nueva_pos)
+                actualizados.append(foto_id)
             
         return Response({"status": "posiciones actualizadas", "ids": actualizados})
 

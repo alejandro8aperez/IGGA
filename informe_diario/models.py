@@ -8,6 +8,7 @@ inside the real ERP (where `proyectos.ProyectoPS` exists).
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 # ---------------------------------------------------------------------------
@@ -250,7 +251,11 @@ class AnexoFoto(models.Model):
         ],
     )
     orden = models.IntegerField(default=0)
-    posicion = models.PositiveSmallIntegerField(default=0, help_text="Posición en la cuadrícula 4x6 (1-24)")
+    posicion = models.PositiveSmallIntegerField(
+        default=0, 
+        validators=[MinValueValidator(0), MaxValueValidator(24)],
+        help_text="Posición en la cuadrícula 4x6 (1-24). 0 si no está asignada."
+    )
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
