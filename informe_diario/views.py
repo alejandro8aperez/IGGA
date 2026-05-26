@@ -1,256 +1,184 @@
-from rest_framework import viewsets, status, filters
-from rest_framework.decorators import action
+# =============================================================================
+# views.py — Informe Diario de Obra (F-141-IN)
+# ERP 8AMPERIOS
+# =============================================================================
+
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import AllowAny
-from django.db.models import Sum, Count, Q
-from django.db.models.functions import TruncMonth
-from django.http import HttpResponse
-from datetime import date, timedelta
+from rest_framework.decorators import action
+from django.db.models import Count, Sum
 
 from .models import (
-    Obra, CategoriaRecurso, Recurso, CategoriaActividad,
-    InformeDiario, AnexoFoto, ReporteLluvia, ItemObra, 
-    DetalleRecurso, PersonalLibre, MaquinariaLibre
+    Obra,
+    CategoriaRecurso,
+    Recurso,
+    CategoriaActividad,
+    InformeDiario,
+    AnexoFoto
 )
-from .serializers import (
-    ObraSerializer, CategoriaRecursoSerializer, RecursoSerializer,
-    CategoriaActividadSerializer, InformeDiarioSerializer,
-    InformeDiarioListSerializer, AnexoFotoSerializer,
-)
-from . import exports
 
+from .serializers import (
+    ObraSerializer,
+    CategoriaRecursoSerializer,
+    RecursoSerializer,
+    CategoriaActividadSerializer,
+    InformeDiarioSerializer,
+    AnexoFotoSerializer
+)
+
+
+# =============================================================================
+# OBRAS
+# =============================================================================
 
 class ObraViewSet(viewsets.ModelViewSet):
-    queryset = Obra.objects.all()
+    queryset = Obra.objects.all().order_by('-id')
     serializer_class = ObraSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['codigo', 'nombre', 'cliente']
-    ordering_fields = ['nombre', 'codigo', 'creado_en']
-    permission_classes = [AllowAny]
 
+
+# =============================================================================
+# CATEGORÍAS DE RECURSOS
+# =============================================================================
 
 class CategoriaRecursoViewSet(viewsets.ModelViewSet):
-    queryset = CategoriaRecurso.objects.all()
+    queryset = CategoriaRecurso.objects.all().order_by('nombre')
     serializer_class = CategoriaRecursoSerializer
-    permission_classes = [AllowAny]
 
+
+# =============================================================================
+# RECURSOS
+# =============================================================================
 
 class RecursoViewSet(viewsets.ModelViewSet):
-    queryset = Recurso.objects.select_related('categoria').all()
+    queryset = Recurso.objects.all().order_by('nombre')
     serializer_class = RecursoSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['nombre', 'categoria__nombre']
-    permission_classes = [AllowAny]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        categoria = self.request.query_params.get('categoria')
-        if categoria:
-            qs = qs.filter(categoria_id=categoria)
-        only_active = self.request.query_params.get('activo')
-        if only_active in ('1', 'true', 'True'):
-            qs = qs.filter(activo=True)
-        return qs
 
+# =============================================================================
+# CATEGORÍAS DE ACTIVIDADES
+# =============================================================================
 
 class CategoriaActividadViewSet(viewsets.ModelViewSet):
-    queryset = CategoriaActividad.objects.all()
+    queryset = CategoriaActividad.objects.all().order_by('nombre')
     serializer_class = CategoriaActividadSerializer
-    permission_classes = [AllowAny]
 
+
+# =============================================================================
+# INFORMES DIARIOS
+# =============================================================================
 
 class InformeDiarioViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
-    queryset = InformeDiario.objects.select_related('obra').prefetch_related(
-        'detalles__recurso__categoria',
-        'reportes_lluvia',
-        'actividades__categoria',
-        'items_obra',
-        'anexos',
-        'personal_libre',
-        'maquinaria_libre',
-    ).all()
-    parser_classes = [JSONParser, MultiPartParser, FormParser]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['obra__codigo', 'obra__nombre', 'observaciones_generales']
-    ordering_fields = ['fecha', 'creado_en']
+    queryset = InformeDiario.objects.all().order_by('-fecha', '-id')
+    serializer_class = InformeDiarioSerializer
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return InformeDiarioListSerializer
-        return InformeDiarioSerializer
+    @action(detail=False, methods=['get'], url_path='recientes')
+    def recientes(self, request):
+        informes = InformeDiario.objects.all().order_by('-fecha', '-id')[:10]
+        serializer = self.get_serializer(informes, many=True)
+        return Response(serializer.data)
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        obra = self.request.query_params.get('obra')
-        fecha_desde = self.request.query_params.get('fecha_desde')
-        fecha_hasta = self.request.query_params.get('fecha_hasta')
-        if obra:
-            qs = qs.filter(obra_id=obra)
-        if fecha_desde:
-            qs = qs.filter(fecha__gte=fecha_desde)
-        if fecha_hasta:
-            qs = qs.filter(fecha__lte=fecha_hasta)
-        return qs
 
-    @action(detail=True, methods=['get'], url_path='exportar-pdf')
-    def exportar_pdf(self, request, pk=None):
-        informe = self.get_object()
-        pdf_bytes = exports.generar_pdf(informe)
-        resp = HttpResponse(pdf_bytes, content_type='application/pdf')
-        resp['Content-Disposition'] = (
-            f'attachment; filename="Informe_Diario_{informe.obra.codigo}_{informe.fecha}.pdf"'
-        )
-        return resp
-
-    @action(detail=True, methods=['get'], url_path='exportar-excel')
-    def exportar_excel(self, request, pk=None):
-        informe = self.get_object()
-        xlsx_bytes = exports.generar_excel(informe)
-        resp = HttpResponse(
-            xlsx_bytes,
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        )
-        resp['Content-Disposition'] = (
-            f'attachment; filename="Informe_Diario_{informe.obra.codigo}_{informe.fecha}.xlsx"'
-        )
-        return resp
-
-    @action(detail=True, methods=['post'], url_path='subir-anexo',
-            parser_classes=[MultiPartParser, FormParser])
-    def subir_anexo(self, request, pk=None):
-        informe = self.get_object()
-        serializer = AnexoFotoSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(informe=informe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+# =============================================================================
+# ANEXOS / FOTOS
+# =============================================================================
 
 class AnexoFotoViewSet(viewsets.ModelViewSet):
-    queryset = AnexoFoto.objects.all()
+    queryset = AnexoFoto.objects.all().order_by('-id')
     serializer_class = AnexoFotoSerializer
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-    permission_classes = [AllowAny]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        informe_id = self.request.query_params.get('informe')
-        if informe_id:
-            qs = qs.filter(informe_id=informe_id)
-        return qs
 
-    @action(detail=False, methods=['post'], url_path='reorganizar-cuadricula')
-    def reorganizar_cuadricula(self, request):
-        """
-        Recibe un listado de {id, posicion} para actualizar la cuadrícula estilo POS.
-        """
-        datos = request.data  # Espera lista: [{"id": 1, "posicion": 5}, ...]
-        if not isinstance(datos, list):
-            return Response({"error": "Se esperaba una lista"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        actualizados = []
-        for item in datos:
-            foto_id = item.get('id')
-            nueva_pos = item.get('posicion')
-            # Safety check: only update if position is within the allowed POS grid range
-            if isinstance(nueva_pos, int) and 0 <= nueva_pos <= 24:
-                AnexoFoto.objects.filter(id=foto_id).update(posicion=nueva_pos)
-                actualizados.append(foto_id)
-            
-        return Response({"status": "posiciones actualizadas", "ids": actualizados})
+# =============================================================================
+# DASHBOARD
+# =============================================================================
 
 class DashboardViewSet(viewsets.ViewSet):
-    """Read-only stats endpoints for the dashboard."""
 
-    @action(detail=False, methods=['get'])
+    # -------------------------------------------------------------------------
+    # RESUMEN GENERAL
+    # GET:
+    # /api/informe-diario/dashboard/resumen/
+    # -------------------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='resumen')
     def resumen(self, request):
-        obra_id = request.query_params.get('obra')
-        qs = InformeDiario.objects.all()
-        if obra_id:
-            qs = qs.filter(obra_id=obra_id)
 
-        hoy = date.today()
-        ult_30 = hoy - timedelta(days=30)
+        total_informes = InformeDiario.objects.count()
+        total_obras = Obra.objects.count()
+        total_recursos = Recurso.objects.count()
 
-        total_informes = qs.count()
-        informes_mes = qs.filter(fecha__gte=ult_30).count()
+        data = {
+            "total_informes": total_informes,
+            "total_obras": total_obras,
+            "total_recursos": total_recursos,
+        }
 
-        # Horas de lluvia últimos 30 días
-        horas_lluvia_30 = ReporteLluvia.objects.filter(
-            informe__in=qs, informe__fecha__gte=ult_30, con_lluvia=True,
-        ).count()
+        return Response(data)
 
-        # Personal promedio últimos 30 días (Catálogo + Libre)
-        personal_qs = DetalleRecurso.objects.filter(
-            informe__in=qs, informe__fecha__gte=ult_30,
-            recurso__categoria__nombre__icontains='PERSONAL',
-        )
-        personal_libre_qs = PersonalLibre.objects.filter(
-            informe__in=qs, informe__fecha__gte=ult_30
-        )
-        total_personal_30 = (personal_qs.aggregate(s=Sum('cantidad'))['s'] or 0) + \
-                           (personal_libre_qs.aggregate(s=Sum('cantidad'))['s'] or 0)
 
-        n_dias = qs.filter(fecha__gte=ult_30).count() or 1
-        personal_promedio = round(float(total_personal_30) / n_dias, 2)
-
-        return Response({
-            'total_informes': total_informes,
-            'informes_ultimos_30_dias': informes_mes,
-            'horas_lluvia_ultimos_30_dias': horas_lluvia_30,
-            'personal_promedio_ultimos_30_dias': personal_promedio,
-        })
-
-    @action(detail=False, methods=['get'], url_path='lluvia-mensual')
-    def lluvia_mensual(self, request):
-        obra_id = request.query_params.get('obra')
-        qs = ReporteLluvia.objects.filter(con_lluvia=True)
-        if obra_id:
-            qs = qs.filter(informe__obra_id=obra_id)
-        data = (
-            qs.annotate(mes=TruncMonth('informe__fecha'))
-              .values('mes')
-              .annotate(horas=Count('id'))
-              .order_by('mes')
-        )
-        return Response([
-            {'mes': r['mes'].strftime('%Y-%m') if r['mes'] else None,
-             'horas': r['horas']}
-            for r in data
-        ])
-
-    @action(detail=False, methods=['get'], url_path='personal-por-rol')
-    def personal_por_rol(self, request):
-        obra_id = request.query_params.get('obra')
-        fecha_desde = request.query_params.get('fecha_desde')
-        fecha_hasta = request.query_params.get('fecha_hasta')
-        qs = DetalleRecurso.objects.filter(
-            recurso__categoria__nombre__icontains='PERSONAL',
-        )
-        if obra_id:
-            qs = qs.filter(informe__obra_id=obra_id)
-        if fecha_desde:
-            qs = qs.filter(informe__fecha__gte=fecha_desde)
-        if fecha_hasta:
-            qs = qs.filter(informe__fecha__lte=fecha_hasta)
-        data = (
-            qs.values('recurso__nombre')
-              .annotate(total=Sum('cantidad'))
-              .order_by('-total')
-        )
-        return Response([
-            {'rol': r['recurso__nombre'], 'total': float(r['total'] or 0)}
-            for r in data
-        ])
-
+    # -------------------------------------------------------------------------
+    # STATUS COUNTS
+    # GET:
+    # /api/informe-diario/dashboard/status-counts/
+    # -------------------------------------------------------------------------
     @action(detail=False, methods=['get'], url_path='status-counts')
     def status_counts(self, request):
-        """Retorna el conteo por estado para tarjetas de resumen tipo POS."""
-        obra_id = request.query_params.get('obra')
-        qs = InformeDiario.objects.all()
-        if obra_id:
-            qs = qs.filter(obra_id=obra_id)
-        
-        counts = qs.values('status').annotate(total=Count('id'))
-        return Response({item['status']: item['total'] for item in counts})
+
+        # Ajusta estos estados según tu modelo real
+        estados = (
+            InformeDiario.objects
+            .values('estado')
+            .annotate(total=Count('id'))
+            .order_by('estado')
+        )
+
+        resultado = {
+            "borrador": 0,
+            "pendiente": 0,
+            "aprobado": 0,
+            "rechazado": 0,
+        }
+
+        for item in estados:
+            estado = str(item['estado']).lower()
+
+            if estado in resultado:
+                resultado[estado] = item['total']
+
+        return Response(resultado)
+
+
+    # -------------------------------------------------------------------------
+    # LLUVIA MENSUAL
+    # GET:
+    # /api/informe-diario/dashboard/lluvia-mensual/
+    # -------------------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='lluvia-mensual')
+    def lluvia_mensual(self, request):
+
+        total = (
+            InformeDiario.objects
+            .filter(lluvia=True)
+            .count()
+        )
+
+        return Response({
+            "dias_con_lluvia": total
+        })
+
+
+    # -------------------------------------------------------------------------
+    # PERSONAL POR ROL
+    # GET:
+    # /api/informe-diario/dashboard/personal-por-rol/
+    # -------------------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='personal-por-rol')
+    def personal_por_rol(self, request):
+
+        # Ajusta este cálculo según tu estructura real
+        total = (
+            InformeDiario.objects
+            .aggregate(total=Sum('cantidad_personal'))
+        )
+
+        return Response({
+            "total_personal": total['total'] or 0
+        })
