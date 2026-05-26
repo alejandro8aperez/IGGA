@@ -16726,3 +16726,7 @@ Traceback (most recent call last):
   File "C:\Users\ASUS}\AppData\Roaming\Python\Python314\site-packages\django\http\request.py", line 202, in get_host
     raise DisallowedHost(msg)
 django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+INFO 2026-05-26 12:30:27,140 autoreload 36392 29688 Watching for file changes with StatReloader
+WARNING 2026-05-26 12:31:58,466 basehttp 36392 35436 "GET /api/status-counts/ HTTP/1.1" 404 11659
+INFO 2026-05-26 12:31:58,618 basehttp 36392 35436 "GET /favicon.ico HTTP/1.1" 302 0
+WARNING 2026-05-26 12:31:58,630 basehttp 36392 35436 "GET /static/favicon.ico HTTP/1.1" 404 1847
