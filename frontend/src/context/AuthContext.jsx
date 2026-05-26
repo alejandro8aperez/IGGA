@@ -83,8 +83,10 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('erpUser', JSON.stringify(updatedUser));
             axios.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
             return updatedUser;
-        } catch {
-            return null;
+        } catch (err) {
+            // Si es un error de red (backend caído), no invalidamos el refresh token aún
+            if (!err.response) throw err; 
+            return null; 
         }
     };
 

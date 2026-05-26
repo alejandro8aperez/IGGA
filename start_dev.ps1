@@ -8,9 +8,16 @@ Write-Host ""
 # ==========================================
 # RUTAS
 # ==========================================
+<<<<<<< HEAD
 $BASE = "D:\postgres\erp-8amperios"
 $ERP = "$BASE\erp-8amperios-1"
 $VENV = "$BASE\venv"
+=======
+# Usamos $PSScriptRoot para que el script funcione en cualquier carpeta o disco
+$ERP = $PSScriptRoot
+$BASE = Split-Path -Parent $ERP
+$VENV = Join-Path $BASE "venv"
+>>>>>>> bc303a28 (feat(informe-diario): rediseño visual estilo POS + cuadrícula fotos)
 
 # ==========================================
 # VALIDAR
@@ -31,7 +38,11 @@ if (-not (Test-Path "$VENV\Scripts\activate.bat")) {
 # BACKEND
 # ==========================================
 Write-Host "[1/2] Iniciando Backend..." -ForegroundColor Yellow
+<<<<<<< HEAD
 Start-Process cmd.exe -ArgumentList "/k", "title ERP BACKEND && cd /d `"$ERP`" && `"$VENV\Scripts\activate.bat`" && python manage.py runserver 8000"
+=======
+Start-Process cmd.exe -ArgumentList "/k", "title ERP BACKEND && cd /d `"$ERP`" && `"$VENV\Scripts\activate.bat`" && python manage.py runserver 0.0.0.0:8000"
+>>>>>>> bc303a28 (feat(informe-diario): rediseño visual estilo POS + cuadrícula fotos)
 
 Start-Sleep -Seconds 6
 
@@ -39,7 +50,11 @@ Start-Sleep -Seconds 6
 # FRONTEND
 # ==========================================
 Write-Host "[2/2] Iniciando Frontend..." -ForegroundColor Yellow
+<<<<<<< HEAD
 Start-Process cmd.exe -ArgumentList "/k", "title ERP FRONTEND && cd /d `"$ERP\frontend`" && npm run dev"
+=======
+Start-Process cmd.exe -ArgumentList "/k", "title ERP FRONTEND && cd /d `"$ERP\frontend`" && (if not exist node_modules call npm install) && npm run dev"
+>>>>>>> bc303a28 (feat(informe-diario): rediseño visual estilo POS + cuadrícula fotos)
 
 Start-Sleep -Seconds 6
 

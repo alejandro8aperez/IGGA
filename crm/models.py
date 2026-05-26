@@ -51,7 +51,16 @@ class Cliente(models.Model):
     # ═══════════════════════════════════════════════════════════════
     # INFORMACIÓN BÁSICA
     # ═══════════════════════════════════════════════════════════════
-    codigo_cliente = models.CharField(max_length=50, unique=True, verbose_name="Código Cliente")
+    
+    # ✅ CORREGIDO
+    codigo_cliente = models.CharField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        null=True,
+        verbose_name="Código Cliente"
+    )
+
     nombre = models.CharField(max_length=200, verbose_name="Nombre/Razón Social")
     compania = models.CharField(max_length=200, blank=True, null=True, verbose_name="Compañía")
     logotipo = models.ImageField(upload_to='crm/logotipos/', blank=True, null=True, verbose_name="Logotipo de la Empresa")
@@ -157,79 +166,108 @@ class Cliente(models.Model):
         return f"{self.codigo_cliente} - {self.nombre}"
     
     def save(self, *args, **kwargs):
+        # Convertir strings vacías a None para evitar errores de integridad en campos Unique
+        # y permitir que la base de datos los trate como NULL (evitando duplicados de '')
+        if self.cedula == '': self.cedula = None
+        if self.nit == '': self.nit = None
+        if self.codigo_barras == '': self.codigo_barras = None
+        if self.correo_facturacion_electronica == '': self.correo_facturacion_electronica = None
+
         # Auto-generar código de cliente si no existe
         if not self.codigo_cliente:
             from django.utils.text import slugify
-            base_code = slugify(self.nombre)[:8].upper()
+            # Aseguramos un base_code por defecto si el nombre falla
+            nombre_slug = slugify(self.nombre)
+            base_code = nombre_slug[:8].upper() if nombre_slug else "CLI"
             count = Cliente.objects.filter(codigo_cliente__startswith=base_code).count()
             self.codigo_cliente = f"{base_code}{count + 1:04d}"
         
         super().save(*args, **kwargs)
 
 class Oportunidad(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    titulo = models.CharField(max_length=200)
-    valor_estimado = models.DecimalField(max_digits=10, decimal_places=2)
-    estado = models.CharField(max_length=20, choices=[
-        ('nueva', 'Nueva'),
-        ('negociacion', 'En Negociación'),
-        ('ganada', 'Ganada'),
-        ('perdida', 'Perdida')
-    ], default='nueva')
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    ESTADO_CHOICES = [
+        ('nuevo', 'Nuevo'),
+        ('calificado', 'Calificado'),
+        ('propuesta', 'Propuesta'),
+        ('negociacion', 'Negociación'),
+        ('ganado', 'Ganado'),
+        ('perdido', 'Perdido'),
+    ]
+    titulo = models.CharField(max_length=200, verbose_name="Título")
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='oportunidades', verbose_name="Cliente")
+    valor_estimado = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Valor Estimado")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='nuevo', verbose_name="Estado")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+
+    class Meta:
+        verbose_name = "Oportunidad"
+        verbose_name_plural = "Oportunidades"
+        ordering = ['-fecha_creacion']
 
     def __str__(self):
-        return f"{self.titulo} - {self.cliente.nombre}"
+        return self.titulo
 
 class Cotizacion(models.Model):
-    numero_cotizacion = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    asunto = models.CharField(max_length=200)
-    porcentaje_iva = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
-    valor_total = models.DecimalField(max_digits=12, decimal_places=2) # Subtotal
-    gran_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    estado = models.CharField(max_length=20, choices=[
+    ESTADO_CHOICES = [
         ('borrador', 'Borrador'),
         ('enviada', 'Enviada'),
         ('aceptada', 'Aceptada'),
-        ('rechazada', 'Rechazada')
-    ], default='borrador')
-    tiempo_entrega = models.CharField(max_length=200, blank=True, null=True, default="15 días hábiles")
-    forma_pago = models.CharField(max_length=200, blank=True, null=True, default="Contado")
-    garantia = models.CharField(max_length=200, blank=True, null=True, default="1 Año")
-    validez_oferta = models.CharField(max_length=200, blank=True, null=True, default="30 Días")
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_validez = models.DateField(null=True, blank=True)
+        ('rechazada', 'Rechazada'),
+        ('facturada', 'Facturada'),
+    ]
+    numero_cotizacion = models.CharField(max_length=20, unique=True, blank=True, verbose_name="N° Cotización")
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='cotizaciones', verbose_name="Cliente")
+    asunto = models.CharField(max_length=200, verbose_name="Asunto")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='borrador', verbose_name="Estado")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    
+    valor_total = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Subtotal")
+    porcentaje_iva = models.DecimalField(max_digits=5, decimal_places=2, default=19, verbose_name="% IVA")
+    gran_total = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Gran Total")
+    
+    tiempo_entrega = models.CharField(max_length=100, blank=True, null=True, verbose_name="Tiempo de Entrega")
+    forma_pago = models.CharField(max_length=100, blank=True, null=True, verbose_name="Forma de Pago")
+    garantia = models.CharField(max_length=100, blank=True, null=True, verbose_name="Garantía")
+    validez_oferta = models.CharField(max_length=100, blank=True, null=True, verbose_name="Validez de Oferta")
+    fecha_validez = models.DateField(blank=True, null=True, verbose_name="Fecha de Validez")
+
+    class Meta:
+        verbose_name = "Cotización"
+        verbose_name_plural = "Cotizaciones"
+        ordering = ['-fecha_creacion']
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
+        if not self.numero_cotizacion:
+            last_cot = Cotizacion.objects.all().order_by('id').last()
+            new_id = (last_cot.id + 1) if last_cot else 1
+            self.numero_cotizacion = f'COT-{new_id:04d}'
         
-        if self.valor_total is not None and self.porcentaje_iva is not None:
-            iva_amount = (self.valor_total * self.porcentaje_iva) / 100
-            self.gran_total = self.valor_total + iva_amount
-            
+        # Calcular gran total basándose en el subtotal
+        self.gran_total = float(self.valor_total) * (1 + float(self.porcentaje_iva) / 100)
         super().save(*args, **kwargs)
-        
-        if is_new and not self.numero_cotizacion:
-            self.numero_cotizacion = f"KAVE-{self.id:04d}"
-            type(self).objects.filter(pk=self.pk).update(numero_cotizacion=self.numero_cotizacion)
 
     def __str__(self):
-        numero = self.numero_cotizacion or str(self.id)
-        return f"Cotización #{numero} - {self.asunto} - {self.cliente.nombre}"
+        return f"{self.numero_cotizacion} - {self.cliente.nombre}"
 
 class CotizacionDetalle(models.Model):
-    cotizacion = models.ForeignKey(Cotizacion, related_name='detalles', on_delete=models.CASCADE)
-    item = models.PositiveIntegerField()
-    producto = models.CharField(max_length=200)
-    unidad = models.CharField(max_length=50)
-    cantidad = models.DecimalField(max_digits=10, decimal_places=2)
-    valor_unitario = models.DecimalField(max_digits=12, decimal_places=2)
-    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    cotizacion = models.ForeignKey(Cotizacion, on_delete=models.CASCADE, related_name='detalles', verbose_name="Cotización")
+    item = models.IntegerField(verbose_name="Ítem")
+    producto = models.CharField(max_length=200, verbose_name="Producto/Servicio")
+    unidad = models.CharField(max_length=50, default='UND', verbose_name="Unidad")
+    cantidad = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Cantidad")
+    valor_unitario = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor Unitario")
+    valor_total = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor Total")
+
+    class Meta:
+        verbose_name = "Detalle de Cotización"
+        verbose_name_plural = "Detalles de Cotización"
+        ordering = ['item']
 
     def save(self, *args, **kwargs):
+        # El valor_total se calcula automáticamente
         self.valor_total = self.cantidad * self.valor_unitario
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Detalle {self.item} - {self.producto} ({self.cotizacion.id})"
+        return f"{self.cotizacion.numero_cotizacion} - {self.producto}"
