@@ -13,6 +13,11 @@ import datetime
 from django.http import HttpResponse
 from .pdf_generator import generar_ficha_tecnica_pdf
 
+try:
+    import ollama
+except ImportError:
+    ollama = None
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -320,6 +325,82 @@ def send_to_mrp_engine(request, pk):
             'mensaje': f'Diseño volcado. Creada OP en borrador (OP-{op.numero or op.id}) y Plan Maestro #{mps.id}. Receta de producción generada.'
         })
 
+    except TransformerDesign.DoesNotExist:
+        return Response({'error': 'Transformador no encontrado'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+def ai_design_review(request, pk):
+    """
+    API que utiliza Ollama para analizar un diseño y sugerir mejoras técnicas.
+    """
+    if not ollama:
+        return Response({'error': 'Librería ollama no instalada en el servidor'}, status=503)
+
+    try:
+        transformer = TransformerDesign.objects.get(pk=pk)
+        calculo = transformer.calculos.first()
+        
+        prompt = f"""
+        Como ingeniero experto en transformadores, analiza este diseño:
+        - Potencia: {transformer.potencia_kva} kVA
+        - Relación: {transformer.vp}/{transformer.vs} V
+        - Material Núcleo: {transformer.material}
+        - Eficiencia calculada: {transformer.eficiencia}%
+        - Pérdidas Totales: {calculo.perdidas_totales if calculo else 'N/A'} W
+        
+        Sugiere 3 mejoras para optimizar el costo o la eficiencia. Sé breve y técnico.
+        """
+        
+        response = ollama.chat(model="phi3", messages=[
+            {'role': 'user', 'content': prompt},
+        ])
+        
+        return Response({
+            'status': 'success',
+            'analisis_ia': response['message']['content'],
+            'modelo': 'phi3'
+        })
+        
+    except TransformerDesign.DoesNotExist:
+        return Response({'error': 'Transformador no encontrado'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+def ai_design_review(request, pk):
+    """
+    API que utiliza Ollama para analizar un diseño y sugerir mejoras técnicas.
+    """
+    if not ollama:
+        return Response({'error': 'Librería ollama no instalada en el servidor'}, status=503)
+
+    try:
+        transformer = TransformerDesign.objects.get(pk=pk)
+        calculo = transformer.calculos.first()
+        
+        prompt = f"""
+        Como ingeniero experto en transformadores, analiza este diseño:
+        - Potencia: {transformer.potencia_kva} kVA
+        - Relación: {transformer.vp}/{transformer.vs} V
+        - Material Núcleo: {transformer.material}
+        - Eficiencia calculada: {transformer.eficiencia}%
+        - Pérdidas Totales: {calculo.perdidas_totales if calculo else 'N/A'} W
+        
+        Sugiere 3 mejoras para optimizar el costo o la eficiencia. Sé breve y técnico.
+        """
+        
+        response = ollama.chat(model="phi3", messages=[
+            {'role': 'user', 'content': prompt},
+        ])
+        
+        return Response({
+            'status': 'success',
+            'analisis_ia': response['message']['content'],
+            'modelo': 'phi3'
+        })
+        
     except TransformerDesign.DoesNotExist:
         return Response({'error': 'Transformador no encontrado'}, status=404)
     except Exception as e:

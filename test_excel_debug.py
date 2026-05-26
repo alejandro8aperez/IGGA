@@ -1,12 +1,8 @@
 import os
 import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "erp_core.settings") # Wait, is it erp_core?
-try:
-    django.setup()
-except:
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-    django.setup()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "erp_core.settings")
+django.setup()
 
 from crm.models import Cotizacion
 from crm.views import CotizacionViewSet

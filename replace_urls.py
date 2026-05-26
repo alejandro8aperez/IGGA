@@ -18,17 +18,17 @@ def replace_api_urls(file_path):
     # Replacements
     # 1. Single quotes: 'http://localhost:8000/api/...' -> (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/...'
     # Actually, the safest way is to replace 'http://localhost:8000/api with (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '
-    # Wait, simpler:
+    # Mejorado para normalizar la URL base y evitar doble /api/
     content = re.sub(
-        r"'http://localhost:8000/api([^']*)'",
-        r"(import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '\1'",
+        r"'http://localhost:8000/api/([^']*)'",
+        r"(import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:8000/api/..').replace(/\/api\/?$/, '') + '/api/\1'",
         content
     )
 
     # 2. Backticks: `http://localhost:8000/api/...` -> `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/...`
     content = re.sub(
-        r"`http://localhost:8000/api([^`]*)`",
-        r"`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}\1`",
+        r"`http://localhost:8000/api/([^`]*)`",
+        r"`${(import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '')}/api/\1`",
         content
     )
 
