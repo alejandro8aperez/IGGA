@@ -16731,3 +16731,5 @@ WARNING 2026-05-26 12:31:58,466 basehttp 36392 35436 "GET /api/status-counts/ HT
 INFO 2026-05-26 12:31:58,618 basehttp 36392 35436 "GET /favicon.ico HTTP/1.1" 302 0
 WARNING 2026-05-26 12:31:58,630 basehttp 36392 35436 "GET /static/favicon.ico HTTP/1.1" 404 1847
 INFO 2026-05-26 12:53:11,379 autoreload 36392 29688 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-26 12:53:16,259 autoreload 33700 10944 Watching for file changes with StatReloader
+INFO 2026-05-26 12:56:27,101 autoreload 37420 35860 Watching for file changes with StatReloader
