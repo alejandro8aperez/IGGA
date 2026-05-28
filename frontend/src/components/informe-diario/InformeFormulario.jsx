@@ -7,32 +7,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Plus, X, Upload, CloudRain } from "lucide-react";
+import { Loader2, Plus, X, CloudRain } from "lucide-react";
 import { toast } from "sonner";
-import { informeDiarioService, obraService, recursoService, categoriaService, uploadFile } from "@/services/informeDiarioApi";
+import { informeDiarioService, obraService, recursoService, categoriaService } from "@/services/informeDiarioApi";
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-// ── Normaliza el informe que viene del API al formato del estado del form ──────
 function normalizarInforme(informe) {
   if (!informe) return null;
   return {
     ...informe,
-    // Django devuelve obra (int FK) → formulario necesita obra_id (string)
     obra_id: informe.obra_id
       ? String(informe.obra_id)
       : informe.obra
         ? String(informe.obra)
         : "",
-    // El API puede devolver [0,1,0,...] o [false,true,...] → normalizar a booleanos
     horas_lluvia: Array.isArray(informe.horas_lluvia)
       ? informe.horas_lluvia.map(Boolean)
       : Array(24).fill(false),
-    // Garantizar arrays vacíos si vienen undefined
-    recursos:     informe.recursos     || [],
-    actividades:  informe.actividades  || [],
-    items_obra:   informe.items_obra   || [],
-    fotos_urls:   informe.fotos_urls   || [],
+    recursos: informe.recursos || [],
+    actividades: informe.actividades || [],
+    items_obra: informe.items_obra || [],
   };
 }
 
@@ -71,14 +66,16 @@ function HorasLluvia({ horas, onChange }) {
 
 function RecursosSection({ recursos, allRecursos, onChange }) {
   const maquinaria = allRecursos.filter(
-    r => r.categoria === "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS" && r.activo !== false
+    (r) => r.categoria === "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS" && r.activo !== false
   );
   const personal = allRecursos.filter(
-    r => r.categoria === "PERSONAL DE OBRA" && r.activo !== false
+    (r) => r.categoria === "PERSONAL DE OBRA" && r.activo !== false
   );
 
-  const addRecurso = (recurso) => {
-    if (recursos.find(r => r.recurso_id === recurso.id)) return;
+  const addRecurso = (recursoId) => {
+    const recurso = allRecursos.find((r) => String(r.id) === recursoId);
+    if (!recurso) return;
+    if (recursos.find((r) => String(r.recurso_id) === String(recurso.id))) return;
     onChange([
       ...recursos,
       {
@@ -101,22 +98,17 @@ function RecursosSection({ recursos, allRecursos, onChange }) {
   const removeRecurso = (idx) => onChange(recursos.filter((_, i) => i !== idx));
 
   const renderGrupo = (titulo, lista, catKey) => {
-    const activos = recursos.filter(r => r.categoria === catKey);
+    const activos = recursos.filter((r) => r.categoria === catKey);
     return (
       <div>
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-sm font-semibold">{titulo}</h4>
-          <Select
-            onValueChange={v => {
-              const r = allRecursos.find(x => String(x.id) === v);
-              if (r) addRecurso(r);
-            }}
-          >
+          <Select onValueChange={(v) => addRecurso(v)}>
             <SelectTrigger className="w-56 h-8 text-xs">
               <SelectValue placeholder="+ Agregar recurso" />
             </SelectTrigger>
             <SelectContent>
-              {lista.map(r => (
+              {lista.map((r) => (
                 <SelectItem key={r.id} value={String(r.id)} className="text-xs">
                   {r.nombre}
                 </SelectItem>
@@ -128,8 +120,9 @@ function RecursosSection({ recursos, allRecursos, onChange }) {
           <p className="text-xs text-muted-foreground italic py-2">Sin recursos agregados</p>
         ) : (
           <div className="space-y-2">
-            {activos.map(r => {
-              const idx = recursos.indexOf(r);
+            {activos.map((r) => {
+              const idx = recursos.findIndex((x) => String(x.recurso_id) === String(r.recurso_id));
+              if (idx === -1) return null;
               return (
                 <div
                   key={r.recurso_id}
@@ -141,19 +134,19 @@ function RecursosSection({ recursos, allRecursos, onChange }) {
                     type="number"
                     min="0"
                     value={r.cantidad}
-                    onChange={e => updateRecurso(idx, "cantidad", parseFloat(e.target.value) || 0)}
+                    onChange={(e) => updateRecurso(idx, "cantidad", parseFloat(e.target.value) || 0)}
                     placeholder="Cant."
                   />
                   <Input
                     className="col-span-3 h-7 text-xs"
                     value={r.empresa}
-                    onChange={e => updateRecurso(idx, "empresa", e.target.value)}
+                    onChange={(e) => updateRecurso(idx, "empresa", e.target.value)}
                     placeholder="Empresa"
                   />
                   <Input
                     className="col-span-2 h-7 text-xs"
                     value={r.observacion}
-                    onChange={e => updateRecurso(idx, "observacion", e.target.value)}
+                    onChange={(e) => updateRecurso(idx, "observacion", e.target.value)}
                     placeholder="Obs."
                   />
                   <button
@@ -192,7 +185,7 @@ function ActividadesSection({ actividades, categorias, onChange }) {
     const next = [...actividades];
     next[idx] = { ...next[idx], [field]: value };
     if (field === "categoria_id")
-      next[idx].categoria_nombre = categorias.find(c => String(c.id) === value)?.nombre || "";
+      next[idx].categoria_nombre = categorias.find((c) => String(c.id) === value)?.nombre || "";
     onChange(next);
   };
 
@@ -205,13 +198,13 @@ function ActividadesSection({ actividades, categorias, onChange }) {
           <div className="col-span-4">
             <Select
               value={String(act.categoria_id)}
-              onValueChange={v => update(idx, "categoria_id", v)}
+              onValueChange={(v) => update(idx, "categoria_id", v)}
             >
               <SelectTrigger className="text-xs h-9">
                 <SelectValue placeholder="Categoría" />
               </SelectTrigger>
               <SelectContent>
-                {categorias.map(c => (
+                {categorias.map((c) => (
                   <SelectItem key={c.id} value={String(c.id)} className="text-xs">
                     {c.nombre}
                   </SelectItem>
@@ -222,7 +215,7 @@ function ActividadesSection({ actividades, categorias, onChange }) {
           <Textarea
             className="col-span-7 text-xs min-h-[36px] h-9 resize-none"
             value={act.descripcion}
-            onChange={e => update(idx, "descripcion", e.target.value)}
+            onChange={(e) => update(idx, "descripcion", e.target.value)}
             placeholder="Descripción..."
           />
           <button
@@ -241,70 +234,22 @@ function ActividadesSection({ actividades, categorias, onChange }) {
   );
 }
 
-function FotosSection({ fotos, onChange }) {
-  const [uploading, setUploading] = useState(false);
-
-  const handleUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    setUploading(true);
-    try {
-      const urls = [];
-      for (const file of files) {
-        const { file_url } = await uploadFile(file);
-        urls.push(file_url);
-      }
-      onChange([...fotos, ...urls]);
-    } catch (err) {
-      toast.error("Error al subir la imagen");
-      console.error("Upload error:", err);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-      {fotos.map((url, i) => (
-        <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border">
-          <img src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onChange(fotos.filter((_, j) => j !== i))}
-            className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      ))}
-      <label className="aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
-        {uploading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        ) : (
-          <Upload className="h-5 w-5 text-muted-foreground" />
-        )}
-        <span className="text-xs text-muted-foreground mt-1">Subir</span>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleUpload}
-          disabled={uploading}
-        />
-      </label>
-    </div>
-  );
-}
-
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
-  const { data: obras = [] }     = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
-  const { data: recursos = [] }  = useQuery({ queryKey: ["recursos"],            queryFn: () => recursoService.list() });
-  const { data: categorias = [] }= useQuery({ queryKey: ["categorias-actividad"],queryFn: () => categoriaService.list() });
+  const { data: obras = [], isLoading: isLoadingObras } = useQuery({
+    queryKey: ["obras"],
+    queryFn: () => obraService.list(),
+  });
+  const { data: recursos = [], isLoading: isLoadingRecursos } = useQuery({
+    queryKey: ["recursos"],
+    queryFn: () => recursoService.list(),
+  });
+  const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({
+    queryKey: ["categorias-actividad"],
+    queryFn: () => categoriaService.list(),
+  });
 
-  // ── Estado inicial normalizado ───────────────────────────────────────────────
   const [form, setForm] = useState(
     normalizarInforme(informe) || {
       obra_id: "",
@@ -325,15 +270,12 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       recursos: [],
       actividades: [],
       items_obra: [],
-      fotos_urls: [],
       status: "borrador",
     }
   );
 
-  // ── Mutación con onError ─────────────────────────────────────────────────────
   const saveMutation = useMutation({
     mutationFn: (data) => {
-      // obra_id debe ser entero para Django
       const payload = {
         ...data,
         obra_id: data.obra_id ? parseInt(data.obra_id, 10) : null,
@@ -359,11 +301,11 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     },
   });
 
-  const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const setField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleObraChange = (obraId) => {
-    const obra = obras.find(o => String(o.id) === obraId);
-    setForm(prev => ({
+    const obra = obras.find((o) => String(o.id) === obraId);
+    setForm((prev) => ({
       ...prev,
       obra_id: obraId,
       obra_nombre: obra?.nombre || "",
@@ -373,30 +315,46 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
 
   const handleFechaChange = (fecha) => {
     const d = new Date(fecha + "T12:00:00");
-    setForm(prev => ({ ...prev, fecha, dia_semana: DIAS[d.getDay()] }));
+    setForm((prev) => ({ ...prev, fecha, dia_semana: DIAS[d.getDay()] }));
   };
 
-  const addItemObra    = () => setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
-  const updateItemObra = (idx, f, v) => { const next = [...(form.items_obra || [])]; next[idx] = { ...next[idx], [f]: v }; setField("items_obra", next); };
-  const removeItemObra = (idx) => setField("items_obra", (form.items_obra || []).filter((_, i) => i !== idx));
+  const addItemObra = () =>
+    setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
+  const updateItemObra = (idx, f, v) => {
+    const next = [...(form.items_obra || [])];
+    next[idx] = { ...next[idx], [f]: v };
+    setField("items_obra", next);
+  };
+  const removeItemObra = (idx) =>
+    setField("items_obra", (form.items_obra || []).filter((_, i) => i !== idx));
 
   const canSave = !!form.obra_id && !!form.fecha && !saveMutation.isPending;
 
+  if (isLoadingObras || isLoadingRecursos || isLoadingCategorias) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-
-      {/* ── Datos generales ─────────────────────────────────────────────────── */}
       <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Datos generales</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Datos generales</CardTitle>
+        </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label>Obra *</Label>
             <Select value={String(form.obra_id)} onValueChange={handleObraChange}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar obra" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar obra" />
+              </SelectTrigger>
               <SelectContent>
-                {obras.map(o => (
+                {obras.map((o) => (
                   <SelectItem key={o.id} value={String(o.id)}>
-                    {o.codigo} — {o.nombre}
+                    {o.codigo || o.nombre} — {o.nombre}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -404,7 +362,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
           </div>
           <div className="space-y-1.5">
             <Label>Fecha *</Label>
-            <Input type="date" value={form.fecha} onChange={e => handleFechaChange(e.target.value)} />
+            <Input type="date" value={form.fecha} onChange={(e) => handleFechaChange(e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Día</Label>
@@ -412,12 +370,14 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
           </div>
           <div className="space-y-1.5">
             <Label>Código formato</Label>
-            <Input value={form.codigo_formato} onChange={e => setField("codigo_formato", e.target.value)} />
+            <Input value={form.codigo_formato} onChange={(e) => setField("codigo_formato", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Estado</Label>
-            <Select value={form.status} onValueChange={v => setField("status", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select value={form.status} onValueChange={(v) => setField("status", v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="borrador">Borrador</SelectItem>
                 <SelectItem value="enviado">Enviado</SelectItem>
@@ -430,7 +390,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
               <input
                 type="checkbox"
                 checked={form.comision_topografia}
-                onChange={e => setField("comision_topografia", e.target.checked)}
+                onChange={(e) => setField("comision_topografia", e.target.checked)}
                 className="h-4 w-4 rounded"
               />
               <span className="text-sm">Comisión de Topografía</span>
@@ -439,42 +399,44 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </CardContent>
       </Card>
 
-      {/* ── Reporte de lluvia ────────────────────────────────────────────────── */}
       <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Reporte de lluvia</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Reporte de lluvia</CardTitle>
+        </CardHeader>
         <CardContent>
           <HorasLluvia
             horas={form.horas_lluvia || Array(24).fill(false)}
-            onChange={v => setField("horas_lluvia", v)}
+            onChange={(v) => setField("horas_lluvia", v)}
           />
         </CardContent>
       </Card>
 
-      {/* ── Recursos ────────────────────────────────────────────────────────── */}
       <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Recursos (Maquinaria y Personal)</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Recursos (Maquinaria y Personal)</CardTitle>
+        </CardHeader>
         <CardContent>
           <RecursosSection
             recursos={form.recursos || []}
             allRecursos={recursos}
-            onChange={v => setField("recursos", v)}
+            onChange={(v) => setField("recursos", v)}
           />
         </CardContent>
       </Card>
 
-      {/* ── Actividades ─────────────────────────────────────────────────────── */}
       <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Actividades del día</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Actividades del día</CardTitle>
+        </CardHeader>
         <CardContent>
           <ActividadesSection
             actividades={form.actividades || []}
             categorias={categorias}
-            onChange={v => setField("actividades", v)}
+            onChange={(v) => setField("actividades", v)}
           />
         </CardContent>
       </Card>
 
-      {/* ── Ítems de obra ───────────────────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -493,25 +455,25 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
               <Input
                 className="col-span-2 h-8 text-xs"
                 value={item.item}
-                onChange={e => updateItemObra(idx, "item", e.target.value)}
+                onChange={(e) => updateItemObra(idx, "item", e.target.value)}
                 placeholder="Ítem"
               />
               <Textarea
                 className="col-span-4 text-xs min-h-[32px] h-8 resize-none"
                 value={item.descripcion}
-                onChange={e => updateItemObra(idx, "descripcion", e.target.value)}
+                onChange={(e) => updateItemObra(idx, "descripcion", e.target.value)}
                 placeholder="Descripción"
               />
               <Input
                 className="col-span-2 h-8 text-xs"
                 value={item.empresa}
-                onChange={e => updateItemObra(idx, "empresa", e.target.value)}
+                onChange={(e) => updateItemObra(idx, "empresa", e.target.value)}
                 placeholder="Empresa"
               />
               <Input
                 className="col-span-3 h-8 text-xs"
                 value={item.responsable}
-                onChange={e => updateItemObra(idx, "responsable", e.target.value)}
+                onChange={(e) => updateItemObra(idx, "responsable", e.target.value)}
                 placeholder="Responsable"
               />
               <button
@@ -526,16 +488,17 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </CardContent>
       </Card>
 
-      {/* ── Condiciones y observaciones ─────────────────────────────────────── */}
       <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Condiciones y observaciones</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Condiciones y observaciones</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Estado del terreno — Inicio</Label>
               <Textarea
                 value={form.estado_terreno_inicio}
-                onChange={e => setField("estado_terreno_inicio", e.target.value)}
+                onChange={(e) => setField("estado_terreno_inicio", e.target.value)}
                 rows={3}
                 placeholder="Condiciones al inicio..."
               />
@@ -544,7 +507,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
               <Label>Estado del terreno — Final</Label>
               <Textarea
                 value={form.estado_terreno_final}
-                onChange={e => setField("estado_terreno_final", e.target.value)}
+                onChange={(e) => setField("estado_terreno_final", e.target.value)}
                 rows={3}
                 placeholder="Condiciones al final..."
               />
@@ -554,33 +517,31 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
             <Label>Observaciones generales</Label>
             <Textarea
               value={form.observaciones_generales}
-              onChange={e => setField("observaciones_generales", e.target.value)}
+              onChange={(e) => setField("observaciones_generales", e.target.value)}
               rows={3}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* ── Firmas ──────────────────────────────────────────────────────────── */}
       <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Firmas</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Firmas</CardTitle>
+        </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Elaborado por</Label>
-            <Input value={form.elaborado_por} onChange={e => setField("elaborado_por", e.target.value)} placeholder="Nombre" />
-            <Input value={form.cargo_elaborado} onChange={e => setField("cargo_elaborado", e.target.value)} placeholder="Cargo" />
+            <Input value={form.elaborado_por} onChange={(e) => setField("elaborado_por", e.target.value)} placeholder="Nombre" />
+            <Input value={form.cargo_elaborado} onChange={(e) => setField("cargo_elaborado", e.target.value)} placeholder="Cargo" />
           </div>
           <div className="space-y-2">
             <Label>Revisado por</Label>
-            <Input value={form.revisado_por} onChange={e => setField("revisado_por", e.target.value)} placeholder="Nombre" />
-            <Input value={form.cargo_revisado} onChange={e => setField("cargo_revisado", e.target.value)} placeholder="Cargo" />
+            <Input value={form.revisado_por} onChange={(e) => setField("revisado_por", e.target.value)} placeholder="Nombre" />
+            <Input value={form.cargo_revisado} onChange={(e) => setField("cargo_revisado", e.target.value)} placeholder="Cargo" />
           </div>
         </CardContent>
       </Card>
 
-
-
-      {/* ── Acciones ────────────────────────────────────────────────────────── */}
       <div className="flex justify-end gap-3 pb-8">
         <Button variant="outline" onClick={onCancelar} disabled={saveMutation.isPending}>
           Cancelar
@@ -594,7 +555,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
           {informe ? "Guardar cambios" : "Crear informe"}
         </Button>
       </div>
-
     </div>
   );
 }
