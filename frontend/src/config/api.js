@@ -1,3 +1,4 @@
+```js
 // =============================================================================
 // config/api.js — ERP 8AMPERIOS
 // Central de endpoints. TODOS los módulos deben importar de aquí.
@@ -13,6 +14,10 @@ const BASE =
 // =============================================================================
 
 export const API = {
+
+  // ✅ BASE URL
+  BASE,
+
   // ---------------------------------------------------------------------------
   // AUTH
   // ---------------------------------------------------------------------------
@@ -42,15 +47,41 @@ export const API = {
   },
 
   // ---------------------------------------------------------------------------
+  // COMPRAS
+  // ---------------------------------------------------------------------------
+  COMPRAS: {
+    PROVEEDORES: `${BASE}/api/compras/proveedores/`,
+    ORDENES: `${BASE}/api/compras/ordenes/`,
+  },
+
+  // ---------------------------------------------------------------------------
+  // INVENTARIOS
+  // ---------------------------------------------------------------------------
+  INVENTARIOS: {
+    PRODUCTOS: `${BASE}/api/inventario/productos/`,
+    MOVIMIENTOS: `${BASE}/api/inventario/movimientos/`,
+  },
+
+  // ---------------------------------------------------------------------------
+  // PRODUCTOS
+  // ---------------------------------------------------------------------------
+  PRODUCTOS: {
+    RESUMEN: `${BASE}/api/inventario/productos/resumen/`,
+  },
+
+  // ---------------------------------------------------------------------------
   // INFORME DIARIO
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
+
     INFORMES: `${BASE}/api/informe-diario/informes/`,
 
-    // ✅ FIX CORRECTO
-    STATUS_COUNTS: `${BASE}/api/informe-diario/informes/status-counts/`,
+    // ✅ FIX STATUS COUNTS
+    STATUS_COUNTS:
+      `${BASE}/api/informe-diario/informes/status-counts/`,
 
-    DASHBOARD: `${BASE}/api/informe-diario/dashboard/`,
+    DASHBOARD:
+      `${BASE}/api/informe-diario/dashboard/`,
   },
 
   // ---------------------------------------------------------------------------
@@ -62,19 +93,11 @@ export const API = {
   },
 
   // ---------------------------------------------------------------------------
-  // USUARIOS
+  // USERS
   // ---------------------------------------------------------------------------
   USERS: {
     LIST: `${BASE}/api/users/`,
     PROFILE: `${BASE}/api/users/profile/`,
-  },
-
-  // ---------------------------------------------------------------------------
-  // INVENTARIO
-  // ---------------------------------------------------------------------------
-  INVENTARIO: {
-    PRODUCTOS: `${BASE}/api/inventario/productos/`,
-    MOVIMIENTOS: `${BASE}/api/inventario/movimientos/`,
   },
 
   // ---------------------------------------------------------------------------
@@ -83,6 +106,7 @@ export const API = {
   REPORTES: {
     GENERAL: `${BASE}/api/reportes/`,
   },
+
 };
 
 // =============================================================================
@@ -90,3 +114,4 @@ export const API = {
 // =============================================================================
 
 export default API;
+```
