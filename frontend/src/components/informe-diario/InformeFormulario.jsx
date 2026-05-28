@@ -578,13 +578,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </CardContent>
       </Card>
 
-      {/* ── Anexos fotográficos ──────────────────────────────────────────────── */}
-      <Card>
-        <CardHeader><CardTitle className="text-sm font-semibold">Anexos fotográficos</CardTitle></CardHeader>
-        <CardContent>
-          <FotosSection fotos={form.fotos_urls || []} onChange={v => setField("fotos_urls", v)} />
-        </CardContent>
-      </Card>
+
 
       {/* ── Acciones ────────────────────────────────────────────────────────── */}
       <div className="flex justify-end gap-3 pb-8">

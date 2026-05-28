@@ -199,219 +199,146 @@ function StatsHeader() {
 }
 
 // ── FotoCard ──────────────────────────────────────────────────────────────────
-function FotoCard({ foto, slotNum, onDragStart }) {
+function FotoCard({ foto, onClick }) {
 
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
   const imgSrc = foto?.imagen_url || foto?.imagen;
 
-  if (!foto) {
-    return (
-      <div
-        style={{
-          background: C.white,
-          borderRadius: 16,
-          height: 220,
-          border: `2px dashed ${C.border}`,
-          boxShadow: C.cardShadow,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.5rem',
-          color: C.textFaint,
-        }}
-      >
-        <Plus size={28} style={{ opacity: 0.4 }} />
-
-        <span
-          style={{
-            fontSize: '0.7rem',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em'
-          }}
-        >
-          Slot {slotNum}
-        </span>
-      </div>
-    );
-  }
-
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
+      onClick={onClick}
       style={{
-        background: C.white,
-        borderRadius: 16,
-        height: 220,
-        border: `1px solid ${C.borderLight}`,
-        boxShadow: C.cardShadow,
+        background: 'white',
+        borderRadius: '16px',
         overflow: 'hidden',
-        cursor: 'grab',
-        position: 'relative',
+        cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'space-between',
+        border: '1px solid #f1f5f9',
+        height: '260px',
+        position: 'relative'
       }}
     >
-      <div
-        style={{
-          width: '100%',
-          height: 140,
-          background: `linear-gradient(135deg, ${C.purpleLight} 0%, #ede9fe 100%)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          position: 'relative',
-          flexShrink: 0,
-        }}
-      >
+      <div style={{
+        width: '100%',
+        height: '140px',
+        background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative'
+      }}>
         {!loaded && !errored && imgSrc && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: C.skeleton
-            }}
-          />
+          <div className="skeleton" style={{ position: 'absolute', inset: 0, zIndex: 1 }}></div>
         )}
-
         {imgSrc && !errored ? (
           <img
             src={imgSrc}
-            alt={foto.seccion_display || `Slot ${slotNum}`}
+            alt={foto.descripcion || 'Foto del informe'}
             onLoad={() => setLoaded(true)}
-            onError={() => {
-              setLoaded(true);
-              setErrored(true);
-            }}
+            onError={() => { setLoaded(true); setErrored(true); }}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              padding: '0',
               opacity: loaded ? 1 : 0,
-              transition: 'opacity 0.3s',
+              transition: 'opacity 0.3s ease'
             }}
           />
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.4rem',
-              color: C.purple
-            }}
-          >
-            <Package size={40} />
-
-            <span
-              style={{
-                fontSize: '0.65rem',
-                fontWeight: 600
-              }}
-            >
-              SIN IMG
-            </span>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            color: '#8b5cf6',
+            gap: '0.5rem'
+          }}>
+            <Package size={48} />
+            <span style={{ fontSize: '0.75rem', fontWeight: '500' }}>SIN IMG</span>
           </div>
         )}
-
-        <div
-          style={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            background: C.primary,
-            color: C.white,
-            fontSize: '0.6rem',
-            fontWeight: 900,
-            padding: '2px 7px',
-            borderRadius: 8,
-            letterSpacing: '0.04em',
-          }}
-        >
-          SLOT {slotNum}
-        </div>
       </div>
 
-      <div
-        style={{
-          padding: '0.75rem 1rem',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}
-      >
-        <div>
-          <div
-            style={{
-              background: C.purpleLight,
-              color: C.purple,
-              fontSize: '0.6rem',
-              fontWeight: 800,
-              padding: '2px 8px',
-              borderRadius: 8,
-              width: 'fit-content',
-              marginBottom: '0.35rem',
-              textTransform: 'uppercase',
-            }}
-          >
-            {foto.seccion_display || 'General'}
+      <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <div style={{
+            background: '#f5f3ff',
+            color: '#7c3aed',
+            fontSize: '0.65rem',
+            fontWeight: '800',
+            width: 'fit-content',
+            padding: '2px 8px',
+            borderRadius: '8px',
+            marginBottom: '0.5rem'
+          }}>
+            {foto.seccion_display || 'Foto'}
           </div>
-
-          <h3
-            style={{
-              margin: 0,
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              color: C.text,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {foto.descripcion || foto.seccion_display || `Foto ${slotNum}`}
+          <h3 style={{
+            margin: 0,
+            fontSize: '0.95rem',
+            color: '#1e293b',
+            fontWeight: '700',
+            lineHeight: 1.2,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}>
+            {foto.descripcion || 'Sin descripción'}
           </h3>
         </div>
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}
-        >
-          <span
-            style={{
-              fontSize: '0.65rem',
-              color: C.textMuted
-            }}
-          >
-            {foto.fecha_captura
-              ? new Date(foto.fecha_captura).toLocaleDateString('es-CO')
-              : '—'}
-          </span>
-
-          <div
-            style={{
-              background: C.indigoLight,
-              color: C.indigo,
-              borderRadius: '50%',
-              width: 26,
-              height: 26,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Camera size={14} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+              {foto.fecha_captura ? new Date(foto.fecha_captura).toLocaleString('es-CO') : 'Fecha no disponible'}
+            </span>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── UploadCard ────────────────────────────────────────────────────────────────
+function UploadCard({ onClick, uploading }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: 'white',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        cursor: uploading ? 'wait' : 'pointer',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        border: '2px dashed #8b5cf6',
+        height: '260px',
+        gap: '0.75rem',
+        color: '#8b5cf6'
+      }}
+    >
+      {uploading ? (
+        <>
+          <Loader2 size={48} className="animate-spin" />
+          <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Subiendo...</span>
+        </>
+      ) : (
+        <>
+          <Plus size={48} />
+          <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>+ Agregar Fotos</span>
+        </>
+      )}
     </div>
   );
 }
@@ -420,59 +347,40 @@ function FotoCard({ foto, slotNum, onDragStart }) {
 function InformeFotos({ informeId }) {
 
   const queryClient = useQueryClient();
+  const [uploading, setUploading] = useState(false);
 
-  const [draggedItem, setDraggedItem] = useState(null);
-
-  const { data: fotos, isLoading } = useQuery({
+  const { data: fotos = [], isLoading } = useQuery({
     queryKey: ['informe-fotos', informeId],
-
     queryFn: () =>
       axios
         .get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`)
         .then(r => r.data),
-
     enabled: !!informeId,
   });
 
-  const mutation = useMutation({
-    mutationFn: (payload) =>
-      axios.post(
-        `${API.INFORME_DIARIO.ANEXOS}reorganizar-cuadricula/`,
-        payload
-      ),
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    onSuccess: () => {
-      queryClient.invalidateQueries(['informe-fotos', informeId]);
-      toast.success("Cuadrícula sincronizada");
-    },
-  });
-
-  const onDrop = (targetPos) => {
-
-    if (!draggedItem || draggedItem.posicion === targetPos) return;
-
-    const destino = fotos?.find(f => f.posicion === targetPos);
-
-    const payload = [
-      {
-        id: draggedItem.id,
-        posicion: targetPos
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('informe', informeId);
+        formData.append('imagen', file);
+        await axios.post(`${API.INFORME_DIARIO.ANEXOS}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
       }
-    ];
-
-    if (destino) {
-      payload.push({
-        id: destino.id,
-        posicion: draggedItem.posicion
-      });
+      queryClient.invalidateQueries(['informe-fotos', informeId]);
+      toast.success('Fotos subidas exitosamente!');
+    } catch (error) {
+      console.error('Error al subir fotos:', error);
+      toast.error('Error al subir las fotos');
+    } finally {
+      setUploading(false);
     }
-
-    mutation.mutate(payload);
-
-    setDraggedItem(null);
   };
-
-  const slots = Array.from({ length: 24 }, (_, i) => i + 1);
 
   if (!informeId) {
     return (
@@ -492,7 +400,6 @@ function InformeFotos({ informeId }) {
             margin: '0 auto 1rem'
           }}
         />
-
         <h3
           style={{
             margin: 0,
@@ -501,50 +408,61 @@ function InformeFotos({ informeId }) {
             textTransform: 'uppercase'
           }}
         >
-          Selecciona un informe para ver la cuadrícula
+          Selecciona un informe para ver las fotos
         </h3>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
-        gap: '1rem',
-      }}
-    >
-      {isLoading
-        ? slots.map(n => (
-            <div
-              key={n}
-              style={{
-                background: C.skeleton,
-                borderRadius: 16,
-                height: 220,
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}
-            />
-          ))
-        : slots.map(n => {
-
-            const foto = fotos?.find(f => f.posicion === n);
-
-            return (
+    <div>
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleUpload}
+        style={{ display: 'none' }}
+        id="foto-upload"
+        disabled={uploading}
+      />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: '1rem',
+        }}
+      >
+        <label htmlFor="foto-upload">
+          <UploadCard onClick={() => {}} uploading={uploading} />
+        </label>
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, n) => (
               <div
                 key={n}
-                onDragOver={e => e.preventDefault()}
-                onDrop={() => onDrop(n)}
+                style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  height: '260px',
+                  padding: '1rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  border: '1px solid #f1f5f9',
+                }}
               >
-                <FotoCard
-                  foto={foto}
-                  slotNum={n}
-                  onDragStart={() => foto && setDraggedItem(foto)}
-                />
+                <div className="skeleton" style={{ width: '100%', height: '140px' }}></div>
+                <div className="skeleton" style={{ width: '40%', height: '14px' }}></div>
+                <div className="skeleton" style={{ width: '80%', height: '20px' }}></div>
               </div>
-            );
-          })}
+            ))
+          : fotos.map(foto => (
+              <FotoCard
+                key={foto.id}
+                foto={foto}
+                onClick={() => {}}
+              />
+            ))}
+      </div>
     </div>
   );
 }
