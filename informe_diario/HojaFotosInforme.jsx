@@ -87,14 +87,14 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                 <Camera className="text-blue-500" size={32} />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800/50">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 gap-2 bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
                 {slots.map((num) => (
                     <div 
                         key={num} 
-                        className={`relative group aspect-square rounded-lg border-2 border-dashed transition-all duration-300 flex items-center justify-center overflow-hidden
+                        className={`relative group aspect-square rounded-md border transition-all duration-200 flex items-center justify-center overflow-hidden
                             ${fotos[num] 
-                                ? 'border-slate-700 bg-slate-800 shadow-lg' 
-                                : 'border-slate-800 hover:border-blue-500/50 hover:bg-slate-800/50 bg-slate-900/30'
+                                ? 'border-slate-600 bg-slate-800 shadow-md' 
+                                : 'border-slate-800 border-dashed hover:border-blue-500/50 hover:bg-blue-500/5 bg-slate-900/20'
                             }`}
                     >
                         {loading[num] ? (
@@ -112,7 +112,7 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button 
                                         onClick={() => handleDelete(num, fotos[num].id)}
-                                        className="bg-red-500/90 hover:bg-red-600 p-2 rounded-full text-white shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all"
+                                        className="bg-red-500/90 hover:bg-red-600 p-1.5 rounded-full text-white shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-all"
                                         title="Eliminar"
                                     >
                                         <X size={16} />
@@ -120,9 +120,9 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                                 </div>
                             </>
                         ) : (
-                            <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-slate-700 transition-all">
-                                <UploadCloud className="text-slate-600 group-hover:text-blue-400 transition-colors mb-2" size={28} />
-                                <span className="text-[9px] font-bold text-slate-500 group-hover:text-blue-400 uppercase tracking-tighter transition-colors">Slot {num}</span>
+                            <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer transition-all">
+                                <UploadCloud className="text-slate-700 group-hover:text-blue-500 transition-colors" size={20} />
+                                <span className="text-[8px] font-bold text-slate-600 group-hover:text-blue-500 uppercase mt-1 transition-colors">Subir</span>
                                 <input 
                                     type="file" 
                                     className="hidden" 
@@ -132,7 +132,7 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                             </label>
                         )}
                         {/* Indicador de número de slot */}
-                        <div className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-md border border-white/10 px-1.5 py-0.5 rounded text-[8px] text-slate-400 font-mono z-10">
+                        <div className="absolute top-1 left-1 bg-black/40 backdrop-blur-sm px-1 rounded text-[7px] text-slate-300 font-mono z-10">
                             {num.toString().padStart(2, '0')}
                         </div>
                     </div>

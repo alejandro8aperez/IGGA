@@ -16738,3 +16738,46 @@ INFO 2026-05-28 10:33:32,606 autoreload 35864 5444 C:\Postgres\ERP-8AMPERIOS\inf
 INFO 2026-05-28 10:33:38,401 autoreload 16464 13696 Watching for file changes with StatReloader
 INFO 2026-05-28 13:02:00,047 autoreload 16464 13696 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
 INFO 2026-05-28 13:02:07,167 autoreload 25524 40132 Watching for file changes with StatReloader
+INFO 2026-05-28 13:12:24,053 basehttp 25524 38888 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:25,512 basehttp 25524 38888 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-05-28 13:12:26,149 basehttp 25524 38888 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,152 basehttp 25524 24028 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,164 basehttp 25524 38888 "OPTIONS /api/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,167 basehttp 25524 24028 "OPTIONS /ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,173 basehttp 25524 38888 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,176 basehttp 25524 24028 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,183 basehttp 25524 38888 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,189 basehttp 25524 24028 "OPTIONS /operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,195 basehttp 25524 38888 "OPTIONS /kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,199 basehttp 25524 24028 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,204 basehttp 25524 38888 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,204 basehttp 25524 24028 "OPTIONS /api/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,207 basehttp 25524 38888 "OPTIONS /ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,209 basehttp 25524 24028 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,210 basehttp 25524 38888 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,212 basehttp 25524 24028 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,214 basehttp 25524 38888 "OPTIONS /operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,217 basehttp 25524 24028 "OPTIONS /kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:26,310 basehttp 25524 38888 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-28 13:12:26,359 basehttp 25524 24028 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-28 13:12:26,569 basehttp 25524 33856 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-28 13:12:26,612 basehttp 25524 31960 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-28 13:12:26,631 basehttp 25524 16328 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-28 13:12:26,673 basehttp 25524 31960 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-28 13:12:26,725 basehttp 25524 31960 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-28 13:12:26,727 basehttp 25524 16328 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-28 13:12:26,773 basehttp 25524 31960 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-28 13:12:26,798 basehttp 25524 16328 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+WARNING 2026-05-28 13:12:26,826 basehttp 25524 38888 "GET /api/pedidos/ HTTP/1.1" 404 11641
+WARNING 2026-05-28 13:12:26,840 basehttp 25524 24028 "GET /ventas/facturas/ HTTP/1.1" 404 10102
+WARNING 2026-05-28 13:12:26,962 basehttp 25524 24604 "GET /operaciones/proyectos/ HTTP/1.1" 404 10120
+WARNING 2026-05-28 13:12:27,051 basehttp 25524 33856 "GET /kave/disenos/ HTTP/1.1" 404 10093
+INFO 2026-05-28 13:12:27,067 basehttp 25524 33856 "OPTIONS /api/inventario/productos/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-28 13:12:27,179 basehttp 25524 33856 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-28 13:12:27,228 basehttp 25524 16328 "GET /api/pedidos/ HTTP/1.1" 404 11641
+WARNING 2026-05-28 13:12:27,239 basehttp 25524 38888 "GET /ventas/facturas/ HTTP/1.1" 404 10102
+WARNING 2026-05-28 13:12:27,310 basehttp 25524 24028 "GET /operaciones/proyectos/ HTTP/1.1" 404 10120
+WARNING 2026-05-28 13:12:27,336 basehttp 25524 24604 "GET /kave/disenos/ HTTP/1.1" 404 10093
+INFO 2026-05-28 13:12:27,403 basehttp 25524 24604 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-28 13:15:02,095 autoreload 25524 40132 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-28 13:15:07,455 autoreload 3124 25656 Watching for file changes with StatReloader

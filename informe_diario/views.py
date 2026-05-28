@@ -52,6 +52,12 @@ def _transform_frontend_data(data):
         t['obra'] = (obra_val.get('id') if isinstance(obra_val, dict) 
                      else (obra_val if obra_val != "" else None))
 
+    # status -> extraer id si viene como objeto (evita estado congelado)
+    if 'status' in t and isinstance(t['status'], dict):
+        t['status'] = t['status'].get('id')
+    elif 'status' in t and t['status'] == "":
+        t['status'] = 'BORRADOR'
+
     # recursos → detalles
     if 'recursos' in t:
         t['detalles'] = [
@@ -112,11 +118,18 @@ def _transform_frontend_data(data):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ObraViewSet(viewsets.ModelViewSet):
-    queryset = Obra.objects.filter(activo=True).order_by('nombre')
     serializer_class = ObraSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields  = ['codigo', 'nombre', 'cliente']
     ordering_fields = ['codigo', 'nombre']
+
+    def get_queryset(self):
+        # Permitimos ver obras inactivas si se está consultando un informe existente
+        # o si se solicita explícitamente, para evitar que el selector quede vacío.
+        qs = Obra.objects.all().order_by('nombre')
+        if self.action == 'list' and not self.request.query_params.get('include_inactive'):
+            qs = qs.filter(activo=True)
+        return qs
 
 
 class CategoriaRecursoViewSet(viewsets.ModelViewSet):
