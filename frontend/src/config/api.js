@@ -1,4 +1,3 @@
-```js
 // =============================================================================
 // config/api.js — ERP 8AMPERIOS
 // Central de endpoints. TODOS los módulos deben importar de aquí.
@@ -114,4 +113,3 @@ export const API = {
 // =============================================================================
 
 export default API;
-```
