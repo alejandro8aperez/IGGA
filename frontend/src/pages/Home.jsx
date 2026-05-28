@@ -2,53 +2,49 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
-    LayoutDashboard, Users, ShoppingCart, Package, Truck, Wrench, Settings,
-    TrendingUp, BarChart3, FileText, Zap, Database, DollarSign,
-    Menu, X, Plus, Edit3, Trash2, Search, Filter, Calendar,
-    Clock, CheckCircle, AlertCircle, Activity, Target, Building2, FormInput,
-    Factory, Shield, Users2, ClipboardList, Cog, Calculator as CalcIcon, 
-    CreditCard, Megaphone, MonitorSmartphone, HeartHandshake, FolderOpen, Boxes
+import {
+    LayoutDashboard,
+    Users,
+    ShoppingCart,
+    Package,
+    Truck,
+    Database,
+    Building2,
+    Boxes
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { API } from '../config/api';
 
 // =============================================================================
-// BASE URL
-// =============================================================================
-
-const BASE =
-    import.meta.env.VITE_API_URL ||
-    'http://localhost:8000';
-
-// =============================================================================
 // ENDPOINTS
 // =============================================================================
 
 const API_CLIENTES = API.CRM.CLIENTES;
-
 const API_COTIZACIONES = API.CRM.COTIZACIONES;
-
-// ✅ FIX PEDIDOS
 const API_PEDIDOS = API.PEDIDOS.LIST;
 
-// ✅ FACTURAS
-const API_FACTURAS = `${BASE}/api/ventas/facturas/`;
+// FACTURAS
+const API_FACTURAS =
+    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/ventas/facturas/`;
 
-// ✅ COMPRAS
-const API_PROVEEDORES = `${BASE}/api/compras/proveedores/`;
+// COMPRAS
+const API_PROVEEDORES =
+    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/compras/proveedores/`;
 
-const API_ORDENES = `${BASE}/api/compras/ordenes/`;
+const API_ORDENES =
+    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/compras/ordenes/`;
 
-// ✅ INVENTARIO
-const API_PRODUCTOS = `${BASE}/api/inventario/productos/`;
+// INVENTARIO
+const API_PRODUCTOS = API.INVENTARIO.PRODUCTOS;
 
-// ✅ OPERACIONES
-const API_PROYECTOS = `${BASE}/api/operaciones/proyectos/`;
+// OPERACIONES
+const API_PROYECTOS =
+    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/operaciones/proyectos/`;
 
-// ✅ KAVE
-const API_DISEÑOS = `${BASE}/api/kave/disenos/`;
+// KAVE
+const API_DISEÑOS =
+    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/kave/disenos/`;
 
 const modules = [
     {
@@ -128,13 +124,10 @@ const modules = [
 export default function Home() {
 
     const navigate = useNavigate();
-
     const { user } = useAuth();
 
     const [selectedModule, setSelectedModule] = useState(null);
-
     const [loading, setLoading] = useState(false);
-
     const [searchTerm, setSearchTerm] = useState('');
 
     const [stats, setStats] = useState({
@@ -178,7 +171,6 @@ export default function Home() {
                     ? (result.value?.data?.length || 0)
                     : 0;
 
-            // ✅ FIX PRODUCTOS
             let totalProductosMaestro = getValue(results[6]);
 
             try {
@@ -241,13 +233,11 @@ export default function Home() {
     const openModule = (module) => {
 
         setSelectedModule(module);
-
         setLoading(true);
 
         setTimeout(() => {
 
             navigate(module.path);
-
             setLoading(false);
 
         }, 500);
