@@ -1,4 +1,3 @@
-```jsx
 import React, { useState, useEffect } from 'react';
 import {
   Plus, FileText, ShoppingCart, Users, Search,
@@ -948,4 +947,3 @@ function StatusBadge({ status }) {
     </span>
   );
 }
-```
