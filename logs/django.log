@@ -16734,3 +16734,5 @@ INFO 2026-05-26 12:53:11,379 autoreload 36392 29688 C:\Postgres\ERP-8AMPERIOS\in
 INFO 2026-05-26 12:53:16,259 autoreload 33700 10944 Watching for file changes with StatReloader
 INFO 2026-05-26 12:56:27,101 autoreload 37420 35860 Watching for file changes with StatReloader
 INFO 2026-05-28 09:31:35,295 autoreload 35864 5444 Watching for file changes with StatReloader
+INFO 2026-05-28 10:33:32,606 autoreload 35864 5444 C:\Postgres\ERP-8AMPERIOS\informe_diario\serializers.py changed, reloading.
+INFO 2026-05-28 10:33:38,401 autoreload 16464 13696 Watching for file changes with StatReloader
