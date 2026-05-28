@@ -37,8 +37,11 @@ export const API = {
   },
 
   // ---------------------------------------------------------------------------
-  // PEDIDOS
+  // VENTAS / PEDIDOS
   // ---------------------------------------------------------------------------
+  VENTAS: {
+    PEDIDOS: `${BASE}/api/pedidos/`,
+  },
   PEDIDOS: {
     LIST: `${BASE}/api/pedidos/`,
     CREATE: `${BASE}/api/pedidos/`,
