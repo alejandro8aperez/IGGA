@@ -53,10 +53,11 @@ def _transform_frontend_data(data):
     """
     t = dict(data)
 
-    # Obra: Extraer ID del selector (evita error de "cliente/obra" al guardar)
-    t['obra'] = _get_id(t.pop('obra_id', t.pop('obra', None)))
+    # Normalización de Obra: Extraer ID limpio para evitar errores de validación
+    obra_val = t.pop('obra_id', t.pop('obra', None))
+    t['obra'] = _get_id(obra_val)
 
-    # Status: Asegurar valor plano
+    # Normalización de Status: Asegurar valor plano (evita estado congelado)
     t['status'] = _get_id(t.get('status')) or 'BORRADOR'
 
     # recursos → detalles
@@ -105,9 +106,9 @@ def _transform_frontend_data(data):
             for idx, it in enumerate(t.get('items_obra') or [])
         ]
 
-    # Campos de solo lectura / campos exclusivos del frontend que el serializer no espera
+    # Limpieza: Eliminar campos que el Serializer no espera para evitar errores 400
     for campo in ('obra_nombre', 'obra_codigo', 'dia_semana',
-                  'fotos_urls', 'status_label', 'foto_principal',
+                  'fotos_urls', 'status_label', 'foto_principal', 'id',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'creado_en', 'actualizado_en', 'anexos'):
         t.pop(campo, None)
