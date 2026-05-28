@@ -1,7 +1,7 @@
-```jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
 import {
     LayoutDashboard,
     Users,
@@ -17,34 +17,36 @@ import { useAuth } from '../context/AuthContext';
 import { API } from '../config/api';
 
 // =============================================================================
+// BASE URL
+// =============================================================================
+
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// =============================================================================
 // ENDPOINTS
 // =============================================================================
 
 const API_CLIENTES = API.CRM.CLIENTES;
+
 const API_COTIZACIONES = API.CRM.COTIZACIONES;
+
 const API_PEDIDOS = API.PEDIDOS.LIST;
 
-// FACTURAS
-const API_FACTURAS =
-    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/ventas/facturas/`;
+const API_FACTURAS = `${BASE}/api/ventas/facturas/`;
 
-// COMPRAS
-const API_PROVEEDORES =
-    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/compras/proveedores/`;
+const API_PROVEEDORES = `${BASE}/api/compras/proveedores/`;
 
-const API_ORDENES =
-    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/compras/ordenes/`;
+const API_ORDENES = `${BASE}/api/compras/ordenes/`;
 
-// INVENTARIO
-const API_PRODUCTOS = API.INVENTARIO.PRODUCTOS;
+const API_PRODUCTOS = `${BASE}/api/inventario/productos/`;
 
-// OPERACIONES
-const API_PROYECTOS =
-    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/operaciones/proyectos/`;
+const API_PROYECTOS = `${BASE}/api/operaciones/proyectos/`;
 
-// KAVE
-const API_DISEÑOS =
-    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/kave/disenos/`;
+const API_DISENOS = `${BASE}/api/kave/disenos/`;
+
+// =============================================================================
+// MODULES
+// =============================================================================
 
 const modules = [
     {
@@ -105,7 +107,7 @@ const modules = [
     },
     {
         name: 'Productos',
-        description: 'Maestro de materiales SAP — barras, empaque, MRP',
+        description: 'Maestro de materiales SAP',
         icon: Boxes,
         color: '#7c3aed',
         path: '/productos',
@@ -121,13 +123,18 @@ const modules = [
     }
 ];
 
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
 export default function Home() {
 
     const navigate = useNavigate();
+
     const { user } = useAuth();
 
-    const [selectedModule, setSelectedModule] = useState(null);
     const [loading, setLoading] = useState(false);
+
     const [searchTerm, setSearchTerm] = useState('');
 
     const [stats, setStats] = useState({
@@ -139,7 +146,7 @@ export default function Home() {
         ordenes: 0,
         productos: 0,
         proyectos: 0,
-        diseños: 0
+        disenos: 0
     });
 
     useEffect(() => {
@@ -163,29 +170,13 @@ export default function Home() {
                 axios.get(API_ORDENES),
                 axios.get(API_PRODUCTOS),
                 axios.get(API_PROYECTOS),
-                axios.get(API_DISEÑOS)
+                axios.get(API_DISENOS)
             ]);
 
             const getValue = (result) =>
                 result.status === 'fulfilled'
                     ? (result.value?.data?.length || 0)
                     : 0;
-
-            let totalProductosMaestro = getValue(results[6]);
-
-            try {
-
-                const resumen = await axios.get(API_PRODUCTOS);
-
-                totalProductosMaestro =
-                    resumen.data?.total_productos ??
-                    totalProductosMaestro;
-
-            } catch {
-
-                console.warn('No se pudo cargar resumen productos');
-
-            }
 
             setStats({
                 clientes: getValue(results[0]),
@@ -194,9 +185,9 @@ export default function Home() {
                 facturas: getValue(results[3]),
                 proveedores: getValue(results[4]),
                 ordenes: getValue(results[5]),
-                productos: totalProductosMaestro,
+                productos: getValue(results[6]),
                 proyectos: getValue(results[7]),
-                diseños: getValue(results[8])
+                disenos: getValue(results[8])
             });
 
         } catch (error) {
@@ -211,103 +202,146 @@ export default function Home() {
         module.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const moduleStats = (module) => {
-
-        if (module.path === '/productos') {
-            return {
-                total: stats.productos,
-                growth: 'SAP MM'
-            };
-        }
-
-        if (module.path === '/proveedores') {
-            return {
-                total: stats.proveedores,
-                growth: 'Nuevo'
-            };
-        }
-
-        return module.stats;
-    };
-
     const openModule = (module) => {
 
-        setSelectedModule(module);
         setLoading(true);
 
         setTimeout(() => {
 
             navigate(module.path);
+
             setLoading(false);
 
-        }, 500);
+        }, 300);
     };
 
     return (
-        <div style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            minHeight: '100vh',
-            padding: '2rem'
-        }}>
+        <div
+            style={{
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '2rem'
+            }}
+        >
 
-            <h1 style={{
-                color: 'white',
-                textAlign: 'center',
-                marginBottom: '2rem'
-            }}>
+            <h1
+                style={{
+                    color: 'white',
+                    textAlign: 'center',
+                    marginBottom: '2rem',
+                    fontSize: '2.5rem',
+                    fontWeight: '700'
+                }}
+            >
                 ERP 8AMPERIOS
             </h1>
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                gap: '1rem'
-            }}>
-
-                {filteredModules.map((module) => (
-
-                    <div
-                        key={module.name}
-                        onClick={() => openModule(module)}
-                        style={{
-                            background: 'rgba(255,255,255,0.1)',
-                            borderRadius: '12px',
-                            padding: '1rem',
-                            cursor: 'pointer',
-                            color: 'white'
-                        }}
-                    >
-
-                        <module.icon
-                            size={28}
-                            style={{
-                                marginBottom: '1rem'
-                            }}
-                        />
-
-                        <h3>{module.name}</h3>
-
-                        <p style={{
-                            fontSize: '0.9rem',
-                            opacity: 0.9
-                        }}>
-                            {module.description}
-                        </p>
-
-                        <div style={{
-                            marginTop: '1rem',
-                            fontSize: '0.85rem'
-                        }}>
-                            {moduleStats(module).total} registros
-                        </div>
-
-                    </div>
-
-                ))}
-
+            <div
+                style={{
+                    maxWidth: '500px',
+                    margin: '0 auto 2rem auto'
+                }}
+            >
+                <input
+                    type="text"
+                    placeholder="Buscar módulo..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: '1rem',
+                        borderRadius: '12px',
+                        border: 'none',
+                        fontSize: '1rem'
+                    }}
+                />
             </div>
+
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                    gap: '1.5rem'
+                }}
+            >
+                {filteredModules.map((module) => {
+
+                    const Icon = module.icon;
+
+                    return (
+                        <div
+                            key={module.name}
+                            onClick={() => openModule(module)}
+                            style={{
+                                background: 'rgba(255,255,255,0.12)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '16px',
+                                padding: '1.5rem',
+                                cursor: 'pointer',
+                                color: 'white',
+                                transition: '0.3s',
+                                border: '1px solid rgba(255,255,255,0.15)'
+                            }}
+                        >
+
+                            <Icon
+                                size={32}
+                                style={{
+                                    marginBottom: '1rem',
+                                    color: module.color
+                                }}
+                            />
+
+                            <h3
+                                style={{
+                                    marginBottom: '0.5rem'
+                                }}
+                            >
+                                {module.name}
+                            </h3>
+
+                            <p
+                                style={{
+                                    opacity: 0.9,
+                                    fontSize: '0.9rem',
+                                    minHeight: '40px'
+                                }}
+                            >
+                                {module.description}
+                            </p>
+
+                            <div
+                                style={{
+                                    marginTop: '1rem',
+                                    fontSize: '0.85rem',
+                                    opacity: 0.8
+                                }}
+                            >
+                                {module.stats.total} registros
+                            </div>
+
+                        </div>
+                    );
+                })}
+            </div>
+
+            {loading && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '1.5rem'
+                    }}
+                >
+                    Cargando...
+                </div>
+            )}
 
         </div>
     );
 }
-```
