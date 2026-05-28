@@ -602,11 +602,6 @@ function InformeDiarioContent() {
       label: "Fotos"
     },
     {
-      id: "formulario",
-      icon: ClipboardList,
-      label: editingInforme ? "Editar" : "Nuevo"
-    },
-    {
       id: "catalogos",
       icon: Settings,
       label: "Config"
@@ -754,37 +749,40 @@ function InformeDiarioContent() {
           }}
         >
           {activeTab === "dashboard" && (
-            <InformeDashboard
-              onNuevoInforme={() => setActiveTab("formulario")}
-            />
-          )}
+        <InformeDashboard
+          onNuevoInforme={() => {
+            setEditingInforme(null);
+            setActiveTab("formulario");
+          }}
+        />
+      )}
 
-          {activeTab === "lista" && (
-            <InformeLista
-              onEditar={inf => {
-                setEditingInforme(inf);
-                setActiveTab("formulario");
-              }}
-            />
-          )}
+      {activeTab === "lista" && (
+        <InformeLista
+          onEditar={inf => {
+            setEditingInforme(inf);
+            setActiveTab("formulario");
+          }}
+        />
+      )}
 
-          {activeTab === "fotos" && (
-            <InformeFotos
-              informeId={editingInforme?.id}
-            />
-          )}
+      {activeTab === "fotos" && (
+        <InformeFotos
+          informeId={editingInforme?.id}
+        />
+      )}
 
-          {activeTab === "formulario" && (
-            <InformeFormulario
-              informe={editingInforme}
-              onGuardado={() => setActiveTab("lista")}
-              onCancelar={() => setActiveTab("lista")}
-            />
-          )}
+      {(activeTab === "formulario") && (
+        <InformeFormulario
+          informe={editingInforme}
+          onGuardado={() => setActiveTab("lista")}
+          onCancelar={() => setActiveTab("lista")}
+        />
+      )}
 
-          {activeTab === "catalogos" && (
-            <InformeCatalogos />
-          )}
+      {activeTab === "catalogos" && (
+        <InformeCatalogos />
+      )}
         </div>
       </div>
     </div>

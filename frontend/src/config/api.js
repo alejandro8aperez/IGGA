@@ -72,11 +72,19 @@ export const API = {
   },
 
   // ---------------------------------------------------------------------------
+  // OPERACIONES / PROYECTOS / OBRAS
+  // ---------------------------------------------------------------------------
+  OPERACIONES: {
+    PROYECTOS: `${BASE}/api/operaciones/proyectos/`,
+  },
+
+  // ---------------------------------------------------------------------------
   // INFORME DIARIO
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
 
     INFORMES: `${BASE}/api/informe-diario/informes/`,
+    OBRAS: `${BASE}/api/operaciones/proyectos/`, // Usamos proyectos de OPERACIONES
 
     // ✅ FIX STATUS COUNTS
     STATUS_COUNTS:
