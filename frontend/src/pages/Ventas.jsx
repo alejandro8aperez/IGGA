@@ -416,7 +416,7 @@ export default function Ventas() {
         <StatCard
           icon={<DollarSign />}
           title="Ingresos"
-          value={`$${Number(totalVentas).toLocaleString('es-CO')}`}
+          value={`\$${Number(totalVentas).toLocaleString('es-CO')}`}
           color="#10B981"
         />
 
