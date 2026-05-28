@@ -30,6 +30,14 @@ from .serializers import (
 # Transformador: formato plano del frontend → nested del serializer
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _get_id(val):
+    """Helper para extraer ID de objetos de selectores o valores nulos."""
+    if isinstance(val, dict):
+        return val.get('id')
+    if str(val).lower() in ("null", "none", "undefined", ""):
+        return None
+    return val
+
 def _transform_frontend_data(data):
     """
     El frontend envía un objeto plano con campos como obra_id, recursos[],
@@ -45,33 +53,24 @@ def _transform_frontend_data(data):
     """
     t = dict(data)
 
-    # Normalización de Obra: Extrae el ID real si viene un objeto del selector
-    obra_val = t.pop('obra_id', t.pop('obra', None))
-    if isinstance(obra_val, dict):
-        t['obra'] = obra_val.get('id')
-    elif obra_val in (None, "", "null", "undefined"):
-        t['obra'] = None
-    else:
-        t['obra'] = obra_val
+    # Obra: Extraer ID del selector (evita error de "cliente/obra" al guardar)
+    t['obra'] = _get_id(t.pop('obra_id', t.pop('obra', None)))
 
-    # Normalización de Status: Evita el bloqueo del estado en el frontend
-    status_raw = t.get('status')
-    if isinstance(status_raw, dict):
-        t['status'] = status_raw.get('id')
-    elif status_raw in (None, "", "null", "undefined"):
-        t['status'] = 'BORRADOR'
+    # Status: Asegurar valor plano
+    t['status'] = _get_id(t.get('status')) or 'BORRADOR'
 
     # recursos → detalles
     if 'recursos' in t:
+        recursos_list = t.pop('recursos') or []
         t['detalles'] = [
             {
-                'recurso':     r.get('recurso_id'),
+                'recurso':     _get_id(r.get('recurso_id') or r.get('recurso')),
                 'cantidad':    r.get('cantidad', 0),
                 'empresa':     r.get('empresa', ''),
                 'observacion': r.get('observacion', ''),
-            }
-            for r in (t.pop('recursos') or [])
-            if r.get('recurso_id')
+            } 
+            for r in recursos_list 
+            if _get_id(r.get('recurso_id') or r.get('recurso'))
         ]
 
     # horas_lluvia [bool x 24] → reportes_lluvia
@@ -86,7 +85,7 @@ def _transform_frontend_data(data):
     if 'actividades' in t:
         t['actividades'] = [
             {
-                'categoria':   a.get('categoria_id') or a.get('categoria'),
+                'categoria':   _get_id(a.get('categoria_id') or a.get('categoria')),
                 'descripcion': a.get('descripcion', ''),
                 'orden':       idx,
             }
