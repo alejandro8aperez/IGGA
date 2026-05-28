@@ -16781,3 +16781,11 @@ WARNING 2026-05-28 13:12:27,336 basehttp 25524 24604 "GET /kave/disenos/ HTTP/1.
 INFO 2026-05-28 13:12:27,403 basehttp 25524 24604 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
 INFO 2026-05-28 13:15:02,095 autoreload 25524 40132 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
 INFO 2026-05-28 13:15:07,455 autoreload 3124 25656 Watching for file changes with StatReloader
+INFO 2026-05-28 13:51:15,747 autoreload 3124 25656 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-28 13:51:21,903 autoreload 36688 940 Watching for file changes with StatReloader
+INFO 2026-05-28 13:57:08,142 autoreload 36688 940 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-28 13:57:12,116 autoreload 14156 40864 Watching for file changes with StatReloader
+INFO 2026-05-28 13:59:25,687 autoreload 14156 40864 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-28 13:59:28,592 autoreload 42248 42748 Watching for file changes with StatReloader
+INFO 2026-05-28 14:01:50,495 autoreload 42248 42748 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-28 14:01:53,464 autoreload 38932 39304 Watching for file changes with StatReloader

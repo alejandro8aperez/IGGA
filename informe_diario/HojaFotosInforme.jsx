@@ -87,19 +87,19 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                 <Camera className="text-blue-500" size={32} />
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 gap-2 bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
+            <div className="grid grid-cols-4 gap-1.5 bg-slate-950 p-2 rounded-lg shadow-inner border border-slate-800">
                 {slots.map((num) => (
                     <div 
                         key={num} 
-                        className={`relative group aspect-square rounded-md border transition-all duration-200 flex items-center justify-center overflow-hidden
+                        className={`relative group aspect-square rounded border transition-all duration-200 flex items-center justify-center overflow-hidden
                             ${fotos[num] 
-                                ? 'border-slate-600 bg-slate-800 shadow-md' 
-                                : 'border-slate-800 border-dashed hover:border-blue-500/50 hover:bg-blue-500/5 bg-slate-900/20'
+                                ? 'border-slate-500 bg-slate-800' 
+                                : 'border-slate-800 border-dashed hover:border-blue-500/50 hover:bg-blue-500/5 bg-slate-900/30'
                             }`}
                     >
                         {loading[num] ? (
                             <div className="flex flex-col items-center gap-2">
-                                <Loader2 className="animate-spin text-blue-400" size={24} />
+                                <Loader2 className="animate-spin text-blue-500" size={20} />
                                 <span className="text-[8px] text-blue-400 font-bold animate-pulse">SUBIENDO...</span>
                             </div>
                         ) : fotos[num] ? (
@@ -120,9 +120,9 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                                 </div>
                             </>
                         ) : (
-                            <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer transition-all">
-                                <UploadCloud className="text-slate-700 group-hover:text-blue-500 transition-colors" size={20} />
-                                <span className="text-[8px] font-bold text-slate-600 group-hover:text-blue-500 uppercase mt-1 transition-colors">Subir</span>
+                            <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-slate-800/50 transition-all">
+                                <UploadCloud className="text-slate-600 group-hover:text-blue-400 transition-colors" size={20} />
+                                <span className="text-[7px] font-bold text-slate-500 group-hover:text-blue-400 uppercase mt-1 transition-colors">Slot {num}</span>
                                 <input 
                                     type="file" 
                                     className="hidden" 
@@ -132,7 +132,7 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                             </label>
                         )}
                         {/* Indicador de número de slot */}
-                        <div className="absolute top-1 left-1 bg-black/40 backdrop-blur-sm px-1 rounded text-[7px] text-slate-300 font-mono z-10">
+                        <div className="absolute top-1 left-1 bg-slate-900/80 px-1 rounded text-[7px] text-slate-400 font-mono z-10">
                             {num.toString().padStart(2, '0')}
                         </div>
                     </div>

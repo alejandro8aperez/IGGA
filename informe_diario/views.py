@@ -45,17 +45,20 @@ def _transform_frontend_data(data):
     """
     t = dict(data)
 
-    # obra_id → obra
-    if 'obra_id' in t:
-        # Soporte para selectores (Autocomplete/Select) que envían el objeto completo o solo el ID
-        obra_val = t.pop('obra_id')
-        t['obra'] = (obra_val.get('id') if isinstance(obra_val, dict) 
-                     else (obra_val if obra_val != "" else None))
+    # Normalización de Obra: Extrae el ID real si viene un objeto del selector
+    obra_val = t.pop('obra_id', t.pop('obra', None))
+    if isinstance(obra_val, dict):
+        t['obra'] = obra_val.get('id')
+    elif obra_val in (None, "", "null", "undefined"):
+        t['obra'] = None
+    else:
+        t['obra'] = obra_val
 
-    # status -> extraer id si viene como objeto (evita estado congelado)
-    if 'status' in t and isinstance(t['status'], dict):
-        t['status'] = t['status'].get('id')
-    elif 'status' in t and t['status'] == "":
+    # Normalización de Status: Evita el bloqueo del estado en el frontend
+    status_raw = t.get('status')
+    if isinstance(status_raw, dict):
+        t['status'] = status_raw.get('id')
+    elif status_raw in (None, "", "null", "undefined"):
         t['status'] = 'BORRADOR'
 
     # recursos → detalles
@@ -124,11 +127,13 @@ class ObraViewSet(viewsets.ModelViewSet):
     ordering_fields = ['codigo', 'nombre']
 
     def get_queryset(self):
-        # Permitimos ver obras inactivas si se está consultando un informe existente
-        # o si se solicita explícitamente, para evitar que el selector quede vacío.
-        qs = Obra.objects.all().order_by('nombre')
-        if self.action == 'list' and not self.request.query_params.get('include_inactive'):
-            qs = qs.filter(activo=True)
+        # Ordenamos por código y nombre para facilitar la búsqueda en el selector
+        qs = Obra.objects.all().order_by('codigo', 'nombre')
+        if self.action == 'list':
+            include_inactive = self.request.query_params.get('include_inactive') == 'true'
+            if not include_inactive:
+                qs = qs.filter(activo=True)
+                
         return qs
 
 
