@@ -1,45 +1,317 @@
+"""
+views.py — Informe Diario de Obra
+Todos los ViewSets requeridos por urls.py + transformación del formato frontend → serializer.
+"""
+from datetime import timedelta
+
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from django.db.models import Count
+from django.utils import timezone
 
-# IMPORTANTE:
-# verifica que el modelo se llame InformeDiario
-from .models import InformeDiario
+from .models import (
+    Obra, CategoriaRecurso, Recurso, CategoriaActividad,
+    InformeDiario, AnexoFoto,
+)
+from .serializers import (
+    ObraSerializer,
+    CategoriaRecursoSerializer,
+    RecursoSerializer,
+    CategoriaActividadSerializer,
+    InformeDiarioSerializer,
+    InformeDiarioListSerializer,
+    AnexoFotoSerializer,
+)
 
 
-@action(detail=False, methods=['get'], url_path='status-counts')
-def status_counts(self, request):
+# ─────────────────────────────────────────────────────────────────────────────
+# Transformador: formato plano del frontend → nested del serializer
+# ─────────────────────────────────────────────────────────────────────────────
 
-    try:
+def _transform_frontend_data(data):
+    """
+    El frontend envía un objeto plano con campos como obra_id, recursos[],
+    horas_lluvia[], etc.  El serializer espera nested con nombres distintos.
+    Esta función hace la traducción antes de validar.
 
-        # Contar estados de forma segura
-        data = (
+    Mapeo:
+        obra_id (int)                       → obra
+        recursos  [{recurso_id, ...}]       → detalles [{recurso, ...}]
+        horas_lluvia [bool x 24]            → reportes_lluvia [{hora, con_lluvia}]
+        actividades [{categoria_id, ...}]   → actividades [{categoria, ...}]
+        items_obra  [{item, responsable...}]→ items_obra (sin responsable, no existe en el modelo)
+    """
+    t = dict(data)
+
+    # obra_id → obra
+    if 'obra_id' in t:
+        t['obra'] = t.pop('obra_id')
+
+    # recursos → detalles
+    if 'recursos' in t:
+        t['detalles'] = [
+            {
+                'recurso':     r.get('recurso_id'),
+                'cantidad':    r.get('cantidad', 0),
+                'empresa':     r.get('empresa', ''),
+                'observacion': r.get('observacion', ''),
+            }
+            for r in (t.pop('recursos') or [])
+            if r.get('recurso_id')
+        ]
+
+    # horas_lluvia [bool x 24] → reportes_lluvia
+    if 'horas_lluvia' in t:
+        horas = t.pop('horas_lluvia') or []
+        t['reportes_lluvia'] = [
+            {'hora': i, 'con_lluvia': bool(v)}
+            for i, v in enumerate(horas)
+        ]
+
+    # actividades: categoria_id → categoria
+    if 'actividades' in t:
+        t['actividades'] = [
+            {
+                'categoria':   a.get('categoria_id') or a.get('categoria'),
+                'descripcion': a.get('descripcion', ''),
+                'orden':       idx,
+            }
+            for idx, a in enumerate(t.get('actividades') or [])
+        ]
+
+    # items_obra: responsable no existe en el modelo → se descarta
+    if 'items_obra' in t:
+        t['items_obra'] = [
+            {
+                'item':        it.get('item', ''),
+                'descripcion': it.get('descripcion', ''),
+                'empresa':     it.get('empresa', ''),
+                'cantidad':    it.get('cantidad', 0),
+                'orden':       idx,
+            }
+            for idx, it in enumerate(t.get('items_obra') or [])
+        ]
+
+    # Campos de solo lectura / campos exclusivos del frontend que el serializer no espera
+    for campo in ('obra_nombre', 'obra_codigo', 'dia_semana',
+                  'fotos_urls', 'status_label', 'foto_principal',
+                  'total_personal', 'total_maquinaria', 'total_horas_lluvia',
+                  'creado_en', 'actualizado_en', 'anexos'):
+        t.pop(campo, None)
+
+    return t
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Catálogos
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ObraViewSet(viewsets.ModelViewSet):
+    queryset = Obra.objects.filter(activo=True).order_by('nombre')
+    serializer_class = ObraSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields  = ['codigo', 'nombre', 'cliente']
+    ordering_fields = ['codigo', 'nombre']
+
+
+class CategoriaRecursoViewSet(viewsets.ModelViewSet):
+    queryset = CategoriaRecurso.objects.all().order_by('orden', 'nombre')
+    serializer_class = CategoriaRecursoSerializer
+
+
+class RecursoViewSet(viewsets.ModelViewSet):
+    queryset = Recurso.objects.select_related('categoria').filter(activo=True)
+    serializer_class = RecursoSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields   = ['nombre', 'categoria__nombre']
+    ordering_fields = ['nombre', 'orden']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        cat = self.request.query_params.get('categoria')
+        if cat:
+            qs = qs.filter(categoria__nombre__icontains=cat)
+        return qs
+
+
+class CategoriaActividadViewSet(viewsets.ModelViewSet):
+    queryset = CategoriaActividad.objects.filter(activo=True).order_by('orden', 'nombre')
+    serializer_class = CategoriaActividadSerializer
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Informe Diario
+# ─────────────────────────────────────────────────────────────────────────────
+
+class InformeDiarioViewSet(viewsets.ModelViewSet):
+    queryset = (
+        InformeDiario.objects
+        .select_related('obra')
+        .prefetch_related(
+            'detalles__recurso__categoria',
+            'reportes_lluvia',
+            'actividades__categoria',
+            'items_obra',
+            'anexos',
+            'maquinaria_libre',
+            'personal_libre',
+        )
+        .order_by('-fecha')
+    )
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields   = ['obra__codigo', 'obra__nombre', 'elaborado_por']
+    ordering_fields = ['fecha', 'creado_en', 'status']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return InformeDiarioListSerializer
+        return InformeDiarioSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        obra   = self.request.query_params.get('obra')
+        estado = self.request.query_params.get('status')
+        if obra:
+            qs = qs.filter(obra_id=obra)
+        if estado:
+            qs = qs.filter(status=estado)
+        return qs
+
+    # ── create / update con transformación ──────────────────────────────────
+
+    def create(self, request, *args, **kwargs):
+        data = _transform_frontend_data(request.data)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial  = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data     = _transform_frontend_data(request.data)
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    # ── Acción: conteo por estado (para StatsHeader) ─────────────────────────
+
+    @action(detail=False, methods=['get'], url_path='status-counts')
+    def status_counts(self, request):
+        try:
+            rows = (
+                InformeDiario.objects
+                .values('status')
+                .annotate(total=Count('id'))
+            )
+            result = {'borrador': 0, 'enviado': 0, 'aprobado': 0}
+            for row in rows:
+                key = str(row.get('status', '')).lower()
+                if key in result:
+                    result[key] = row.get('total', 0)
+            return Response(result)
+        except Exception as e:
+            return Response(
+                {'borrador': 0, 'enviado': 0, 'aprobado': 0, 'error': str(e)},
+                status=status.HTTP_200_OK,
+            )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Anexos / Fotos
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AnexoFotoViewSet(viewsets.ModelViewSet):
+    queryset       = AnexoFoto.objects.all().order_by('seccion', 'posicion', 'orden')
+    serializer_class = AnexoFotoSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        qs      = super().get_queryset()
+        informe = self.request.query_params.get('informe')
+        if informe:
+            qs = qs.filter(informe_id=informe)
+        return qs
+
+    # ── Acción: reorganizar cuadrícula 4×6 (drag & drop del frontend) ────────
+
+    @action(detail=False, methods=['post'], url_path='reorganizar-cuadricula')
+    def reorganizar_cuadricula(self, request):
+        """
+        Recibe: [{id: <int>, posicion: <int>}, ...]
+        Actualiza posiciones en bulk y devuelve los ids actualizados.
+        """
+        items = request.data
+        if not isinstance(items, list):
+            return Response(
+                {'error': 'Se esperaba una lista de {id, posicion}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        updated = []
+        for item in items:
+            try:
+                anexo = AnexoFoto.objects.get(id=item['id'])
+                anexo.posicion = item['posicion']
+                anexo.save(update_fields=['posicion'])
+                updated.append(anexo.id)
+            except (AnexoFoto.DoesNotExist, KeyError, TypeError):
+                continue
+
+        return Response({'updated': updated, 'count': len(updated)})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dashboard
+# ─────────────────────────────────────────────────────────────────────────────
+
+class DashboardViewSet(viewsets.ViewSet):
+    """Estadísticas generales para el panel principal del módulo."""
+
+    def list(self, request):
+        hoy   = timezone.now().date()
+        desde = hoy - timedelta(days=30)
+
+        # Totales por estado
+        por_estado_qs = (
             InformeDiario.objects
-            .values('estado')
+            .values('status')
             .annotate(total=Count('id'))
         )
+        estado_map = {'borrador': 0, 'enviado': 0, 'aprobado': 0}
+        for row in por_estado_qs:
+            k = str(row.get('status', '')).lower()
+            if k in estado_map:
+                estado_map[k] = row['total']
 
-        response = {
-            'borrador': 0,
-            'enviado': 0,
-            'aprobado': 0,
-        }
+        # Últimos 5 informes (últimos 30 días)
+        recientes_qs = (
+            InformeDiario.objects
+            .select_related('obra')
+            .filter(fecha__gte=desde)
+            .order_by('-fecha')[:5]
+        )
+        recientes_data = InformeDiarioListSerializer(
+            recientes_qs, many=True, context={'request': request}
+        ).data
 
-        for item in data:
-
-            estado = str(item.get('estado', '')).lower()
-            total = item.get('total', 0)
-
-            if estado in response:
-                response[estado] = total
-
-        return Response(response)
-
-    except Exception as e:
+        # Informes por día (últimos 7 días) — útil para mini-gráfico
+        ultimos_7 = (
+            InformeDiario.objects
+            .filter(fecha__gte=hoy - timedelta(days=6))
+            .values('fecha')
+            .annotate(total=Count('id'))
+            .order_by('fecha')
+        )
 
         return Response({
-            'borrador': 0,
-            'enviado': 0,
-            'aprobado': 0,
-            'error': str(e)
-        }, status=200)
+            'total':          InformeDiario.objects.count(),
+            'por_estado':     estado_map,
+            'recientes':      recientes_data,
+            'por_dia':        list(ultimos_7),
+            'periodo_dias':   30,
+        })
