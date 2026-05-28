@@ -47,7 +47,10 @@ def _transform_frontend_data(data):
 
     # obra_id → obra
     if 'obra_id' in t:
-        t['obra'] = t.pop('obra_id')
+        # Soporte para selectores (Autocomplete/Select) que envían el objeto completo o solo el ID
+        obra_val = t.pop('obra_id')
+        t['obra'] = (obra_val.get('id') if isinstance(obra_val, dict) 
+                     else (obra_val if obra_val != "" else None))
 
     # recursos → detalles
     if 'recursos' in t:
@@ -171,7 +174,7 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        obra   = self.request.query_params.get('obra')
+        obra   = self.request.query_params.get('obra') or self.request.query_params.get('obra_id')
         estado = self.request.query_params.get('status')
         if obra:
             qs = qs.filter(obra_id=obra)
@@ -231,10 +234,13 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        qs      = super().get_queryset()
+        qs = super().get_queryset()
         informe = self.request.query_params.get('informe')
+        obra = self.request.query_params.get('obra')
         if informe:
             qs = qs.filter(informe_id=informe)
+        if obra:
+            qs = qs.filter(informe__obra_id=obra)
         return qs
 
     # ── Acción: reorganizar cuadrícula 4×6 (drag & drop del frontend) ────────
@@ -252,17 +258,19 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Optimización: Uso de bulk_update para procesar las 24 posiciones de la cuadrícula en una sola transacción
+        ids = [item.get('id') for item in items if item.get('id')]
+        anexos_map = {a.id: a for a in AnexoFoto.objects.filter(id__in=ids)}
         updated = []
+        
         for item in items:
-            try:
-                anexo = AnexoFoto.objects.get(id=item['id'])
-                anexo.posicion = item['posicion']
-                anexo.save(update_fields=['posicion'])
-                updated.append(anexo.id)
-            except (AnexoFoto.DoesNotExist, KeyError, TypeError):
-                continue
+            anexo = anexos_map.get(item.get('id'))
+            if anexo:
+                anexo.posicion = item.get('posicion', 0)
+                updated.append(anexo)
 
-        return Response({'updated': updated, 'count': len(updated)})
+        AnexoFoto.objects.bulk_update(updated, ['posicion'])
+        return Response({'updated': [a.id for a in updated], 'count': len(updated)})
 
 
 # ─────────────────────────────────────────────────────────────────────────────

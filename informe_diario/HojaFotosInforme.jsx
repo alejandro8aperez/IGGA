@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Camera, X, UploadCloud, Loader2 } from 'lucide-react';
 import API from '../config/api';
 
-const HojaFotosInforme = ({ informeId }) => {
+const HojaFotosInforme = ({ informeId, obraId }) => {
     const [fotos, setFotos] = useState({});
     const [loading, setLoading] = useState({});
 
@@ -11,21 +11,37 @@ const HojaFotosInforme = ({ informeId }) => {
     useEffect(() => {
         const cargarFotos = async () => {
             try {
-                const res = await axios.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`);
+                // Si hay informeId, cargamos sus fotos. Si no, pero hay obraId, cargamos la galería de la obra.
+                let url = `${API.INFORME_DIARIO.ANEXOS}`;
+                if (informeId) {
+                    url += `?informe=${informeId}`;
+                } else if (obraId) {
+                    // Soporte para selectores que envían el objeto completo {id, nombre...}
+                    const oid = typeof obraId === 'object' ? obraId.id : obraId;
+                    if (oid) url += `?obra=${oid}`;
+                    else return;
+                } else {
+                    return;
+                }
+
+                const res = await axios.get(url);
                 const mapaFotos = {};
                 res.data.forEach(f => {
-                    if (f.posicion) mapaFotos[f.posicion] = f;
+                    if (f.posicion > 0) mapaFotos[f.posicion] = f;
                 });
                 setFotos(mapaFotos);
             } catch (err) {
                 console.error("Error cargando fotos:", err);
             }
         };
-        if (informeId) cargarFotos();
-    }, [informeId]);
+        cargarFotos();
+    }, [informeId, obraId]);
 
     const handleUpload = async (posicion, file) => {
-        if (!file) return;
+        if (!file || !informeId) {
+            if (!informeId) alert("Debe guardar el informe antes de subir fotografías.");
+            return;
+        }
         
         setLoading(prev => ({ ...prev, [posicion]: true }));
         const formData = new FormData();
@@ -62,38 +78,51 @@ const HojaFotosInforme = ({ informeId }) => {
     const slots = Array.from({ length: 24 }, (_, i) => i + 1);
 
     return (
-        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800 shadow-2xl">
+        <div className="p-6 bg-slate-900/50 backdrop-blur-sm rounded-xl border border-slate-800 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-xl font-bold text-white uppercase tracking-wider">F-141-IN: Registro Fotográfico</h2>
-                    <p className="text-slate-400 text-xs">Cuadrícula Técnica Estándar (4x6)</p>
+                    <p className="text-blue-400/80 text-[10px] font-mono uppercase tracking-widest">Standard Grid Layout 4x6</p>
                 </div>
                 <Camera className="text-blue-500" size={32} />
             </div>
 
-            <div className="grid grid-cols-4 gap-3 bg-slate-950 p-4 rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800/50">
                 {slots.map((num) => (
-                    <div key={num} className="relative group aspect-square rounded-md border border-slate-700 bg-slate-800 overflow-hidden flex items-center justify-center">
+                    <div 
+                        key={num} 
+                        className={`relative group aspect-square rounded-lg border-2 border-dashed transition-all duration-300 flex items-center justify-center overflow-hidden
+                            ${fotos[num] 
+                                ? 'border-slate-700 bg-slate-800 shadow-lg' 
+                                : 'border-slate-800 hover:border-blue-500/50 hover:bg-slate-800/50 bg-slate-900/30'
+                            }`}
+                    >
                         {loading[num] ? (
-                            <Loader2 className="animate-spin text-blue-500" />
+                            <div className="flex flex-col items-center gap-2">
+                                <Loader2 className="animate-spin text-blue-400" size={24} />
+                                <span className="text-[8px] text-blue-400 font-bold animate-pulse">SUBIENDO...</span>
+                            </div>
                         ) : fotos[num] ? (
                             <>
                                 <img 
-                                    src={fotos[num].imagen} 
+                                    src={fotos[num].imagen_url || fotos[num].imagen} 
                                     alt={`Foto ${num}`} 
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
-                                <button 
-                                    onClick={() => handleDelete(num, fotos[num].id)}
-                                    className="absolute top-1 right-1 bg-red-600 p-1 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                >
-                                    <X size={14} />
-                                </button>
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button 
+                                        onClick={() => handleDelete(num, fotos[num].id)}
+                                        className="bg-red-500/90 hover:bg-red-600 p-2 rounded-full text-white shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all"
+                                        title="Eliminar"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
                             </>
                         ) : (
                             <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-slate-700 transition-all">
-                                <UploadCloud className="text-slate-500 mb-1" size={20} />
-                                <span className="text-[10px] font-bold text-slate-500 uppercase">Foto {num}</span>
+                                <UploadCloud className="text-slate-600 group-hover:text-blue-400 transition-colors mb-2" size={28} />
+                                <span className="text-[9px] font-bold text-slate-500 group-hover:text-blue-400 uppercase tracking-tighter transition-colors">Slot {num}</span>
                                 <input 
                                     type="file" 
                                     className="hidden" 
@@ -103,7 +132,7 @@ const HojaFotosInforme = ({ informeId }) => {
                             </label>
                         )}
                         {/* Indicador de número de slot */}
-                        <div className="absolute bottom-0 left-0 bg-black/60 px-1.5 text-[9px] text-white font-mono">
+                        <div className="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-md border border-white/10 px-1.5 py-0.5 rounded text-[8px] text-slate-400 font-mono z-10">
                             {num.toString().padStart(2, '0')}
                         </div>
                     </div>
