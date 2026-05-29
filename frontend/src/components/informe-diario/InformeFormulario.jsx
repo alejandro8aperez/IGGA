@@ -1,558 +1,494 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Loader2, Plus, X, CloudRain } from "lucide-react";
+import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
 import { informeDiarioService, obraService, recursoService, categoriaService } from "@/services/informeDiarioApi";
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
+// ─── Estilos base ────────────────────────────────────────────────────────────
+const card = { background: "white", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "1.25rem" };
+const cardHead = { padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid #f1f5f9", fontWeight: 700, fontSize: "0.8rem", color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" };
+const cardBody = { padding: "1.25rem" };
+const label = { display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.35rem" };
+const inputStyle = { width: "100%", padding: "0.5rem 0.75rem", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "0.875rem", background: "white", outline: "none", boxSizing: "border-box" };
+const grid3 = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" };
+const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" };
+const btnPrimary = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "none", background: "#667eea", color: "white", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" };
+const btnOutline = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "1px solid #cbd5e1", background: "white", color: "#475569", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" };
+const btnGhost = { background: "none", border: "none", cursor: "pointer", padding: "0.2rem", color: "#ef4444", display: "flex", alignItems: "center" };
+
 function normalizarInforme(informe) {
   if (!informe) return null;
   return {
     ...informe,
-    obra_id: informe.obra_id
-      ? String(informe.obra_id)
-      : informe.obra
-        ? String(informe.obra)
-        : "",
-    horas_lluvia: Array.isArray(informe.horas_lluvia)
-      ? informe.horas_lluvia.map(Boolean)
-      : Array(24).fill(false),
+    obra_id: informe.obra_id ? String(informe.obra_id) : informe.obra ? String(informe.obra) : "",
+    horas_lluvia: Array.isArray(informe.horas_lluvia) ? informe.horas_lluvia.map(Boolean) : Array(24).fill(false),
     recursos: informe.recursos || [],
     actividades: informe.actividades || [],
     items_obra: informe.items_obra || [],
   };
 }
 
+// ─── Selector de obra con búsqueda ───────────────────────────────────────────
+function ObraSelect({ obras, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef(null);
+
+  const selected = obras.find(o => String(o.id) === String(value));
+  const filtered = obras.filter(o =>
+    o.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+    o.cliente_nombre?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between",
+          cursor: "pointer", userSelect: "none",
+          border: open ? "1px solid #667eea" : "1px solid #cbd5e1",
+          boxShadow: open ? "0 0 0 2px rgba(102,126,234,0.2)" : "none",
+        }}
+      >
+        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected ? "#1e293b" : "#94a3b8" }}>
+          {selected ? selected.nombre : "Seleccionar obra de OPERACIONES"}
+        </span>
+        <ChevronDown size={15} style={{ flexShrink: 0, marginLeft: "0.5rem", color: "#94a3b8", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+      </div>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999,
+          background: "white", border: "1px solid #e2e8f0", borderRadius: "10px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden",
+        }}>
+          {/* Buscador */}
+          <div style={{ padding: "0.5rem", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Search size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar obra o cliente..."
+              style={{ flex: 1, border: "none", outline: "none", fontSize: "0.875rem", color: "#1e293b", background: "transparent" }}
+            />
+            {search && <X size={13} color="#94a3b8" style={{ cursor: "pointer" }} onClick={() => setSearch("")} />}
+          </div>
+
+          {/* Lista */}
+          <div style={{ maxHeight: "220px", overflowY: "auto", padding: "4px" }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.8rem" }}>
+                Sin resultados
+              </div>
+            ) : filtered.map(o => {
+              const isSelected = String(o.id) === String(value);
+              return (
+                <div
+                  key={o.id}
+                  onClick={() => { onChange(String(o.id)); setOpen(false); setSearch(""); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    padding: "0.5rem 0.75rem", borderRadius: "6px", cursor: "pointer",
+                    background: isSelected ? "#f1f5f9" : "transparent",
+                  }}
+                  onMouseOver={e => { if (!isSelected) e.currentTarget.style.background = "#f8fafc"; }}
+                  onMouseOut={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {isSelected && <Check size={13} color="#667eea" style={{ flexShrink: 0 }} />}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: isSelected ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {o.nombre}
+                    </div>
+                    {o.cliente_nombre && (
+                      <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{o.cliente_nombre}</div>
+                    )}
+                  </div>
+                  <span style={{
+                    fontSize: "0.65rem", fontWeight: 700, padding: "1px 7px", borderRadius: "20px",
+                    background: o.estado === "ejecucion" ? "#f0fdf4" : "#f8fafc",
+                    color: o.estado === "ejecucion" ? "#16a34a" : "#64748b",
+                    textTransform: "capitalize", flexShrink: 0,
+                  }}>
+                    {o.estado || "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Horas de lluvia ─────────────────────────────────────────────────────────
 function HorasLluvia({ horas, onChange }) {
   return (
-    <div className="space-y-2">
-      <Label>Horas con lluvia (click para marcar)</Label>
-      <div className="grid grid-cols-12 gap-1">
+    <div>
+      <label style={label}>Horas con lluvia (click para marcar)</label>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "4px" }}>
         {Array.from({ length: 24 }, (_, h) => (
-          <button
-            key={h}
-            type="button"
-            onClick={() => {
-              const next = [...horas];
-              next[h] = !next[h];
-              onChange(next);
-            }}
-            className={`h-8 w-full rounded text-xs font-medium border transition-all ${
-              horas[h]
-                ? "bg-blue-500 text-white border-blue-600"
-                : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-            }`}
+          <button key={h} type="button"
+            onClick={() => { const n = [...horas]; n[h] = !n[h]; onChange(n); }}
             title={`${h}:00 - ${h + 1}:00`}
-          >
-            {h}
-          </button>
+            style={{
+              height: "2rem", borderRadius: "6px", fontSize: "0.7rem", fontWeight: 700,
+              border: horas[h] ? "none" : "1px solid #e2e8f0",
+              background: horas[h] ? "#3b82f6" : "#f8fafc",
+              color: horas[h] ? "white" : "#94a3b8",
+              cursor: "pointer", transition: "all 0.1s",
+            }}
+          >{h}</button>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">
-        <CloudRain className="h-3 w-3 inline mr-1 text-blue-400" />
-        {horas.filter(Boolean).length} hora(s) con lluvia
+      <p style={{ margin: "0.5rem 0 0", fontSize: "0.75rem", color: "#64748b", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+        <CloudRain size={13} color="#60a5fa" />{horas.filter(Boolean).length} hora(s) con lluvia
       </p>
     </div>
   );
 }
 
+// ─── Selector simple (para recursos y actividades) ────────────────────────────
+function SimpleSelect({ value, onChange, options, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find(o => String(o.value) === String(value));
+
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div onClick={() => setOpen(o => !o)} style={{
+        ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between",
+        cursor: "pointer", userSelect: "none", height: "2.25rem", padding: "0 0.65rem",
+        border: open ? "1px solid #667eea" : "1px solid #cbd5e1",
+      }}>
+        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.8rem", color: selected ? "#1e293b" : "#94a3b8" }}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <ChevronDown size={13} color="#94a3b8" style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none" }} />
+      </div>
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, zIndex: 9999,
+          background: "white", border: "1px solid #e2e8f0", borderRadius: "8px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxHeight: "180px", overflowY: "auto", padding: "4px",
+        }}>
+          {options.map(o => (
+            <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); }}
+              style={{
+                padding: "0.4rem 0.65rem", borderRadius: "4px", fontSize: "0.8rem",
+                cursor: "pointer", color: "#334155",
+                background: String(o.value) === String(value) ? "#f1f5f9" : "transparent",
+              }}
+              onMouseOver={e => e.currentTarget.style.background = "#f8fafc"}
+              onMouseOut={e => e.currentTarget.style.background = String(o.value) === String(value) ? "#f1f5f9" : "transparent"}
+            >{o.label}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Recursos ────────────────────────────────────────────────────────────────
 function RecursosSection({ recursos, allRecursos, onChange }) {
-  const maquinaria = allRecursos.filter(
-    (r) => r.categoria === "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS" && r.activo !== false
-  );
-  const personal = allRecursos.filter(
-    (r) => r.categoria === "PERSONAL DE OBRA" && r.activo !== false
-  );
+  const maquinaria = allRecursos.filter(r => r.categoria === "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS" && r.activo !== false);
+  const personal = allRecursos.filter(r => r.categoria === "PERSONAL DE OBRA" && r.activo !== false);
 
   const addRecurso = (recursoId) => {
-    const recurso = allRecursos.find((r) => String(r.id) === recursoId);
-    if (!recurso) return;
-    if (recursos.find((r) => String(r.recurso_id) === String(recurso.id))) return;
-    onChange([
-      ...recursos,
-      {
-        recurso_id: recurso.id,
-        recurso_nombre: recurso.nombre,
-        categoria: recurso.categoria,
-        cantidad: 0,
-        empresa: "",
-        observacion: "",
-      },
-    ]);
+    const recurso = allRecursos.find(r => String(r.id) === String(recursoId));
+    if (!recurso || recursos.find(r => String(r.recurso_id) === String(recurso.id))) return;
+    onChange([...recursos, { recurso_id: recurso.id, recurso_nombre: recurso.nombre, categoria: recurso.categoria, cantidad: 0, empresa: "", observacion: "" }]);
   };
 
-  const updateRecurso = (idx, field, value) => {
-    const next = [...recursos];
-    next[idx] = { ...next[idx], [field]: value };
-    onChange(next);
-  };
-
-  const removeRecurso = (idx) => onChange(recursos.filter((_, i) => i !== idx));
+  const update = (idx, field, value) => { const n = [...recursos]; n[idx] = { ...n[idx], [field]: value }; onChange(n); };
+  const remove = (idx) => onChange(recursos.filter((_, i) => i !== idx));
 
   const renderGrupo = (titulo, lista, catKey) => {
-    const activos = recursos.filter((r) => r.categoria === catKey);
+    const activos = recursos.filter(r => r.categoria === catKey);
     return (
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm font-semibold">{titulo}</h4>
-          <Select onValueChange={(v) => addRecurso(v)}>
-            <SelectTrigger className="w-56 h-8 text-xs">
-              <SelectValue placeholder="+ Agregar recurso" />
-            </SelectTrigger>
-            <SelectContent>
-              {lista.map((r) => (
-                <SelectItem key={r.id} value={String(r.id)} className="text-xs">
-                  {r.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+          <h4 style={{ margin: 0, fontSize: "0.8rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>{titulo}</h4>
+          <div style={{ width: "200px" }}>
+            <SimpleSelect
+              value=""
+              onChange={addRecurso}
+              options={lista.map(r => ({ value: String(r.id), label: r.nombre }))}
+              placeholder="+ Agregar recurso"
+            />
+          </div>
         </div>
         {activos.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic py-2">Sin recursos agregados</p>
-        ) : (
-          <div className="space-y-2">
-            {activos.map((r) => {
-              const idx = recursos.findIndex((x) => String(x.recurso_id) === String(r.recurso_id));
-              if (idx === -1) return null;
-              return (
-                <div
-                  key={r.recurso_id}
-                  className="grid grid-cols-12 gap-2 items-center text-sm bg-muted/40 rounded-lg p-2"
-                >
-                  <span className="col-span-4 font-medium truncate">{r.recurso_nombre}</span>
-                  <Input
-                    className="col-span-2 h-7 text-xs"
-                    type="number"
-                    min="0"
-                    value={r.cantidad}
-                    onChange={(e) => updateRecurso(idx, "cantidad", parseFloat(e.target.value) || 0)}
-                    placeholder="Cant."
-                  />
-                  <Input
-                    className="col-span-3 h-7 text-xs"
-                    value={r.empresa}
-                    onChange={(e) => updateRecurso(idx, "empresa", e.target.value)}
-                    placeholder="Empresa"
-                  />
-                  <Input
-                    className="col-span-2 h-7 text-xs"
-                    value={r.observacion}
-                    onChange={(e) => updateRecurso(idx, "observacion", e.target.value)}
-                    placeholder="Obs."
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeRecurso(idx)}
-                    className="col-span-1 flex justify-center text-destructive hover:opacity-70"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+          <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic" }}>Sin recursos agregados</p>
+        ) : activos.map(r => {
+          const idx = recursos.findIndex(x => String(x.recurso_id) === String(r.recurso_id));
+          if (idx === -1) return null;
+          return (
+            <div key={r.recurso_id} style={{
+              display: "grid", gridTemplateColumns: "2fr 1fr 2fr 2fr auto",
+              gap: "0.5rem", alignItems: "center", background: "#f8fafc",
+              borderRadius: "8px", padding: "0.5rem 0.75rem", marginBottom: "0.4rem",
+            }}>
+              <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.recurso_nombre}</span>
+              <input type="number" min="0" value={r.cantidad} onChange={e => update(idx, "cantidad", parseFloat(e.target.value) || 0)} placeholder="Cant." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
+              <input value={r.empresa} onChange={e => update(idx, "empresa", e.target.value)} placeholder="Empresa" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
+              <input value={r.observacion} onChange={e => update(idx, "observacion", e.target.value)} placeholder="Observación" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
+              <button type="button" onClick={() => remove(idx)} style={btnGhost}><X size={15} /></button>
+            </div>
+          );
+        })}
+        <hr style={{ border: "none", borderTop: "1px solid #f1f5f9", margin: "1rem 0 0" }} />
       </div>
     );
   };
 
   return (
-    <div className="space-y-6">
-      {renderGrupo("Maquinaria / Equipos", maquinaria, "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS")}
-      <Separator />
+    <div>
+      {renderGrupo("Maquinaria / Equipos / Vehículos", maquinaria, "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS")}
       {renderGrupo("Personal de Obra", personal, "PERSONAL DE OBRA")}
     </div>
   );
 }
 
+// ─── Actividades ─────────────────────────────────────────────────────────────
 function ActividadesSection({ actividades, categorias, onChange }) {
   const addActividad = () => {
     const cat = categorias[0];
     if (!cat) return;
     onChange([...actividades, { categoria_id: cat.id, categoria_nombre: cat.nombre, descripcion: "" }]);
   };
-
   const update = (idx, field, value) => {
-    const next = [...actividades];
-    next[idx] = { ...next[idx], [field]: value };
-    if (field === "categoria_id")
-      next[idx].categoria_nombre = categorias.find((c) => String(c.id) === value)?.nombre || "";
-    onChange(next);
+    const n = [...actividades];
+    n[idx] = { ...n[idx], [field]: value };
+    if (field === "categoria_id") n[idx].categoria_nombre = categorias.find(c => String(c.id) === value)?.nombre || "";
+    onChange(n);
   };
-
   const remove = (idx) => onChange(actividades.filter((_, i) => i !== idx));
 
   return (
-    <div className="space-y-3">
+    <div>
       {actividades.map((act, idx) => (
-        <div key={idx} className="grid grid-cols-12 gap-2 items-start">
-          <div className="col-span-4">
-            <Select
-              value={String(act.categoria_id)}
-              onValueChange={(v) => update(idx, "categoria_id", v)}
-            >
-              <SelectTrigger className="text-xs h-9">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                {categorias.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)} className="text-xs">
-                    {c.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Textarea
-            className="col-span-7 text-xs min-h-[36px] h-9 resize-none"
-            value={act.descripcion}
-            onChange={(e) => update(idx, "descripcion", e.target.value)}
-            placeholder="Descripción..."
+        <div key={idx} style={{ display: "grid", gridTemplateColumns: "1.5fr 3fr auto", gap: "0.5rem", alignItems: "start", marginBottom: "0.5rem" }}>
+          <SimpleSelect
+            value={String(act.categoria_id)}
+            onChange={v => update(idx, "categoria_id", v)}
+            options={categorias.map(c => ({ value: String(c.id), label: c.nombre }))}
+            placeholder="Categoría"
           />
-          <button
-            type="button"
-            onClick={() => remove(idx)}
-            className="col-span-1 mt-2 flex justify-center text-destructive hover:opacity-70"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <textarea
+            value={act.descripcion}
+            onChange={e => update(idx, "descripcion", e.target.value)}
+            placeholder="Descripción de la actividad..."
+            rows={2}
+            style={{ ...inputStyle, resize: "vertical", fontSize: "0.8rem", padding: "0.4rem 0.65rem" }}
+          />
+          <button type="button" onClick={() => remove(idx)} style={{ ...btnGhost, marginTop: "0.4rem" }}><X size={15} /></button>
         </div>
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={addActividad} className="gap-1 text-xs">
-        <Plus className="h-3.5 w-3.5" />Agregar actividad
-      </Button>
+      <button type="button" onClick={addActividad} style={{ ...btnOutline, fontSize: "0.8rem", padding: "0.4rem 0.75rem", marginTop: "0.5rem" }}>
+        <Plus size={13} style={{ marginRight: "4px" }} />Agregar actividad
+      </button>
     </div>
   );
 }
 
+// ─── Formulario principal ────────────────────────────────────────────────────
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
-  const { data: obras = [], isLoading: isLoadingObras } = useQuery({
-    queryKey: ["obras"],
-    queryFn: () => obraService.list(),
-  });
-  const { data: recursos = [], isLoading: isLoadingRecursos } = useQuery({
-    queryKey: ["recursos"],
-    queryFn: () => recursoService.list(),
-  });
-  const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({
-    queryKey: ["categorias-actividad"],
-    queryFn: () => categoriaService.list(),
+  const { data: obras = [], isLoading: isLoadingObras } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
+  const { data: recursos = [], isLoading: isLoadingRecursos } = useQuery({ queryKey: ["recursos"], queryFn: () => recursoService.list() });
+  const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
+
+  const [form, setForm] = useState(normalizarInforme(informe) || {
+    obra_id: "", obra_nombre: "", fecha: new Date().toISOString().split("T")[0],
+    dia_semana: DIAS[new Date().getDay()], codigo_formato: "F-141-IN",
+    observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
+    elaborado_por: "", cargo_elaborado: "", revisado_por: "", cargo_revisado: "",
+    comision_topografia: false, horas_lluvia: Array(24).fill(false),
+    recursos: [], actividades: [], items_obra: [], status: "borrador",
   });
 
-  const [form, setForm] = useState(
-    normalizarInforme(informe) || {
-      obra_id: "",
-      obra_nombre: "",
-      obra_codigo: "",
-      fecha: new Date().toISOString().split("T")[0],
-      dia_semana: DIAS[new Date().getDay()],
-      codigo_formato: "F-141-IN",
-      observaciones_generales: "",
-      estado_terreno_inicio: "",
-      estado_terreno_final: "",
-      elaborado_por: "",
-      cargo_elaborado: "",
-      revisado_por: "",
-      cargo_revisado: "",
-      comision_topografia: false,
-      horas_lluvia: Array(24).fill(false),
-      recursos: [],
-      actividades: [],
-      items_obra: [],
-      status: "borrador",
-    }
-  );
-
-  const saveMutation = useMutation({
-    mutationFn: (data) => {
-      const payload = {
-        ...data,
-        obra_id: data.obra_id ? parseInt(data.obra_id, 10) : null,
-      };
-      return informe
-        ? informeDiarioService.update(informe.id, payload)
-        : informeDiarioService.create(payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["informes-diarios"] });
-      toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓");
-      onGuardado();
-    },
-    onError: (error) => {
-      const data = error?.response?.data;
-      const msg =
-        data?.detail ||
-        data?.non_field_errors?.[0] ||
-        (typeof data === "object" ? JSON.stringify(data) : null) ||
-        "Error al guardar el informe";
-      toast.error(msg);
-      console.error("❌ Save error:", data);
-    },
-  });
-
-  const setField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+  const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   const handleObraChange = (obraId) => {
-    const obra = obras.find((o) => String(o.id) === obraId);
-    setForm((prev) => ({
-      ...prev,
-      obra_id: obraId,
-      obra_nombre: obra?.nombre || "",
-    }));
+    const obra = obras.find(o => String(o.id) === obraId);
+    setForm(prev => ({ ...prev, obra_id: obraId, obra_nombre: obra?.nombre || "" }));
   };
 
   const handleFechaChange = (fecha) => {
     const d = new Date(fecha + "T12:00:00");
-    setForm((prev) => ({ ...prev, fecha, dia_semana: DIAS[d.getDay()] }));
+    setForm(prev => ({ ...prev, fecha, dia_semana: DIAS[d.getDay()] }));
   };
 
-  const addItemObra = () =>
-    setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
-  const updateItemObra = (idx, f, v) => {
-    const next = [...(form.items_obra || [])];
-    next[idx] = { ...next[idx], [f]: v };
-    setField("items_obra", next);
-  };
-  const removeItemObra = (idx) =>
-    setField("items_obra", (form.items_obra || []).filter((_, i) => i !== idx));
+  const addItemObra = () => setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
+  const updateItemObra = (idx, f, v) => { const n = [...(form.items_obra || [])]; n[idx] = { ...n[idx], [f]: v }; setField("items_obra", n); };
+  const removeItemObra = (idx) => setField("items_obra", (form.items_obra || []).filter((_, i) => i !== idx));
 
-  const canSave = !!form.obra_id && !!form.fecha && !saveMutation.isPending;
+  const saveMutation = useMutation({
+    mutationFn: (data) => {
+      const payload = { ...data, obra_id: data.obra_id ? parseInt(data.obra_id, 10) : null };
+      return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["informes-diarios"] }); toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓"); onGuardado(); },
+    onError: (error) => {
+      const data = error?.response?.data;
+      const msg = data?.detail || data?.non_field_errors?.[0] || (typeof data === "object" ? JSON.stringify(data) : null) || "Error al guardar";
+      toast.error(msg);
+    },
+  });
 
   if (isLoadingObras || isLoadingRecursos || isLoadingCategorias) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <div style={{ textAlign: "center", padding: "3rem" }}><Loader2 size={28} color="#667eea" style={{ animation: "spin 1s linear infinite" }} /></div>;
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Datos generales</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label>Obra *</Label>
-            <Select value={String(form.obra_id)} onValueChange={handleObraChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar obra" />
-              </SelectTrigger>
-              <SelectContent>
-                {obras.map((o) => (
-                  <SelectItem key={o.id} value={String(o.id)}>
-                    {o.nombre}{o.cliente_nombre ? ` — ${o.cliente_nombre}` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Fecha *</Label>
-            <Input type="date" value={form.fecha} onChange={(e) => handleFechaChange(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Día</Label>
-            <Input value={form.dia_semana} readOnly className="bg-muted" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Código formato</Label>
-            <Input value={form.codigo_formato} onChange={(e) => setField("codigo_formato", e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Estado</Label>
-            <Select value={form.status} onValueChange={(v) => setField("status", v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="borrador">Borrador</SelectItem>
-                <SelectItem value="enviado">Enviado</SelectItem>
-                <SelectItem value="aprobado">Aprobado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5 flex items-end">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.comision_topografia}
-                onChange={(e) => setField("comision_topografia", e.target.checked)}
-                className="h-4 w-4 rounded"
-              />
-              <span className="text-sm">Comisión de Topografía</span>
-            </label>
-          </div>
-        </CardContent>
-      </Card>
+    <div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Reporte de lluvia</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <HorasLluvia
-            horas={form.horas_lluvia || Array(24).fill(false)}
-            onChange={(v) => setField("horas_lluvia", v)}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Recursos (Maquinaria y Personal)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RecursosSection
-            recursos={form.recursos || []}
-            allRecursos={recursos}
-            onChange={(v) => setField("recursos", v)}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Actividades del día</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ActividadesSection
-            actividades={form.actividades || []}
-            categorias={categorias}
-            onChange={(v) => setField("actividades", v)}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold">Ítems de obra</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={addItemObra} className="gap-1 text-xs">
-              <Plus className="h-3.5 w-3.5" />Agregar ítem
-            </Button>
+      {/* Datos generales */}
+      <div style={card}>
+        <div style={cardHead}>Datos generales</div>
+        <div style={{ ...cardBody, ...grid3 }}>
+          <div>
+            <label style={label}>Obra * <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: "0.7rem" }}>(desde OPERACIONES)</span></label>
+            <ObraSelect obras={obras} value={form.obra_id} onChange={handleObraChange} />
           </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {(form.items_obra || []).length === 0 && (
-            <p className="text-xs text-muted-foreground italic">Sin ítems de obra</p>
-          )}
-          {(form.items_obra || []).map((item, idx) => (
-            <div key={idx} className="grid grid-cols-12 gap-2 items-center text-sm">
-              <Input
-                className="col-span-2 h-8 text-xs"
-                value={item.item}
-                onChange={(e) => updateItemObra(idx, "item", e.target.value)}
-                placeholder="Ítem"
-              />
-              <Textarea
-                className="col-span-4 text-xs min-h-[32px] h-8 resize-none"
-                value={item.descripcion}
-                onChange={(e) => updateItemObra(idx, "descripcion", e.target.value)}
-                placeholder="Descripción"
-              />
-              <Input
-                className="col-span-2 h-8 text-xs"
-                value={item.empresa}
-                onChange={(e) => updateItemObra(idx, "empresa", e.target.value)}
-                placeholder="Empresa"
-              />
-              <Input
-                className="col-span-3 h-8 text-xs"
-                value={item.responsable}
-                onChange={(e) => updateItemObra(idx, "responsable", e.target.value)}
-                placeholder="Responsable"
-              />
-              <button
-                type="button"
-                onClick={() => removeItemObra(idx)}
-                className="col-span-1 flex justify-center text-destructive hover:opacity-70"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Condiciones y observaciones</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Estado del terreno — Inicio</Label>
-              <Textarea
-                value={form.estado_terreno_inicio}
-                onChange={(e) => setField("estado_terreno_inicio", e.target.value)}
-                rows={3}
-                placeholder="Condiciones al inicio..."
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Estado del terreno — Final</Label>
-              <Textarea
-                value={form.estado_terreno_final}
-                onChange={(e) => setField("estado_terreno_final", e.target.value)}
-                rows={3}
-                placeholder="Condiciones al final..."
-              />
-            </div>
+          <div>
+            <label style={label}>Fecha *</label>
+            <input type="date" value={form.fecha} onChange={e => handleFechaChange(e.target.value)} style={inputStyle} />
           </div>
-          <div className="space-y-1.5">
-            <Label>Observaciones generales</Label>
-            <Textarea
-              value={form.observaciones_generales}
-              onChange={(e) => setField("observaciones_generales", e.target.value)}
-              rows={3}
+          <div>
+            <label style={label}>Día</label>
+            <input value={form.dia_semana} readOnly style={{ ...inputStyle, background: "#f8fafc", color: "#64748b" }} />
+          </div>
+          <div>
+            <label style={label}>Código formato</label>
+            <input value={form.codigo_formato} onChange={e => setField("codigo_formato", e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={label}>Estado</label>
+            <SimpleSelect
+              value={form.status}
+              onChange={v => setField("status", v)}
+              options={[{ value: "borrador", label: "Borrador" }, { value: "enviado", label: "Enviado" }, { value: "aprobado", label: "Aprobado" }]}
+              placeholder="Estado"
             />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Firmas</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Elaborado por</Label>
-            <Input value={form.elaborado_por} onChange={(e) => setField("elaborado_por", e.target.value)} placeholder="Nombre" />
-            <Input value={form.cargo_elaborado} onChange={(e) => setField("cargo_elaborado", e.target.value)} placeholder="Cargo" />
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontSize: "0.875rem", color: "#475569" }}>
+              <input type="checkbox" checked={form.comision_topografia} onChange={e => setField("comision_topografia", e.target.checked)} style={{ width: "1rem", height: "1rem" }} />
+              Comisión de Topografía
+            </label>
           </div>
-          <div className="space-y-2">
-            <Label>Revisado por</Label>
-            <Input value={form.revisado_por} onChange={(e) => setField("revisado_por", e.target.value)} placeholder="Nombre" />
-            <Input value={form.cargo_revisado} onChange={(e) => setField("cargo_revisado", e.target.value)} placeholder="Cargo" />
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <div className="flex justify-end gap-3 pb-8">
-        <Button variant="outline" onClick={onCancelar} disabled={saveMutation.isPending}>
-          Cancelar
-        </Button>
-        <Button
+      {/* Lluvia */}
+      <div style={card}>
+        <div style={cardHead}>Reporte de lluvia</div>
+        <div style={cardBody}><HorasLluvia horas={form.horas_lluvia || Array(24).fill(false)} onChange={v => setField("horas_lluvia", v)} /></div>
+      </div>
+
+      {/* Recursos */}
+      <div style={card}>
+        <div style={cardHead}>Recursos (Maquinaria y Personal)</div>
+        <div style={cardBody}><RecursosSection recursos={form.recursos || []} allRecursos={recursos} onChange={v => setField("recursos", v)} /></div>
+      </div>
+
+      {/* Actividades */}
+      <div style={card}>
+        <div style={cardHead}>Actividades del día</div>
+        <div style={cardBody}><ActividadesSection actividades={form.actividades || []} categorias={categorias} onChange={v => setField("actividades", v)} /></div>
+      </div>
+
+      {/* Ítems de obra */}
+      <div style={card}>
+        <div style={{ ...cardHead, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>Ítems de obra</span>
+          <button type="button" onClick={addItemObra} style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}><Plus size={12} style={{ marginRight: "4px" }} />Agregar ítem</button>
+        </div>
+        <div style={cardBody}>
+          {(form.items_obra || []).length === 0 && <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic" }}>Sin ítems de obra</p>}
+          {(form.items_obra || []).map((item, idx) => (
+            <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 3fr 1.5fr 2fr auto", gap: "0.5rem", marginBottom: "0.5rem", alignItems: "center" }}>
+              <input value={item.item} onChange={e => updateItemObra(idx, "item", e.target.value)} placeholder="Ítem" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
+              <input value={item.descripcion} onChange={e => updateItemObra(idx, "descripcion", e.target.value)} placeholder="Descripción" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
+              <input value={item.empresa} onChange={e => updateItemObra(idx, "empresa", e.target.value)} placeholder="Empresa" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
+              <input value={item.responsable} onChange={e => updateItemObra(idx, "responsable", e.target.value)} placeholder="Responsable" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
+              <button type="button" onClick={() => removeItemObra(idx)} style={btnGhost}><X size={15} /></button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Condiciones */}
+      <div style={card}>
+        <div style={cardHead}>Condiciones y observaciones</div>
+        <div style={cardBody}>
+          <div style={{ ...grid2, marginBottom: "1rem" }}>
+            <div>
+              <label style={label}>Estado del terreno — Inicio</label>
+              <textarea value={form.estado_terreno_inicio} onChange={e => setField("estado_terreno_inicio", e.target.value)} rows={3} placeholder="Condiciones al inicio..." style={{ ...inputStyle, resize: "vertical" }} />
+            </div>
+            <div>
+              <label style={label}>Estado del terreno — Final</label>
+              <textarea value={form.estado_terreno_final} onChange={e => setField("estado_terreno_final", e.target.value)} rows={3} placeholder="Condiciones al final..." style={{ ...inputStyle, resize: "vertical" }} />
+            </div>
+          </div>
+          <div>
+            <label style={label}>Observaciones generales</label>
+            <textarea value={form.observaciones_generales} onChange={e => setField("observaciones_generales", e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Firmas */}
+      <div style={card}>
+        <div style={cardHead}>Firmas</div>
+        <div style={{ ...cardBody, ...grid2 }}>
+          <div>
+            <label style={label}>Elaborado por</label>
+            <input value={form.elaborado_por} onChange={e => setField("elaborado_por", e.target.value)} placeholder="Nombre" style={{ ...inputStyle, marginBottom: "0.5rem" }} />
+            <input value={form.cargo_elaborado} onChange={e => setField("cargo_elaborado", e.target.value)} placeholder="Cargo" style={inputStyle} />
+          </div>
+          <div>
+            <label style={label}>Revisado por</label>
+            <input value={form.revisado_por} onChange={e => setField("revisado_por", e.target.value)} placeholder="Nombre" style={{ ...inputStyle, marginBottom: "0.5rem" }} />
+            <input value={form.cargo_revisado} onChange={e => setField("cargo_revisado", e.target.value)} placeholder="Cargo" style={inputStyle} />
+          </div>
+        </div>
+      </div>
+
+      {/* Botones */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", paddingBottom: "2rem" }}>
+        <button type="button" onClick={onCancelar} disabled={saveMutation.isPending} style={btnOutline}>Cancelar</button>
+        <button
+          type="button"
           onClick={() => saveMutation.mutate(form)}
-          disabled={!canSave}
-          title={!form.obra_id ? "Selecciona una obra primero" : !form.fecha ? "Selecciona una fecha" : ""}
+          disabled={!form.obra_id || !form.fecha || saveMutation.isPending}
+          title={!form.obra_id ? "Selecciona una obra primero" : ""}
+          style={{ ...btnPrimary, opacity: (!form.obra_id || !form.fecha || saveMutation.isPending) ? 0.5 : 1, cursor: (!form.obra_id || !form.fecha || saveMutation.isPending) ? "not-allowed" : "pointer" }}
         >
-          {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {saveMutation.isPending && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
           {informe ? "Guardar cambios" : "Crear informe"}
-        </Button>
+        </button>
       </div>
     </div>
   );
