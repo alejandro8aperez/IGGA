@@ -7,60 +7,83 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Pencil, Trash2, Plus, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Plus, Loader2, ExternalLink } from "lucide-react";
 import { obraService, recursoService, categoriaService } from "@/services/informeDiarioApi";
 
-function ObrasCrud() {
-  const queryClient = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ codigo: "", nombre: "", ubicacion: "", cliente: "", activo: true });
+// ── OBRAS: solo lectura, vienen de OPERACIONES ─────────────────────────────
+const ESTADO_COLOR = {
+  planificacion: { bg: "#eff6ff", color: "#3b82f6" },
+  ejecucion:     { bg: "#f0fdf4", color: "#16a34a" },
+  pausado:       { bg: "#fffbeb", color: "#d97706" },
+  completado:    { bg: "#f8fafc", color: "#64748b" },
+};
 
-  const { data: obras = [] } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
-  const createMut = useMutation({ mutationFn: d => obraService.create(d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); } });
-  const updateMut = useMutation({ mutationFn: ({ id, d }) => obraService.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["obras"] }); setShowForm(false); setEditing(null); } });
-  const deleteMut = useMutation({ mutationFn: id => obraService.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["obras"] }) });
+function ObrasLista() {
+  const { data: obras = [], isLoading } = useQuery({
+    queryKey: ["obras"],
+    queryFn: () => obraService.list(),
+  });
 
-  const openNew = () => { setEditing(null); setForm({ codigo: "", nombre: "", ubicacion: "", cliente: "", activo: true }); setShowForm(true); };
-  const openEdit = (o) => { setEditing(o); setForm({ codigo: o.codigo, nombre: o.nombre, ubicacion: o.ubicacion || "", cliente: o.cliente || "", activo: o.activo !== false }); setShowForm(true); };
-  const save = () => editing ? updateMut.mutate({ id: editing.id, d: form }) : createMut.mutate(form);
-  const saving = createMut.isPending || updateMut.isPending;
+  if (isLoading) return (
+    <div style={{ textAlign: "center", padding: "3rem", color: "#94a3b8" }}>
+      <Loader2 style={{ display: "inline", animation: "spin 1s linear infinite" }} size={24} />
+    </div>
+  );
+
+  if (obras.length === 0) return (
+    <div style={{ textAlign: "center", padding: "3rem", color: "#94a3b8" }}>
+      <p style={{ margin: 0, fontWeight: 600 }}>No hay proyectos registrados</p>
+      <p style={{ margin: "0.5rem 0 0", fontSize: "0.8rem" }}>
+        Los proyectos se crean desde el módulo <strong>OPERACIONES</strong>.
+      </p>
+    </div>
+  );
 
   return (
-    <div className="space-y-3">
-      <div className="flex justify-end"><Button size="sm" onClick={openNew} className="gap-1"><Plus className="h-3.5 w-3.5" />Nueva obra</Button></div>
-      <div className="space-y-2">
-        {obras.map(o => (
-          <div key={o.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-            <div><p className="text-sm font-medium">{o.codigo} — {o.nombre}</p><p className="text-xs text-muted-foreground">{o.cliente} · {o.ubicacion}</p></div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(o)}><Pencil className="h-3.5 w-3.5" /></Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteMut.mutate(o.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-            </div>
-          </div>
-        ))}
+    <div>
+      <div style={{
+        background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px",
+        padding: "0.75rem 1rem", marginBottom: "1rem", display: "flex",
+        alignItems: "center", gap: "0.5rem", fontSize: "0.8rem", color: "#64748b",
+      }}>
+        <ExternalLink size={14} />
+        Las obras provienen del módulo <strong>OPERACIONES → Proyectos</strong>. Para agregar o editar, ve a ese módulo.
       </div>
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>{editing ? "Editar obra" : "Nueva obra"}</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label>Código *</Label><Input value={form.codigo} onChange={e => setForm({ ...form, codigo: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Nombre *</Label><Input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {obras.map(o => {
+          const estilo = ESTADO_COLOR[o.estado] || ESTADO_COLOR.planificacion;
+          return (
+            <div key={o.id} style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "0.75rem 1rem", borderRadius: "8px", background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+            }}>
+              <div>
+                <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: 600, color: "#1e293b" }}>
+                  {o.nombre}
+                </p>
+                <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem", color: "#64748b" }}>
+                  {o.cliente_nombre && `Cliente: ${o.cliente_nombre}`}
+                  {o.cliente_nombre && o.fecha_inicio && " · "}
+                  {o.fecha_inicio && `Inicio: ${o.fecha_inicio}`}
+                </p>
+              </div>
+              <span style={{
+                fontSize: "0.7rem", fontWeight: 700, padding: "2px 10px",
+                borderRadius: "20px", textTransform: "capitalize",
+                background: estilo.bg, color: estilo.color,
+              }}>
+                {o.estado}
+              </span>
             </div>
-            <div className="space-y-1"><Label>Cliente</Label><Input value={form.cliente} onChange={e => setForm({ ...form, cliente: e.target.value })} /></div>
-            <div className="space-y-1"><Label>Ubicación</Label><Input value={form.ubicacion} onChange={e => setForm({ ...form, ubicacion: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
-            <Button onClick={save} disabled={!form.codigo || !form.nombre || saving}>{saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}{editing ? "Guardar" : "Crear"}</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
+// ── RECURSOS CRUD ────────────────────────────────────────────────────────────
 function RecursosCrud() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -81,15 +104,15 @@ function RecursosCrud() {
   const personal = recursos.filter(r => r.categoria === "PERSONAL DE OBRA");
 
   const renderGrupo = (titulo, lista) => (
-    <div>
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{titulo}</h4>
-      <div className="space-y-1.5">
+    <div style={{ marginBottom: "1rem" }}>
+      <h4 style={{ fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{titulo}</h4>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
         {lista.map(r => (
-          <div key={r.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 text-sm">
-            <span>{r.nombre} <span className="text-xs text-muted-foreground">({r.unidad})</span></span>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(r)}><Pencil className="h-3 w-3" /></Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMut.mutate(r.id)}><Trash2 className="h-3 w-3" /></Button>
+          <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "8px", background: "#f8fafc", border: "1px solid #e2e8f0", fontSize: "0.875rem" }}>
+            <span style={{ color: "#1e293b" }}>{r.nombre} <span style={{ color: "#94a3b8", fontSize: "0.75rem" }}>({r.unidad})</span></span>
+            <div style={{ display: "flex", gap: "0.25rem" }}>
+              <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil size={13} /></Button>
+              <Button variant="ghost" size="icon" onClick={() => deleteMut.mutate(r.id)} style={{ color: "#ef4444" }}><Trash2 size={13} /></Button>
             </div>
           </div>
         ))}
@@ -98,17 +121,19 @@ function RecursosCrud() {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end"><Button size="sm" onClick={openNew} className="gap-1"><Plus className="h-3.5 w-3.5" />Nuevo recurso</Button></div>
+    <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+        <Button size="sm" onClick={openNew}><Plus size={14} style={{ marginRight: "4px" }} />Nuevo recurso</Button>
+      </div>
       {renderGrupo("Maquinaria / Equipos / Vehículos", maquinaria)}
       {renderGrupo("Personal de Obra", personal)}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Editar recurso" : "Nuevo recurso"}</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <div className="space-y-1"><Label>Nombre *</Label><Input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
+          <div style={{ display: "grid", gap: "0.75rem", padding: "0.5rem 0" }}>
+            <div><Label>Nombre *</Label><Input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div>
                 <Label>Categoría</Label>
                 <Select value={form.categoria} onValueChange={v => setForm({ ...form, categoria: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -118,12 +143,12 @@ function RecursosCrud() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1"><Label>Unidad</Label><Input value={form.unidad} onChange={e => setForm({ ...form, unidad: e.target.value })} placeholder="persona, unidad, hora..." /></div>
+              <div><Label>Unidad</Label><Input value={form.unidad} onChange={e => setForm({ ...form, unidad: e.target.value })} placeholder="persona, unidad, hora..." /></div>
             </div>
           </div>
-          <div className="flex justify-end gap-2">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
             <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
-            <Button onClick={save} disabled={!form.nombre || saving}>{saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}{editing ? "Guardar" : "Crear"}</Button>
+            <Button onClick={save} disabled={!form.nombre || saving}>{saving && <Loader2 size={13} style={{ marginRight: "4px", animation: "spin 1s linear infinite" }} />}{editing ? "Guardar" : "Crear"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -131,6 +156,7 @@ function RecursosCrud() {
   );
 }
 
+// ── CATEGORÍAS CRUD ──────────────────────────────────────────────────────────
 function CategoriasCrud() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -148,29 +174,31 @@ function CategoriasCrud() {
   const saving = createMut.isPending || updateMut.isPending;
 
   return (
-    <div className="space-y-3">
-      <div className="flex justify-end"><Button size="sm" onClick={openNew} className="gap-1"><Plus className="h-3.5 w-3.5" />Nueva categoría</Button></div>
-      <div className="space-y-1.5">
+    <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+        <Button size="sm" onClick={openNew}><Plus size={14} style={{ marginRight: "4px" }} />Nueva categoría</Button>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
         {categorias.map(c => (
-          <div key={c.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 text-sm">
+          <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "8px", background: "#f8fafc", border: "1px solid #e2e8f0", fontSize: "0.875rem", color: "#1e293b" }}>
             <span>{c.nombre}</span>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(c)}><Pencil className="h-3 w-3" /></Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteMut.mutate(c.id)}><Trash2 className="h-3 w-3" /></Button>
+            <div style={{ display: "flex", gap: "0.25rem" }}>
+              <Button variant="ghost" size="icon" onClick={() => openEdit(c)}><Pencil size={13} /></Button>
+              <Button variant="ghost" size="icon" onClick={() => deleteMut.mutate(c.id)} style={{ color: "#ef4444" }}><Trash2 size={13} /></Button>
             </div>
           </div>
         ))}
       </div>
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Editar categoría" : "Nueva categoría"}</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <div className="space-y-1"><Label>Nombre *</Label><Input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
-            <div className="space-y-1"><Label>Orden</Label><Input type="number" value={form.orden} onChange={e => setForm({ ...form, orden: parseInt(e.target.value) || 0 })} /></div>
+          <div style={{ display: "grid", gap: "0.75rem", padding: "0.5rem 0" }}>
+            <div><Label>Nombre *</Label><Input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} /></div>
+            <div><Label>Orden</Label><Input type="number" value={form.orden} onChange={e => setForm({ ...form, orden: parseInt(e.target.value) || 0 })} /></div>
           </div>
-          <div className="flex justify-end gap-2">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
             <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
-            <Button onClick={save} disabled={!form.nombre || saving}>{saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}{editing ? "Guardar" : "Crear"}</Button>
+            <Button onClick={save} disabled={!form.nombre || saving}>{saving && <Loader2 size={13} style={{ marginRight: "4px", animation: "spin 1s linear infinite" }} />}{editing ? "Guardar" : "Crear"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -178,20 +206,30 @@ function CategoriasCrud() {
   );
 }
 
+// ── EXPORT ───────────────────────────────────────────────────────────────────
 export default function InformeCatalogos() {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">Administra los catálogos maestros usados en los informes diarios.</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ margin: 0, fontSize: "0.875rem", color: "#64748b" }}>
+        Administra los catálogos maestros usados en los informes diarios.
+      </p>
       <Tabs defaultValue="obras">
         <TabsList>
-          <TabsTrigger value="obras">Obras</TabsTrigger>
+          <TabsTrigger value="obras">Obras / Proyectos</TabsTrigger>
           <TabsTrigger value="recursos">Recursos</TabsTrigger>
           <TabsTrigger value="categorias">Categorías de Actividad</TabsTrigger>
         </TabsList>
-        <TabsContent value="obras" className="mt-4"><Card><CardContent className="pt-6"><ObrasCrud /></CardContent></Card></TabsContent>
-        <TabsContent value="recursos" className="mt-4"><Card><CardContent className="pt-6"><RecursosCrud /></CardContent></Card></TabsContent>
-        <TabsContent value="categorias" className="mt-4"><Card><CardContent className="pt-6"><CategoriasCrud /></CardContent></Card></TabsContent>
+        <TabsContent value="obras" style={{ marginTop: "1rem" }}>
+          <Card><CardContent style={{ paddingTop: "1.5rem" }}><ObrasLista /></CardContent></Card>
+        </TabsContent>
+        <TabsContent value="recursos" style={{ marginTop: "1rem" }}>
+          <Card><CardContent style={{ paddingTop: "1.5rem" }}><RecursosCrud /></CardContent></Card>
+        </TabsContent>
+        <TabsContent value="categorias" style={{ marginTop: "1rem" }}>
+          <Card><CardContent style={{ paddingTop: "1.5rem" }}><CategoriasCrud /></CardContent></Card>
+        </TabsContent>
       </Tabs>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
