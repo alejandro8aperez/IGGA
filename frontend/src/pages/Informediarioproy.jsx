@@ -393,7 +393,7 @@ function InformeDiarioContent() {
     { id: "dashboard", icon: LayoutDashboard, label: "Panel" },
     { id: "lista", icon: BookOpen, label: "Historial" },
     { id: "fotos", icon: ImageIcon, label: "Fotos" },
-    { id: "catalogos", icon: Settings, label: "Config" },
+    { id: "todos", icon: ClipboardList, label: "Todos" },
   ];
 
   return (
@@ -599,7 +599,12 @@ function InformeDiarioContent() {
             />
           )}
 
-          {activeTab === "catalogos" && <InformeCatalogos />}
+          {activeTab === "todos" && (
+            <InformeLista
+              onNuevo={() => { setEditingInforme(null); setActiveTab("formulario"); }}
+              onEditar={(inf) => { setEditingInforme(inf); setActiveTab("formulario"); }}
+            />
+          )}
         </div>
       </div>
     </div>
