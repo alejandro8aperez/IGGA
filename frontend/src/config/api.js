@@ -83,15 +83,14 @@ export const API = {
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
 
-    INFORMES: `${BASE}/api/informe-diario/informes/`,
-    OBRAS: `${BASE}/api/operaciones/proyectos/`, // Usamos proyectos de OPERACIONES
-
-    // ✅ FIX STATUS COUNTS
-    STATUS_COUNTS:
-      `${BASE}/api/informe-diario/informes/status-counts/`,
-
-    DASHBOARD:
-      `${BASE}/api/informe-diario/dashboard/`,
+    INFORMES:            `${BASE}/api/informe-diario/informes/`,
+    OBRAS:               `${BASE}/api/operaciones/proyectos/`,
+    RECURSOS:            `${BASE}/api/informe-diario/recursos/`,
+    CATEGORIAS_RECURSOS: `${BASE}/api/informe-diario/categorias-recursos/`,
+    CATEGORIAS_ACTIVIDADES: `${BASE}/api/informe-diario/categorias-actividades/`,
+    ANEXOS:              `${BASE}/api/informe-diario/anexos/`,
+    STATUS_COUNTS:       `${BASE}/api/informe-diario/informes/status-counts/`,
+    DASHBOARD:           `${BASE}/api/informe-diario/dashboard/`,
   },
 
   // ---------------------------------------------------------------------------
