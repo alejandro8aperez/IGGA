@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Camera, X, UploadCloud, Loader2 } from 'lucide-react';
-import API from '../config/api';
+import { API } from '@/config/api';
 
 const HojaFotosInforme = ({ informeId, obraId }) => {
     const [fotos, setFotos] = useState({});
