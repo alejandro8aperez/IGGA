@@ -8,11 +8,16 @@ import axios from 'axios';
 
 const DEFAULT_LOCAL_URL = 'http://localhost:8000/api';
 
-const BASE_URL =
+let BASE_URL =
     import.meta.env.VITE_API_URL ||
     (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? DEFAULT_LOCAL_URL
         : `${window.location.origin}/api`);
+
+// Asegurar que la baseURL de Axios siempre apunte al prefijo /api para evitar 404 en producción
+if (BASE_URL && !BASE_URL.toLowerCase().endsWith('/api') && !BASE_URL.toLowerCase().endsWith('/api/')) {
+    BASE_URL = BASE_URL.endsWith('/') ? `${BASE_URL}api` : `${BASE_URL}/api`;
+}
 
 const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 
