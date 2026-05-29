@@ -7,6 +7,7 @@
 // Obtenemos la URL y nos aseguramos de que NO termine en slash ni en /api
 const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const BASE = rawUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+const ROOT = `${BASE}/api`;
 
 console.log(`[ERP] API Base configurada en: ${BASE}`);
 
@@ -42,12 +43,13 @@ export const API = {
   // VENTAS / PEDIDOS
   // ---------------------------------------------------------------------------
   VENTAS: {
-    PEDIDOS: `${BASE}/api/pedidos/`,
+    PEDIDOS: `${ROOT}/venta/pedidos/`,
+    FACTURAS: `${ROOT}/venta/facturas/`,
   },
   PEDIDOS: {
-    LIST: `${BASE}/api/pedidos/`,
-    CREATE: `${BASE}/api/pedidos/`,
-    DETAIL: (id) => `${BASE}/api/pedidos/${id}/`,
+    LIST: `${ROOT}/venta/pedidos/`,
+    CREATE: `${ROOT}/venta/pedidos/`,
+    DETAIL: (id) => `${ROOT}/venta/pedidos/${id}/`,
   },
 
   // ---------------------------------------------------------------------------
@@ -77,21 +79,25 @@ export const API = {
   // OPERACIONES / PROYECTOS / OBRAS
   // ---------------------------------------------------------------------------
   OPERACIONES: {
-    PROYECTOS: `${BASE}/api/operaciones/proyectos/`,
+    PROYECTOS: `${ROOT}/operaciones/proyectos/`,
   },
 
   // ---------------------------------------------------------------------------
   // INFORME DIARIO
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
-    INFORMES:            `${BASE}/api/informe-diario/informes/`,
-    OBRAS:               `${BASE}/api/operaciones/proyectos/`,
-    RECURSOS:            `${BASE}/api/informe-diario/recursos/`,
-    CATEGORIAS_RECURSOS: `${BASE}/api/informe-diario/categorias-recursos/`,
-    CATEGORIAS_ACTIVIDADES: `${BASE}/api/informe-diario/categorias-actividades/`,
-    ANEXOS:              `${BASE}/api/informe-diario/anexos/`,
-    STATUS_COUNTS:       `${BASE}/api/informe-diario/informes/status-counts/`,
-    DASHBOARD:           `${BASE}/api/informe-diario/dashboard/`,
+    INFORMES:            `${ROOT}/informe-diario/informes/`,
+    OBRAS:               `${ROOT}/operaciones/proyectos/`,
+    RECURSOS:            `${ROOT}/informe-diario/recursos/`,
+    CATEGORIAS_RECURSOS: `${ROOT}/informe-diario/categorias-recursos/`,
+    CATEGORIAS_ACTIVIDADES: `${ROOT}/informe-diario/categorias-actividades/`,
+    ANEXOS:              `${ROOT}/informe-diario/anexos/`,
+    STATUS_COUNTS:       `${ROOT}/informe-diario/informes/status-counts/`,
+    DASHBOARD:           `${ROOT}/informe-diario/dashboard/`,
+  },
+
+  KAVE: {
+    DISENOS: `${ROOT}/kave/disenos/`,
   },
 
   // ---------------------------------------------------------------------------
