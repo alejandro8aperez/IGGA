@@ -87,14 +87,14 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                 <Camera className="text-blue-500" size={32} />
             </div>
 
-            <div className="grid grid-cols-4 gap-2 bg-slate-950/80 p-3 rounded-xl shadow-2xl border border-slate-800/50">
+            <div className="grid grid-cols-4 gap-1.5 bg-slate-950/90 p-2 rounded-lg border border-slate-800 shadow-inner">
                 {slots.map((num) => (
                     <div 
                         key={num} 
-                        className={`relative group aspect-square rounded-lg border-2 transition-all duration-200 flex items-center justify-center overflow-hidden
+                        className={`relative aspect-square rounded border transition-all duration-200 flex items-center justify-center overflow-hidden
                             ${fotos[num] 
-                                ? 'border-slate-700 bg-slate-800 shadow-md' 
-                                : 'border-slate-800/50 border-dashed hover:border-blue-500/50 hover:bg-blue-500/10 bg-slate-900/40'
+                                ? 'border-slate-600 bg-slate-800' 
+                                : 'border-slate-800 border-dashed hover:border-blue-500/50 hover:bg-blue-500/5 bg-slate-900/30'
                             }`}
                     >
                         {loading[num] ? (
@@ -107,12 +107,12 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                                 <img 
                                     src={fotos[num].imagen_url || fotos[num].imagen} 
                                     alt={`Foto ${num}`} 
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button 
                                         onClick={() => handleDelete(num, fotos[num].id)}
-                                        className="bg-red-500 hover:bg-red-600 p-2 rounded-full text-white shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-all"
+                                        className="bg-red-500/90 p-1.5 rounded-full text-white shadow-xl"
                                         title="Eliminar"
                                     >
                                         <X size={16} />
@@ -120,9 +120,8 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                                 </div>
                             </>
                         ) : (
-                            <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer transition-all">
-                                <UploadCloud className="text-slate-700 group-hover:text-blue-500 transition-colors mb-1" size={20} />
-                                <span className="text-[8px] font-bold text-slate-600 group-hover:text-blue-500 uppercase mt-1 transition-colors">Slot {num}</span>
+                            <label className="w-full h-full cursor-pointer flex items-center justify-center group">
+                                <UploadCloud className="text-slate-700 group-hover:text-blue-500 transition-colors" size={20} />
                                 <input 
                                     type="file" 
                                     className="hidden" 

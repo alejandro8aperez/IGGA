@@ -5,8 +5,7 @@
 // =============================================================================
 
 const BASE =
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:8000';
+  (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api$/, '');
 
 // =============================================================================
 // ENDPOINTS API
@@ -82,12 +81,11 @@ export const API = {
   // INFORME DIARIO
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
-
     INFORMES:            `${BASE}/api/informe-diario/informes/`,
-    OBRAS:               `${BASE}/api/operaciones/proyectos/`,
+    OBRAS:               `${BASE}/api/informe-diario/obras/`,
     RECURSOS:            `${BASE}/api/informe-diario/recursos/`,
-    CATEGORIAS_RECURSOS: `${BASE}/api/informe-diario/categorias-recursos/`,
-    CATEGORIAS_ACTIVIDADES: `${BASE}/api/informe-diario/categorias-actividades/`,
+    CATEGORIAS_RECURSOS: `${BASE}/api/informe-diario/categorias-recurso/`,
+    CATEGORIAS_ACTIVIDADES: `${BASE}/api/informe-diario/categorias-actividad/`,
     ANEXOS:              `${BASE}/api/informe-diario/anexos/`,
     STATUS_COUNTS:       `${BASE}/api/informe-diario/informes/status-counts/`,
     DASHBOARD:           `${BASE}/api/informe-diario/dashboard/`,

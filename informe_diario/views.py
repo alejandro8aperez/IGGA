@@ -106,15 +106,13 @@ def _transform_frontend_data(data):
             for idx, it in enumerate(t.get('items_obra') or [])
         ]
 
-    # Limpieza: Eliminar campos que el Serializer no espera para evitar errores 400
+    # Limpieza: Eliminar campos de solo lectura para evitar errores 400
     for campo in ('obra_nombre', 'obra_codigo', 'dia_semana',
                   'fotos_urls', 'status_label', 'foto_principal', 'id',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'creado_en', 'actualizado_en', 'anexos'):
         t.pop(campo, None)
-
     return t
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Catálogos
@@ -127,9 +125,7 @@ class ObraViewSet(viewsets.ModelViewSet):
     ordering_fields = ['codigo', 'nombre']
 
     def get_queryset(self):
-        # El selector de obras debe mostrar únicamente aquellas que tengan 
-        # proyectos registrados en el módulo de OPERACIONES.
-        # Usamos distinct() para evitar duplicados si una obra tiene varios proyectos.
+        # Selector inteligente: Solo muestra obras vinculadas a proyectos de OPERACIONES
         qs = Obra.objects.filter(proyecto__isnull=False).distinct().order_by('codigo', 'nombre')
         
         if self.action == 'list':
