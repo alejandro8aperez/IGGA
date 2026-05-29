@@ -213,15 +213,11 @@ export default function InformeCatalogos() {
       <p style={{ margin: 0, fontSize: "0.875rem", color: "#64748b" }}>
         Administra los catálogos maestros usados en los informes diarios.
       </p>
-      <Tabs defaultValue="obras">
+      <Tabs defaultValue="recursos">
         <TabsList>
-          <TabsTrigger value="obras">Obras / Proyectos</TabsTrigger>
           <TabsTrigger value="recursos">Recursos</TabsTrigger>
           <TabsTrigger value="categorias">Categorías de Actividad</TabsTrigger>
         </TabsList>
-        <TabsContent value="obras" style={{ marginTop: "1rem" }}>
-          <Card><CardContent style={{ paddingTop: "1.5rem" }}><ObrasLista /></CardContent></Card>
-        </TabsContent>
         <TabsContent value="recursos" style={{ marginTop: "1rem" }}>
           <Card><CardContent style={{ paddingTop: "1.5rem" }}><RecursosCrud /></CardContent></Card>
         </TabsContent>
