@@ -14,10 +14,11 @@ export default function InformeLista({ onNuevo, onEditar }) {
   const [menuOpen, setMenuOpen] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: informes = [], isLoading } = useQuery({
+  const { data: rawInformes = [], isLoading } = useQuery({
     queryKey: ["informes-diarios"],
     queryFn: () => informeDiarioService.list({ ordering: "-fecha" }),
   });
+  const informes = Array.isArray(rawInformes) ? rawInformes : (rawInformes?.results || []);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => informeDiarioService.delete(id),

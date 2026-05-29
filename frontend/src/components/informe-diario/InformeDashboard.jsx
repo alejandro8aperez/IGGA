@@ -12,15 +12,17 @@ import { informeDiarioService, obraService } from "@/services/informeDiarioApi";
 export default function InformeDashboard({ onNuevoInforme }) {
   const [obraFiltro, setObraFiltro] = useState("todas");
 
-  const { data: informes = [], isLoading } = useQuery({
+  const { data: rawInformes = [], isLoading } = useQuery({
     queryKey: ["informes-diarios"],
     queryFn: () => informeDiarioService.list({ ordering: "-fecha", limit: 200 }),
   });
+  const informes = Array.isArray(rawInformes) ? rawInformes : (rawInformes?.results || []);
 
-  const { data: obras = [] } = useQuery({
+  const { data: rawObras = [] } = useQuery({
     queryKey: ["obras"],
     queryFn: () => obraService.list(),
   });
+  const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
   const filtrados = useMemo(() => {
     if (obraFiltro === "todas") return informes;

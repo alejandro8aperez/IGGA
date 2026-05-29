@@ -4,8 +4,11 @@
 // En producción (Render) setear la variable: VITE_API_URL
 // =============================================================================
 
-const BASE =
-  (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/?$/, '').replace(/\/+$/, '');
+// Obtenemos la URL y nos aseguramos de que NO termine en slash ni en /api
+const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE = rawUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+
+console.log(`[ERP] API Base configurada en: ${BASE}`);
 
 // =============================================================================
 // ENDPOINTS API
@@ -82,10 +85,10 @@ export const API = {
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
     INFORMES:            `${BASE}/api/informe-diario/informes/`,
-    OBRAS:               `${BASE}/api/informe-diario/obras/`,
+    OBRAS:               `${BASE}/api/operaciones/proyectos/`,
     RECURSOS:            `${BASE}/api/informe-diario/recursos/`,
-    CATEGORIAS_RECURSOS: `${BASE}/api/informe-diario/categorias-recurso/`,
-    CATEGORIAS_ACTIVIDADES: `${BASE}/api/informe-diario/categorias-actividad/`,
+    CATEGORIAS_RECURSOS: `${BASE}/api/informe-diario/categorias-recursos/`,
+    CATEGORIAS_ACTIVIDADES: `${BASE}/api/informe-diario/categorias-actividades/`,
     ANEXOS:              `${BASE}/api/informe-diario/anexos/`,
     STATUS_COUNTS:       `${BASE}/api/informe-diario/informes/status-counts/`,
     DASHBOARD:           `${BASE}/api/informe-diario/dashboard/`,

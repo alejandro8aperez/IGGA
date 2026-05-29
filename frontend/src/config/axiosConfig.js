@@ -18,8 +18,15 @@ let BASE_URL =
  * Normalización crítica: Asegura que la baseURL siempre termine en /api/
  * para que las peticiones relativas (ej: 'token/') no causen un 404.
  */
-const cleanBaseUrl = BASE_URL.replace(/\/+$/, '').replace(/\/api\/?$/, '');
+const cleanBaseUrl = BASE_URL.replace(/\/+$/, '').replace(/\/api$/, '');
 axios.defaults.baseURL = `${cleanBaseUrl}/api/`;
+
+// Log para verificar en la consola de Render/Navegador
+console.log(`[ERP] Axios BaseURL: ${axios.defaults.baseURL}`);
+
+if (import.meta.env.MODE === 'production') {
+    console.log(`[ERP] Conectando al Backend en: ${axios.defaults.baseURL}`);
+}
 
 // Aumentar timeout a 60s para soportar el "cold start" de Render Free Tier
 axios.defaults.timeout = 60000; 

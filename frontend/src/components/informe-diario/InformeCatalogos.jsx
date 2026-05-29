@@ -19,10 +19,11 @@ const ESTADO_COLOR = {
 };
 
 function ObrasLista() {
-  const { data: obras = [], isLoading } = useQuery({
+  const { data: rawObras = [], isLoading } = useQuery({
     queryKey: ["obras"],
     queryFn: () => obraService.list(),
   });
+  const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
   if (isLoading) return (
     <div style={{ textAlign: "center", padding: "3rem", color: "#94a3b8" }}>

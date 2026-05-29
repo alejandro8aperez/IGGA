@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Camera, X, UploadCloud, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { API } from '@/config/api';
 
 const S = {
@@ -172,7 +173,7 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
 
   const handleUpload = async (posicion, file) => {
     if (!file) return;
-    if (!informeId) { alert('Debe guardar el informe antes de subir fotografías.'); return; }
+    if (!informeId) { toast.error('Debe guardar el informe antes de subir fotografías.'); return; }
     setLoading(prev => ({ ...prev, [posicion]: true }));
     const formData = new FormData();
     formData.append('imagen', file);
@@ -184,8 +185,9 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setFotos(prev => ({ ...prev, [posicion]: res.data }));
+      toast.success(`Foto ${posicion} subida correctamente`);
     } catch {
-      alert(`Error al subir la foto en posición ${posicion}`);
+      toast.error(`Error al subir la foto en posición ${posicion}`);
     } finally {
       setLoading(prev => ({ ...prev, [posicion]: false }));
     }
@@ -196,8 +198,9 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
     try {
       await axios.delete(`${API.INFORME_DIARIO.ANEXOS}${fotoId}/`);
       setFotos(prev => { const n = { ...prev }; delete n[posicion]; return n; });
+      toast.success('Fotografía eliminada');
     } catch {
-      alert('No se pudo eliminar la foto.');
+      toast.error('No se pudo eliminar la foto.');
     }
   };
 

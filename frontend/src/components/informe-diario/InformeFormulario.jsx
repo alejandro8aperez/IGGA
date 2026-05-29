@@ -20,9 +20,17 @@ const btnGhost = { background: "none", border: "none", cursor: "pointer", paddin
 
 function normalizarInforme(informe) {
   if (!informe) return null;
+  
+  // Extraer ID de obra de forma robusta (puede venir como 'obra_id', 'obra' como ID, o 'obra' como objeto)
+  let oid = "";
+  if (informe.obra_id) oid = String(informe.obra_id);
+  else if (informe.obra) {
+    oid = typeof informe.obra === 'object' ? String(informe.obra.id) : String(informe.obra);
+  }
+
   return {
     ...informe,
-    obra_id: informe.obra_id ? String(informe.obra_id) : informe.obra ? String(informe.obra) : "",
+    obra_id: oid,
     horas_lluvia: Array.isArray(informe.horas_lluvia) ? informe.horas_lluvia.map(Boolean) : Array(24).fill(false),
     recursos: informe.recursos || [],
     actividades: informe.actividades || [],
@@ -37,9 +45,13 @@ function ObraSelect({ obras, value, onChange }) {
   const ref = useRef(null);
 
   const selected = obras.find(o => String(o.id) === String(value));
+  const displayLabel = selected ? (selected.nombre) : "Seleccionar proyecto de OPERACIONES";
+
+  const getClienteNombre = (o) => typeof o.cliente === 'object' ? o.cliente?.nombre : (o.cliente_nombre || "");
+
   const filtered = obras.filter(o =>
-    o.nombre?.toLowerCase().includes(search.toLowerCase()) ||
-    o.cliente_nombre?.toLowerCase().includes(search.toLowerCase())
+    (o.nombre || "").toLowerCase().includes(search.toLowerCase()) ||
+    getClienteNombre(o).toLowerCase().includes(search.toLowerCase())
   );
 
   useEffect(() => {
@@ -60,7 +72,7 @@ function ObraSelect({ obras, value, onChange }) {
         }}
       >
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected ? "#1e293b" : "#94a3b8" }}>
-          {selected ? selected.nombre : "Seleccionar obra de OPERACIONES"}
+          {displayLabel}
         </span>
         <ChevronDown size={15} style={{ flexShrink: 0, marginLeft: "0.5rem", color: "#94a3b8", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
       </div>
@@ -107,7 +119,7 @@ function ObraSelect({ obras, value, onChange }) {
                   {isSelected && <Check size={13} color="#667eea" style={{ flexShrink: 0 }} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: isSelected ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {o.nombre}
+                      {o.codigo ? `${o.codigo} — ${o.nombre}` : o.nombre}
                     </div>
                     {o.cliente_nombre && (
                       <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{o.cliente_nombre}</div>
@@ -312,7 +324,9 @@ function ActividadesSection({ actividades, categorias, onChange }) {
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
-  const { data: obras = [], isLoading: isLoadingObras } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
+  const { data: rawObras = [], isLoading: isLoadingObras } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
+  const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
+
   const { data: recursos = [], isLoading: isLoadingRecursos } = useQuery({ queryKey: ["recursos"], queryFn: () => recursoService.list() });
   const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
 
@@ -343,7 +357,10 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
-      const payload = { ...data, obra_id: data.obra_id ? parseInt(data.obra_id, 10) : null };
+      const payload = { 
+        ...data, 
+        obra: data.obra_id ? parseInt(data.obra_id, 10) : null,
+      };
       return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["informes-diarios"] }); toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓"); onGuardado(); },
