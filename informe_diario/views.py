@@ -127,8 +127,11 @@ class ObraViewSet(viewsets.ModelViewSet):
     ordering_fields = ['codigo', 'nombre']
 
     def get_queryset(self):
-        # Ordenamos por código y nombre para facilitar la búsqueda en el selector
-        qs = Obra.objects.all().order_by('codigo', 'nombre')
+        # El selector de obras debe mostrar únicamente aquellas que tengan 
+        # proyectos registrados en el módulo de OPERACIONES.
+        # Usamos distinct() para evitar duplicados si una obra tiene varios proyectos.
+        qs = Obra.objects.filter(proyecto__isnull=False).distinct().order_by('codigo', 'nombre')
+        
         if self.action == 'list':
             include_inactive = self.request.query_params.get('include_inactive') == 'true'
             if not include_inactive:
