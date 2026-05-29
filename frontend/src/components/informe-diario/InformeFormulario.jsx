@@ -309,7 +309,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       ...prev,
       obra_id: obraId,
       obra_nombre: obra?.nombre || "",
-      obra_codigo: obra?.codigo || "",
     }));
   };
 
@@ -354,7 +353,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
               <SelectContent>
                 {obras.map((o) => (
                   <SelectItem key={o.id} value={String(o.id)}>
-                    {o.codigo || o.nombre} — {o.nombre}
+                    {o.nombre}{o.cliente_nombre ? ` — ${o.cliente_nombre}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
