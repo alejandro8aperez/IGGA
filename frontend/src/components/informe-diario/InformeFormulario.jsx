@@ -45,12 +45,13 @@ function ObraSelect({ obras, value, onChange }) {
   const ref = useRef(null);
 
   const selected = obras.find(o => String(o.id) === String(value));
-  const displayLabel = selected ? selected.nombre : "Seleccionar proyecto de OPERACIONES";
+  const displayLabel = selected ? (selected.codigo ? `${selected.codigo} — ${selected.nombre}` : selected.nombre) : "Seleccionar proyecto de OPERACIONES";
 
   const getClienteNombre = (o) => typeof o.cliente === 'object' ? o.cliente?.nombre : (o.cliente_nombre || "");
 
   const filtered = obras.filter(o =>
     (o.nombre || "").toLowerCase().includes(search.toLowerCase()) ||
+    (o.codigo || "").toLowerCase().includes(search.toLowerCase()) ||
     getClienteNombre(o).toLowerCase().includes(search.toLowerCase())
   );
 
@@ -119,7 +120,7 @@ function ObraSelect({ obras, value, onChange }) {
                   {isSelected && <Check size={13} color="#667eea" style={{ flexShrink: 0 }} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: isSelected ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {o.nombre}
+                      {o.codigo ? `${o.codigo} — ${o.nombre}` : o.nombre}
                     </div>
                     {o.cliente_nombre && (
                       <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{o.cliente_nombre}</div>

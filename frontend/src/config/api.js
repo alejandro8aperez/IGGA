@@ -87,7 +87,7 @@ export const API = {
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
     INFORMES:            `${ROOT}/informe-diario/informes/`,
-    OBRAS:               `${ROOT}/operaciones/proyectos/`,
+    OBRAS:               `${ROOT}/informe-diario/obras/`,
     RECURSOS:            `${ROOT}/informe-diario/recursos/`,
     CATEGORIAS_RECURSOS: `${ROOT}/informe-diario/categorias-recursos/`,
     CATEGORIAS_ACTIVIDADES: `${ROOT}/informe-diario/categorias-actividades/`,

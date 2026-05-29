@@ -22707,3 +22707,4 @@ Traceback (most recent call last):
     raise FieldError(
 django.core.exceptions.FieldError: Cannot resolve keyword 'proyecto' into field. Choices are: activo, cliente, codigo, creado_en, id, informes, nombre, ubicacion
 ERROR 2026-05-29 10:01:28,563 basehttp 36908 29968 "GET /api/informe-diario/obras/ HTTP/1.1" 500 27609
+INFO 2026-05-29 10:45:40,474 autoreload 16512 34208 Watching for file changes with StatReloader
