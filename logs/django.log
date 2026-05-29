@@ -16899,3 +16899,5 @@ INFO 2026-05-28 21:25:57,279 autoreload 38768 34208 C:\Postgres\ERP-8AMPERIOS\in
 INFO 2026-05-28 21:26:05,337 autoreload 49060 47504 Watching for file changes with StatReloader
 INFO 2026-05-29 08:06:57,314 autoreload 49060 47504 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
 INFO 2026-05-29 08:07:05,948 autoreload 49812 45388 Watching for file changes with StatReloader
+INFO 2026-05-29 08:11:35,304 autoreload 49812 45388 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-29 08:11:41,815 autoreload 45632 44832 Watching for file changes with StatReloader

@@ -53,11 +53,10 @@ def _transform_frontend_data(data):
     """
     t = dict(data)
 
-    # Normalización de Obra: Extraer ID limpio para evitar errores de validación
-    obra_val = t.pop('obra_id', t.pop('obra', None))
-    t['obra'] = _get_id(obra_val)
+    # Obra: Extraer ID del selector (filtrado por OPERACIONES en ViewSet)
+    t['obra'] = _get_id(t.pop('obra_id', t.pop('obra', None)))
 
-    # Normalización de Status: Asegurar valor plano (evita estado congelado)
+    # Status: Asegurar valor plano (evita estado congelado)
     t['status'] = _get_id(t.get('status')) or 'BORRADOR'
 
     # recursos → detalles
