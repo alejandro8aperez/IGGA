@@ -498,3 +498,26 @@ def reporte_pyl_api(request):
         'desglose_modulos': list(desglose_modulos),
         'timestamp': timezone.now().isoformat()
     })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_operaciones_proyectos(request):
+    """
+    Endpoint para obtener la lista de proyectos (Obras) desde el módulo de Operaciones.
+    Esencial para que el Informe Diario de Obra pueda vincularse con los proyectos activos.
+    """
+    try:
+        from operaciones.models import Proyecto
+        # Obtenemos todos los proyectos registrados para el selector de Obra
+        proyectos = Proyecto.objects.all().order_by('-id')
+        
+        data = [{
+            'id': p.id,
+            'nombre': getattr(p, 'nombre', f"Proyecto {p.id}"),
+            'codigo': getattr(p, 'codigo', f"PROY-{p.id}"),
+            'cliente_nombre': p.cliente.nombre if hasattr(p, 'cliente') and p.cliente else "Interno/Varios"
+        } for p in proyectos]
+        
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
