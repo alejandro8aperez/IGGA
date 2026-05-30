@@ -13,7 +13,11 @@ import {
 
 import { API } from '../config/api';
 
-const API_URL = API.BASE + '/kave/';
+// Todos los endpoints KAVE usan paths relativos — axios los combina con baseURL '/api/'
+const KAVE_BASE    = API.KAVE.BASE;    // 'kave/'
+const KAVE_QUOTE   = API.KAVE.QUOTE;   // 'kave/quote/'
+const KAVE_DESIGN  = API.KAVE.DESIGN;  // 'kave/design/'
+const KAVE_DESIGNS = API.KAVE.DESIGNS; // 'kave/designs/'
 
 // ── Estilos globales ──────────────────────────────────────────────────────
 const s = {
@@ -53,114 +57,79 @@ function TransformadorSVG({ form, calc }) {
   if (!calc || !form) return null;
 
   const esEi = form.forma_nucleo === 'ei';
-  
-  // Parámetros calculados
-  const espPri = calc.parametros_calculo?.h_efec_pri_mm || 10;
   const espTotal = calc.parametros_calculo?.espesor_total_mm || 20;
 
   if (esEi) {
-    // Dibujo Núcleo ventana, pierna central y bobinas
     const anVentana = parseFloat(form.ancho_ventana) || 100;
     const alVentana = parseFloat(form.altura_ventana) || 200;
-    const anPierna = parseFloat(form.ancho_pierna) || 50;
+    const anPierna  = parseFloat(form.ancho_pierna)   || 50;
 
-    // Normalizamos para dibujar en viewBox de 400x250
     const widthTotal = (anPierna * 3) + (anVentana * 2);
     const heightTotal = alVentana + (anPierna * 2);
-    
     const maxDim = Math.max(widthTotal, heightTotal);
-    const scale = 220 / (maxDim || 1); // ajustado para caber en 300px
+    const scale  = 220 / (maxDim || 1);
 
-    const dPi = anPierna * scale;
+    const dPi  = anPierna  * scale;
     const dVeX = anVentana * scale;
     const dVeY = alVentana * scale;
-    
-    // Espesor bobinas repartido radialmente
     const espR = (espTotal * scale) / 2;
-    // La bobina no debe pasarse del ancho de la ventana
-    const wBobina = Math.min(espR, dVeX - 2); 
-    
+    const wBobina = Math.min(espR, dVeX - 2);
+
     return (
-       <div style={{ background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
-         <div style={{ ...s.sectionTitle, textAlign: 'center' }}>Vista Transversal (Núcleo y Devanado)</div>
-         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-           <svg width="100%" height="250" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet">
-              <g transform="translate(200, 125)">
-                 {/* Núcleo Completo (Color Silicio) */}
-                 <rect x={(-dPi*1.5) - dVeX} y={(-dVeY/2) - dPi} width={(dPi*3) + (dVeX*2)} height={dVeY + (dPi*2)} fill="#334155" rx="2" />
-                 
-                 {/* Hueco Ventana Izquierda */}
-                 <rect x={(-dPi/2) - dVeX} y={-dVeY/2} width={dVeX} height={dVeY} fill="#0F172A" />
-                 
-                 {/* Hueco Ventana Derecha */}
-                 <rect x={(dPi/2)} y={-dVeY/2} width={dVeX} height={dVeY} fill="#0F172A" />
-
-                 {/* Pierna Central del Núcleo */}
-                 <rect x={-dPi/2} y={(-dVeY/2) - dPi} width={dPi} height={dVeY + (dPi*2)} fill="#475569" />
-
-                 {/* Bobinas en la pierna central */}
-                 <g>
-                    {/* Lado Izquierdo - Bobina Completa */}
-                    <rect x={(-dPi/2) - wBobina} y={(-dVeY/2) + 2} width={wBobina} height={dVeY - 4} fill="#F97316" opacity="0.8"/>
-                    {/* Lado Izquierdo - Capa Exterior (AT) */}
-                    <rect x={(-dPi/2) - wBobina} y={(-dVeY/2) + 2} width={wBobina*0.4} height={dVeY - 4} fill="#3B82F6" opacity="0.9"/>
-                    
-                    {/* Lado Derecho - Bobina Completa */}
-                    <rect x={(dPi/2)} y={(-dVeY/2) + 2} width={wBobina} height={dVeY - 4} fill="#F97316" opacity="0.8"/>
-                    {/* Lado Derecho - Capa Exterior (AT) */}
-                    <rect x={(dPi/2) + wBobina*0.6} y={(-dVeY/2) + 2} width={wBobina*0.4} height={dVeY - 4} fill="#3B82F6" opacity="0.9"/>
-                 </g>
-                 
-                 {/* Medida de la pierna */}
-                 <text x="0" y="5" fill="#F8FAFC" fontSize="12" textAnchor="middle" fontWeight="bold">{parseFloat(form.ancho_pierna)}mm</text>
+      <div style={{ background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+        <div style={{ ...s.sectionTitle, textAlign: 'center' }}>Vista Transversal (Núcleo y Devanado)</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <svg width="100%" height="250" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet">
+            <g transform="translate(200, 125)">
+              <rect x={(-dPi*1.5) - dVeX} y={(-dVeY/2) - dPi} width={(dPi*3) + (dVeX*2)} height={dVeY + (dPi*2)} fill="#334155" rx="2" />
+              <rect x={(-dPi/2) - dVeX} y={-dVeY/2} width={dVeX} height={dVeY} fill="#0F172A" />
+              <rect x={(dPi/2)} y={-dVeY/2} width={dVeX} height={dVeY} fill="#0F172A" />
+              <rect x={-dPi/2} y={(-dVeY/2) - dPi} width={dPi} height={dVeY + (dPi*2)} fill="#475569" />
+              <g>
+                <rect x={(-dPi/2) - wBobina} y={(-dVeY/2) + 2} width={wBobina} height={dVeY - 4} fill="#F97316" opacity="0.8"/>
+                <rect x={(-dPi/2) - wBobina} y={(-dVeY/2) + 2} width={wBobina*0.4} height={dVeY - 4} fill="#3B82F6" opacity="0.9"/>
+                <rect x={(dPi/2)} y={(-dVeY/2) + 2} width={wBobina} height={dVeY - 4} fill="#F97316" opacity="0.8"/>
+                <rect x={(dPi/2) + wBobina*0.6} y={(-dVeY/2) + 2} width={wBobina*0.4} height={dVeY - 4} fill="#3B82F6" opacity="0.9"/>
               </g>
-           </svg>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.8rem', color: '#94A3B8' }}>
-            <div style={{ display:'flex', alignItems: 'center', gap: '5px'}}><div style={{width: 12, height:12, background:'#475569', borderRadius:'2px'}}></div> Núcleo</div>
-            <div style={{ display:'flex', alignItems: 'center', gap: '5px'}}><div style={{width: 12, height:12, background:'#F97316', borderRadius:'2px'}}></div> Baja Tensión</div>
-            <div style={{ display:'flex', alignItems: 'center', gap: '5px'}}><div style={{width: 12, height:12, background:'#3B82F6', borderRadius:'2px'}}></div> Alta Tensión</div>
-         </div>
-       </div>
+              <text x="0" y="5" fill="#F8FAFC" fontSize="12" textAnchor="middle" fontWeight="bold">{parseFloat(form.ancho_pierna)}mm</text>
+            </g>
+          </svg>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.8rem', color: '#94A3B8' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'5px'}}><div style={{width:12,height:12,background:'#475569',borderRadius:'2px'}}></div> Núcleo</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'5px'}}><div style={{width:12,height:12,background:'#F97316',borderRadius:'2px'}}></div> Baja Tensión</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'5px'}}><div style={{width:12,height:12,background:'#3B82F6',borderRadius:'2px'}}></div> Alta Tensión</div>
+        </div>
+      </div>
     );
   } else {
-    // Toroidal
     const diamInt = parseFloat(form.diametro_interno) || 50;
-    const diamExt = parseFloat(form.diametro_externo) || 150;
-    
     return (
-       <div style={{ background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
-         <div style={{ ...s.sectionTitle, textAlign: 'center' }}>Vista de Planta (Anillo Toroidal)</div>
-         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-           <svg width="100%" height="250" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet">
-              <g transform="translate(200, 125)">
-                 {/* Anillo de Acero */}
-                 <circle cx="0" cy="0" r="90" fill="#475569" stroke="#334155" strokeWidth="2" />
-                 {/* Hueco interno */}
-                 <circle cx="0" cy="0" r="40" fill="#0F172A" />
-
-                 {/* Devanado (Overlay visual torioidal)  */}
-                 <circle cx="0" cy="0" r="80" fill="none" stroke="#F97316" strokeWidth="18" opacity="0.6"/>
-                 <circle cx="0" cy="0" r="55" fill="none" stroke="#3B82F6" strokeWidth="10" opacity="0.7"/>
-                 
-                 {/* Rayas de hilos */}
-                 <circle cx="0" cy="0" r="65" fill="none" stroke="#0F172A" strokeWidth="2" strokeDasharray="4 8" opacity="0.3"/>
-                 
-                 <text x="0" y="5" fill="#F8FAFC" fontSize="12" textAnchor="middle" fontWeight="bold">ØInt {diamInt}</text>
-              </g>
-           </svg>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.8rem', color: '#94A3B8' }}>
-            <div style={{ display:'flex', alignItems: 'center', gap: '5px'}}><div style={{width: 12, height:12, background:'#475569', borderRadius:'10px'}}></div> Núcleo</div>
-            <div style={{ display:'flex', alignItems: 'center', gap: '5px'}}><div style={{width: 12, height:12, background:'#F97316', borderRadius:'10px'}}></div> Baja Tensión</div>
-            <div style={{ display:'flex', alignItems: 'center', gap: '5px'}}><div style={{width: 12, height:12, background:'#3B82F6', borderRadius:'10px'}}></div> Alta Tensión</div>
-         </div>
-       </div>
+      <div style={{ background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+        <div style={{ ...s.sectionTitle, textAlign: 'center' }}>Vista de Planta (Anillo Toroidal)</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <svg width="100%" height="250" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet">
+            <g transform="translate(200, 125)">
+              <circle cx="0" cy="0" r="90" fill="#475569" stroke="#334155" strokeWidth="2" />
+              <circle cx="0" cy="0" r="40" fill="#0F172A" />
+              <circle cx="0" cy="0" r="80" fill="none" stroke="#F97316" strokeWidth="18" opacity="0.6"/>
+              <circle cx="0" cy="0" r="55" fill="none" stroke="#3B82F6" strokeWidth="10" opacity="0.7"/>
+              <circle cx="0" cy="0" r="65" fill="none" stroke="#0F172A" strokeWidth="2" strokeDasharray="4 8" opacity="0.3"/>
+              <text x="0" y="5" fill="#F8FAFC" fontSize="12" textAnchor="middle" fontWeight="bold">ØInt {diamInt}</text>
+            </g>
+          </svg>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.8rem', color: '#94A3B8' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'5px'}}><div style={{width:12,height:12,background:'#475569',borderRadius:'10px'}}></div> Núcleo</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'5px'}}><div style={{width:12,height:12,background:'#F97316',borderRadius:'10px'}}></div> Baja Tensión</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'5px'}}><div style={{width:12,height:12,background:'#3B82F6',borderRadius:'10px'}}></div> Alta Tensión</div>
+        </div>
+      </div>
     );
   }
 }
 
-// ── COMPONENTE DE GRÁFICO DE EFICIENCIA ──────────────────────────────────
+// ── GRÁFICO DE EFICIENCIA ─────────────────────────────────────────────────
 function GraficoEficiencia({ data }) {
   if (!data || data.length === 0) return null;
   return (
@@ -177,10 +146,7 @@ function GraficoEficiencia({ data }) {
           <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} />
           <XAxis dataKey="carga" stroke="#94A3B8" fontSize={10} tickFormatter={(v) => v + '%'} />
           <YAxis stroke="#94A3B8" fontSize={10} domain={['dataMin - 1', 100]} />
-          <Tooltip 
-            contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '8px', fontSize: '12px' }}
-            itemStyle={{ color: '#818CF8' }}
-          />
+          <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '8px', fontSize: '12px' }} itemStyle={{ color: '#818CF8' }} />
           <Area type="monotone" dataKey="eficiencia" stroke="#818CF8" fillOpacity={1} fill="url(#colorEff)" strokeWidth={2} />
         </AreaChart>
       </ResponsiveContainer>
@@ -210,19 +176,12 @@ function VistaCalculador({ onGuardar }) {
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setGuardado(false); };
 
   const optimizar = () => {
-    // Lógica de optimización heurística de ingeniería
     let b = '1.45';
     let j = '2.5';
-    
     if (form.material === 'amorfoso') b = '1.25';
-    if (form.material === 'ferrita') b = '0.35';
+    if (form.material === 'ferrita')  b = '0.35';
     if (form.refrigeracion === 'aceite') j = '3.5';
-    
-    setForm({
-      ...form,
-      induccion_maxima: b,
-      densidad_corriente: j
-    });
+    setForm({ ...form, induccion_maxima: b, densidad_corriente: j });
     window.alert(`Optimización aplicada: B=${b}T, J=${j}A/mm2. Basado en materiales y refrigeración.`);
   };
 
@@ -231,54 +190,21 @@ function VistaCalculador({ onGuardar }) {
     setError('');
     try {
       console.log('🔧 Enviando datos a KAVE:', form);
-      console.log('🌐 URL:', API_URL + 'quote/');
-      
-      // Opción 1: Usar axios (que ya tiene el token JWT configurado)
-      const response = await axios.post(API_URL + 'quote/', form);
-      
+      const response = await axios.post(KAVE_QUOTE, form);
       const data = response.data;
-      console.log('>>> Respuesta KAVE completa:', data);
-      console.log('>>> Status:', response.status);
-      console.log('>>> data.status:', data.status);
-      console.log('>>> data.resultado:', data.resultado);
-      console.log('>>> data.cotizacion:', data.cotizacion);
-      
-      // Manejo robusto de diferentes estructuras de respuesta
+
       let calcData = null;
-      
       if (data.status === 'success') {
-        // Intentar diferentes posibles estructuras
-        if (data.resultado) {
-          calcData = data.resultado;
-          console.log('>>> Usando data.resultado');
-        } else if (data.cotizacion) {
-          calcData = data.cotizacion;
-          console.log('>>> Usando data.cotizacion');
-        } else if (data.data) {
-          calcData = data.data;
-          console.log('>>> Usando data.data');
-        } else {
-          // Si la respuesta es directamente el objeto de cálculo
-          calcData = data;
-          console.log('>>> Usando data directo');
-        }
-        
-        console.log('>>> Datos de cálculo finales:', calcData);
+        calcData = data.resultado || data.cotizacion || data.data || data;
         setCalc(calcData);
       } else {
         setError(data.error || 'Error desconocido.');
       }
     } catch (e) {
-      console.error('>>> Error completo en catch:', e);
-      console.error('>>> e.message:', e.message);
-      console.error('>>> e.stack:', e.stack);
-      
-      // Manejo específico para error de 'resultado'
-      if (e.message && e.message.includes('resultado')) {
-        console.error('>>> Error específico de resultado detectado');
-        setError('Error en la estructura de la respuesta del servidor. Contacte al administrador.');
-      } else if (e.message && e.message.includes('Unexpected token')) {
-        console.error('>>> Error de JSON parsing');
+      console.error('Error en simulación KAVE:', e);
+      if (e.message?.includes('resultado')) {
+        setError('Error en la estructura de la respuesta del servidor.');
+      } else if (e.message?.includes('Unexpected token')) {
         setError('Error en el formato de la respuesta. Verifique el servidor.');
       } else {
         setError(`❌ Error: ${e.message}`);
@@ -290,41 +216,20 @@ function VistaCalculador({ onGuardar }) {
 
   const guardar = async () => {
     try {
-      console.log('KAVE: Intentando guardar diseño...');
-      console.log('KAVE: URL:', API_URL + 'design/');
-      console.log('KAVE: Datos a guardar:', form);
-      
-      const response = await axios.post(API_URL + 'design/', form);
-      console.log('KAVE: Respuesta del servidor:', response.status, response.data);
-      
+      await axios.post(KAVE_DESIGN, form);
       setGuardado(true);
       setError('');
       if (onGuardar) onGuardar();
-      
-      console.log('KAVE: Diseño guardado exitosamente');
     } catch (e) {
       console.error('KAVE: Error al guardar diseño:', e);
-      console.error('KAVE: Detalles del error:', {
-        message: e.message,
-        code: e.code,
-        response: e.response?.data,
-        status: e.response?.status,
-        config: e.config
-      });
-      
       let errorMessage = 'Error al guardar. Verifica que el backend esté corriendo.';
-      
       if (e.code === 'ECONNREFUSED' || e.code === 'ERR_CONNECTION_REFUSED') {
-        console.error('KAVE: No se puede conectar al backend en 127.0.0.1:8000');
-        errorMessage = 'No se puede conectar al servidor. Inicie el backend Django en 127.0.0.1:8000.';
+        errorMessage = 'No se puede conectar al servidor. Inicie el backend Django.';
       } else if (e.response?.status === 400) {
-        console.error('KAVE: Error de validación en el backend');
         errorMessage = `Error de validación: ${e.response?.data?.error || 'Datos inválidos'}`;
       } else if (e.response?.status === 500) {
-        console.error('KAVE: Error interno del servidor');
         errorMessage = 'Error interno del servidor. Revise los logs del backend.';
       }
-      
       setError(errorMessage);
     }
   };
@@ -339,14 +244,10 @@ function VistaCalculador({ onGuardar }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.3fr) minmax(0, 1fr)', gap: '2rem' }}>
 
-        {/* ── Panel Izquierdo: Formularios ── */}
+        {/* ── Panel Izquierdo ── */}
         <div style={s.card}>
-          
-          {/* Parámetros Avanzados */}
-          <div style={s.sectionTitle}>
-            <Settings size={14} style={{ marginRight: 6 }} />
-            Configuración de Ingeniería
-          </div>
+
+          <div style={s.sectionTitle}><Settings size={14} style={{ marginRight: 6 }} />Configuración de Ingeniería</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div style={s.fGroup}>
               <label style={s.label}>Inducción Máx. (B) [Tesla]</label>
@@ -358,10 +259,7 @@ function VistaCalculador({ onGuardar }) {
             </div>
           </div>
 
-          <div style={s.sectionTitle}>
-            <Zap size={14} style={{ marginRight: 6 }} />
-            Especificaciones Eléctricas
-          </div>
+          <div style={s.sectionTitle}><Zap size={14} style={{ marginRight: 6 }} />Especificaciones Eléctricas</div>
           <div style={s.grid2}>
             <div style={s.fGroup}>
               <label style={s.label}>Tipo Sistema</label>
@@ -446,7 +344,6 @@ function VistaCalculador({ onGuardar }) {
                 </div>
               )}
             </div>
-
             <div style={s.card}>
               <label style={{...s.label, color:'#fff', marginBottom:'1rem'}}>Baja Tensión (Secundario)</label>
               <div style={s.fGroup}>
@@ -473,19 +370,18 @@ function VistaCalculador({ onGuardar }) {
             <div style={s.fGroup}><label style={s.label}>Esponjamiento (%)</label><input style={s.input} type="number" step="0.1" value={form.levante_bobinado} onChange={e => set('levante_bobinado', e.target.value)} /></div>
           </div>
           <div style={s.grid4}>
-             <div style={s.fGroup}><label style={s.label}>Margen Extremos (mm)</label><input style={s.input} type="number" step="0.1" value={form.margen_seguridad_extremos} onChange={e => set('margen_seguridad_extremos', e.target.value)} /></div>
+            <div style={s.fGroup}><label style={s.label}>Margen Extremos (mm)</label><input style={s.input} type="number" step="0.1" value={form.margen_seguridad_extremos} onChange={e => set('margen_seguridad_extremos', e.target.value)} /></div>
           </div>
 
           <div style={s.sep} />
-
-          {error   && <div style={s.warn}><AlertTriangle size={18}/> {error}</div>}
-          {guardado && <div style={s.success}><CheckCircle size={18} /> Diseño estructurado guardado exitosamente en base de PostgreSQL.</div>}
+          {error    && <div style={s.warn}><AlertTriangle size={18}/> {error}</div>}
+          {guardado && <div style={s.success}><CheckCircle size={18} /> Diseño guardado exitosamente en PostgreSQL.</div>}
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <button style={s.btn('#3B82F6')} onClick={simular} disabled={simulando}>
               <Calculator size={16} /> {simulando ? 'Calculando física...' : 'Simular'}
             </button>
-            <button style={s.btn('#8B5CF6')} onClick={optimizar} title="Optimizar parámetros B y J">
+            <button style={s.btn('#8B5CF6')} onClick={optimizar}>
               <TrendingUp size={16} /> Sugerir Optimización
             </button>
             <button style={s.btn('#10b981')} onClick={guardar} disabled={!calc}>
@@ -494,60 +390,39 @@ function VistaCalculador({ onGuardar }) {
           </div>
         </div>
 
-        {/* ── Panel Derecho: Simulador (calcResult) ── */}
+        {/* ── Panel Derecho: Resultados ── */}
         <div>
           {calc ? (
             <>
-              {/* Gráfica SVG Dinámica del Transformador */}
               <TransformadorSVG form={form} calc={calc} />
 
-              {/* Diagnóstico Manufactura */}
               {calc.parametros_calculo?.viabilidad ? (
                 <div style={s.success}>
-                  <CheckCircle size={28}/> 
-                  <div>
-                    <strong style={{display: 'block'}}>Viable para Manufactura</strong>
-                    {calc.parametros_calculo.mensaje_viabilidad}
-                  </div>
+                  <CheckCircle size={28}/>
+                  <div><strong style={{display:'block'}}>Viable para Manufactura</strong>{calc.parametros_calculo.mensaje_viabilidad}</div>
                 </div>
               ) : (
                 <div style={s.warn}>
                   <AlertTriangle size={28} />
-                  <div>
-                    <strong style={{display: 'block', color: '#ef4444'}}>Rechazo Geométrico</strong>
-                    {calc.parametros_calculo?.mensaje_viabilidad}
-                  </div>
+                  <div><strong style={{display:'block', color:'#ef4444'}}>Rechazo Geométrico</strong>{calc.parametros_calculo?.mensaje_viabilidad}</div>
                 </div>
               )}
 
               <div style={{ ...s.grid2, marginBottom: '1rem' }}>
-                <div style={s.stat('#818CF8')}>
-                  <div style={s.statVal}>{calc.relacion_transformacion}</div>
-                  <div style={s.statLbl}>R. Transformación</div>
-                </div>
-                <div style={s.stat('#34D399')}>
-                  <div style={s.statVal}>{calc.eficiencia} %</div>
-                  <div style={s.statLbl}>Eficiencia Real</div>
-                </div>
-                <div style={s.stat('#F59E0B')}>
-                  <div style={s.statVal}>{calc.corrientes?.primaria} A</div>
-                  <div style={s.statLbl}>I Primaria</div>
-                </div>
-                <div style={s.stat('#F87171')}>
-                  <div style={s.statVal}>{calc.corrientes?.secundaria} A</div>
-                  <div style={s.statLbl}>I Secundaria</div>
-                </div>
+                <div style={s.stat('#818CF8')}><div style={s.statVal}>{calc.relacion_transformacion}</div><div style={s.statLbl}>R. Transformación</div></div>
+                <div style={s.stat('#34D399')}><div style={s.statVal}>{calc.eficiencia} %</div><div style={s.statLbl}>Eficiencia Real</div></div>
+                <div style={s.stat('#F59E0B')}><div style={s.statVal}>{calc.corrientes?.primaria} A</div><div style={s.statLbl}>I Primaria</div></div>
+                <div style={s.stat('#F87171')}><div style={s.statVal}>{calc.corrientes?.secundaria} A</div><div style={s.statLbl}>I Secundaria</div></div>
               </div>
 
-              {/* GRÁFICO DE EFICIENCIA INTEGRADO */}
               <GraficoEficiencia data={calc.eficiencia_map} />
 
               {calc.parametros_calculo?.elevacion_temperatura_c > 65 && (
                 <div style={s.warn}>
                   <AlertTriangle size={20} />
                   <div>
-                    <strong style={{display: 'block', color: '#ef4444'}}>Alerta Térmica</strong>
-                    La elevación de temperatura calculada ({calc.parametros_calculo.elevacion_temperatura_c}°C) supera los límites recomendados. Aumente el área de enfriamiento o disminuya la densidad.
+                    <strong style={{display:'block', color:'#ef4444'}}>Alerta Térmica</strong>
+                    Elevación de temperatura ({calc.parametros_calculo.elevacion_temperatura_c}°C) supera los límites. Aumente el área de enfriamiento.
                   </div>
                 </div>
               )}
@@ -555,49 +430,40 @@ function VistaCalculador({ onGuardar }) {
               <div style={s.card}>
                 <div style={s.sectionTitle}>Cálculos Físicos y Materiales</div>
                 {[
-                  ['Regulación Volltaje', calc.regulacion ? calc.regulacion + ' %' : 'N/A'],
-                  ['Elevación Térmica', calc.parametros_calculo?.elevacion_temperatura_c ? calc.parametros_calculo.elevacion_temperatura_c + ' °C' : 'N/A'],
-                  ['Peso Bobinas ('+ (calc.parametros_calculo?.material_bobinas || '') +')', calc.parametros_calculo?.peso_bobinas_kg ? calc.parametros_calculo.peso_bobinas_kg + ' kg' : 'N/A'],
-                  ['Peso Núcleo (Magnético)', calc.parametros_calculo?.peso_nucleo_kg ? calc.parametros_calculo.peso_nucleo_kg + ' kg' : 'N/A'],
+                  ['Regulación Voltaje',          calc.regulacion ? calc.regulacion + ' %' : 'N/A'],
+                  ['Elevación Térmica',            calc.parametros_calculo?.elevacion_temperatura_c ? calc.parametros_calculo.elevacion_temperatura_c + ' °C' : 'N/A'],
+                  ['Peso Bobinas ('+(calc.parametros_calculo?.material_bobinas||')'), calc.parametros_calculo?.peso_bobinas_kg ? calc.parametros_calculo.peso_bobinas_kg + ' kg' : 'N/A'],
+                  ['Peso Núcleo (Magnético)',      calc.parametros_calculo?.peso_nucleo_kg ? calc.parametros_calculo.peso_nucleo_kg + ' kg' : 'N/A'],
                 ].map(([lbl, val], i) => (
-                  <div key={i} style={s.result}>
-                    <span style={s.resLbl}>{lbl}</span>
-                    <span style={s.resVal}>{val}</span>
-                  </div>
+                  <div key={i} style={s.result}><span style={s.resLbl}>{lbl}</span><span style={s.resVal}>{val}</span></div>
                 ))}
               </div>
 
               <div style={{ ...s.card, marginTop: '1rem' }}>
                 <div style={s.sectionTitle}>Diagnóstico y Configuración de Calibres</div>
                 {[
-                  ['Calibre AT Asignado',          calc.parametros_calculo?.calibre_pri],
-                  ['Calibre BT Asignado',        calc.parametros_calculo?.calibre_sec],
-                  ['Espesor Total (Tubo a BT)',   calc.parametros_calculo?.espesor_total_mm + ' mm'],
-                  ['Espiras AT',          calc.parametros_calculo?.vueltas_primario + ' vueltas'],
-                  ['Espiras BT',        calc.parametros_calculo?.vueltas_secundario + ' vueltas'],
-                  ['Área del núcleo transversal',          calc.parametros_calculo?.area_nucleo_cm2 + ' cm²'],
-                  ['Pérdidas de Corto',        calc.perdidas?.cobre_w + ' W'],
-                  ['Pérdidas en Vacío',       calc.perdidas?.nucleo_w + ' W'],
-                  ['Estimación Acero/Silicio',       '$' + calc.costo_estimado?.toLocaleString()]
+                  ['Calibre AT Asignado',         calc.parametros_calculo?.calibre_pri],
+                  ['Calibre BT Asignado',         calc.parametros_calculo?.calibre_sec],
+                  ['Espesor Total (Tubo a BT)',    calc.parametros_calculo?.espesor_total_mm + ' mm'],
+                  ['Espiras AT',                  calc.parametros_calculo?.vueltas_primario + ' vueltas'],
+                  ['Espiras BT',                  calc.parametros_calculo?.vueltas_secundario + ' vueltas'],
+                  ['Área núcleo transversal',     calc.parametros_calculo?.area_nucleo_cm2 + ' cm²'],
+                  ['Pérdidas de Corto',           calc.perdidas?.cobre_w + ' W'],
+                  ['Pérdidas en Vacío',           calc.perdidas?.nucleo_w + ' W'],
+                  ['Estimación Acero/Silicio',    '$' + calc.costo_estimado?.toLocaleString()],
                 ].map(([lbl, val]) => (
-                  <div key={lbl} style={s.result}>
-                    <span style={s.resLbl}>{lbl}</span>
-                    <span style={s.resVal}>{val || 'N/A'}</span>
-                  </div>
+                  <div key={lbl} style={s.result}><span style={s.resLbl}>{lbl}</span><span style={s.resVal}>{val || 'N/A'}</span></div>
                 ))}
               </div>
             </>
           ) : (
-            <div style={{ ...s.card, color: '#94A3B8', textAlign: 'center', padding: '5rem 0', fontWeight: '500' }}>
+            <div style={{ ...s.card, color: '#94A3B8', textAlign: 'center', padding: '5rem 0', fontWeight: 500 }}>
               <Calculator size={48} style={{ opacity: 0.2, margin: '0 auto 1rem', display: 'block' }} />
-              <div style={{ marginBottom: '1rem' }}>Diligencia los datos a la izquierda y presiona "Simular" para ejecutar el entorno físico.</div>
+              <div style={{ marginBottom: '1rem' }}>Diligencia los datos a la izquierda y presiona "Simular".</div>
               {error && (
                 <div style={{ ...s.warn, marginTop: '1rem', textAlign: 'left' }}>
                   <AlertTriangle size={18} />
-                  <div>
-                    <strong style={{display: 'block', color: '#ef4444'}}>Error en el cálculo:</strong>
-                    {error}
-                  </div>
+                  <div><strong style={{display:'block', color:'#ef4444'}}>Error en el cálculo:</strong>{error}</div>
                 </div>
               )}
             </div>
@@ -608,7 +474,7 @@ function VistaCalculador({ onGuardar }) {
   );
 }
 
-// ── VISTA: Historial de diseños ───────────────────────────────────────────
+// ── VISTA: Historial ──────────────────────────────────────────────────────
 function VistaHistorial({ refresh }) {
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -616,169 +482,88 @@ function VistaHistorial({ refresh }) {
   const [detailedCalc, setDetailedCalc] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => { 
-    console.log('KAVE: VistaHistorial montado, iniciando carga...');
-    cargar(); 
-  }, [refresh]);
+  useEffect(() => { cargar(); }, [refresh]);
 
   const cargar = async () => {
-    console.log('KAVE: Iniciando función cargar...');
     setLoading(true);
     setError(null);
-    
     try {
-      console.log('KAVE: Enviando petición a:', API_URL + 'designs/');
-      const r = await axios.get(API_URL + 'designs/');
-      console.log('KAVE: Respuesta recibida:', r.status, r.data);
-      
-      if (r.data && Array.isArray(r.data)) {
-        // Si la respuesta es directamente un array
+      const r = await axios.get(KAVE_DESIGNS);
+      if (Array.isArray(r.data)) {
         setDesigns(r.data);
-        console.log(`KAVE: Se cargaron ${r.data.length} diseños (formato array)`);
-      } else if (r.data && r.data.transformadores && Array.isArray(r.data.transformadores)) {
-        // Si la respuesta tiene la estructura esperada
+      } else if (r.data?.transformadores) {
         setDesigns(r.data.transformadores);
-        console.log(`KAVE: Se cargaron ${r.data.transformadores.length} diseños (formato transformadores)`);
       } else {
-        console.log('KAVE: Formato de respuesta inesperado, usando array vacío');
         setDesigns([]);
       }
-      
     } catch (error) {
       console.error('KAVE: Error al cargar diseños:', error);
-      console.error('KAVE: Detalles completos del error:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
-      });
-      
       let errorMessage = 'No se pudo cargar la bóveda de diseños.';
-      
       if (error.code === 'ECONNREFUSED' || error.code === 'ERR_CONNECTION_REFUSED') {
-        console.error('KAVE: No se puede conectar al backend en 127.0.0.1:8000');
-        errorMessage = 'No se puede conectar al servidor. Inicie el backend Django en 127.0.0.1:8000.';
+        errorMessage = 'No se puede conectar al servidor. Inicie el backend Django.';
       } else if (error.response?.status === 404) {
-        console.error('KAVE: Endpoint no encontrado - /api/kave/designs/');
         errorMessage = 'Endpoint no encontrado. Verifique las rutas del API.';
-      } else if (error.response?.status === 500) {
-        console.error('KAVE: Error interno del servidor');
-        errorMessage = 'Error interno del servidor. Contacte al administrador.';
-      } else if (error.response?.status === 403) {
-        errorMessage = 'Acceso denegado. Verifique sus credenciales.';
       } else if (error.response?.status === 401) {
         errorMessage = 'No autenticado. Inicie sesión nuevamente.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Error interno del servidor.';
       }
-      
       setError(errorMessage);
       setDesigns([]);
-      
-    } finally { 
-      console.log('KAVE: Finalizando carga, setLoading(false)');
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
   };
 
   const cargarDetalle = async (id) => {
     try {
-      console.log(`KAVE: Cargando detalle del diseño ${id}`);
-      const r = await axios.get(API_URL + `designs/${id}/`);
-      console.log(`KAVE: Detalle del diseño ${id}:`, r.data);
+      const r = await axios.get(`${KAVE_DESIGNS}${id}/`);
       setSelected(r.data.transformador);
       setDetailedCalc(r.data.calculos?.[0] || null);
     } catch (error) {
-      console.error(`KAVE: Error al cargar detalle del diseño ${id}:`, error);
-      console.error('KAVE: Detalles del error:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
+      console.error(`KAVE: Error al cargar detalle ${id}:`, error);
     }
   };
 
   const eliminar = async (id) => {
     if (!window.confirm('¿Eliminar este diseño?')) return;
     try {
-      console.log(`KAVE: Eliminando diseño ${id}`);
-      
-      // Llamar al backend para eliminar permanentemente
-      await axios.delete(API_URL + `designs/${id}/`);
-      
-      // Actualizar el estado local después de eliminar exitosamente
+      await axios.delete(`${KAVE_DESIGNS}${id}/`);
       setDesigns(designs.filter(d => d.id !== id));
-      console.log(`KAVE: Diseño ${id} eliminado correctamente de la base de datos`);
     } catch (error) {
-      console.error(`KAVE: Error al eliminar diseño ${id}:`, error);
-      console.error('KAVE: Detalles del error:', {
-        message: error.message,
-        code: error.code,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      
-      // Mostrar error al usuario
       alert(`Error al eliminar el diseño: ${error.response?.data?.error || error.message}`);
     }
   };
 
   const enviarAMRP = async (id) => {
-    if (!window.confirm("¿Aprobar y enviar los requerimientos de este diseño técnico al Plan Maestro de MRP para su producción/compra de materiales?")) return;
+    if (!window.confirm('¿Aprobar y enviar los requerimientos de este diseño al MRP?')) return;
     try {
-      console.log(`KAVE: Enviando diseño ${id} a MRP`);
-      const res = await axios.post(API_URL + `designs/${id}/send_to_mrp/`);
-      console.log(`KAVE: Respuesta de MRP:`, res.data);
-      alert("¡Éxito! " + res.data.mensaje);
-    } catch(e) {
-      console.error(`KAVE: Error al enviar diseño ${id} a MRP:`, e);
-      console.error('KAVE: Detalles del error:', {
-        message: e.message,
-        code: e.code,
-        response: e.response?.data,
-        status: e.response?.status
-      });
-      alert("Error al enviar a MRP: " + (e.response?.data?.error || e.message));
+      const res = await axios.post(`${KAVE_DESIGNS}${id}/send_to_mrp/`);
+      alert('¡Éxito! ' + res.data.mensaje);
+    } catch (e) {
+      alert('Error al enviar a MRP: ' + (e.response?.data?.error || e.message));
     }
   };
 
-  // Fallback de seguridad - siempre mostrar algo visible
   if (loading) {
-    console.log('KAVE: Mostrando estado de loading');
     return (
       <div style={{ color: '#94A3B8', padding: '2rem', textAlign: 'center', minHeight: '50vh' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <Zap size={32} style={{ opacity: 0.3, animation: 'spin 1s linear infinite' }} />
-        </div>
+        <Zap size={32} style={{ opacity: 0.3, margin: '0 auto 1rem', display: 'block' }} />
         <div>Cargando base de datos KAVE...</div>
-        <div style={{ fontSize: '0.8rem', marginTop: '0.5rem', opacity: 0.7 }}>
-          Conectando con el servidor...
-        </div>
       </div>
     );
   }
 
   if (error) {
-    console.log('KAVE: Mostrando estado de error:', error);
     return (
       <div style={{ minHeight: '50vh', padding: '2rem' }}>
         <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', color: '#F8FAFC' }}>Biblioteca Central de Manufactura</h2>
         <div style={{ ...s.card, textAlign: 'center', padding: '3rem' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <AlertTriangle size={48} style={{ color: '#ef4444', opacity: 0.8 }} />
-          </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', color: '#ef4444' }}>
-            Error de Conexión
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#94A3B8', marginBottom: '1.5rem' }}>
-            {error}
-          </div>
-          <button 
-            style={{ ...s.btn('#3B82F6'), padding: '0.75rem 1.5rem' }}
-            onClick={cargar}
-          >
-            <RefreshCw size={16} style={{ marginRight: '0.5rem' }} />
-            Reintentar
+          <AlertTriangle size={48} style={{ color: '#ef4444', opacity: 0.8, margin: '0 auto 1rem', display: 'block' }} />
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', color: '#ef4444' }}>Error de Conexión</div>
+          <div style={{ fontSize: '0.9rem', color: '#94A3B8', marginBottom: '1.5rem' }}>{error}</div>
+          <button style={{ ...s.btn('#3B82F6'), margin: '0 auto' }} onClick={cargar}>
+            <RefreshCw size={16} /> Reintentar
           </button>
         </div>
       </div>
@@ -786,32 +571,17 @@ function VistaHistorial({ refresh }) {
   }
 
   if (!designs || designs.length === 0) {
-    console.log('KAVE: Mostrando bóveda vacía');
     return (
       <div style={{ minHeight: '50vh', padding: '2rem' }}>
         <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', color: '#F8FAFC' }}>Biblioteca Central de Manufactura</h2>
         <div style={{ ...s.card, textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <Zap size={48} style={{ opacity: 0.2, margin: '0 auto 1rem', display: 'block' }} />
-          </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#64748B' }}>
-            Bóveda de Diseños Vacía
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#94A3B8', marginBottom: '1rem' }}>
-            No hay diseños guardados en la base de datos.
-          </div>
-          <div style={{ fontSize: '0.85rem', color: '#64748B', fontStyle: 'italic' }}>
-            Accede al "Planificador Analítico" para crear y guardar nuevos diseños.
-          </div>
-          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', fontSize: '0.8rem', color: '#fca5a5' }}>
-            <strong>Nota:</strong> Asegúrate de que el backend Django esté corriendo en 127.0.0.1:8000 y que la API KAVE esté configurada correctamente.
-          </div>
+          <Zap size={48} style={{ opacity: 0.2, margin: '0 auto 1rem', display: 'block' }} />
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#64748B' }}>Bóveda de Diseños Vacía</div>
+          <div style={{ fontSize: '0.9rem', color: '#94A3B8' }}>Accede al "Planificador Analítico" para crear y guardar nuevos diseños.</div>
         </div>
       </div>
     );
   }
-
-  console.log('KAVE: Mostrando lista de diseños, cantidad:', designs.length);
 
   if (selected) {
     return (
@@ -826,47 +596,47 @@ function VistaHistorial({ refresh }) {
             </h2>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button style={{...s.btn('#4F46E5'), height: 'fit-content'}} onClick={() => enviarAMRP(selected.id)}>
+            <button style={{...s.btn('#4F46E5'), height:'fit-content'}} onClick={() => enviarAMRP(selected.id)}>
               <FolderKanban size={18} /> Enviar a MRP
             </button>
-            <button style={{...s.btn('#10B981'), height: 'fit-content'}} onClick={() => window.open(API_URL + `designs/${selected.id}/pdf_ficha/`, '_blank')}>
+            {/* URL absoluta necesaria para window.open */}
+            <button style={{...s.btn('#10B981'), height:'fit-content'}} onClick={() => window.open(`/api/kave/designs/${selected.id}/pdf_ficha/`, '_blank')}>
               <FileText size={18} /> Imprimir Ficha SGC (PDF)
             </button>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: '2rem' }}>
-           <div style={s.card}>
-             <div style={s.sectionTitle}>Entradas Originales de Fabricación</div>
-             <p style={{ color: '#94A3B8', fontSize: '0.82rem', marginBottom: '1rem' }}>
+          <div style={s.card}>
+            <div style={s.sectionTitle}>Entradas Originales de Fabricación</div>
+            <p style={{ color: '#94A3B8', fontSize: '0.82rem', marginBottom: '1rem' }}>
               Material: {selected.material} · Refrig: {selected.refrigeracion} · Núcleo: {selected.forma_nucleo}
-             </p>
-             {[
-               ['Tensión Primaria', selected.vp + ' V'],
-               ['Tensión Secundaria', selected.vs + ' V'],
-               ['Eficiencia Esperada', selected.eficiencia + '%'],
-               ['Diseñador Puesto', selected.disenador_nombre || 'Local']
-             ].map(([l, v]) => (
-               <div key={l} style={{...s.result, background: 'transparent'}}><span style={s.resLbl}>{l}</span><span style={{ color: '#F8FAFC', fontWeight: 600 }}>{v}</span></div>
-             ))}
-           </div>
-           
-           <div style={s.card}>
-             <div style={s.sectionTitle}>Históricos Radiales Salvados</div>
-             {detailedCalc ? (
-               <>
-                 {[
-                   ['Vueltas Requeridas Primario', detailedCalc.vueltas_primario],
-                   ['Vueltas Requeridas Secundario', detailedCalc.vueltas_secundario],
-                   ['Área del Núcleo Usada', detailedCalc.area_nucleo + ' cm²'],
-                   ['Estimación de Pérdida', detailedCalc.perdidas_totales + ' W']
-                 ].map(([l, v]) => (
-                   <div key={l} style={s.result}><span style={s.resLbl}>{l}</span><span style={s.resVal}>{v}</span></div>
-                 ))}
-               </>
-             ) : (
-                <div style={{color:'#94a3b8', fontSize:'0.85rem'}}>No existen registros matemáticos subrogados a esta entrada.</div>
-             )}
-           </div>
+            </p>
+            {[
+              ['Tensión Primaria',   selected.vp + ' V'],
+              ['Tensión Secundaria', selected.vs + ' V'],
+              ['Eficiencia Esperada', selected.eficiencia + '%'],
+              ['Diseñador',          selected.disenador_nombre || 'Local'],
+            ].map(([l, v]) => (
+              <div key={l} style={{...s.result, background:'transparent'}}><span style={s.resLbl}>{l}</span><span style={{ color:'#F8FAFC', fontWeight:600 }}>{v}</span></div>
+            ))}
+          </div>
+          <div style={s.card}>
+            <div style={s.sectionTitle}>Históricos Radiales Salvados</div>
+            {detailedCalc ? (
+              <>
+                {[
+                  ['Vueltas Primario',    detailedCalc.vueltas_primario],
+                  ['Vueltas Secundario',  detailedCalc.vueltas_secundario],
+                  ['Área Núcleo',         detailedCalc.area_nucleo + ' cm²'],
+                  ['Pérdida Estimada',    detailedCalc.perdidas_totales + ' W'],
+                ].map(([l, v]) => (
+                  <div key={l} style={s.result}><span style={s.resLbl}>{l}</span><span style={s.resVal}>{v}</span></div>
+                ))}
+              </>
+            ) : (
+              <div style={{color:'#94a3b8', fontSize:'0.85rem'}}>No existen registros matemáticos para este diseño.</div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -875,44 +645,27 @@ function VistaHistorial({ refresh }) {
   return (
     <div style={{ minHeight: '50vh', padding: '2rem' }}>
       <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', color: '#F8FAFC' }}>Biblioteca Central de Manufactura</h2>
-      {designs && designs.length > 0 ? (
-        <div style={s.card}>
-          <table style={s.table}>
-            <thead>
-              <tr>{['Identificador','Potencia','Voltajes','Tipo','Material','Morfología','Fecha','Acs.'].map(h => <th key={h} style={s.th}>{h}</th>)}</tr>
-            </thead>
-            <tbody>
-              {designs.map(d => (
-                <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => cargarDetalle(d.id)}>
-                  <td style={{ ...s.td, fontWeight: 700, color: '#818CF8' }}>KAVE-{d.id.toString().padStart(4, '0')}</td>
-                  <td style={{ ...s.td, fontWeight: 700 }}>{d.potencia_kva} kVA</td>
-                  <td style={s.td}>{d.vp} / {d.vs} V</td>
-                  <td style={s.td}><span style={s.badge(d.tipo === 'monofasico' ? '#34D399' : '#F59E0B')}>{d.tipo}</span></td>
-                  <td style={s.td}><span style={s.badge('#3B82F6')}>{d.material}</span></td>
-                  <td style={{ ...s.td, fontSize: '0.78rem', color: '#94A3B8' }}>{d.forma_nucleo ? d.forma_nucleo.toUpperCase() : 'N/A'}</td>
-                  <td style={{ ...s.td, fontSize: '0.78rem', color: '#64748B' }}>{d.created_at ? new Date(d.created_at).toLocaleDateString() : 'N/A'}</td>
-                  <td style={s.td} onClick={e => { e.stopPropagation(); eliminar(d.id); }}><Trash2 size={15} style={{ color: '#f87171' }} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div style={{ ...s.card, textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <Zap size={48} style={{ opacity: 0.2, margin: '0 auto 1rem', display: 'block' }} />
-          </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#64748B' }}>
-            Bóveda de Diseños Vacía
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#94A3B8', marginBottom: '1rem' }}>
-            No hay diseños guardados en la base de datos.
-          </div>
-          <div style={{ fontSize: '0.85rem', color: '#64748B', fontStyle: 'italic' }}>
-            Accede al "Planificador Analítico" para crear y guardar nuevos diseños.
-          </div>
-        </div>
-      )}
+      <div style={s.card}>
+        <table style={s.table}>
+          <thead>
+            <tr>{['Identificador','Potencia','Voltajes','Tipo','Material','Morfología','Fecha','Acs.'].map(h => <th key={h} style={s.th}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {designs.map(d => (
+              <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => cargarDetalle(d.id)}>
+                <td style={{ ...s.td, fontWeight: 700, color: '#818CF8' }}>KAVE-{d.id.toString().padStart(4,'0')}</td>
+                <td style={{ ...s.td, fontWeight: 700 }}>{d.potencia_kva} kVA</td>
+                <td style={s.td}>{d.vp} / {d.vs} V</td>
+                <td style={s.td}><span style={s.badge(d.tipo === 'monofasico' ? '#34D399' : '#F59E0B')}>{d.tipo}</span></td>
+                <td style={s.td}><span style={s.badge('#3B82F6')}>{d.material}</span></td>
+                <td style={{ ...s.td, fontSize: '0.78rem', color: '#94A3B8' }}>{d.forma_nucleo ? d.forma_nucleo.toUpperCase() : 'N/A'}</td>
+                <td style={{ ...s.td, fontSize: '0.78rem', color: '#64748B' }}>{d.created_at ? new Date(d.created_at).toLocaleDateString() : 'N/A'}</td>
+                <td style={s.td} onClick={e => { e.stopPropagation(); eliminar(d.id); }}><Trash2 size={15} style={{ color: '#f87171' }} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -947,7 +700,9 @@ function VistaProyectos() {
                 <span>{p.tareas_completadas}/{p.tareas_count} hitos de bobinado</span>
                 <span>{Math.round(p.tareas_completadas/p.tareas_count*100)}%</span>
               </div>
-              <div style={{ height: '6px', background: '#334155', borderRadius: '3px' }}><div style={{ height: '100%', width: `${p.tareas_completadas/p.tareas_count*100}%`, background: '#4F46E5', borderRadius: '3px' }} /></div>
+              <div style={{ height: '6px', background: '#334155', borderRadius: '3px' }}>
+                <div style={{ height: '100%', width: `${p.tareas_completadas/p.tareas_count*100}%`, background: '#4F46E5', borderRadius: '3px' }} />
+              </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', fontSize: '0.85rem', color: '#64748B' }}>
               <span>Deadline: {p.fecha_entrega}</span>
@@ -969,8 +724,8 @@ function KAVE() {
 
   const vistas = [
     { id: 'calculador', label: 'Planificador Analítico', icon: <Calculator size={15} /> },
-    { id: 'historial',  label: 'Bóveda de Diseños',  icon: <Zap size={15} /> },
-    { id: 'proyectos',  label: 'Hoja de Ruta',  icon: <FolderKanban size={15} /> },
+    { id: 'historial',  label: 'Bóveda de Diseños',      icon: <Zap size={15} /> },
+    { id: 'proyectos',  label: 'Hoja de Ruta',            icon: <FolderKanban size={15} /> },
   ];
 
   return (
@@ -989,18 +744,7 @@ function KAVE() {
             type="button"
             onClick={() => navigate('/')}
             title="Cerrar Módulo"
-            style={{
-              background: '#ef4444',
-              color: '#ffffff',
-              border: '1px solid #b91c1c',
-              borderRadius: '8px',
-              width: '40px',
-              height: '40px',
-              fontSize: '1.1rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              lineHeight: '1',
-            }}
+            style={{ background: '#ef4444', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', width: '40px', height: '40px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', lineHeight: '1' }}
           >
             X
           </button>
