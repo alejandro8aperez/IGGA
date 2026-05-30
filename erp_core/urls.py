@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/admin/migrate/', run_migrations, name='run_migrations'),
     path('api/admin/seed-informe-diario/', seed_informe_diario, name='seed_informe_diario'),
     path('api/operaciones/proyectos-selector/', get_operaciones_proyectos, name='get_operaciones_proyectos'),
+    path('api/informe-diario/obras/', get_operaciones_proyectos), # Alias para corregir el error 500 del frontend
     path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),
     path('api/multi-empresa/', include('multi_empresa.urls')),
     path('api/mrp/', include('mrp.urls')),

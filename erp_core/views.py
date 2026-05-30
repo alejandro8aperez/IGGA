@@ -507,10 +507,12 @@ def get_operaciones_proyectos(request):
     Esencial para que el Informe Diario de Obra pueda vincularse con los proyectos activos.
     """
     try:
-        from operaciones.models import Proyecto
+        from django.apps import apps
+        Proyecto = apps.get_model('operaciones', 'Proyecto')
+        
         # Obtenemos todos los proyectos registrados para el selector de Obra
         proyectos = Proyecto.objects.all().order_by('-id')
-        
+
         data = [{
             'id': p.id,
             'nombre': getattr(p, 'nombre', f"Proyecto {p.id}"),
@@ -519,5 +521,7 @@ def get_operaciones_proyectos(request):
         } for p in proyectos]
         
         return JsonResponse(data, safe=False)
+    except LookupError:
+        return JsonResponse({'error': 'El modelo Proyecto no está disponible en Operaciones'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
