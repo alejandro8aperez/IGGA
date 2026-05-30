@@ -24798,3 +24798,4 @@ django.core.exceptions.FieldError: Cannot resolve keyword 'proyecto' into field.
 ERROR 2026-05-30 18:01:38,013 basehttp 11576 8256 "GET /api/informe-diario/obras/ HTTP/1.1" 500 27609
 INFO 2026-05-30 18:03:55,908 autoreload 11576 6396 C:\Postgres\ERP-8AMPERIOS\erp_core\views.py changed, reloading.
 INFO 2026-05-30 18:04:02,383 autoreload 12552 47476 Watching for file changes with StatReloader
+INFO 2026-05-30 18:04:55,351 autoreload 12552 47476 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
