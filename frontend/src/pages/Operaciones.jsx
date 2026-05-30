@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API } from '../config/api';
 import { 
     Briefcase, AlertCircle, Edit3, Trash2, Plus, X, ListTodo, User, 
     Search, Filter, Calendar, DollarSign, CheckCircle, Clock, 
     TrendingUp, Target, Activity, Users, FileText, BarChart3
 } from 'lucide-react';
-
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/operaciones/proyectos/';
-const CLIENTS_API = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/crm/clientes/';
 
 export default function Operaciones() {
     const navigate = useNavigate();
@@ -42,8 +40,8 @@ export default function Operaciones() {
         try {
             setLoading(true);
             const [proyectosRes, clientesRes] = await Promise.all([
-                axios.get(API_URL),
-                axios.get(CLIENTS_API).catch(() => ({ data: [] }))
+                axios.get(API.OPERACIONES.PROYECTOS),
+                axios.get(API.CRM.CLIENTES).catch(() => ({ data: [] }))
             ]);
             setProyectos(proyectosRes.data);
             setClientes(clientesRes.data);
@@ -135,9 +133,9 @@ export default function Operaciones() {
             };
 
             if (currentProyecto) {
-                await axios.put(`${API_URL}${currentProyecto.id}/`, payload);
+                await axios.put(`${API.OPERACIONES.PROYECTOS}${currentProyecto.id}/`, payload);
             } else {
-                await axios.post(API_URL, payload);
+                await axios.post(API.OPERACIONES.PROYECTOS, payload);
             }
             closeModal();
             fetchData();
@@ -150,7 +148,7 @@ export default function Operaciones() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
             try {
-                await axios.delete(`${API_URL}${id}/`);
+                await axios.delete(`${API.OPERACIONES.PROYECTOS}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error deleting proyecto:', err);
@@ -200,7 +198,7 @@ export default function Operaciones() {
         );
     }
 
-    if (error) {
+    if (error && proyectos.length === 0) {
         return (
             <div style={{ 
                 background: '#f8fafc',
@@ -222,10 +220,7 @@ export default function Operaciones() {
                     <h2 style={{ color: '#c53030', margin: '0 0 1rem 0' }}>Error</h2>
                     <p style={{ color: '#742a2a', margin: '0 0 1.5rem 0' }}>{error}</p>
                     <button 
-                        onClick={() => {
-                            setError(null);
-                            fetchData();
-                        }}
+                        onClick={() => { setError(null); fetchData(); }}
                         style={{
                             background: '#667eea',
                             color: 'white',
@@ -289,15 +284,6 @@ export default function Operaciones() {
                             alignItems: 'center',
                             gap: '0.5rem',
                             boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
                         }}
                     >
                         <Plus size={20} />
@@ -324,7 +310,7 @@ export default function Operaciones() {
                 </div>
             </div>
 
-            {/* Error Display */}
+            {/* Error inline (no bloquea la UI) */}
             {error && (
                 <div style={{ 
                     background: '#fed7d7',
@@ -338,19 +324,10 @@ export default function Operaciones() {
                     gap: '1rem'
                 }}>
                     <AlertCircle size={20} />
-                    <div style={{ flex: 1 }}>
-                        <strong>Error:</strong> {error}
-                    </div>
+                    <div style={{ flex: 1 }}><strong>Error:</strong> {error}</div>
                     <button 
                         onClick={() => setError(null)}
-                        style={{
-                            background: '#e53e3e',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                        }}
+                        style={{ background: '#e53e3e', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}
                     >
                         Cerrar
                     </button>
@@ -360,204 +337,34 @@ export default function Operaciones() {
             {/* Stats Grid */}
             <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
                 gap: '1.5rem', 
                 marginBottom: '2rem' 
             }}>
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <Briefcase size={24} />
+                {[
+                    { label: 'Total Proyectos', sub: 'Registrados', value: totalProyectos, color: '#667eea', gradient: 'linear-gradient(135deg,#667eea,#764ba2)', Icon: Briefcase },
+                    { label: 'Completados',     sub: 'Finalizados', value: proyectosCompletados, color: '#48bb78', gradient: 'linear-gradient(135deg,#48bb78,#38a169)', Icon: CheckCircle },
+                    { label: 'En Ejecución',    sub: 'Activos',     value: proyectosEnEjecucion, color: '#3b82f6', gradient: 'linear-gradient(135deg,#3b82f6,#2563eb)', Icon: Activity },
+                    { label: 'Presupuesto Total', sub: 'Invertido', value: '$' + totalPresupuesto.toLocaleString(), color: '#ed8936', gradient: 'linear-gradient(135deg,#ed8936,#f59e0b)', Icon: DollarSign },
+                ].map(({ label, sub, value, color, gradient, Icon }) => (
+                    <div key={label} style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{ width: '50px', height: '50px', background: gradient, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                <Icon size={24} />
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '1rem', fontWeight: '600', color: '#2d3748', margin: '0 0 0.2rem 0' }}>{label}</h3>
+                                <p style={{ color: '#718096', margin: 0, fontSize: '0.8rem' }}>{sub}</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Total Proyectos
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Registrados
-                            </p>
-                        </div>
+                        <p style={{ fontSize: '2rem', fontWeight: '700', color, margin: 0 }}>{value}</p>
                     </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#667eea',
-                        margin: '0'
-                    }}>
-                        {totalProyectos}
-                    </p>
-                </div>
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <CheckCircle size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Completados
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Finalizados
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#48bb78',
-                        margin: '0'
-                    }}>
-                        {proyectosCompletados}
-                    </p>
-                </div>
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <Activity size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                En Ejecución
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Activos
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#3b82f6',
-                        margin: '0'
-                    }}>
-                        {proyectosEnEjecucion}
-                    </p>
-                </div>
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid #e2e8f0'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            background: 'linear-gradient(135deg, #ed8936 0%, #f59e0b 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}>
-                            <DollarSign size={24} />
-                        </div>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1.1rem', 
-                                fontWeight: '600', 
-                                color: '#2d3748',
-                                margin: '0 0 0.25rem 0'
-                            }}>
-                                Presupuesto Total
-                            </h3>
-                            <p style={{ color: '#718096', margin: 0, fontSize: '0.875rem' }}>
-                                Invertido
-                            </p>
-                        </div>
-                    </div>
-                    <p style={{ 
-                        fontSize: '2rem', 
-                        fontWeight: '700', 
-                        color: '#ed8936',
-                        margin: '0'
-                    }}>
-                        ${totalPresupuesto.toLocaleString()}
-                    </p>
-                </div>
+                ))}
             </div>
 
-            {/* Status Distribution */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                gap: '1rem', 
-                marginBottom: '2rem' 
-            }}>
-                <div style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    padding: '1rem',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-                    border: '1px solid #e2e8f0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem'
-                }}>
+            {/* Pausados badge */}
+            <div style={{ marginBottom: '2rem' }}>
+                <div style={{ background: 'white', borderRadius: '12px', padding: '1rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '1rem' }}>
                     <Clock size={20} style={{ color: '#fbbf24' }} />
                     <div>
                         <p style={{ margin: '0', fontSize: '0.8rem', color: '#718096' }}>Pausados</p>
@@ -567,49 +374,19 @@ export default function Operaciones() {
             </div>
 
             {/* Search and Filters */}
-            <div style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '1.5rem',
-                marginBottom: '2rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                border: '1px solid #e2e8f0'
-            }}>
+            <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{
-                        position: 'relative',
-                        flex: '1',
-                        minWidth: '300px'
-                    }}>
+                    <div style={{ position: 'relative', flex: '1', minWidth: '300px' }}>
                         <Search size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#718096' }} />
                         <input
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem 1rem 0.75rem 3rem',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '8px',
-                                fontSize: '0.9rem',
-                                outline: 'none',
-                                transition: 'border-color 0.2s'
-                            }}
+                            style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
                             placeholder="Buscar por nombre, descripción..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                         />
                     </div>
                     <select
-                        style={{
-                            padding: '0.75rem 1rem',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '8px',
-                            fontSize: '0.9rem',
-                            outline: 'none',
-                            background: 'white',
-                            cursor: 'pointer',
-                            minWidth: '150px'
-                        }}
+                        style={{ padding: '0.75rem 1rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', background: 'white', cursor: 'pointer', minWidth: '150px' }}
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
                     >
@@ -623,128 +400,59 @@ export default function Operaciones() {
             </div>
 
             {/* Projects Table */}
-            <div style={{ 
-                background: 'white',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                width: '100%'
-            }}>
+            <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', width: '100%' }}>
                 <div style={{ overflowX: 'auto' }}>
-                    <table style={{ 
-                        width: '100%', 
-                        minWidth: '1200px',
-                        borderCollapse: 'collapse', 
-                        fontSize: '0.9rem',
-                        tableLayout: 'fixed'
-                    }}>
+                    <table style={{ width: '100%', minWidth: '1100px', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed' }}>
                         <thead>
                             <tr style={{ background: '#f8fafc' }}>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '8%' }}>ID</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '20%' }}>Nombre</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '15%' }}>Cliente</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '25%' }}>Descripción</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Presupuesto</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Estado</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '12%' }}>Fechas</th>
-                                <th style={{ padding: '1.25rem 0.75rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', verticalAlign: 'middle', whiteSpace: 'nowrap', width: '10%' }}>Acciones</th>
+                                {['ID','Nombre','Cliente','Descripción','Presupuesto','Estado','Fechas','Acciones'].map((h, i) => (
+                                    <th key={h} style={{ padding: '1.25rem 0.75rem', textAlign: i === 0 ? 'center' : 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600', whiteSpace: 'nowrap' }}>{h}</th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredProyectos.map((proyecto, index) => {
+                            {filteredProyectos.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} style={{ padding: '3rem', textAlign: 'center', color: '#718096' }}>
+                                        No hay proyectos que coincidan con la búsqueda.
+                                    </td>
+                                </tr>
+                            ) : filteredProyectos.map((proyecto, index) => {
                                 const statusInfo = getStatusBadge(proyecto.estado);
                                 const StatusIcon = statusInfo.icon;
                                 return (
-                                    <tr key={proyecto.id} style={{ 
-                                        borderBottom: '1px solid #e2e8f0',
-                                        backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc'
-                                    }}>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', fontSize: '0.85rem' }}>{proyecto.id}</td>
-                                        <td style={{ padding: '0.75rem 0.5rem', verticalAlign: 'middle', overflow: 'hidden' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <tr key={proyecto.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc' }}>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontSize: '0.85rem' }}>{proyecto.id}</td>
+                                        <td style={{ padding: '0.75rem 0.5rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                 <Briefcase size={14} style={{ color: '#667eea', flexShrink: 0 }} />
                                                 <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proyecto.nombre}</span>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', fontSize: '0.85rem' }}>
-                                            {proyecto.cliente_nombre || 'N/A'}
-                                        </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', verticalAlign: 'middle', overflow: 'hidden' }}>
-                                            <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proyecto.descripcion}</span>
-                                        </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: '600', fontSize: '0.85rem' }}>
+                                        <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.85rem' }}>{proyecto.cliente_nombre || 'N/A'}</td>
+                                        <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proyecto.descripcion}</td>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: '600', fontSize: '0.85rem' }}>
                                             ${parseFloat(proyecto.presupuesto || 0).toLocaleString()}
                                         </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                                            <span style={{
-                                                background: statusInfo.background,
-                                                color: statusInfo.color,
-                                                padding: '0.2rem 0.5rem',
-                                                borderRadius: '8px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                whiteSpace: 'nowrap',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '0.25rem'
-                                            }}>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
+                                            <span style={{ background: statusInfo.background, color: statusInfo.color, padding: '0.2rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}>
                                                 <StatusIcon size={12} />
                                                 {statusInfo.text}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', fontSize: '0.75rem' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                    <Calendar size={10} style={{ color: '#718096' }} />
-                                                    <span>{proyecto.fecha_inicio}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                    <Target size={10} style={{ color: '#718096' }} />
-                                                    <span>{proyecto.fecha_fin_estimada}</span>
-                                                </div>
+                                        <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.75rem', color: '#4a5568' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Calendar size={10} style={{ color: '#718096' }} />{proyecto.fecha_inicio}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Target size={10} style={{ color: '#718096' }} />{proyecto.fecha_fin_estimada}</div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                                            <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
-                                                <button 
-                                                    onClick={() => openModal(proyecto)}
-                                                    style={{
-                                                        background: '#667eea',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        padding: '0.4rem',
-                                                        borderRadius: '4px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        transition: 'background 0.2s',
-                                                        flexShrink: 0
-                                                    }}
-                                                    onMouseOver={(e) => e.target.style.background = '#5a67d8'}
-                                                    onMouseOut={(e) => e.target.style.background = '#667eea'}
-                                                >
-                                                    <Edit3 size={12} />
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                <button onClick={() => openModal(proyecto)} style={{ background: '#667eea', color: 'white', border: 'none', padding: '0.4rem', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}>
+                                                    <Edit3 size={13} />
                                                 </button>
-                                                <button 
-                                                    onClick={() => handleDelete(proyecto.id)}
-                                                    style={{
-                                                        background: '#ef4444',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        padding: '0.4rem',
-                                                        borderRadius: '4px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        transition: 'background 0.2s',
-                                                        flexShrink: 0
-                                                    }}
-                                                    onMouseOver={(e) => e.target.style.background = '#dc2626'}
-                                                    onMouseOut={(e) => e.target.style.background = '#ef4444'}
-                                                >
-                                                    <Trash2 size={12} />
+                                                <button onClick={() => handleDelete(proyecto.id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '0.4rem', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}>
+                                                    <Trash2 size={13} />
                                                 </button>
                                             </div>
                                         </td>
@@ -758,195 +466,58 @@ export default function Operaciones() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: 'white',
-                        borderRadius: '16px',
-                        padding: '2rem',
-                        width: '90%',
-                        maxWidth: '600px',
-                        maxHeight: '90vh',
-                        overflowY: 'auto'
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '1.5rem'
-                        }}>
+                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#1a202c' }}>
                                 {currentProyecto ? 'Editar Proyecto' : 'Nuevo Proyecto'}
                             </h3>
-                            <button
-                                onClick={closeModal}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    fontSize: '1.5rem',
-                                    cursor: 'pointer',
-                                    color: '#718096'
-                                }}
-                            >
-                                ×
-                            </button>
+                            <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#718096' }}>×</button>
                         </div>
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                        Nombre del Proyecto:
-                                    </label>
-                                    <input
-                                        name="nombre"
-                                        value={formData.nombre}
-                                        onChange={handleInputChange}
-                                        required
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            outline: 'none'
-                                        }}
-                                    />
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Nombre del Proyecto:</label>
+                                    <input name="nombre" value={formData.nombre} onChange={handleInputChange} required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                        Cliente:
-                                    </label>
-                                    <select
-                                        name="cliente"
-                                        value={formData.cliente}
-                                        onChange={handleInputChange}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            outline: 'none',
-                                            background: 'white'
-                                        }}
-                                    >
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Cliente:</label>
+                                    <select name="cliente" value={formData.cliente} onChange={handleInputChange}
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', background: 'white', boxSizing: 'border-box' }}>
                                         <option value="">Seleccionar cliente</option>
-                                        {clientes.map(cliente => (
-                                            <option key={cliente.id} value={cliente.id}>
-                                                {cliente.razon_social || cliente.nombre}
-                                            </option>
+                                        {clientes.map(c => (
+                                            <option key={c.id} value={c.id}>{c.razon_social || c.nombre}</option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                    Descripción:
-                                </label>
-                                <textarea
-                                    name="descripcion"
-                                    value={formData.descripcion}
-                                    onChange={handleInputChange}
-                                    rows="3"
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.75rem',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        fontSize: '0.9rem',
-                                        outline: 'none',
-                                        resize: 'vertical'
-                                    }}
-                                />
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Descripción:</label>
+                                <textarea name="descripcion" value={formData.descripcion} onChange={handleInputChange} rows="3"
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                        Fecha Inicio:
-                                    </label>
-                                    <input
-                                        name="fecha_inicio"
-                                        type="date"
-                                        value={formData.fecha_inicio}
-                                        onChange={handleInputChange}
-                                        required
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            outline: 'none'
-                                        }}
-                                    />
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Fecha Inicio:</label>
+                                    <input name="fecha_inicio" type="date" value={formData.fecha_inicio} onChange={handleInputChange} required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                        Fecha Fin Estimada:
-                                    </label>
-                                    <input
-                                        name="fecha_fin_estimada"
-                                        type="date"
-                                        value={formData.fecha_fin_estimada}
-                                        onChange={handleInputChange}
-                                        required
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            outline: 'none'
-                                        }}
-                                    />
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Fecha Fin Estimada:</label>
+                                    <input name="fecha_fin_estimada" type="date" value={formData.fecha_fin_estimada} onChange={handleInputChange} required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                        Presupuesto:
-                                    </label>
-                                    <input
-                                        name="presupuesto"
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.presupuesto}
-                                        onChange={handleInputChange}
-                                        required
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            outline: 'none'
-                                        }}
-                                    />
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Presupuesto:</label>
+                                    <input name="presupuesto" type="number" step="0.01" value={formData.presupuesto} onChange={handleInputChange} required
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
                                 </div>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>
-                                    Estado:
-                                </label>
-                                <select
-                                    name="estado"
-                                    value={formData.estado}
-                                    onChange={handleInputChange}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.75rem',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        fontSize: '0.9rem',
-                                        outline: 'none',
-                                        background: 'white'
-                                    }}
-                                >
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2d3748' }}>Estado:</label>
+                                <select name="estado" value={formData.estado} onChange={handleInputChange}
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', background: 'white', boxSizing: 'border-box' }}>
                                     <option value="planificacion">Planificación</option>
                                     <option value="ejecucion">En Ejecución</option>
                                     <option value="pausado">Pausado</option>
@@ -954,34 +525,12 @@ export default function Operaciones() {
                                 </select>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    style={{
-                                        padding: '0.75rem 1.5rem',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        background: 'white',
-                                        color: '#718096',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9rem'
-                                    }}
-                                >
+                                <button type="button" onClick={closeModal}
+                                    style={{ padding: '0.75rem 1.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', background: 'white', color: '#718096', cursor: 'pointer', fontSize: '0.9rem' }}>
                                     Cancelar
                                 </button>
-                                <button
-                                    type="submit"
-                                    style={{
-                                        padding: '0.75rem 1.5rem',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9rem',
-                                        fontWeight: '600'
-                                    }}
-                                >
+                                <button type="submit"
+                                    style={{ padding: '0.75rem 1.5rem', border: 'none', borderRadius: '8px', background: 'linear-gradient(135deg,#667eea,#764ba2)', color: 'white', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}>
                                     {currentProyecto ? 'Actualizar' : 'Guardar'}
                                 </button>
                             </div>
