@@ -1,132 +1,91 @@
 // =============================================================================
 // config/api.js — ERP 8AMPERIOS
-// Central de endpoints. TODOS los módulos deben importar de aquí.
-// En producción (Render) setear la variable: VITE_API_URL
-// =============================================================================
-
-// Obtenemos la URL y nos aseguramos de que NO termine en slash ni en /api
-const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const BASE = rawUrl.replace(/\/+$/, '').replace(/\/api$/, '');
-const ROOT = `${BASE}/api`;
-
-console.log(`[ERP] API Base configurada en: ${BASE}`);
-
-// =============================================================================
-// ENDPOINTS API
+// Paths RELATIVOS: axios los combina con baseURL = '/api/'
+// No hardcodear http://localhost ni VITE_API_URL aquí.
 // =============================================================================
 
 export const API = {
 
-  // ✅ BASE URL
-  BASE,
-
-  // ---------------------------------------------------------------------------
-  // AUTH
-  // ---------------------------------------------------------------------------
   AUTH: {
-    LOGIN: `${BASE}/api/token/`,
-    REFRESH: `${BASE}/api/token/refresh/`,
-    PROFILE: `${BASE}/api/auth/profile/`,
+    LOGIN:   'token/',
+    REFRESH: 'token/refresh/',
   },
 
-  // ---------------------------------------------------------------------------
-  // CRM
-  // ---------------------------------------------------------------------------
   CRM: {
-    CLIENTES: `${BASE}/api/crm/clientes/`,
-    CONTACTOS: `${BASE}/api/crm/contactos/`,
-    COTIZACIONES: `${BASE}/api/crm/cotizaciones/`,
-    OPORTUNIDADES: `${BASE}/api/crm/oportunidades/`,
+    CLIENTES:     'crm/clientes/',
+    CONTACTOS:    'crm/contactos/',
+    COTIZACIONES: 'crm/cotizaciones/',
+    OPORTUNIDADES:'crm/oportunidades/',
   },
 
-  // ---------------------------------------------------------------------------
-  // VENTAS / PEDIDOS
-  // ---------------------------------------------------------------------------
-  VENTAS: {
-    PEDIDOS: `${ROOT}/venta/pedidos/`,
-    FACTURAS: `${ROOT}/venta/facturas/`,
-  },
   PEDIDOS: {
-    LIST: `${ROOT}/venta/pedidos/`,
-    CREATE: `${ROOT}/venta/pedidos/`,
-    DETAIL: (id) => `${ROOT}/venta/pedidos/${id}/`,
+    LIST:   'venta/pedidos/',
+    CREATE: 'venta/pedidos/',
+    DETAIL: (id) => `venta/pedidos/${id}/`,
   },
 
-  // ---------------------------------------------------------------------------
-  // COMPRAS
-  // ---------------------------------------------------------------------------
+  VENTAS: {
+    PEDIDOS:  'venta/pedidos/',
+    FACTURAS: 'venta/facturas/',
+  },
+
   COMPRAS: {
-    PROVEEDORES: `${BASE}/api/compras/proveedores/`,
-    ORDENES: `${BASE}/api/compras/ordenes/`,
+    PROVEEDORES: 'compras/proveedores/',
+    ORDENES:     'compras/ordenes/',
   },
 
-  // ---------------------------------------------------------------------------
-  // INVENTARIOS
-  // ---------------------------------------------------------------------------
+  INVENTARIO: {
+    PRODUCTOS:   'inventario/productos/',
+    MOVIMIENTOS: 'inventario/movimientos/',
+    RESUMEN:     'inventario/productos/resumen/',
+  },
+
+  // mantener alias viejo para no romper Ventas.jsx
   INVENTARIOS: {
-    PRODUCTOS: `${BASE}/api/inventario/productos/`,
-    MOVIMIENTOS: `${BASE}/api/inventario/movimientos/`,
+    PRODUCTOS:   'inventario/productos/',
+    MOVIMIENTOS: 'inventario/movimientos/',
   },
 
-  // ---------------------------------------------------------------------------
-  // PRODUCTOS
-  // ---------------------------------------------------------------------------
   PRODUCTOS: {
-    RESUMEN: `${BASE}/api/inventario/productos/resumen/`,
+    RESUMEN: 'inventario/productos/resumen/',
   },
 
-  // ---------------------------------------------------------------------------
-  // OPERACIONES / PROYECTOS / OBRAS
-  // ---------------------------------------------------------------------------
   OPERACIONES: {
-    PROYECTOS: `${ROOT}/operaciones/proyectos/`,
+    PROYECTOS: 'operaciones/proyectos/',
   },
 
-  // ---------------------------------------------------------------------------
-  // INFORME DIARIO
-  // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
-    INFORMES:            `${ROOT}/informe-diario/informes/`,
-    OBRAS:               `${ROOT}/informe-diario/obras/`,
-    RECURSOS:            `${ROOT}/informe-diario/recursos/`,
-    CATEGORIAS_RECURSOS: `${ROOT}/informe-diario/categorias-recursos/`,
-    CATEGORIAS_ACTIVIDADES: `${ROOT}/informe-diario/categorias-actividades/`,
-    ANEXOS:              `${ROOT}/informe-diario/anexos/`,
-    STATUS_COUNTS:       `${ROOT}/informe-diario/informes/status-counts/`,
-    DASHBOARD:           `${ROOT}/informe-diario/dashboard/`,
+    INFORMES:               'informe-diario/informes/',
+    OBRAS:                  'informe-diario/obras/',
+    RECURSOS:               'informe-diario/recursos/',
+    CATEGORIAS_RECURSOS:    'informe-diario/categorias-recursos/',
+    CATEGORIAS_ACTIVIDADES: 'informe-diario/categorias-actividades/',
+    ANEXOS:                 'informe-diario/anexos/',
+    STATUS_COUNTS:          'informe-diario/informes/status-counts/',
+    DASHBOARD:              'informe-diario/dashboard/',
   },
 
   KAVE: {
-    DISENOS: `${ROOT}/kave/disenos/`,
+    BASE:    'kave/',
+    DESIGNS: 'kave/designs/',   // ← corregido (era "disenos")
+    QUOTE:   'kave/quote/',
+    DESIGN:  'kave/design/',
   },
 
-  // ---------------------------------------------------------------------------
-  // DASHBOARD GENERAL
-  // ---------------------------------------------------------------------------
   DASHBOARD: {
-    GENERAL: `${BASE}/api/dashboard/`,
-    METRICS: `${BASE}/api/dashboard/metrics/`,
+    GENERAL: 'dashboard/',
+    STATS:   'dashboard/stats/',
   },
 
-  // ---------------------------------------------------------------------------
-  // USERS
-  // ---------------------------------------------------------------------------
   USERS: {
-    LIST: `${BASE}/api/users/`,
-    PROFILE: `${BASE}/api/users/profile/`,
+    LIST:    'users/',
+    PROFILE: 'users/profile/',
   },
 
-  // ---------------------------------------------------------------------------
-  // REPORTES
-  // ---------------------------------------------------------------------------
   REPORTES: {
-    GENERAL: `${BASE}/api/reportes/`,
+    GENERAL: 'reportes/',
   },
 
 };
-
-// =============================================================================
-// EXPORT DEFAULT
-// =============================================================================
 
 export default API;
