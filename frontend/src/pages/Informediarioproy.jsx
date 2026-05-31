@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Package,
   Loader2,
+  BarChart2,
 } from "lucide-react";
 
 import InformeDashboard from "@/components/informe-diario/InformeDashboard";
@@ -21,6 +22,7 @@ import InformeLista from "@/components/informe-diario/InformeLista";
 import InformeFormulario from "@/components/informe-diario/InformeFormulario";
 import InformeCatalogos from "@/components/informe-diario/InformeCatalogos";
 import HojaFotosInforme from "@/components/informe-diario/HojaFotosInforme";
+import ReportesInforme from "@/components/informe-diario/ReportesInforme";
 
 import axios from "axios";
 import { toast, Toaster } from "sonner";
@@ -109,15 +111,11 @@ function FotoCard({ foto, onClick }) {
             src={imgSrc}
             alt={foto.descripcion || "Foto del informe"}
             onLoad={() => setLoaded(true)}
-            onError={() => {
-              setLoaded(true);
-              setErrored(true);
-            }}
+            onError={() => { setLoaded(true); setErrored(true); }}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              padding: 0,
               opacity: loaded ? 1 : 0,
               transition: "opacity 0.3s ease",
             }}
@@ -141,53 +139,19 @@ function FotoCard({ foto, onClick }) {
         )}
       </div>
 
-      <div
-        style={{
-          padding: "1rem",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          flex: 1,
-        }}
-      >
+      <div style={{ padding: "1rem", display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1 }}>
         <div style={{ marginBottom: "0.5rem" }}>
-          <div
-            style={{
-              background: "#f5f3ff",
-              color: "#7c3aed",
-              fontSize: "0.65rem",
-              fontWeight: 800,
-              width: "fit-content",
-              padding: "2px 8px",
-              borderRadius: "8px",
-              marginBottom: "0.5rem",
-            }}
-          >
+          <div style={{ background: "#f5f3ff", color: "#7c3aed", fontSize: "0.65rem", fontWeight: 800, width: "fit-content", padding: "2px 8px", borderRadius: "8px", marginBottom: "0.5rem" }}>
             {foto.seccion_display || "Foto"}
           </div>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: "0.95rem",
-              color: "#1e293b",
-              fontWeight: 700,
-              lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <h3 style={{ margin: 0, fontSize: "0.95rem", color: "#1e293b", fontWeight: 700, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {foto.descripcion || "Sin descripción"}
           </h3>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-              {foto.fecha_captura
-                ? new Date(foto.fecha_captura).toLocaleString("es-CO")
-                : "Fecha no disponible"}
-            </span>
-          </div>
+          <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+            {foto.fecha_captura ? new Date(foto.fecha_captura).toLocaleString("es-CO") : "Fecha no disponible"}
+          </span>
         </div>
       </div>
     </div>
@@ -199,31 +163,17 @@ function UploadCard({ onClick, uploading }) {
     <div
       onClick={onClick}
       style={{
-        background: "white",
-        borderRadius: "16px",
-        overflow: "hidden",
-        cursor: uploading ? "wait" : "pointer",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        border: "2px dashed #8b5cf6",
-        height: "260px",
-        gap: "0.75rem",
-        color: "#8b5cf6",
+        background: "white", borderRadius: "16px", overflow: "hidden",
+        cursor: uploading ? "wait" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        alignItems: "center", border: "2px dashed #8b5cf6", height: "260px",
+        gap: "0.75rem", color: "#8b5cf6",
       }}
     >
       {uploading ? (
-        <>
-          <Loader2 size={48} className="animate-spin" />
-          <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Subiendo...</span>
-        </>
+        <><Loader2 size={48} className="animate-spin" /><span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Subiendo...</span></>
       ) : (
-        <>
-          <Plus size={48} />
-          <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>+ Agregar Fotos</span>
-        </>
+        <><Plus size={48} /><span style={{ fontSize: "0.85rem", fontWeight: 700 }}>+ Agregar Fotos</span></>
       )}
     </div>
   );
@@ -231,22 +181,8 @@ function UploadCard({ onClick, uploading }) {
 
 function FotoCardSkeleton() {
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: "16px",
-        height: "260px",
-        padding: "1rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1rem",
-        border: "1px solid #f1f5f9",
-      }}
-    >
-      <div
-        className="skeleton"
-        style={{ width: "100%", height: "140px", borderRadius: "8px", background: C.skeleton }}
-      />
+    <div style={{ background: "white", borderRadius: "16px", height: "260px", padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem", border: "1px solid #f1f5f9" }}>
+      <div className="skeleton" style={{ width: "100%", height: "140px", borderRadius: "8px", background: C.skeleton }} />
       <div className="skeleton" style={{ width: "40%", height: "14px", background: C.skeleton }} />
       <div className="skeleton" style={{ width: "80%", height: "20px", background: C.skeleton }} />
     </div>
@@ -260,32 +196,24 @@ function InformeFotos({ informeId }) {
   const { data: fotos = [], isLoading } = useQuery({
     queryKey: ["informe-fotos", informeId],
     queryFn: () =>
-      informeId
-        ? axios
-            .get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`)
-            .then((r) => r.data)
-        : [],
+      informeId ? axios.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`).then((r) => r.data) : [],
     enabled: !!informeId,
   });
 
   const handleUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-
     setUploading(true);
     try {
       for (const file of files) {
         const formData = new FormData();
         formData.append("informe", informeId);
         formData.append("imagen", file);
-        await axios.post(`${API.INFORME_DIARIO.ANEXOS}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await axios.post(`${API.INFORME_DIARIO.ANEXOS}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
       }
       queryClient.invalidateQueries(["informe-fotos", informeId]);
       toast.success("Fotos subidas exitosamente!");
     } catch (error) {
-      console.error("Error al subir fotos:", error);
       toast.error("Error al subir las fotos");
     } finally {
       setUploading(false);
@@ -295,30 +223,9 @@ function InformeFotos({ informeId }) {
 
   if (!informeId) {
     return (
-      <div
-        style={{
-          background: C.white,
-          borderRadius: 20,
-          padding: "5rem 2rem",
-          border: `2px dashed ${C.border}`,
-          textAlign: "center",
-        }}
-      >
-        <ImageIcon
-          size={64}
-          style={{
-            color: C.textFaint,
-            margin: "0 auto 1rem",
-          }}
-        />
-        <h3
-          style={{
-            margin: 0,
-            color: C.textMuted,
-            fontWeight: 800,
-            textTransform: "uppercase",
-          }}
-        >
+      <div style={{ background: C.white, borderRadius: 20, padding: "5rem 2rem", border: `2px dashed ${C.border}`, textAlign: "center" }}>
+        <ImageIcon size={64} style={{ color: C.textFaint, margin: "0 auto 1rem" }} />
+        <h3 style={{ margin: 0, color: C.textMuted, fontWeight: 800, textTransform: "uppercase" }}>
           Selecciona un informe para ver las fotos
         </h3>
       </div>
@@ -327,22 +234,8 @@ function InformeFotos({ informeId }) {
 
   return (
     <div>
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleUpload}
-        style={{ display: "none" }}
-        id="foto-upload"
-        disabled={uploading}
-      />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          gap: "1rem",
-        }}
-      >
+      <input type="file" accept="image/*" multiple onChange={handleUpload} style={{ display: "none" }} id="foto-upload" disabled={uploading} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1rem" }}>
         <label htmlFor="foto-upload" style={{ display: "block" }}>
           <UploadCard uploading={uploading} />
         </label>
@@ -384,143 +277,64 @@ function InformeDiarioContent() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editingInforme, setEditingInforme] = useState(null);
+
   const { data: informes = [] } = useQuery({
     queryKey: ["informes-diarios"],
     queryFn: () => informeDiarioService.list(),
   });
 
+  // ORDEN: Panel → Fotos → Reportes → Historial  (sin "Todos")
   const tabs = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Panel" },
-    { id: "lista", icon: BookOpen, label: "Historial" },
-    { id: "fotos", icon: ImageIcon, label: "Fotos" },
-    { id: "todos", icon: ClipboardList, label: "Todos" },
+    { id: "dashboard",  icon: LayoutDashboard, label: "Panel"     },
+    { id: "fotos",      icon: ImageIcon,        label: "Fotos"     },
+    { id: "reportes",   icon: BarChart2,         label: "Reportes"  },
+    { id: "lista",      icon: BookOpen,          label: "Historial" },
   ];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: C.pageBg,
-        overflow: "auto",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: C.pageBg, overflow: "auto" }}>
       <Toaster position="bottom-right" richColors />
 
+      {/* ── TOP BAR ── */}
       <div
         style={{
-          background: C.topBar,
-          padding: "0.75rem 1.5rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
+          background: C.topBar, padding: "0.75rem 1.5rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.05)", position: "sticky", top: 0, zIndex: 50,
         }}
       >
-        {/* Nombre del proyecto en edición — centro del topBar */}
         {editingInforme && (
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              pointerEvents: "none",
-            }}
-          >
-            <span style={{ fontSize: "0.7rem", fontWeight: 600, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Proyecto en edición
-            </span>
-            <span style={{ fontSize: "1rem", fontWeight: 800, color: C.text, whiteSpace: "nowrap" }}>
-              {editingInforme.obra_nombre || `Informe #${editingInforme.id}`}
-            </span>
-            <span style={{ fontSize: "0.72rem", color: C.textMuted }}>
-              {editingInforme.fecha}
-            </span>
+          <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", pointerEvents: "none" }}>
+            <span style={{ fontSize: "0.7rem", fontWeight: 600, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proyecto en edición</span>
+            <span style={{ fontSize: "1rem", fontWeight: 800, color: C.text, whiteSpace: "nowrap" }}>{editingInforme.obra_nombre || `Informe #${editingInforme.id}`}</span>
+            <span style={{ fontSize: "0.72rem", color: C.textMuted }}>{editingInforme.fecha}</span>
           </div>
         )}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "1rem",
-          }}
-        >
+
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <button
             onClick={() => navigate("/")}
-            style={{
-              background: C.borderLight,
-              border: "none",
-              borderRadius: 10,
-              padding: "0.5rem",
-              cursor: "pointer",
-              color: C.textMuted,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            style={{ background: C.borderLight, border: "none", borderRadius: 10, padding: "0.5rem", cursor: "pointer", color: C.textMuted, display: "flex", alignItems: "center", justifyContent: "center" }}
             title="Regresar"
           >
             <ArrowLeft size={20} />
           </button>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-            }}
-          >
-            <ClipboardList
-              size={24}
-              style={{ color: C.primary }}
-            />
-
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <ClipboardList size={24} style={{ color: C.primary }} />
             <div>
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: "1.2rem",
-                  fontWeight: 800,
-                  color: C.text,
-                }}
-              >
-                INFORME DIARIO
-              </h1>
-
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: C.textMuted,
-                }}
-              >
-                Terminal de Control Proyectivo F-141-IN
-              </span>
+              <h1 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: C.text }}>INFORME DIARIO</h1>
+              <span style={{ fontSize: "0.75rem", color: C.textMuted }}>Terminal de Control Proyectivo F-141-IN</span>
             </div>
           </div>
         </div>
 
         <button
-          onClick={() => {
-            setEditingInforme(null);
-            setActiveTab("formulario");
-          }}
+          onClick={() => { setEditingInforme(null); setActiveTab("formulario"); }}
           style={{
-            padding: "0.6rem 1.5rem",
-            borderRadius: 14,
-            border: "none",
+            padding: "0.6rem 1.5rem", borderRadius: 14, border: "none",
             background: `linear-gradient(135deg, ${C.primary} 0%, #db2777 100%)`,
-            color: C.white,
-            fontSize: "0.95rem",
-            fontWeight: 800,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
+            color: C.white, fontSize: "0.95rem", fontWeight: 800, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: "0.5rem",
             boxShadow: `0 6px 16px ${C.primaryShadow}`,
           }}
         >
@@ -529,68 +343,41 @@ function InformeDiarioContent() {
         </button>
       </div>
 
-      <div
-        style={{
-          maxWidth: 1600,
-          margin: "0 auto",
-          padding: "1.5rem",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            marginBottom: "1.25rem",
-            overflowX: "auto",
-            paddingBottom: "0.5rem",
-          }}
-        >
+      {/* ── CONTENIDO ── */}
+      <div style={{ maxWidth: 1600, margin: "0 auto", padding: "1.5rem" }}>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.5rem" }}>
           {tabs.map((t) => (
             <TabChip
               key={t.id}
               active={activeTab === t.id}
-              onClick={() => {
-                if (t.id === "formulario") {
-                  setEditingInforme(null);
-                }
-                setActiveTab(t.id);
-              }}
+              onClick={() => { if (t.id === "formulario") setEditingInforme(null); setActiveTab(t.id); }}
               label={t.label}
               icon={t.icon}
             />
           ))}
         </div>
 
-        <div
-          style={{
-            background: C.white,
-            borderRadius: 24,
-            border: `1px solid ${C.border}`,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-            padding: "1.5rem",
-            minHeight: 600,
-          }}
-        >
-          {activeTab === "dashboard" && (
-            <InformeDashboard
-              onNuevoInforme={() => {
-                setEditingInforme(null);
-                setActiveTab("formulario");
-              }}
-            />
-          )}
+        <div style={{ background: C.white, borderRadius: 24, border: `1px solid ${C.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)", padding: "1.5rem", minHeight: 600 }}>
 
-          {activeTab === "lista" && (
-            <InformeLista
-              onEditar={(inf) => {
-                setEditingInforme(inf);
-                setActiveTab("formulario");
-              }}
-            />
+          {activeTab === "dashboard" && (
+            <InformeDashboard onNuevoInforme={() => { setEditingInforme(null); setActiveTab("formulario"); }} />
           )}
 
           {activeTab === "fotos" && (
             <HojaFotosInforme informeId={editingInforme?.id} />
+          )}
+
+          {/* ── NUEVA PESTAÑA REPORTES ── */}
+          {activeTab === "reportes" && (
+            <ReportesInforme informeId={editingInforme?.id} informe={editingInforme} />
+          )}
+
+          {activeTab === "lista" && (
+            <InformeLista
+              onEditar={(inf) => { setEditingInforme(inf); setActiveTab("formulario"); }}
+            />
           )}
 
           {activeTab === "formulario" && (
@@ -601,12 +388,6 @@ function InformeDiarioContent() {
             />
           )}
 
-          {activeTab === "todos" && (
-            <InformeLista
-              onNuevo={() => { setEditingInforme(null); setActiveTab("formulario"); }}
-              onEditar={(inf) => { setEditingInforme(inf); setActiveTab("formulario"); }}
-            />
-          )}
         </div>
       </div>
     </div>
