@@ -4,9 +4,6 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { Lock, User, Building2, Eye, EyeOff, AlertCircle, Loader } from 'lucide-react';
 
-// URL del endpoint de autenticación
-const AUTH_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/token/';
-
 const Login = () => {
     const { loginUser } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -37,8 +34,7 @@ const Login = () => {
 
         setLoading(true);
         try {
-            // Intentar autenticación real contra Django
-            const res = await axios.post(AUTH_URL, { username, password }, { timeout: 8000 });
+            const res = await axios.post('token/', { username, password }, { timeout: 8000 });
             const { access, refresh, user: userData } = res.data;
 
             loginUser({
@@ -52,7 +48,6 @@ const Login = () => {
 
         } catch (err) {
             if (err.code === 'ECONNABORTED' || !err.response) {
-                // Backend no disponible — modo demo con usuarios de prueba
                 const demoResult = autenticarDemo(username, password, selectedEmpresa);
                 if (demoResult) {
                     loginUser(demoResult);
