@@ -236,17 +236,8 @@ export default function ReportesInforme({ informeId, informe }) {
         </div>
       </Section>
 
-      {/* ── ACTIVIDADES DEL DÍA ── */}
-      <Section
-        title={<><FileText size={13} style={{ marginRight: 6 }} />ACTIVIDADES DEL DÍA</>}
-        action={
-          <button style={s.actionBtn} onClick={() => navigate('/interventoria/actividades-del-dia')}>
-            <Edit3 size={12} style={{ marginRight: 4 }} />
-            Editar actividades
-            <ChevronRight size={12} style={{ marginLeft: 2 }} />
-          </button>
-        }
-      >
+      {/* ── ACTIVIDADES DEL DÍA (solo lectura, sin botón de editar) ── */}
+      <Section title={<><FileText size={13} style={{ marginRight: 6 }} />ACTIVIDADES DEL DÍA</>}>
         {actividades.map(grupo => (
           <div key={grupo.id} style={{ ...s.actGrupo, borderLeftColor: grupo.color }}>
             <span style={{ ...s.actCat, color: grupo.color }}>{grupo.categoria}</span>
