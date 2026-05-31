@@ -525,3 +525,27 @@ def get_operaciones_proyectos(request):
         return JsonResponse({'error': 'El modelo Proyecto no está disponible en Operaciones'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_master_recursos(request):
+    """
+    Endpoint para obtener el catálogo maestro de recursos (Maquinaria y Personal).
+    Permite al frontend llenar los selectores cuando se presiona 'Agregar recurso'.
+    """
+    try:
+        from django.apps import apps
+        Recurso = apps.get_model('informe_diario', 'Recurso')
+        # Obtenemos recursos activos agrupados por su categoría (Maquinaria o Personal)
+        recursos = Recurso.objects.filter(activo=True).select_related('categoria').order_by('categoria__orden', 'orden')
+        
+        data = [{
+            'id': r.id,
+            'nombre': r.nombre,
+            'unidad': r.unidad,
+            'categoria': r.categoria.nombre if r.categoria else 'General'
+        } for r in recursos]
+        
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

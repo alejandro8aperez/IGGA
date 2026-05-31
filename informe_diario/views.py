@@ -67,7 +67,7 @@ def _transform_frontend_data(data):
                 'recurso':     _get_id(r.get('recurso_id') or r.get('recurso')),
                 'cantidad':    r.get('cantidad', 0),
                 'empresa':     r.get('empresa', ''),
-                'observacion': r.get('observacion', ''),
+                'notas':       r.get('notas', ''),
             } 
             for r in recursos_list 
             if _get_id(r.get('recurso_id') or r.get('recurso'))

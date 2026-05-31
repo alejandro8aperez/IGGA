@@ -168,7 +168,7 @@ class DetalleRecurso(models.Model):
     recurso = models.ForeignKey(Recurso, on_delete=models.PROTECT)
     cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     empresa = models.CharField(max_length=200, blank=True)
-    observacion = models.CharField(max_length=255, blank=True)
+    notas = models.TextField(blank=True, null=True, verbose_name="Notas")
 
     class Meta:
         unique_together = [('informe', 'recurso')]
@@ -181,6 +181,7 @@ class MaquinariaLibre(models.Model):
     descripcion = models.CharField(max_length=255)
     cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     empresa = models.CharField(max_length=200, blank=True)
+    notas = models.TextField(blank=True, null=True, verbose_name="Notas")
     orden = models.IntegerField(default=0)
 
 
@@ -190,6 +191,7 @@ class PersonalLibre(models.Model):
     descripcion = models.CharField(max_length=255)
     cantidad = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     empresa = models.CharField(max_length=200, blank=True)
+    notas = models.TextField(blank=True, null=True, verbose_name="Notas")
     orden = models.IntegerField(default=0)
 
 

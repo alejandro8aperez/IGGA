@@ -39,7 +39,7 @@ class DetalleRecursoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetalleRecurso
         fields = ['id', 'recurso', 'recurso_nombre', 'categoria_nombre',
-                  'cantidad', 'empresa', 'observacion']
+                  'cantidad', 'empresa', 'notas']
 
 
 class ReporteLluviaSerializer(serializers.ModelSerializer):
@@ -65,12 +65,12 @@ class ItemObraSerializer(serializers.ModelSerializer):
 class MaquinariaLibreSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaquinariaLibre
-        fields = ['id', 'descripcion', 'cantidad', 'empresa', 'orden']
+        fields = ['id', 'descripcion', 'cantidad', 'empresa', 'notas', 'orden']
 
 class PersonalLibreSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonalLibre
-        fields = ['id', 'descripcion', 'cantidad', 'empresa', 'orden']
+        fields = ['id', 'descripcion', 'cantidad', 'empresa', 'notas', 'orden']
 
 class AnexoFotoSerializer(serializers.ModelSerializer):
     imagen_url = serializers.SerializerMethodField()
