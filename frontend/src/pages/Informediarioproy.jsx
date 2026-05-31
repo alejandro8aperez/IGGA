@@ -566,29 +566,7 @@ function InformeDiarioContent() {
           )}
 
           {activeTab === "fotos" && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Seleccionar Informe</label>
-                  <select
-                    value={editingInforme?.id || ""}
-                    onChange={(e) => {
-                      const inf = informes.find((i) => String(i.id) === e.target.value);
-                      setEditingInforme(inf || null);
-                    }}
-                    className="w-full px-3 py-2 border rounded-lg bg-white"
-                  >
-                    <option value="">Seleccione un informe...</option>
-                    {informes.map((inf) => (
-                      <option key={inf.id} value={inf.id}>
-                        {inf.obra_nombre || `Informe #${inf.id}`} - {inf.fecha}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <HojaFotosInforme informeId={editingInforme?.id} />
-            </div>
+            <HojaFotosInforme informeId={editingInforme?.id} />
           )}
 
           {activeTab === "formulario" && (
