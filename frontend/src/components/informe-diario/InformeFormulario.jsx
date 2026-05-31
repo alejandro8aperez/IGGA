@@ -225,18 +225,10 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
   return (
     <div style={{ marginBottom: "2rem" }}>
       {/* Cabecera de sección */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+      <div style={{ marginBottom: "0.6rem" }}>
         <h4 style={{ margin: 0, fontSize: "0.78rem", fontWeight: 800, color: accentColor, textTransform: "uppercase", letterSpacing: "0.06em" }}>
           {titulo}
         </h4>
-        <div style={{ width: "200px" }}>
-          <SimpleSelect
-            value=""
-            onChange={agregar}
-            options={opciones.map(r => ({ value: String(r.id), label: r.nombre }))}
-            placeholder="+ Agregar del catálogo"
-          />
-        </div>
       </div>
 
       {/* Tabla */}
