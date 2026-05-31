@@ -5,213 +5,112 @@ import {
   FileText, HardHat, Wrench, Leaf, Shield, ClipboardList
 } from 'lucide-react';
 
-// ──────────────────────────────────────────────
-// Categorías fijas del informe diario
-// ──────────────────────────────────────────────
 const CATEGORIAS_DEFAULT = [
-  {
-    id: 'admin',
-    label: 'ADMINISTRATIVAS Y DOCUMENTALES (INGESED)',
-    icon: 'ClipboardList',
-    color: '#93c5fd',
-    actividades: [
-      'Actualización Listado de Pendientes SIEMENS',
-      'Informes Diarios',
-    ],
-  },
-  {
-    id: 'siemens',
-    label: 'CABLEADO, CONEXIONADO Y PRUEBAS FUNCIONALES (SIEMENS)',
-    icon: 'Wrench',
-    color: '#fbbf24',
-    actividades: [
-      'Fabricación de marquillas pendientes de colocar',
-      'Sellado de las tapas en Tableros de control de los Reactores',
-      'Cambio de marquillas provisionales en tableros',
-      'Personal de Phase se retira de la SE La Loma',
-    ],
-  },
-  {
-    id: 'cte',
-    label: 'PRUEBAS DE EQUIPOS Y MONTAJE DE REACTORES (CTE INTERCOLOMBIA)',
-    icon: 'Wrench',
-    color: '#f97316',
-    actividades: ['NO HAY PROGRAMACIÓN DE ACTIVIDADES'],
-  },
-  {
-    id: 'civil',
-    label: 'OBRA CIVIL EDEMSA',
-    icon: 'HardHat',
-    color: '#a78bfa',
-    actividades: ['NO HAY PROGRAMACIÓN DE ACTIVIDADES'],
-  },
-  {
-    id: 'sst',
-    label: 'GESTIÓN EN LA SEGURIDAD Y LA SALUD EN EL TRABAJO (SST)',
-    icon: 'Shield',
-    color: '#34d399',
-    actividades: [
-      'Seguimiento al ingreso de personal a la SE La Loma',
-      'Charla "Uso adecuado de las herramientas de trabajo", divulgación de peligros, riesgos y controles',
-      'Delimitación y señalización de las áreas',
-      'Orden y aseo en las áreas de trabajo',
-      'Seguimiento y aseguramiento de medidas de prevención y control en SST',
-      'Elaboración de informe diario e informe semanal',
-    ],
-  },
-  {
-    id: 'ambiental',
-    label: 'ACTIVIDADES AMBIENTALES Y SOCIALES',
-    icon: 'Leaf',
-    color: '#86efac',
-    actividades: [
-      'Jornadas de orden y aseo de las áreas de trabajo',
-      'Delimitación y señalización de las áreas',
-    ],
-  },
+  { id: 'admin',     label: 'ADMINISTRATIVAS Y DOCUMENTALES (INGESED)',                      Icon: ClipboardList, color: '#6366f1', actividades: ['Actualización Listado de Pendientes SIEMENS', 'Informes Diarios'] },
+  { id: 'siemens',   label: 'CABLEADO, CONEXIONADO Y PRUEBAS FUNCIONALES (SIEMENS)',          Icon: Wrench,        color: '#f59e0b', actividades: ['Fabricación de marquillas pendientes de colocar', 'Sellado de tapas en Tableros de control de Reactores', 'Cambio de marquillas provisionales en tableros', 'Personal de Phase se retira de la SE La Loma'] },
+  { id: 'cte',       label: 'PRUEBAS DE EQUIPOS Y MONTAJE DE REACTORES (CTE INTERCOLOMBIA)',  Icon: Wrench,        color: '#f97316', actividades: ['NO HAY PROGRAMACIÓN DE ACTIVIDADES'] },
+  { id: 'civil',     label: 'OBRA CIVIL EDEMSA',                                              Icon: HardHat,       color: '#8b5cf6', actividades: ['NO HAY PROGRAMACIÓN DE ACTIVIDADES'] },
+  { id: 'sst',       label: 'GESTIÓN EN LA SEGURIDAD Y LA SALUD EN EL TRABAJO (SST)',         Icon: Shield,        color: '#10b981', actividades: ['Seguimiento al ingreso de personal a la SE La Loma', 'Charla "Uso adecuado de las herramientas de trabajo"', 'Delimitación y señalización de las áreas', 'Orden y aseo en las áreas', 'Seguimiento medidas de prevención y control SST', 'Elaboración de informe diario e informe semanal'] },
+  { id: 'ambiental', label: 'ACTIVIDADES AMBIENTALES Y SOCIALES',                             Icon: Leaf,          color: '#22c55e', actividades: ['Jornadas de orden y aseo de las áreas de trabajo', 'Delimitación y señalización de las áreas'] },
 ];
 
-const ICON_MAP = {
-  ClipboardList,
-  Wrench,
-  HardHat,
-  Shield,
-  Leaf,
-  FileText,
-};
-
-// ──────────────────────────────────────────────
 export default function ActividadesDelDia() {
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState(CATEGORIAS_DEFAULT);
-  const [collapsed, setCollapsed] = useState({});
-  const [nuevaActividad, setNuevaActividad] = useState({});
-  const [guardado, setGuardado] = useState(false);
+  const [collapsed, setCollapsed]   = useState({});
+  const [nuevaAct, setNuevaAct]     = useState({});
+  const [saved, setSaved]           = useState(false);
 
-  const toggleCollapse = (id) => {
-    setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggle = (id) => setCollapsed(p => ({ ...p, [id]: !p[id] }));
+
+  const addAct = (catId) => {
+    const t = (nuevaAct[catId] || '').trim();
+    if (!t) return;
+    setCategorias(p => p.map(c => c.id === catId ? { ...c, actividades: [...c.actividades, t] } : c));
+    setNuevaAct(p => ({ ...p, [catId]: '' }));
   };
 
-  const addActividad = (catId) => {
-    const texto = (nuevaActividad[catId] || '').trim();
-    if (!texto) return;
-    setCategorias(prev => prev.map(c =>
-      c.id === catId
-        ? { ...c, actividades: [...c.actividades, texto] }
-        : c
-    ));
-    setNuevaActividad(prev => ({ ...prev, [catId]: '' }));
-  };
+  const removeAct = (catId, idx) =>
+    setCategorias(p => p.map(c => c.id === catId ? { ...c, actividades: c.actividades.filter((_, i) => i !== idx) } : c));
 
-  const removeActividad = (catId, idx) => {
-    setCategorias(prev => prev.map(c =>
-      c.id === catId
-        ? { ...c, actividades: c.actividades.filter((_, i) => i !== idx) }
-        : c
-    ));
-  };
+  const updateAct = (catId, idx, val) =>
+    setCategorias(p => p.map(c => c.id === catId ? { ...c, actividades: c.actividades.map((a, i) => i === idx ? val : a) } : c));
 
-  const updateActividad = (catId, idx, value) => {
-    setCategorias(prev => prev.map(c =>
-      c.id === catId
-        ? { ...c, actividades: c.actividades.map((a, i) => i === idx ? value : a) }
-        : c
-    ));
-  };
-
-  const handleGuardar = () => {
-    // Aquí iría la llamada al backend: PATCH /api/informe-diario/{id}/actividades/
-    setGuardado(true);
-    setTimeout(() => {
-      setGuardado(false);
-      navigate(-1);
-    }, 1200);
+  const handleSave = () => {
+    // TODO: PATCH /api/informe-diario/{id}/actividades/
+    setSaved(true);
+    setTimeout(() => { setSaved(false); navigate(-1); }, 1200);
   };
 
   return (
-    <div style={styles.page}>
+    <div style={s.page}>
 
-      {/* ── TopBar ── */}
-      <div style={styles.topBar}>
-        <button style={styles.backBtn} onClick={() => navigate(-1)}>
-          <ArrowLeft size={16} />
+      {/* TopBar */}
+      <div style={s.topBar}>
+        <button style={s.backBtn} onClick={() => navigate(-1)}>
+          <ArrowLeft size={15} style={{ marginRight: 5 }} />
           Volver al Informe
         </button>
-        <h2 style={styles.pageTitle}>
-          <FileText size={18} style={{ marginRight: 8 }} />
+        <h2 style={s.title}>
+          <FileText size={18} style={{ marginRight: 8, color: '#6366f1' }} />
           Actividades del Día
         </h2>
-        <button
-          style={{ ...styles.saveBtn, ...(guardado ? styles.saveBtnOk : {}) }}
-          onClick={handleGuardar}
-        >
-          <Save size={14} style={{ marginRight: 5 }} />
-          {guardado ? '¡Guardado!' : 'Guardar Cambios'}
+        <button style={{ ...s.saveBtn, ...(saved ? s.saveBtnOk : {}) }} onClick={handleSave}>
+          <Save size={13} style={{ marginRight: 5 }} />
+          {saved ? '¡Guardado!' : 'Guardar Cambios'}
         </button>
       </div>
 
-      <p style={styles.subtitle}>
-        Edita, agrega o elimina actividades por categoría para el informe diario de hoy.
-      </p>
+      <p style={s.subtitle}>Edita, agrega o elimina actividades por categoría para el informe de hoy.</p>
 
-      {/* ── Categorías ── */}
-      <div style={styles.categoriasList}>
-        {categorias.map((cat) => {
-          const IconComp = ICON_MAP[cat.icon] || FileText;
+      {/* Categorías */}
+      <div style={s.list}>
+        {categorias.map(cat => {
           const isCollapsed = collapsed[cat.id];
           return (
-            <div key={cat.id} style={styles.categoriaCard}>
+            <div key={cat.id} style={s.card}>
+
               {/* Header */}
-              <div
-                style={{ ...styles.catHeader, borderLeftColor: cat.color }}
-                onClick={() => toggleCollapse(cat.id)}
-              >
-                <div style={styles.catHeaderLeft}>
-                  <IconComp size={15} style={{ color: cat.color, marginRight: 8 }} />
-                  <span style={{ ...styles.catLabel, color: cat.color }}>{cat.label}</span>
-                  <span style={styles.catCount}>{cat.actividades.length}</span>
+              <div style={{ ...s.catHeader, borderLeftColor: cat.color }} onClick={() => toggle(cat.id)}>
+                <div style={s.catLeft}>
+                  <cat.Icon size={14} style={{ color: cat.color, marginRight: 8, flexShrink: 0 }} />
+                  <span style={{ ...s.catLabel, color: cat.color }}>{cat.label}</span>
+                  <span style={s.count}>{cat.actividades.length}</span>
                 </div>
-                {isCollapsed
-                  ? <ChevronDown size={15} style={{ color: '#64748b' }} />
-                  : <ChevronUp size={15} style={{ color: '#64748b' }} />
-                }
+                {isCollapsed ? <ChevronDown size={14} style={{ color: '#94a3b8' }} /> : <ChevronUp size={14} style={{ color: '#94a3b8' }} />}
               </div>
 
-              {/* Actividades */}
+              {/* Body */}
               {!isCollapsed && (
-                <div style={styles.catBody}>
+                <div style={s.body}>
                   {cat.actividades.map((act, idx) => (
-                    <div key={idx} style={styles.actRow}>
-                      <span style={styles.actNum}>{idx + 1}.</span>
+                    <div key={idx} style={s.actRow}>
+                      <span style={s.actNum}>{idx + 1}.</span>
                       <input
-                        style={styles.actInput}
+                        style={s.actInput}
                         value={act}
-                        onChange={e => updateActividad(cat.id, idx, e.target.value)}
+                        onChange={e => updateAct(cat.id, idx, e.target.value)}
                       />
-                      <button
-                        style={styles.deleteBtn}
-                        onClick={() => removeActividad(cat.id, idx)}
-                        title="Eliminar actividad"
-                      >
-                        <Trash2 size={13} />
+                      <button style={s.delBtn} onClick={() => removeAct(cat.id, idx)} title="Eliminar">
+                        <Trash2 size={12} />
                       </button>
                     </div>
                   ))}
 
-                  {/* Agregar nueva */}
-                  <div style={styles.addRow}>
+                  {/* Agregar */}
+                  <div style={s.addRow}>
                     <input
-                      style={styles.addInput}
+                      style={s.addInput}
                       placeholder="Nueva actividad..."
-                      value={nuevaActividad[cat.id] || ''}
-                      onChange={e => setNuevaActividad(prev => ({ ...prev, [cat.id]: e.target.value }))}
-                      onKeyDown={e => { if (e.key === 'Enter') addActividad(cat.id); }}
+                      value={nuevaAct[cat.id] || ''}
+                      onChange={e => setNuevaAct(p => ({ ...p, [cat.id]: e.target.value }))}
+                      onKeyDown={e => { if (e.key === 'Enter') addAct(cat.id); }}
                     />
                     <button
-                      style={{ ...styles.addBtn, borderColor: cat.color, color: cat.color }}
-                      onClick={() => addActividad(cat.id)}
+                      style={{ ...s.addBtn, borderColor: cat.color, color: cat.color }}
+                      onClick={() => addAct(cat.id)}
                     >
-                      <Plus size={13} style={{ marginRight: 4 }} />
+                      <Plus size={12} style={{ marginRight: 4 }} />
                       Agregar
                     </button>
                   </div>
@@ -221,176 +120,30 @@ export default function ActividadesDelDia() {
           );
         })}
       </div>
-
     </div>
   );
 }
 
-// ──────────────────────────────────────────────
-const styles = {
-  page: {
-    padding: '24px 28px 60px',
-    color: '#e2e8f0',
-    fontSize: 13,
-    maxWidth: 900,
-    margin: '0 auto',
-  },
-  topBar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  backBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    background: 'transparent',
-    border: '1px solid rgba(148,163,184,0.25)',
-    color: '#94a3b8',
-    borderRadius: 6,
-    padding: '6px 14px',
-    fontSize: 12,
-    cursor: 'pointer',
-  },
-  pageTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: 0,
-    fontSize: 16,
-    fontWeight: 700,
-    color: '#e2e8f0',
-  },
-  saveBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    background: 'rgba(45,212,191,0.12)',
-    border: '1px solid rgba(45,212,191,0.4)',
-    color: '#2dd4bf',
-    borderRadius: 6,
-    padding: '6px 16px',
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  saveBtnOk: {
-    background: 'rgba(52,211,153,0.2)',
-    borderColor: '#34d399',
-    color: '#34d399',
-  },
-  subtitle: {
-    color: '#64748b',
-    fontSize: 12,
-    marginBottom: 24,
-    marginTop: 4,
-  },
-  categoriasList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-  },
-  categoriaCard: {
-    background: 'rgba(15,23,42,0.6)',
-    border: '1px solid rgba(148,163,184,0.1)',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  catHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px 16px',
-    cursor: 'pointer',
-    borderLeft: '3px solid',
-    userSelect: 'none',
-    background: 'rgba(15,23,42,0.4)',
-  },
-  catHeaderLeft: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  catLabel: {
-    fontWeight: 700,
-    fontSize: 11,
-    letterSpacing: '0.05em',
-    textTransform: 'uppercase',
-  },
-  catCount: {
-    marginLeft: 10,
-    background: 'rgba(148,163,184,0.15)',
-    color: '#94a3b8',
-    borderRadius: 10,
-    padding: '1px 7px',
-    fontSize: 10,
-    fontWeight: 700,
-  },
-  catBody: {
-    padding: '12px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 7,
-  },
-  actRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actNum: {
-    color: '#475569',
-    fontSize: 11,
-    minWidth: 18,
-    textAlign: 'right',
-  },
-  actInput: {
-    flex: 1,
-    background: 'rgba(15,23,42,0.7)',
-    border: '1px solid rgba(148,163,184,0.15)',
-    borderRadius: 5,
-    color: '#e2e8f0',
-    padding: '6px 10px',
-    fontSize: 12,
-    outline: 'none',
-  },
-  deleteBtn: {
-    background: 'transparent',
-    border: 'none',
-    color: '#475569',
-    cursor: 'pointer',
-    padding: 4,
-    borderRadius: 4,
-    display: 'flex',
-    alignItems: 'center',
-    transition: 'color 0.15s',
-  },
-  addRow: {
-    display: 'flex',
-    gap: 8,
-    marginTop: 6,
-    paddingTop: 8,
-    borderTop: '1px dashed rgba(148,163,184,0.1)',
-  },
-  addInput: {
-    flex: 1,
-    background: 'rgba(15,23,42,0.5)',
-    border: '1px dashed rgba(148,163,184,0.2)',
-    borderRadius: 5,
-    color: '#94a3b8',
-    padding: '6px 10px',
-    fontSize: 12,
-    outline: 'none',
-  },
-  addBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    background: 'transparent',
-    border: '1px solid',
-    borderRadius: 5,
-    padding: '5px 12px',
-    fontSize: 11,
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
+const s = {
+  page:     { padding: '24px 28px 60px', color: '#1e293b', fontSize: 13, maxWidth: 900, margin: '0 auto' },
+  topBar:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 10 },
+  backBtn:  { display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b', borderRadius: 8, padding: '6px 14px', fontSize: 12, cursor: 'pointer', fontWeight: 600 },
+  title:    { display: 'flex', alignItems: 'center', margin: 0, fontSize: 16, fontWeight: 800, color: '#1e293b' },
+  saveBtn:  { display: 'flex', alignItems: 'center', background: '#f0fdf4', border: '1px solid #86efac', color: '#16a34a', borderRadius: 8, padding: '6px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' },
+  saveBtnOk:{ background: '#dcfce7', borderColor: '#4ade80', color: '#15803d' },
+  subtitle: { color: '#94a3b8', fontSize: 12, marginBottom: 22, marginTop: 4 },
+  list:     { display: 'flex', flexDirection: 'column', gap: 12 },
+  card:     { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' },
+  catHeader:{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', cursor: 'pointer', borderLeft: '3px solid', background: '#f8fafc', userSelect: 'none' },
+  catLeft:  { display: 'flex', alignItems: 'center' },
+  catLabel: { fontWeight: 700, fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase' },
+  count:    { marginLeft: 10, background: '#e2e8f0', color: '#64748b', borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 700 },
+  body:     { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 6 },
+  actRow:   { display: 'flex', alignItems: 'center', gap: 7 },
+  actNum:   { color: '#cbd5e1', fontSize: 11, minWidth: 18, textAlign: 'right' },
+  actInput: { flex: 1, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 5, color: '#334155', padding: '5px 9px', fontSize: 12, outline: 'none' },
+  delBtn:   { background: 'transparent', border: 'none', color: '#e2e8f0', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' },
+  addRow:   { display: 'flex', gap: 8, marginTop: 4, paddingTop: 8, borderTop: '1px dashed #e2e8f0' },
+  addInput: { flex: 1, background: '#f8fafc', border: '1px dashed #e2e8f0', borderRadius: 5, color: '#64748b', padding: '5px 9px', fontSize: 12, outline: 'none' },
+  addBtn:   { display: 'flex', alignItems: 'center', background: 'transparent', border: '1px solid', borderRadius: 5, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' },
 };
