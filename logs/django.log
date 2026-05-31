@@ -26759,3 +26759,9 @@ INFO 2026-05-30 20:25:00,557 basehttp 49404 12872 "GET /api/informe-diario/categ
 INFO 2026-05-30 20:25:00,557 basehttp 49404 49376 "GET /api/informe-diario/obras/ HTTP/1.1" 200 133
 WARNING 2026-05-30 20:26:12,841 basehttp 49404 10416 "POST /api/informe-diario/informes/ HTTP/1.1" 400 144
 INFO 2026-05-30 20:37:18,008 autoreload 14544 32124 Watching for file changes with StatReloader
+INFO 2026-05-30 20:37:31,198 basehttp 14544 51472 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-05-30 20:37:31,210 basehttp 14544 50388 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-05-30 20:37:31,210 basehttp 14544 39984 "GET /api/informe-diario/obras/ HTTP/1.1" 200 133
+INFO 2026-05-30 20:37:31,224 basehttp 14544 51128 "GET /api/informe-diario/informes/ HTTP/1.1" 200 369
+INFO 2026-05-30 20:37:33,950 basehttp 14544 39984 "GET /api/informe-diario/obras/ HTTP/1.1" 200 133
+INFO 2026-05-30 20:37:33,964 basehttp 14544 51128 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 200 369
