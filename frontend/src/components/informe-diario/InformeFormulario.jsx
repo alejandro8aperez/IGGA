@@ -398,7 +398,68 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
-      const payload = { ...data, obra: data.obra_id ? parseInt(data.obra_id, 10) : null };
+      const payload = {
+        ...data,
+        obra: data.obra_id ? parseInt(data.obra_id, 10) : null,
+
+        // Recursos del catálogo → detalles (pk entero obligatorio)
+        detalles: (data.recursos || [])
+          .filter(r => !r.es_libre && r.recurso_id && !String(r.recurso_id).startsWith('libre-'))
+          .map(r => ({
+            recurso:   parseInt(r.recurso_id, 10),
+            cantidad:  parseFloat(r.cantidad)  || 0,
+            empresa:   r.empresa  || '',
+            notas:     r.notas    || '',
+          })),
+
+        // Filas libres de maquinaria
+        maquinaria_libre: (data.recursos || [])
+          .filter(r => r.es_libre && r.categoria === 'MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS')
+          .map(r => ({
+            descripcion: r.descripcion || '',
+            cantidad:    parseFloat(r.cantidad) || 0,
+            empresa:     r.empresa || '',
+            notas:       r.notas   || '',
+          })),
+
+        // Filas libres de personal
+        personal_libre: (data.recursos || [])
+          .filter(r => r.es_libre && r.categoria === 'PERSONAL DE OBRA')
+          .map(r => ({
+            descripcion: r.descripcion || '',
+            cantidad:    parseFloat(r.cantidad) || 0,
+            empresa:     r.empresa || '',
+            notas:       r.notas   || '',
+          })),
+
+        // Horas de lluvia → array de objetos {hora, con_lluvia}
+        reportes_lluvia: (data.horas_lluvia || []).map((con_lluvia, hora) => ({
+          hora,
+          con_lluvia: Boolean(con_lluvia),
+        })),
+
+        // Actividades: categoria como entero
+        actividades: (data.actividades || []).map(a => ({
+          categoria:   parseInt(a.categoria_id, 10),
+          descripcion: a.descripcion || '',
+        })),
+
+        // Items de obra
+        items_obra: (data.items_obra || []).map((it, i) => ({
+          item:        it.item        || '',
+          descripcion: it.descripcion || '',
+          empresa:     it.empresa     || '',
+          cantidad:    parseFloat(it.cantidad) || 0,
+          orden:       i,
+        })),
+      };
+
+      // Limpiar campos que el serializer no acepta en write
+      delete payload.recursos;
+      delete payload.obra_id;
+      delete payload.obra_nombre;
+      delete payload.dia_semana;
+
       return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
     },
     onSuccess: () => {
