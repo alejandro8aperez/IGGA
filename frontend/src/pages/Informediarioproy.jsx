@@ -419,6 +419,30 @@ function InformeDiarioContent() {
           zIndex: 50,
         }}
       >
+        {/* Nombre del proyecto en edición — centro del topBar */}
+        {editingInforme && (
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{ fontSize: "0.7rem", fontWeight: 600, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Proyecto en edición
+            </span>
+            <span style={{ fontSize: "1rem", fontWeight: 800, color: C.text, whiteSpace: "nowrap" }}>
+              {editingInforme.obra_nombre || `Informe #${editingInforme.id}`}
+            </span>
+            <span style={{ fontSize: "0.72rem", color: C.textMuted }}>
+              {editingInforme.fecha}
+            </span>
+          </div>
+        )}
         <div
           style={{
             display: "flex",
