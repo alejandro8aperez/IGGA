@@ -5,7 +5,7 @@ import {
   Edit3, ChevronRight, CloudRain, CloudOff,
   Map, MapPin, FileSpreadsheet,
 } from 'lucide-react';
-import ExcelJS from 'exceljs';
+import { exportInformeDiarioExcel, prepararDatosExport } from '../../utils/InformeDiarioExcel';
 
 const C = {
   white: '#ffffff',
@@ -63,318 +63,6 @@ const ACTIVIDADES_DEFAULT = [
   { id: 'ambiental',categoria: 'ACTIVIDADES AMBIENTALES Y SOCIALES',                          color: '#22c55e', actividades: ['Jornadas de orden y aseo', 'Delimitación y señalización de áreas'] },
 ];
 
-// ═══════════════════════════════════════════════════════════════
-//  EXPORTAR INFORME A EXCEL  (Formato F-141-IN)
-// ═══════════════════════════════════════════════════════════════
-async function exportarInformeExcel(data) {
-  const workbook = new ExcelJS.Workbook();
-  const ws = workbook.addWorksheet('Informe Diario');
-
-  // ── helpers de estilo ──
-  const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E79' } };
-  const subFill    = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E75B6' } };
-  const lightFill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E2F3' } };
-  const thinBorder = {
-    top:    { style: 'thin', color: { argb: 'FF000000' } },
-    bottom: { style: 'thin', color: { argb: 'FF000000' } },
-    left:   { style: 'thin', color: { argb: 'FF000000' } },
-    right:  { style: 'thin', color: { argb: 'FF000000' } },
-  };
-  const grayBorder = {
-    top:    { style: 'thin', color: { argb: 'FFAAAAAA' } },
-    bottom: { style: 'thin', color: { argb: 'FFAAAAAA' } },
-    left:   { style: 'thin', color: { argb: 'FFAAAAAA' } },
-    right:  { style: 'thin', color: { argb: 'FFAAAAAA' } },
-  };
-
-  const setCell = (cell, value, style = {}) => {
-    cell.value = value;
-    cell.style = {
-      font: { size: 9, ...style.font },
-      alignment: { vertical: 'center', wrapText: true, ...style.alignment },
-      border: style.border || grayBorder,
-      fill: style.fill || undefined,
-    };
-  };
-
-  let r = 1;
-
-  // ══ ENCABEZADO PRINCIPAL ══
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA – INTERVENTORÍA', {
-    font: { bold: true, size: 14, color: { argb: 'FF1F4E79' } },
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-  ws.getRow(r).height = 30;
-
-  r++;
-  ws.mergeCells(`A${r}:B${r}`);
-  setCell(ws.getCell(`A${r}`), `COD: ${data.codigo || 'F-141-IN'}`, { font: { bold: true, size: 9 }, border: thinBorder });
-  ws.mergeCells(`C${r}:E${r}`);
-  setCell(ws.getCell(`C${r}`), `F. Emisión: ${data.fechaEmision || '27/08/2009'}`, { font: { bold: true, size: 9 }, border: thinBorder });
-  ws.mergeCells(`F${r}:H${r}`);
-  setCell(ws.getCell(`F${r}`), `Mod: ${data.modo || '00'}`, { font: { bold: true, size: 9 }, border: thinBorder });
-
-  r++;
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), `OBRA: ${data.obra || ''}`, { font: { bold: true, size: 11 }, border: thinBorder });
-
-  r++;
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), `FECHA: ${data.fecha || ''}  |  DÍA: ${data.diaSemana || ''}`, { font: { bold: true, size: 9 }, border: thinBorder });
-  ws.getRow(r).height = 20;
-
-  r += 2;
-
-  // ══ REPORTE DE LLUVIA ══
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'REPORTE DE LLUVIA', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: subFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-
-  r++;
-  setCell(ws.getCell(`A${r}`), 'Hora', { font: { bold: true, size: 9 }, border: thinBorder, fill: lightFill });
-  for (let h = 0; h < 24; h++) {
-    const col = String.fromCharCode(66 + h); // B..Y
-    if (h < 7) {
-      setCell(ws.getCell(`${col}${r}`), h, { alignment: { horizontal: 'center' }, border: thinBorder, fill: lightFill });
-    } else {
-      // Para horas 7-23 usamos columnas más allá de H, las creamos dinámicamente
-      setCell(ws.getCell(`${col}${r}`), h, { alignment: { horizontal: 'center' }, border: thinBorder, fill: lightFill });
-    }
-  }
-  r++;
-  setCell(ws.getCell(`A${r}`), 'Lluvia', { font: { bold: true, size: 9 }, border: thinBorder });
-  for (let h = 0; h < 24; h++) {
-    const col = String.fromCharCode(66 + h);
-    const val = data.lluviaHoras && data.lluviaHoras[h] ? data.lluviaHoras[h] : '';
-    setCell(ws.getCell(`${col}${r}`), val, { alignment: { horizontal: 'center' }, border: thinBorder });
-  }
-
-  r += 2;
-
-  // ══ MAQUINARIA (A-D)  |  PERSONAL (F-H) ══
-  const startRow = r;
-
-  // ─ Maquinaria ─
-  ws.mergeCells(`A${r}:D${r}`);
-  setCell(ws.getCell(`A${r}`), 'MAQUINARIA – EQUIPOS – HERRAMIENTAS Y VEHÍCULOS', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: subFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-  r++;
-  ['ÍTEM', 'CANT.', 'EMPRESA', 'NOTAS'].forEach((txt, idx) => {
-    const col = String.fromCharCode(65 + idx);
-    setCell(ws.getCell(`${col}${r}`), txt, { font: { bold: true, size: 9 }, border: thinBorder, fill: lightFill });
-  });
-
-  const maq = data.maquinaria || [];
-  maq.forEach((m) => {
-    r++;
-    setCell(ws.getCell(`A${r}`), m.item || '', { border: thinBorder });
-    setCell(ws.getCell(`B${r}`), m.cantidad || 0, { alignment: { horizontal: 'center' }, border: thinBorder });
-    setCell(ws.getCell(`C${r}`), m.empresa || '', { border: thinBorder });
-    setCell(ws.getCell(`D${r}`), m.notas || '', { border: thinBorder });
-  });
-  r++;
-  setCell(ws.getCell(`A${r}`), 'TOTAL', { font: { bold: true }, border: thinBorder });
-  setCell(ws.getCell(`B${r}`), maq.reduce((s, m) => s + (parseInt(m.cantidad) || 0), 0), { font: { bold: true }, alignment: { horizontal: 'center' }, border: thinBorder });
-  ws.mergeCells(`C${r}:D${r}`);
-  setCell(ws.getCell(`C${r}`), '', { border: thinBorder });
-  const endMaq = r;
-
-  // ─ Personal (columnas F-H) ─
-  r = startRow;
-  ws.mergeCells(`F${r}:H${r}`);
-  setCell(ws.getCell(`F${r}`), 'PERSONAL DE OBRA', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: subFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-  r++;
-  ws.mergeCells(`F${r}:G${r}`);
-  setCell(ws.getCell(`F${r}`), 'CARGO', { font: { bold: true, size: 9 }, border: thinBorder, fill: lightFill });
-  setCell(ws.getCell(`H${r}`), 'CANTIDAD', { font: { bold: true, size: 9 }, alignment: { horizontal: 'center' }, border: thinBorder, fill: lightFill });
-
-  const pers = data.personal || [];
-  pers.forEach((p) => {
-    r++;
-    ws.mergeCells(`F${r}:G${r}`);
-    setCell(ws.getCell(`F${r}`), p.cargo || '', { border: thinBorder });
-    setCell(ws.getCell(`H${r}`), p.cantidad || 0, { alignment: { horizontal: 'center' }, border: thinBorder });
-  });
-  r++;
-  ws.mergeCells(`F${r}:G${r}`);
-  setCell(ws.getCell(`F${r}`), 'TOTAL PERSONAL', { font: { bold: true }, border: thinBorder });
-  setCell(ws.getCell(`H${r}`), pers.reduce((s, p) => s + (parseInt(p.cantidad) || 0), 0), { font: { bold: true }, alignment: { horizontal: 'center' }, border: thinBorder });
-  const endPers = r;
-
-  // Igualar altura de ambas tablas
-  r = Math.max(endMaq, endPers) + 2;
-
-  // ══ COMISIÓN DE TOPOGRAFÍA ══
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'COMISIÓN DE TOPOGRAFÍA', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: subFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-  r++;
-  const topoLabels = ['Levantamiento', 'Replanteo', 'Nivelación', 'Verificación'];
-  topoLabels.forEach((lbl, idx) => {
-    const c1 = String.fromCharCode(65 + idx * 2);
-    const c2 = String.fromCharCode(66 + idx * 2);
-    setCell(ws.getCell(`${c1}${r}`), lbl, { font: { bold: true }, border: thinBorder });
-    const val = data.topografia && data.topografia[idx] ? data.topografia[idx] : (idx % 2 === 0 ? 'SI' : 'NO');
-    setCell(ws.getCell(`${c2}${r}`), val, { alignment: { horizontal: 'center' }, border: thinBorder });
-  });
-
-  r += 2;
-
-  // ══ OBSERVACIONES + RIESGO ══
-  ws.mergeCells(`A${r}:D${r}`);
-  setCell(ws.getCell(`A${r}`), 'OBSERVACIONES GENERALES', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: subFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-  ws.mergeCells(`E${r}:H${r}`);
-  setCell(ws.getCell(`E${r}`), 'RIESGO FÍSICO Y LOCATIVO', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: subFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-
-  r++;
-  ws.mergeCells(`A${r}:D${r + 2}`);
-  setCell(ws.getCell(`A${r}`), data.observaciones || '', { border: thinBorder, alignment: { vertical: 'top', wrapText: true } });
-
-  ws.mergeCells(`E${r}:H${r}`);
-  setCell(ws.getCell(`E${r}`), `Estado Inicio: ${data.estadoInicio || ''}`, { border: thinBorder });
-  r++;
-  ws.mergeCells(`E${r}:H${r}`);
-  setCell(ws.getCell(`E${r}`), `Estado Final: ${data.estadoFin || ''}`, { border: thinBorder });
-
-  r += 2;
-
-  // ══ ACTIVIDADES DEL DÍA ══
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'ACTIVIDADES DEL DÍA', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: headerFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-
-  const acts = data.actividades || [];
-  acts.forEach((grupo) => {
-    r++;
-    ws.mergeCells(`A${r}:H${r}`);
-    setCell(ws.getCell(`A${r}`), grupo.categoria || '', {
-      font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF5B9BD5' } },
-      alignment: { horizontal: 'left' },
-      border: thinBorder,
-    });
-    (grupo.actividades || []).forEach((a, idx) => {
-      r++;
-      ws.mergeCells(`A${r}:H${r}`);
-      setCell(ws.getCell(`A${r}`), `${idx + 1}. ${a}`, { border: thinBorder, alignment: { vertical: 'top', wrapText: true } });
-      ws.getRow(r).height = 18;
-    });
-  });
-
-  r += 2;
-
-  // ══ RECURSOS CONTROL OBRA ══
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'RECURSOS CONTROL OBRA', {
-    font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
-    fill: headerFill,
-    alignment: { horizontal: 'center' },
-    border: thinBorder,
-  });
-
-  r++;
-  setCell(ws.getCell(`A${r}`), 'Ítem', { font: { bold: true }, border: thinBorder, fill: lightFill });
-  for (let d = 1; d <= 31; d++) {
-    const col = String.fromCharCode(66 + d - 1);
-    setCell(ws.getCell(`${col}${r}`), d, { font: { bold: true, size: 8 }, alignment: { horizontal: 'center' }, border: thinBorder, fill: lightFill });
-  }
-
-  const recursos = data.recursos || [
-    { nombre: 'Coordinador de Control Obra', dias: [] },
-    { nombre: 'Ingeniero Electricista', dias: [] },
-    { nombre: 'Profesional SST', dias: [] },
-  ];
-  recursos.forEach((rec) => {
-    r++;
-    setCell(ws.getCell(`A${r}`), rec.nombre || '', { font: { bold: true }, border: thinBorder });
-    for (let d = 1; d <= 31; d++) {
-      const col = String.fromCharCode(66 + d - 1);
-      const val = rec.dias && rec.dias[d - 1] ? rec.dias[d - 1] : '';
-      setCell(ws.getCell(`${col}${r}`), val, { alignment: { horizontal: 'center' }, border: thinBorder });
-    }
-  });
-
-  r += 3;
-
-  // ══ FIRMAS ══
-  ws.mergeCells(`A${r}:C${r}`);
-  setCell(ws.getCell(`A${r}`), 'Elaborado por:', { font: { bold: true, size: 10 }, border: thinBorder });
-  ws.mergeCells(`D${r}:F${r}`);
-  setCell(ws.getCell(`D${r}`), 'Revisado por:', { font: { bold: true, size: 10 }, border: thinBorder });
-  ws.mergeCells(`G${r}:H${r}`);
-  setCell(ws.getCell(`G${r}`), 'Aprobado por:', { font: { bold: true, size: 10 }, border: thinBorder });
-
-  r++;
-  ws.mergeCells(`A${r}:C${r}`);
-  setCell(ws.getCell(`A${r}`), data.elaboradoPor || '', { alignment: { horizontal: 'center' }, border: thinBorder });
-  ws.mergeCells(`D${r}:F${r}`);
-  setCell(ws.getCell(`D${r}`), data.revisadoPor || '', { alignment: { horizontal: 'center' }, border: thinBorder });
-  ws.mergeCells(`G${r}:H${r}`);
-  setCell(ws.getCell(`G${r}`), data.aprobadoPor || '', { alignment: { horizontal: 'center' }, border: thinBorder });
-
-  r++;
-  ws.mergeCells(`A${r}:C${r}`);
-  setCell(ws.getCell(`A${r}`), '_________________________', { alignment: { horizontal: 'center' } });
-  ws.mergeCells(`D${r}:F${r}`);
-  setCell(ws.getCell(`D${r}`), '_________________________', { alignment: { horizontal: 'center' } });
-  ws.mergeCells(`G${r}:H${r}`);
-  setCell(ws.getCell(`G${r}`), '_________________________', { alignment: { horizontal: 'center' } });
-
-  // ── ajustar anchos ──
-  ws.columns = [
-    { width: 32 }, { width: 8 }, { width: 12 }, { width: 14 },
-    { width: 4 },  // columna E vacía separadora
-    { width: 22 }, { width: 14 }, { width: 10 },
-  ];
-
-  // ── generar buffer y descargar ──
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${data.filename || 'Informe_Diario'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-// ═══════════════════════════════════════════════════════════════
-
 // ─────────────────────────────────────────────
 export default function ReportesInforme({ informeId, informe }) {
   const navigate = useNavigate();
@@ -398,9 +86,9 @@ export default function ReportesInforme({ informeId, informe }) {
   const updatePersonal = (id, value) =>
     setPersonal(prev => prev.map(p => p.id === id ? { ...p, cantidad: parseInt(value) || 0 } : p));
 
-  // ── helper para armar payload de exportación ──
+  // ── handler para exportar a Excel ──
   const handleExportExcel = () => {
-    const payload = {
+    const datos = prepararDatosExport({
       codigo: 'F-141-IN',
       fechaEmision: '27/08/2009',
       modo: '00',
@@ -423,9 +111,8 @@ export default function ReportesInforme({ informeId, informe }) {
       elaboradoPor: 'Nelson Henao',
       revisadoPor: 'Diego León Vélez',
       aprobadoPor: 'Diego León Vélez',
-      filename: `Informe_Diario_${informe?.obra_nombre || 'Obra'}`,
-    };
-    exportarInformeExcel(payload);
+    });
+    exportInformeDiarioExcel(datos, `Informe_Diario_${informe?.obra_nombre || 'Obra'}`);
   };
 
   return (
@@ -691,7 +378,7 @@ const s = {
     fontSize: 12,
     letterSpacing: '0.03em',
     transition: 'background 0.2s, transform 0.1s',
-    marginLeft: 'auto', // empuja a la derecha cuando hay espacio
+    marginLeft: 'auto',
     boxShadow: '0 2px 6px rgba(31,78,121,0.25)',
   },
 };
