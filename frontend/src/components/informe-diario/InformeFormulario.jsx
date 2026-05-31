@@ -7,27 +7,37 @@ import { informeDiarioService, obraService, recursoService, categoriaService } f
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 // ─── Estilos base ────────────────────────────────────────────────────────────
-const card = { background: "white", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "1.25rem" };
+const card     = { background: "white", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "1.25rem" };
 const cardHead = { padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid #f1f5f9", fontWeight: 700, fontSize: "0.8rem", color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" };
 const cardBody = { padding: "1.25rem" };
-const label = { display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.35rem" };
+const label    = { display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.35rem" };
 const inputStyle = { width: "100%", padding: "0.5rem 0.75rem", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "0.875rem", background: "white", outline: "none", boxSizing: "border-box" };
-const grid3 = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" };
-const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" };
+const grid3    = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" };
+const grid2    = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" };
 const btnPrimary = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "none", background: "#667eea", color: "white", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" };
 const btnOutline = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "1px solid #cbd5e1", background: "white", color: "#475569", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" };
-const btnGhost = { background: "none", border: "none", cursor: "pointer", padding: "0.2rem", color: "#ef4444", display: "flex", alignItems: "center" };
+const btnGhost   = { background: "none", border: "none", cursor: "pointer", padding: "0.2rem", color: "#ef4444", display: "flex", alignItems: "center" };
+
+// Cabeceras de las tablas de recursos
+const thStyle = {
+  padding: "0.4rem 0.5rem",
+  fontSize: "0.68rem",
+  fontWeight: 700,
+  color: "#64748b",
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+  textAlign: "left",
+  borderBottom: "1px solid #e2e8f0",
+  background: "#f8fafc",
+};
 
 function normalizarInforme(informe) {
   if (!informe) return null;
-  
-  // Extraer ID de obra de forma robusta (puede venir como 'obra_id', 'obra' como ID, o 'obra' como objeto)
   let oid = "";
   if (informe.obra_id) oid = String(informe.obra_id);
   else if (informe.obra) {
-    oid = typeof informe.obra === 'object' ? String(informe.obra.id) : String(informe.obra);
+    oid = typeof informe.obra === "object" ? String(informe.obra.id) : String(informe.obra);
   }
-
   return {
     ...informe,
     obra_id: oid,
@@ -45,9 +55,11 @@ function ObraSelect({ obras, value, onChange }) {
   const ref = useRef(null);
 
   const selected = obras.find(o => String(o.id) === String(value));
-  const displayLabel = selected ? (selected.codigo ? `${selected.codigo} — ${selected.nombre}` : selected.nombre) : "Seleccionar proyecto de OPERACIONES";
+  const displayLabel = selected
+    ? (selected.codigo ? `${selected.codigo} — ${selected.nombre}` : selected.nombre)
+    : "Seleccionar proyecto de OPERACIONES";
 
-  const getClienteNombre = (o) => typeof o.cliente === 'object' ? o.cliente?.nombre : (o.cliente_nombre || "");
+  const getClienteNombre = (o) => typeof o.cliente === "object" ? o.cliente?.nombre : (o.cliente_nombre || "");
 
   const filtered = obras.filter(o =>
     (o.nombre || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -79,41 +91,21 @@ function ObraSelect({ obras, value, onChange }) {
       </div>
 
       {open && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999,
-          background: "white", border: "1px solid #e2e8f0", borderRadius: "10px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden",
-        }}>
-          {/* Buscador */}
+        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "white", border: "1px solid #e2e8f0", borderRadius: "10px", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden" }}>
           <div style={{ padding: "0.5rem", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <Search size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
-            <input
-              autoFocus
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar obra o cliente..."
-              style={{ flex: 1, border: "none", outline: "none", fontSize: "0.875rem", color: "#1e293b", background: "transparent" }}
-            />
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar obra o cliente..."
+              style={{ flex: 1, border: "none", outline: "none", fontSize: "0.875rem", color: "#1e293b", background: "transparent" }} />
             {search && <X size={13} color="#94a3b8" style={{ cursor: "pointer" }} onClick={() => setSearch("")} />}
           </div>
-
-          {/* Lista */}
           <div style={{ maxHeight: "220px", overflowY: "auto", padding: "4px" }}>
             {filtered.length === 0 ? (
-              <div style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.8rem" }}>
-                Sin resultados
-              </div>
+              <div style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.8rem" }}>Sin resultados</div>
             ) : filtered.map(o => {
               const isSelected = String(o.id) === String(value);
               return (
-                <div
-                  key={o.id}
-                  onClick={() => { onChange(String(o.id)); setOpen(false); setSearch(""); }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "0.5rem",
-                    padding: "0.5rem 0.75rem", borderRadius: "6px", cursor: "pointer",
-                    background: isSelected ? "#f1f5f9" : "transparent",
-                  }}
+                <div key={o.id} onClick={() => { onChange(String(o.id)); setOpen(false); setSearch(""); }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "6px", cursor: "pointer", background: isSelected ? "#f1f5f9" : "transparent" }}
                   onMouseOver={e => { if (!isSelected) e.currentTarget.style.background = "#f8fafc"; }}
                   onMouseOut={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
                 >
@@ -122,16 +114,9 @@ function ObraSelect({ obras, value, onChange }) {
                     <div style={{ fontWeight: isSelected ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {o.codigo ? `${o.codigo} — ${o.nombre}` : o.nombre}
                     </div>
-                    {o.cliente_nombre && (
-                      <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{o.cliente_nombre}</div>
-                    )}
+                    {o.cliente_nombre && <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{o.cliente_nombre}</div>}
                   </div>
-                  <span style={{
-                    fontSize: "0.65rem", fontWeight: 700, padding: "1px 7px", borderRadius: "20px",
-                    background: o.estado === "ejecucion" ? "#f0fdf4" : "#f8fafc",
-                    color: o.estado === "ejecucion" ? "#16a34a" : "#64748b",
-                    textTransform: "capitalize", flexShrink: 0,
-                  }}>
+                  <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 7px", borderRadius: "20px", background: o.estado === "ejecucion" ? "#f0fdf4" : "#f8fafc", color: o.estado === "ejecucion" ? "#16a34a" : "#64748b", textTransform: "capitalize", flexShrink: 0 }}>
                     {o.estado || "—"}
                   </span>
                 </div>
@@ -171,7 +156,7 @@ function HorasLluvia({ horas, onChange }) {
   );
 }
 
-// ─── Selector simple (para recursos y actividades) ────────────────────────────
+// ─── Selector simple ──────────────────────────────────────────────────────────
 function SimpleSelect({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -185,29 +170,17 @@ function SimpleSelect({ value, onChange, options, placeholder }) {
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <div onClick={() => setOpen(o => !o)} style={{
-        ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between",
-        cursor: "pointer", userSelect: "none", height: "2.25rem", padding: "0 0.65rem",
-        border: open ? "1px solid #667eea" : "1px solid #cbd5e1",
-      }}>
+      <div onClick={() => setOpen(o => !o)} style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", userSelect: "none", height: "2.25rem", padding: "0 0.65rem", border: open ? "1px solid #667eea" : "1px solid #cbd5e1" }}>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.8rem", color: selected ? "#1e293b" : "#94a3b8" }}>
           {selected ? selected.label : placeholder}
         </span>
         <ChevronDown size={13} color="#94a3b8" style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none" }} />
       </div>
       {open && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, zIndex: 9999,
-          background: "white", border: "1px solid #e2e8f0", borderRadius: "8px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxHeight: "180px", overflowY: "auto", padding: "4px",
-        }}>
+        <div style={{ position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, zIndex: 9999, background: "white", border: "1px solid #e2e8f0", borderRadius: "8px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxHeight: "180px", overflowY: "auto", padding: "4px" }}>
           {options.map(o => (
             <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); }}
-              style={{
-                padding: "0.4rem 0.65rem", borderRadius: "4px", fontSize: "0.8rem",
-                cursor: "pointer", color: "#334155",
-                background: String(o.value) === String(value) ? "#f1f5f9" : "transparent",
-              }}
+              style={{ padding: "0.4rem 0.65rem", borderRadius: "4px", fontSize: "0.8rem", cursor: "pointer", color: "#334155", background: String(o.value) === String(value) ? "#f1f5f9" : "transparent" }}
               onMouseOver={e => e.currentTarget.style.background = "#f8fafc"}
               onMouseOut={e => e.currentTarget.style.background = String(o.value) === String(value) ? "#f1f5f9" : "transparent"}
             >{o.label}</div>
@@ -218,68 +191,143 @@ function SimpleSelect({ value, onChange, options, placeholder }) {
   );
 }
 
-// ─── Recursos ────────────────────────────────────────────────────────────────
-function RecursosSection({ recursos, allRecursos, onChange }) {
-  const maquinaria = allRecursos.filter(r => r.categoria === "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS" && r.activo !== false);
-  const personal = allRecursos.filter(r => r.categoria === "PERSONAL DE OBRA" && r.activo !== false);
+// ─── Tabla de recursos (Maquinaria o Personal) ────────────────────────────────
+// Columnas: DESCRIPCIÓN | CANTIDAD | EMPRESA | NOTAS | (eliminar)
+function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onChange }) {
+  const opciones = allRecursos.filter(r => r.categoria === catKey && r.activo !== false);
+  const filas = recursos.filter(r => r.categoria === catKey);
 
-  const addRecurso = (recursoId) => {
+  const agregar = (recursoId) => {
     const recurso = allRecursos.find(r => String(r.id) === String(recursoId));
     if (!recurso || recursos.find(r => String(r.recurso_id) === String(recurso.id))) return;
-    onChange([...recursos, { recurso_id: recurso.id, recurso_nombre: recurso.nombre, categoria: recurso.categoria, cantidad: 0, empresa: "", observacion: "" }]);
+    onChange([
+      ...recursos,
+      {
+        recurso_id:     recurso.id,
+        recurso_nombre: recurso.nombre,
+        categoria:      recurso.categoria,
+        descripcion:    recurso.nombre,   // pre-rellena con el nombre del catálogo
+        cantidad:       0,
+        empresa:        "",
+        notas:          "",
+      },
+    ]);
   };
 
-  const update = (idx, field, value) => { const n = [...recursos]; n[idx] = { ...n[idx], [field]: value }; onChange(n); };
-  const remove = (idx) => onChange(recursos.filter((_, i) => i !== idx));
+  const update = (recursoId, field, value) => {
+    onChange(recursos.map(r => String(r.recurso_id) === String(recursoId) ? { ...r, [field]: value } : r));
+  };
 
-  const renderGrupo = (titulo, lista, catKey) => {
-    const activos = recursos.filter(r => r.categoria === catKey);
-    return (
-      <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-          <h4 style={{ margin: 0, fontSize: "0.8rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>{titulo}</h4>
-          <div style={{ width: "200px" }}>
-            <SimpleSelect
-              value=""
-              onChange={addRecurso}
-              options={lista.map(r => ({ value: String(r.id), label: r.nombre }))}
-              placeholder="+ Agregar recurso"
-            />
-          </div>
-        </div>
-        {activos.length === 0 ? (
-          <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic" }}>Sin recursos agregados</p>
-        ) : activos.map(r => {
-          const idx = recursos.findIndex(x => String(x.recurso_id) === String(r.recurso_id));
-          if (idx === -1) return null;
-          return (
-            <div key={r.recurso_id} style={{
-              display: "grid", gridTemplateColumns: "2fr 1fr 2fr 2fr auto",
-              gap: "0.5rem", alignItems: "center", background: "#f8fafc",
-              borderRadius: "8px", padding: "0.5rem 0.75rem", marginBottom: "0.4rem",
-            }}>
-              <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.recurso_nombre}</span>
-              <input type="number" min="0" value={r.cantidad} onChange={e => update(idx, "cantidad", parseFloat(e.target.value) || 0)} placeholder="Cant." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
-              <input value={r.empresa} onChange={e => update(idx, "empresa", e.target.value)} placeholder="Empresa" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
-              <input value={r.observacion} onChange={e => update(idx, "observacion", e.target.value)} placeholder="Observación" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
-              <button type="button" onClick={() => remove(idx)} style={btnGhost}><X size={15} /></button>
-            </div>
-          );
-        })}
-        <hr style={{ border: "none", borderTop: "1px solid #f1f5f9", margin: "1rem 0 0" }} />
-      </div>
-    );
+  const remove = (recursoId) => {
+    onChange(recursos.filter(r => String(r.recurso_id) !== String(recursoId)));
   };
 
   return (
-    <div>
-      {renderGrupo("Maquinaria / Equipos / Vehículos", maquinaria, "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS")}
-      {renderGrupo("Personal de Obra", personal, "PERSONAL DE OBRA")}
+    <div style={{ marginBottom: "2rem" }}>
+      {/* Cabecera de sección */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+        <h4 style={{ margin: 0, fontSize: "0.78rem", fontWeight: 800, color: accentColor, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          {titulo}
+        </h4>
+        <div style={{ width: "200px" }}>
+          <SimpleSelect
+            value=""
+            onChange={agregar}
+            options={opciones.map(r => ({ value: String(r.id), label: r.nombre }))}
+            placeholder="+ Agregar del catálogo"
+          />
+        </div>
+      </div>
+
+      {/* Tabla */}
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
+        <thead>
+          <tr>
+            <th style={{ ...thStyle, width: "28%" }}>Descripción</th>
+            <th style={{ ...thStyle, width: "10%", textAlign: "right" }}>Cantidad</th>
+            <th style={{ ...thStyle, width: "22%" }}>Empresa</th>
+            <th style={{ ...thStyle, width: "32%" }}>Notas</th>
+            <th style={{ ...thStyle, width: "8%", textAlign: "center" }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.length === 0 ? (
+            <tr>
+              <td colSpan={5} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.78rem", fontStyle: "italic" }}>
+                Sin registros — agrega desde el catálogo o usa "Agregar fila libre"
+              </td>
+            </tr>
+          ) : filas.map((r) => (
+            <tr key={r.recurso_id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <td style={{ padding: "0.35rem 0.4rem" }}>
+                <input
+                  value={r.descripcion || ""}
+                  onChange={e => update(r.recurso_id, "descripcion", e.target.value)}
+                  placeholder="Descripción..."
+                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }}
+                />
+              </td>
+              <td style={{ padding: "0.35rem 0.4rem" }}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={r.cantidad}
+                  onChange={e => update(r.recurso_id, "cantidad", parseFloat(e.target.value) || 0)}
+                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem", textAlign: "right" }}
+                />
+              </td>
+              <td style={{ padding: "0.35rem 0.4rem" }}>
+                <input
+                  value={r.empresa || ""}
+                  onChange={e => update(r.recurso_id, "empresa", e.target.value)}
+                  placeholder="Empresa..."
+                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }}
+                />
+              </td>
+              <td style={{ padding: "0.35rem 0.4rem" }}>
+                <input
+                  value={r.notas || ""}
+                  onChange={e => update(r.recurso_id, "notas", e.target.value)}
+                  placeholder="Notas..."
+                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }}
+                />
+              </td>
+              <td style={{ padding: "0.35rem 0.4rem", textAlign: "center" }}>
+                <button type="button" onClick={() => remove(r.recurso_id)} style={btnGhost}>
+                  <X size={15} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Botón fila libre */}
+      <button
+        type="button"
+        onClick={() => onChange([
+          ...recursos,
+          {
+            recurso_id:     `libre-${Date.now()}`,
+            recurso_nombre: "",
+            categoria:      catKey,
+            descripcion:    "",
+            cantidad:       0,
+            empresa:        "",
+            notas:          "",
+            es_libre:       true,
+          },
+        ])}
+        style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.75rem", marginTop: "0.5rem" }}
+      >
+        <Plus size={12} style={{ marginRight: "4px" }} />Agregar fila libre
+      </button>
     </div>
   );
 }
 
-// ─── Actividades ─────────────────────────────────────────────────────────────
+// ─── Actividades ──────────────────────────────────────────────────────────────
 function ActividadesSection({ actividades, categorias, onChange }) {
   const addActividad = () => {
     const cat = categorias[0];
@@ -321,15 +369,15 @@ function ActividadesSection({ actividades, categorias, onChange }) {
   );
 }
 
-// ─── Formulario principal ────────────────────────────────────────────────────
+// ─── Formulario principal ─────────────────────────────────────────────────────
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
-  const { data: rawObras = [], isLoading: isLoadingObras } = useQuery({ queryKey: ["obras"], queryFn: () => obraService.list() });
-  const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
+  const { data: rawObras = [], isLoading: isLoadingObras }         = useQuery({ queryKey: ["obras"],              queryFn: () => obraService.list() });
+  const { data: recursos = [], isLoading: isLoadingRecursos }       = useQuery({ queryKey: ["recursos"],           queryFn: () => recursoService.list() });
+  const { data: categorias = [], isLoading: isLoadingCategorias }   = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
 
-  const { data: recursos = [], isLoading: isLoadingRecursos } = useQuery({ queryKey: ["recursos"], queryFn: () => recursoService.list() });
-  const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
+  const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
   const [form, setForm] = useState(normalizarInforme(informe) || {
     obra_id: "", obra_nombre: "", fecha: new Date().toISOString().split("T")[0],
@@ -352,19 +400,20 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     setForm(prev => ({ ...prev, fecha, dia_semana: DIAS[d.getDay()] }));
   };
 
-  const addItemObra = () => setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
+  const addItemObra    = () => setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
   const updateItemObra = (idx, f, v) => { const n = [...(form.items_obra || [])]; n[idx] = { ...n[idx], [f]: v }; setField("items_obra", n); };
   const removeItemObra = (idx) => setField("items_obra", (form.items_obra || []).filter((_, i) => i !== idx));
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
-      const payload = { 
-        ...data, 
-        obra: data.obra_id ? parseInt(data.obra_id, 10) : null,
-      };
+      const payload = { ...data, obra: data.obra_id ? parseInt(data.obra_id, 10) : null };
       return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["informes-diarios"] }); toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓"); onGuardado(); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["informes-diarios"] });
+      toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓");
+      onGuardado();
+    },
     onError: (error) => {
       const data = error?.response?.data;
       const msg = data?.detail || data?.non_field_errors?.[0] || (typeof data === "object" ? JSON.stringify(data) : null) || "Error al guardar";
@@ -373,7 +422,11 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   });
 
   if (isLoadingObras || isLoadingRecursos || isLoadingCategorias) {
-    return <div style={{ textAlign: "center", padding: "3rem" }}><Loader2 size={28} color="#667eea" style={{ animation: "spin 1s linear infinite" }} /></div>;
+    return (
+      <div style={{ textAlign: "center", padding: "3rem" }}>
+        <Loader2 size={28} color="#667eea" style={{ animation: "spin 1s linear infinite" }} />
+      </div>
+    );
   }
 
   return (
@@ -421,26 +474,56 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       {/* Lluvia */}
       <div style={card}>
         <div style={cardHead}>Reporte de lluvia</div>
-        <div style={cardBody}><HorasLluvia horas={form.horas_lluvia || Array(24).fill(false)} onChange={v => setField("horas_lluvia", v)} /></div>
+        <div style={cardBody}>
+          <HorasLluvia horas={form.horas_lluvia || Array(24).fill(false)} onChange={v => setField("horas_lluvia", v)} />
+        </div>
       </div>
 
-      {/* Recursos */}
+      {/* ── MAQUINARIA / EQUIPOS / VEHÍCULOS ── */}
       <div style={card}>
-        <div style={cardHead}>Recursos (Maquinaria y Personal)</div>
-        <div style={cardBody}><RecursosSection recursos={form.recursos || []} allRecursos={recursos} onChange={v => setField("recursos", v)} /></div>
+        <div style={cardHead}>Maquinaria / Equipos / Vehículos</div>
+        <div style={cardBody}>
+          <TablaRecursos
+            titulo="Maquinaria — Equipos — Herramientas — Vehículos"
+            accentColor="#f59e0b"
+            recursos={form.recursos || []}
+            allRecursos={recursos}
+            catKey="MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS"
+            onChange={v => setField("recursos", v)}
+          />
+        </div>
+      </div>
+
+      {/* ── PERSONAL DE OBRA ── */}
+      <div style={card}>
+        <div style={cardHead}>Personal de Obra</div>
+        <div style={cardBody}>
+          <TablaRecursos
+            titulo="Personal de Obra"
+            accentColor="#10b981"
+            recursos={form.recursos || []}
+            allRecursos={recursos}
+            catKey="PERSONAL DE OBRA"
+            onChange={v => setField("recursos", v)}
+          />
+        </div>
       </div>
 
       {/* Actividades */}
       <div style={card}>
         <div style={cardHead}>Actividades del día</div>
-        <div style={cardBody}><ActividadesSection actividades={form.actividades || []} categorias={categorias} onChange={v => setField("actividades", v)} /></div>
+        <div style={cardBody}>
+          <ActividadesSection actividades={form.actividades || []} categorias={categorias} onChange={v => setField("actividades", v)} />
+        </div>
       </div>
 
       {/* Ítems de obra */}
       <div style={card}>
         <div style={{ ...cardHead, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Ítems de obra</span>
-          <button type="button" onClick={addItemObra} style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}><Plus size={12} style={{ marginRight: "4px" }} />Agregar ítem</button>
+          <button type="button" onClick={addItemObra} style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}>
+            <Plus size={12} style={{ marginRight: "4px" }} />Agregar ítem
+          </button>
         </div>
         <div style={cardBody}>
           {(form.items_obra || []).length === 0 && <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic" }}>Sin ítems de obra</p>}
@@ -502,7 +585,11 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
           onClick={() => saveMutation.mutate(form)}
           disabled={!form.obra_id || !form.fecha || saveMutation.isPending}
           title={!form.obra_id ? "Selecciona una obra primero" : ""}
-          style={{ ...btnPrimary, opacity: (!form.obra_id || !form.fecha || saveMutation.isPending) ? 0.5 : 1, cursor: (!form.obra_id || !form.fecha || saveMutation.isPending) ? "not-allowed" : "pointer" }}
+          style={{
+            ...btnPrimary,
+            opacity: (!form.obra_id || !form.fecha || saveMutation.isPending) ? 0.5 : 1,
+            cursor: (!form.obra_id || !form.fecha || saveMutation.isPending) ? "not-allowed" : "pointer",
+          }}
         >
           {saveMutation.isPending && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
           {informe ? "Guardar cambios" : "Crear informe"}
