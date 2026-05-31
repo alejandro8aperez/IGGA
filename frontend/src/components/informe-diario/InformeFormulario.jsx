@@ -18,7 +18,6 @@ const btnPrimary = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "no
 const btnOutline = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "1px solid #cbd5e1", background: "white", color: "#475569", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" };
 const btnGhost   = { background: "none", border: "none", cursor: "pointer", padding: "0.2rem", color: "#ef4444", display: "flex", alignItems: "center" };
 
-// Cabeceras de las tablas de recursos
 const thStyle = {
   padding: "0.4rem 0.5rem",
   fontSize: "0.68rem",
@@ -30,6 +29,34 @@ const thStyle = {
   borderBottom: "1px solid #e2e8f0",
   background: "#f8fafc",
 };
+
+// ─── Constantes predefinidas ──────────────────────────────────────────────────
+const EQUIPOS_DEFAULT = [
+  { recurso_id: "eq-1",  recurso_nombre: "Camioneta",                         categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Camioneta",                         cantidad: 1, empresa: "Siemens",           notas: "", es_libre: true },
+  { recurso_id: "eq-2",  recurso_nombre: "Buseta",                            categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Buseta",                            cantidad: 1, empresa: "",                  notas: "", es_libre: true },
+  { recurso_id: "eq-3",  recurso_nombre: "Camión Grúa",                       categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Camión Grúa",                       cantidad: 1, empresa: "CTE Intercolombia", notas: "", es_libre: true },
+  { recurso_id: "eq-4",  recurso_nombre: "Grúa",                              categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Grúa",                              cantidad: 1, empresa: "",                  notas: "", es_libre: true },
+  { recurso_id: "eq-5",  recurso_nombre: "Plataforma elevadora -Manlift",     categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Plataforma elevadora -Manlift",     cantidad: 1, empresa: "Edemsa",            notas: "", es_libre: true },
+  { recurso_id: "eq-6",  recurso_nombre: "Equipo de generación fotovoltaica", categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Equipo de generación fotovoltaica", cantidad: 1, empresa: "",                  notas: "", es_libre: true },
+  { recurso_id: "eq-7",  recurso_nombre: "Retrocargador",                     categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Retrocargador",                     cantidad: 1, empresa: "",                  notas: "", es_libre: true },
+];
+
+const PERSONAL_DEFAULT = [
+  { recurso_id: "pe-1",  recurso_nombre: "Coordinador Seguridad Salud en el Trabajo, SST", categoria: "PERSONAL DE OBRA", descripcion: "Coordinador Seguridad Salud en el Trabajo, SST", cantidad: 1, empresa: "",         notas: "", es_libre: true },
+  { recurso_id: "pe-2",  recurso_nombre: "Supervisor SST",                                 categoria: "PERSONAL DE OBRA", descripcion: "Supervisor SST",                                 cantidad: 1, empresa: "Siemenes",  notas: "", es_libre: true },
+  { recurso_id: "pe-3",  recurso_nombre: "Director de proyecto",                           categoria: "PERSONAL DE OBRA", descripcion: "Director de proyecto",                           cantidad: 1, empresa: "Siemens",   notas: "", es_libre: true },
+  { recurso_id: "pe-4",  recurso_nombre: "Residente Técnico",                              categoria: "PERSONAL DE OBRA", descripcion: "Residente Técnico",                              cantidad: 1, empresa: "",          notas: "", es_libre: true },
+  { recurso_id: "pe-5",  recurso_nombre: "Ingeniero Ambiental",                            categoria: "PERSONAL DE OBRA", descripcion: "Ingeniero Ambiental",                            cantidad: 1, empresa: "",          notas: "", es_libre: true },
+  { recurso_id: "pe-6",  recurso_nombre: "Oficial de obra civil",                          categoria: "PERSONAL DE OBRA", descripcion: "Oficial de obra civil",                          cantidad: 1, empresa: "",          notas: "", es_libre: true },
+  { recurso_id: "pe-7",  recurso_nombre: "Ayudante técnico",                               categoria: "PERSONAL DE OBRA", descripcion: "Ayudante técnico",                               cantidad: 1, empresa: "",          notas: "", es_libre: true },
+  { recurso_id: "pe-8",  recurso_nombre: "Supervisor Quality Assurance Quality Control",   categoria: "PERSONAL DE OBRA", descripcion: "Supervisor Quality Assurance Quality Control",   cantidad: 1, empresa: "",          notas: "", es_libre: true },
+  { recurso_id: "pe-9",  recurso_nombre: "Almacenista",                                    categoria: "PERSONAL DE OBRA", descripcion: "Almacenista",                                    cantidad: 1, empresa: "",          notas: "", es_libre: true },
+  { recurso_id: "pe-10", recurso_nombre: "Topografo",                                      categoria: "PERSONAL DE OBRA", descripcion: "Topografo",                                      cantidad: 1, empresa: "",          notas: "", es_libre: true },
+];
+
+const RECURSOS_DEFAULT = [...EQUIPOS_DEFAULT, ...PERSONAL_DEFAULT];
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function normalizarInforme(informe) {
   if (!informe) return null;
@@ -192,7 +219,6 @@ function SimpleSelect({ value, onChange, options, placeholder }) {
 }
 
 // ─── Tabla de recursos (Maquinaria o Personal) ────────────────────────────────
-// Columnas: DESCRIPCIÓN | CANTIDAD | EMPRESA | NOTAS | (eliminar)
 function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onChange }) {
   const opciones = allRecursos.filter(r => r.categoria === catKey && r.activo !== false);
   const filas = recursos.filter(r => r.categoria === catKey);
@@ -206,7 +232,7 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
         recurso_id:     recurso.id,
         recurso_nombre: recurso.nombre,
         categoria:      recurso.categoria,
-        descripcion:    recurso.nombre,   // pre-rellena con el nombre del catálogo
+        descripcion:    recurso.nombre,
         cantidad:       0,
         empresa:        "",
         notas:          "",
@@ -224,14 +250,12 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
 
   return (
     <div style={{ marginBottom: "2rem" }}>
-      {/* Cabecera de sección */}
       <div style={{ marginBottom: "0.6rem" }}>
         <h4 style={{ margin: 0, fontSize: "0.78rem", fontWeight: 800, color: accentColor, textTransform: "uppercase", letterSpacing: "0.06em" }}>
           {titulo}
         </h4>
       </div>
 
-      {/* Tabla */}
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
         <thead>
           <tr>
@@ -295,7 +319,6 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
         </tbody>
       </table>
 
-      {/* Botón fila libre */}
       <button
         type="button"
         onClick={() => onChange([
@@ -365,8 +388,8 @@ function ActividadesSection({ actividades, categorias, onChange }) {
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
-  const { data: rawObras = [], isLoading: isLoadingObras }         = useQuery({ queryKey: ["obras"],              queryFn: () => obraService.list() });
-  const { data: recursos = [], isLoading: isLoadingRecursos }       = useQuery({ queryKey: ["recursos"],           queryFn: () => recursoService.list() });
+  const { data: rawObras = [], isLoading: isLoadingObras }         = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
+  const { data: recursos = [], isLoading: isLoadingRecursos }       = useQuery({ queryKey: ["recursos"],            queryFn: () => recursoService.list() });
   const { data: categorias = [], isLoading: isLoadingCategorias }   = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
 
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
@@ -377,7 +400,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
     elaborado_por: "", cargo_elaborado: "", revisado_por: "", cargo_revisado: "",
     comision_topografia: false, horas_lluvia: Array(24).fill(false),
-    recursos: [], actividades: [], items_obra: [], status: "borrador",
+    recursos: RECURSOS_DEFAULT, actividades: [], items_obra: [], status: "borrador",
   });
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
@@ -402,7 +425,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         ...data,
         obra: data.obra_id ? parseInt(data.obra_id, 10) : null,
 
-        // Recursos del catálogo → detalles (pk entero obligatorio)
         detalles: (data.recursos || [])
           .filter(r => !r.es_libre && r.recurso_id && !String(r.recurso_id).startsWith('libre-'))
           .map(r => ({
@@ -412,7 +434,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
             notas:     r.notas    || '',
           })),
 
-        // Filas libres de maquinaria
         maquinaria_libre: (data.recursos || [])
           .filter(r => r.es_libre && r.categoria === 'MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS')
           .map(r => ({
@@ -422,7 +443,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
             notas:       r.notas   || '',
           })),
 
-        // Filas libres de personal
         personal_libre: (data.recursos || [])
           .filter(r => r.es_libre && r.categoria === 'PERSONAL DE OBRA')
           .map(r => ({
@@ -432,19 +452,16 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
             notas:       r.notas   || '',
           })),
 
-        // Horas de lluvia → array de objetos {hora, con_lluvia}
         reportes_lluvia: (data.horas_lluvia || []).map((con_lluvia, hora) => ({
           hora,
           con_lluvia: Boolean(con_lluvia),
         })),
 
-        // Actividades: categoria como entero
         actividades: (data.actividades || []).map(a => ({
           categoria:   parseInt(a.categoria_id, 10),
           descripcion: a.descripcion || '',
         })),
 
-        // Items de obra
         items_obra: (data.items_obra || []).map((it, i) => ({
           item:        it.item        || '',
           descripcion: it.descripcion || '',
@@ -454,7 +471,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         })),
       };
 
-      // Limpiar campos que el serializer no acepta en write
       delete payload.recursos;
       delete payload.obra_id;
       delete payload.obra_nombre;
