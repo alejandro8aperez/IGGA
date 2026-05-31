@@ -1,5 +1,5 @@
 /**
- * exportInformeDiarioExcel.js
+ * InformeDiarioExcel.js
  * Utilidad para exportar Informes Diarios de Obra a Excel
  * Formato F-141-IN (Libro Diario de Obra - Interventoría)
  *
@@ -42,6 +42,31 @@ const SUB_FILL    = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS
 const LIGHT_FILL  = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.lightBlue } };
 
 // ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+function colLetter(n) {
+  // Convierte índice 0-based a letra de columna: 0=A, 1=B, 25=Z, 26=AA, etc.
+  let result = '';
+  n++;
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    result = String.fromCharCode(65 + rem) + result;
+    n = Math.floor((n - 1) / 26);
+  }
+  return result;
+}
+
+function applyStyle(cell, style = {}) {
+  cell.style = {
+    font: { size: 9, ...style.font },
+    alignment: { vertical: 'center', wrapText: true, ...style.alignment },
+    border: style.border || GRAY_BORDER,
+    fill: style.fill || undefined,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  FUNCIÓN PRINCIPAL DE EXPORTACIÓN
 // ═══════════════════════════════════════════════════════════════
 
@@ -50,102 +75,70 @@ const LIGHT_FILL  = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS
  *
  * @param {Object} data - Datos del informe
  * @param {string} [filename] - Nombre base del archivo (sin extensión)
- *
- * Estructura esperada de `data`:
- * {
- *   codigo: 'F-141-IN',
- *   fechaEmision: '27/08/2009',
- *   modo: '00',
- *   obra: 'Ampliación SE LA LOMA 500 kV',
- *   fecha: '31/03/2026',
- *   diaSemana: 'MARTES',
- *   lluviaHoras: { 0: 'X', 1: 'X', 2: 'X', ... }, // hora -> valor
- *   maquinaria: [
- *     { item: 'CAMIONETAS (Siemens)', cantidad: 1, empresa: 'Siemens', notas: '' },
- *     ...
- *   ],
- *   personal: [
- *     { cargo: 'Residente Técnico (Siemens)', cantidad: 1 },
- *     ...
- *   ],
- *   topografia: ['SI', 'NO', 'SI', 'NO'], // 4 checks
- *   observaciones: 'Texto de observaciones...',
- *   estadoInicio: 'Riesgo Físico y Locativo',
- *   estadoFin: 'Riesgo Físico y Locativo',
- *   actividades: [
- *     { categoria: 'ADMINISTRATIVAS Y DOCUMENTALES', actividades: ['Item 1', 'Item 2'] },
- *     ...
- *   ],
- *   recursos: [
- *     { nombre: 'Coordinador de Control Obra', dias: ['1','1',...] }, // 31 días
- *     ...
- *   ],
- *   elaboradoPor: 'Nelson Henao',
- *   revisadoPor: 'Diego León Vélez',
- *   aprobadoPor: 'Diego León Vélez',
- * }
  */
 export async function exportInformeDiarioExcel(data, filename = 'Informe_Diario_Obra') {
   const workbook = new ExcelJS.Workbook();
   const ws = workbook.addWorksheet('Informe Diario');
 
-  // ── helper para aplicar estilo a celda ──
-  const setCell = (cell, value, style = {}) => {
-    cell.value = value;
-    cell.style = {
-      font: { size: 9, ...style.font },
-      alignment: { vertical: 'center', wrapText: true, ...style.alignment },
-      border: style.border || GRAY_BORDER,
-      fill: style.fill || undefined,
-    };
-  };
+  // Definir suficientes columnas (A=0 hasta AF=31 para los días)
+  // Necesitamos: A=ítem, B-AF=días 1-31 = 32 columnas mínimo
+  const totalCols = 35;
+  ws.columns = Array.from({ length: totalCols }, (_, i) => ({
+    width: i === 0 ? 32 : (i <= 31 ? 6 : 10),
+  }));
 
   let r = 1;
 
   // ═══════════════════════════════════════════════════════════
   //  1. ENCABEZADO PRINCIPAL
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`),
-    'CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA – INTERVENTORÍA',
-    {
-      font: { bold: true, size: 14, color: { argb: COLORS.headerBlue } },
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    }
-  );
+  ws.mergeCells(r, 1, r, 8);
+  const titleCell = ws.getCell(r, 1);
+  titleCell.value = 'CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA – INTERVENTORÍA';
+  applyStyle(titleCell, {
+    font: { bold: true, size: 14, color: { argb: COLORS.headerBlue } },
+    alignment: { horizontal: 'center' },
+    border: THIN_BORDER,
+  });
   ws.getRow(r).height = 30;
 
   r++;
-  ws.mergeCells(`A${r}:B${r}`);
-  setCell(ws.getCell(`A${r}`), `COD: ${data.codigo || 'F-141-IN'}`, {
+  ws.mergeCells(r, 1, r, 2);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`C${r}:E${r}`);
-  setCell(ws.getCell(`C${r}`), `F. Emisión: ${data.fechaEmision || '27/08/2009'}`, {
+  ws.getCell(r, 1).value = `COD: ${data.codigo || 'F-141-IN'}`;
+
+  ws.mergeCells(r, 3, r, 5);
+  applyStyle(ws.getCell(r, 3), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`F${r}:H${r}`);
-  setCell(ws.getCell(`F${r}`), `Mod: ${data.modo || '00'}`, {
+  ws.getCell(r, 3).value = `F. Emisión: ${data.fechaEmision || '27/08/2009'}`;
+
+  ws.mergeCells(r, 6, r, 8);
+  applyStyle(ws.getCell(r, 6), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 6).value = `Mod: ${data.modo || '00'}`;
 
   r++;
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), `OBRA: ${data.obra || ''}`, {
+  ws.mergeCells(r, 1, r, 8);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 11 },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = `OBRA: ${data.obra || ''}`;
 
   r++;
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), `FECHA: ${data.fecha || ''}  |  DÍA: ${data.diaSemana || ''}`, {
+  ws.mergeCells(r, 1, r, 8);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = `FECHA: ${data.fecha || ''}  |  DÍA: ${data.diaSemana || ''}`;
   ws.getRow(r).height = 20;
 
   r += 2;
@@ -153,152 +146,163 @@ export async function exportInformeDiarioExcel(data, filename = 'Informe_Diario_
   // ═══════════════════════════════════════════════════════════
   //  2. REPORTE DE LLUVIA (horas 0-23)
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'REPORTE DE LLUVIA', {
+  ws.mergeCells(r, 1, r, 8);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: SUB_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = 'REPORTE DE LLUVIA';
 
   r++;
-  setCell(ws.getCell(`A${r}`), 'Hora', {
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
     fill: LIGHT_FILL,
   });
+  ws.getCell(r, 1).value = 'Hora';
+
   for (let h = 0; h < 24; h++) {
-    const col = String.fromCharCode(66 + h); // B, C, D... Y
-    setCell(ws.getCell(`${col}${r}`), h, {
+    const col = h + 2; // empieza en columna B (índice 2)
+    applyStyle(ws.getCell(r, col), {
       alignment: { horizontal: 'center' },
       border: THIN_BORDER,
       fill: LIGHT_FILL,
     });
+    ws.getCell(r, col).value = h;
   }
 
   r++;
-  setCell(ws.getCell(`A${r}`), 'Lluvia', {
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = 'Lluvia';
+
   for (let h = 0; h < 24; h++) {
-    const col = String.fromCharCode(66 + h);
+    const col = h + 2;
     const val = data.lluviaHoras && data.lluviaHoras[h] !== undefined
       ? data.lluviaHoras[h]
       : '';
-    setCell(ws.getCell(`${col}${r}`), val, {
+    applyStyle(ws.getCell(r, col), {
       alignment: { horizontal: 'center' },
       border: THIN_BORDER,
     });
+    ws.getCell(r, col).value = val;
   }
 
   r += 2;
 
   // ═══════════════════════════════════════════════════════════
-  //  3. MAQUINARIA (cols A-D)  |  PERSONAL (cols F-H)
+  //  3. MAQUINARIA (cols 1-4)  |  PERSONAL (cols 6-8)
   // ═══════════════════════════════════════════════════════════
   const startRow = r;
 
   // ── Maquinaria ──
-  ws.mergeCells(`A${r}:D${r}`);
-  setCell(ws.getCell(`A${r}`),
-    'MAQUINARIA – EQUIPOS – HERRAMIENTAS Y VEHÍCULOS',
-    {
-      font: { bold: true, size: 10, color: { argb: COLORS.white } },
-      fill: SUB_FILL,
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    }
-  );
-
-  r++;
-  ['ÍTEM', 'CANT.', 'EMPRESA', 'NOTAS'].forEach((txt, idx) => {
-    const col = String.fromCharCode(65 + idx);
-    setCell(ws.getCell(`${col}${r}`), txt, {
-      font: { bold: true, size: 9 },
-      border: THIN_BORDER,
-      fill: LIGHT_FILL,
-    });
-  });
-
-  const maq = data.maquinaria || [];
-  maq.forEach((m) => {
-    r++;
-    setCell(ws.getCell(`A${r}`), m.item || '', { border: THIN_BORDER });
-    setCell(ws.getCell(`B${r}`), m.cantidad || 0, {
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    });
-    setCell(ws.getCell(`C${r}`), m.empresa || '', { border: THIN_BORDER });
-    setCell(ws.getCell(`D${r}`), m.notas || '', { border: THIN_BORDER });
-  });
-
-  r++;
-  setCell(ws.getCell(`A${r}`), 'TOTAL', {
-    font: { bold: true },
-    border: THIN_BORDER,
-  });
-  setCell(ws.getCell(`B${r}`),
-    maq.reduce((s, m) => s + (parseInt(m.cantidad) || 0), 0),
-    {
-      font: { bold: true },
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    }
-  );
-  ws.mergeCells(`C${r}:D${r}`);
-  setCell(ws.getCell(`C${r}`), '', { border: THIN_BORDER });
-  const endMaq = r;
-
-  // ── Personal (columnas F-H) ──
-  r = startRow;
-  ws.mergeCells(`F${r}:H${r}`);
-  setCell(ws.getCell(`F${r}`), 'PERSONAL DE OBRA', {
+  ws.mergeCells(r, 1, r, 4);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: SUB_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = 'MAQUINARIA – EQUIPOS – HERRAMIENTAS Y VEHÍCULOS';
 
   r++;
-  ws.mergeCells(`F${r}:G${r}`);
-  setCell(ws.getCell(`F${r}`), 'CARGO', {
+  ['ÍTEM', 'CANT.', 'EMPRESA', 'NOTAS'].forEach((txt, idx) => {
+    applyStyle(ws.getCell(r, idx + 1), {
+      font: { bold: true, size: 9 },
+      border: THIN_BORDER,
+      fill: LIGHT_FILL,
+    });
+    ws.getCell(r, idx + 1).value = txt;
+  });
+
+  const maq = data.maquinaria || [];
+  maq.forEach((m) => {
+    r++;
+    applyStyle(ws.getCell(r, 1), { border: THIN_BORDER });
+    ws.getCell(r, 1).value = m.item || '';
+
+    applyStyle(ws.getCell(r, 2), { alignment: { horizontal: 'center' }, border: THIN_BORDER });
+    ws.getCell(r, 2).value = m.cantidad || 0;
+
+    applyStyle(ws.getCell(r, 3), { border: THIN_BORDER });
+    ws.getCell(r, 3).value = m.empresa || '';
+
+    applyStyle(ws.getCell(r, 4), { border: THIN_BORDER });
+    ws.getCell(r, 4).value = m.notas || '';
+  });
+
+  r++;
+  applyStyle(ws.getCell(r, 1), { font: { bold: true }, border: THIN_BORDER });
+  ws.getCell(r, 1).value = 'TOTAL';
+
+  applyStyle(ws.getCell(r, 2), {
+    font: { bold: true },
+    alignment: { horizontal: 'center' },
+    border: THIN_BORDER,
+  });
+  ws.getCell(r, 2).value = maq.reduce((s, m) => s + (parseInt(m.cantidad) || 0), 0);
+
+  ws.mergeCells(r, 3, r, 4);
+  applyStyle(ws.getCell(r, 3), { border: THIN_BORDER });
+  ws.getCell(r, 3).value = '';
+
+  const endMaq = r;
+
+  // ── Personal (columnas 6-8 = F-H) ──
+  r = startRow;
+  ws.mergeCells(r, 6, r, 8);
+  applyStyle(ws.getCell(r, 6), {
+    font: { bold: true, size: 10, color: { argb: COLORS.white } },
+    fill: SUB_FILL,
+    alignment: { horizontal: 'center' },
+    border: THIN_BORDER,
+  });
+  ws.getCell(r, 6).value = 'PERSONAL DE OBRA';
+
+  r++;
+  ws.mergeCells(r, 6, r, 7);
+  applyStyle(ws.getCell(r, 6), {
     font: { bold: true, size: 9 },
     border: THIN_BORDER,
     fill: LIGHT_FILL,
   });
-  setCell(ws.getCell(`H${r}`), 'CANTIDAD', {
+  ws.getCell(r, 6).value = 'CARGO';
+
+  applyStyle(ws.getCell(r, 8), {
     font: { bold: true, size: 9 },
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
     fill: LIGHT_FILL,
   });
+  ws.getCell(r, 8).value = 'CANTIDAD';
 
   const pers = data.personal || [];
   pers.forEach((p) => {
     r++;
-    ws.mergeCells(`F${r}:G${r}`);
-    setCell(ws.getCell(`F${r}`), p.cargo || '', { border: THIN_BORDER });
-    setCell(ws.getCell(`H${r}`), p.cantidad || 0, {
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    });
+    ws.mergeCells(r, 6, r, 7);
+    applyStyle(ws.getCell(r, 6), { border: THIN_BORDER });
+    ws.getCell(r, 6).value = p.cargo || '';
+
+    applyStyle(ws.getCell(r, 8), { alignment: { horizontal: 'center' }, border: THIN_BORDER });
+    ws.getCell(r, 8).value = p.cantidad || 0;
   });
 
   r++;
-  ws.mergeCells(`F${r}:G${r}`);
-  setCell(ws.getCell(`F${r}`), 'TOTAL PERSONAL', {
+  ws.mergeCells(r, 6, r, 7);
+  applyStyle(ws.getCell(r, 6), { font: { bold: true }, border: THIN_BORDER });
+  ws.getCell(r, 6).value = 'TOTAL PERSONAL';
+
+  applyStyle(ws.getCell(r, 8), {
     font: { bold: true },
+    alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
-  setCell(ws.getCell(`H${r}`),
-    pers.reduce((s, p) => s + (parseInt(p.cantidad) || 0), 0),
-    {
-      font: { bold: true },
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    }
-  );
+  ws.getCell(r, 8).value = pers.reduce((s, p) => s + (parseInt(p.cantidad) || 0), 0);
+
   const endPers = r;
 
   // Igualar altura de ambas tablas
@@ -307,30 +311,28 @@ export async function exportInformeDiarioExcel(data, filename = 'Informe_Diario_
   // ═══════════════════════════════════════════════════════════
   //  4. COMISIÓN DE TOPOGRAFÍA
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'COMISIÓN DE TOPOGRAFÍA', {
+  ws.mergeCells(r, 1, r, 8);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: SUB_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = 'COMISIÓN DE TOPOGRAFÍA';
 
   r++;
   const topoLabels = ['Levantamiento', 'Replanteo', 'Nivelación', 'Verificación'];
   topoLabels.forEach((lbl, idx) => {
-    const c1 = String.fromCharCode(65 + idx * 2); // A, C, E, G
-    const c2 = String.fromCharCode(66 + idx * 2); // B, D, F, H
-    setCell(ws.getCell(`${c1}${r}`), lbl, {
-      font: { bold: true },
-      border: THIN_BORDER,
-    });
+    const c1 = idx * 2 + 1; // 1, 3, 5, 7
+    const c2 = idx * 2 + 2; // 2, 4, 6, 8
+    applyStyle(ws.getCell(r, c1), { font: { bold: true }, border: THIN_BORDER });
+    ws.getCell(r, c1).value = lbl;
+
     const val = data.topografia && data.topografia[idx] !== undefined
       ? data.topografia[idx]
       : (idx % 2 === 0 ? 'SI' : 'NO');
-    setCell(ws.getCell(`${c2}${r}`), val, {
-      alignment: { horizontal: 'center' },
-      border: THIN_BORDER,
-    });
+    applyStyle(ws.getCell(r, c2), { alignment: { horizontal: 'center' }, border: THIN_BORDER });
+    ws.getCell(r, c2).value = val;
   });
 
   r += 2;
@@ -338,69 +340,75 @@ export async function exportInformeDiarioExcel(data, filename = 'Informe_Diario_
   // ═══════════════════════════════════════════════════════════
   //  5. OBSERVACIONES + RIESGO FÍSICO Y LOCATIVO
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:D${r}`);
-  setCell(ws.getCell(`A${r}`), 'OBSERVACIONES GENERALES', {
+  ws.mergeCells(r, 1, r, 4);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: SUB_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`E${r}:H${r}`);
-  setCell(ws.getCell(`E${r}`), 'RIESGO FÍSICO Y LOCATIVO', {
+  ws.getCell(r, 1).value = 'OBSERVACIONES GENERALES';
+
+  ws.mergeCells(r, 5, r, 8);
+  applyStyle(ws.getCell(r, 5), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: SUB_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 5).value = 'RIESGO FÍSICO Y LOCATIVO';
 
   r++;
-  ws.mergeCells(`A${r}:D${r + 2}`);
-  setCell(ws.getCell(`A${r}`), data.observaciones || '', {
+  ws.mergeCells(r, 1, r + 2, 4);
+  applyStyle(ws.getCell(r, 1), {
     border: THIN_BORDER,
     alignment: { vertical: 'top', wrapText: true },
   });
+  ws.getCell(r, 1).value = data.observaciones || '';
 
-  ws.mergeCells(`E${r}:H${r}`);
-  setCell(ws.getCell(`E${r}`), `Estado Inicio: ${data.estadoInicio || ''}`, {
-    border: THIN_BORDER,
-  });
+  ws.mergeCells(r, 5, r, 8);
+  applyStyle(ws.getCell(r, 5), { border: THIN_BORDER });
+  ws.getCell(r, 5).value = `Estado Inicio: ${data.estadoInicio || ''}`;
+
   r++;
-  ws.mergeCells(`E${r}:H${r}`);
-  setCell(ws.getCell(`E${r}`), `Estado Final: ${data.estadoFin || ''}`, {
-    border: THIN_BORDER,
-  });
+  ws.mergeCells(r, 5, r, 8);
+  applyStyle(ws.getCell(r, 5), { border: THIN_BORDER });
+  ws.getCell(r, 5).value = `Estado Final: ${data.estadoFin || ''}`;
 
   r += 2;
 
   // ═══════════════════════════════════════════════════════════
   //  6. ACTIVIDADES DEL DÍA
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'ACTIVIDADES DEL DÍA', {
+  ws.mergeCells(r, 1, r, 8);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: HEADER_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = 'ACTIVIDADES DEL DÍA';
 
   const acts = data.actividades || [];
   acts.forEach((grupo) => {
     r++;
-    ws.mergeCells(`A${r}:H${r}`);
-    setCell(ws.getCell(`A${r}`), grupo.categoria || '', {
+    ws.mergeCells(r, 1, r, 8);
+    applyStyle(ws.getCell(r, 1), {
       font: { bold: true, size: 10, color: { argb: COLORS.white } },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF5B9BD5' } },
       alignment: { horizontal: 'left' },
       border: THIN_BORDER,
     });
+    ws.getCell(r, 1).value = grupo.categoria || '';
 
     (grupo.actividades || []).forEach((a, idx) => {
       r++;
-      ws.mergeCells(`A${r}:H${r}`);
-      setCell(ws.getCell(`A${r}`), `${idx + 1}. ${a}`, {
+      ws.mergeCells(r, 1, r, 8);
+      applyStyle(ws.getCell(r, 1), {
         border: THIN_BORDER,
         alignment: { vertical: 'top', wrapText: true },
       });
+      ws.getCell(r, 1).value = `${idx + 1}. ${a}`;
       ws.getRow(r).height = 18;
     });
   });
@@ -410,44 +418,51 @@ export async function exportInformeDiarioExcel(data, filename = 'Informe_Diario_
   // ═══════════════════════════════════════════════════════════
   //  7. RECURSOS CONTROL OBRA (días 1-31)
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:H${r}`);
-  setCell(ws.getCell(`A${r}`), 'RECURSOS CONTROL OBRA', {
+  ws.mergeCells(r, 1, r, 8);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10, color: { argb: COLORS.white } },
     fill: HEADER_FILL,
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 1).value = 'RECURSOS CONTROL OBRA';
 
   r++;
-  setCell(ws.getCell(`A${r}`), 'Ítem', {
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true },
     border: THIN_BORDER,
     fill: LIGHT_FILL,
   });
+  ws.getCell(r, 1).value = 'Ítem';
+
   for (let d = 1; d <= 31; d++) {
-    const col = String.fromCharCode(66 + d - 1);
-    setCell(ws.getCell(`${col}${r}`), d, {
+    const col = d + 1; // columna B=2 en adelante
+    applyStyle(ws.getCell(r, col), {
       font: { bold: true, size: 8 },
       alignment: { horizontal: 'center' },
       border: THIN_BORDER,
       fill: LIGHT_FILL,
     });
+    ws.getCell(r, col).value = d;
   }
 
   const recursos = data.recursos || [];
   recursos.forEach((rec) => {
     r++;
-    setCell(ws.getCell(`A${r}`), rec.nombre || '', {
+    applyStyle(ws.getCell(r, 1), {
       font: { bold: true },
       border: THIN_BORDER,
     });
+    ws.getCell(r, 1).value = rec.nombre || '';
+
     for (let d = 1; d <= 31; d++) {
-      const col = String.fromCharCode(66 + d - 1);
+      const col = d + 1;
       const val = rec.dias && rec.dias[d - 1] !== undefined ? rec.dias[d - 1] : '';
-      setCell(ws.getCell(`${col}${r}`), val, {
+      applyStyle(ws.getCell(r, col), {
         alignment: { horizontal: 'center' },
         border: THIN_BORDER,
       });
+      ws.getCell(r, col).value = val;
     }
   });
 
@@ -456,74 +471,64 @@ export async function exportInformeDiarioExcel(data, filename = 'Informe_Diario_
   // ═══════════════════════════════════════════════════════════
   //  8. FIRMAS
   // ═══════════════════════════════════════════════════════════
-  ws.mergeCells(`A${r}:C${r}`);
-  setCell(ws.getCell(`A${r}`), 'Elaborado por:', {
+  ws.mergeCells(r, 1, r, 3);
+  applyStyle(ws.getCell(r, 1), {
     font: { bold: true, size: 10 },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`D${r}:F${r}`);
-  setCell(ws.getCell(`D${r}`), 'Revisado por:', {
+  ws.getCell(r, 1).value = 'Elaborado por:';
+
+  ws.mergeCells(r, 4, r, 6);
+  applyStyle(ws.getCell(r, 4), {
     font: { bold: true, size: 10 },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`G${r}:H${r}`);
-  setCell(ws.getCell(`G${r}`), 'Aprobado por:', {
+  ws.getCell(r, 4).value = 'Revisado por:';
+
+  ws.mergeCells(r, 7, r, 8);
+  applyStyle(ws.getCell(r, 7), {
     font: { bold: true, size: 10 },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 7).value = 'Aprobado por:';
 
   r++;
-  ws.mergeCells(`A${r}:C${r}`);
-  setCell(ws.getCell(`A${r}`), data.elaboradoPor || '', {
+  ws.mergeCells(r, 1, r, 3);
+  applyStyle(ws.getCell(r, 1), {
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`D${r}:F${r}`);
-  setCell(ws.getCell(`D${r}`), data.revisadoPor || '', {
+  ws.getCell(r, 1).value = data.elaboradoPor || '';
+
+  ws.mergeCells(r, 4, r, 6);
+  applyStyle(ws.getCell(r, 4), {
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
-  ws.mergeCells(`G${r}:H${r}`);
-  setCell(ws.getCell(`G${r}`), data.aprobadoPor || '', {
+  ws.getCell(r, 4).value = data.revisadoPor || '';
+
+  ws.mergeCells(r, 7, r, 8);
+  applyStyle(ws.getCell(r, 7), {
     alignment: { horizontal: 'center' },
     border: THIN_BORDER,
   });
+  ws.getCell(r, 7).value = data.aprobadoPor || '';
 
   r++;
-  ws.mergeCells(`A${r}:C${r}`);
-  setCell(ws.getCell(`A${r}`), '_________________________', {
-    alignment: { horizontal: 'center' },
-  });
-  ws.mergeCells(`D${r}:F${r}`);
-  setCell(ws.getCell(`D${r}`), '_________________________', {
-    alignment: { horizontal: 'center' },
-  });
-  ws.mergeCells(`G${r}:H${r}`);
-  setCell(ws.getCell(`G${r}`), '_________________________', {
-    alignment: { horizontal: 'center' },
-  });
+  ws.mergeCells(r, 1, r, 3);
+  applyStyle(ws.getCell(r, 1), { alignment: { horizontal: 'center' } });
+  ws.getCell(r, 1).value = '_________________________';
+
+  ws.mergeCells(r, 4, r, 6);
+  applyStyle(ws.getCell(r, 4), { alignment: { horizontal: 'center' } });
+  ws.getCell(r, 4).value = '_________________________';
+
+  ws.mergeCells(r, 7, r, 8);
+  applyStyle(ws.getCell(r, 7), { alignment: { horizontal: 'center' } });
+  ws.getCell(r, 7).value = '_________________________';
 
   // ═══════════════════════════════════════════════════════════
-  //  9. AJUSTAR ANCHOS DE COLUMNA
-  // ═══════════════════════════════════════════════════════════
-  ws.columns = [
-    { width: 32 }, // A
-    { width: 8 },  // B
-    { width: 12 }, // C
-    { width: 14 }, // D
-    { width: 4 },  // E (separador vacía)
-    { width: 22 }, // F
-    { width: 14 }, // G
-    { width: 10 }, // H
-  ];
-
-  // Asegurar que las columnas I en adelante existan para las horas de lluvia
-  for (let c = 9; c <= 26; c++) {
-    ws.getColumn(c).width = 6;
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  10. GENERAR Y DESCARGAR ARCHIVO
+  //  9. GENERAR Y DESCARGAR ARCHIVO
   // ═══════════════════════════════════════════════════════════
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
