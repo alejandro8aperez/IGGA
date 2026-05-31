@@ -63,10 +63,14 @@ def generar_excel(informe) -> bytes:
     # Maquinaria / Personal
     row = 11
     ws.cell(row, 1, 'MAQUINARIA - EQUIPOS - HERRAMIENTAS - VEHÍCULOS').font = bold
-    ws.cell(row, 4, 'CANTIDAD').font = bold
+    ws.cell(row, 2, 'CANT.').font = bold
+    ws.cell(row, 3, 'EMPRESA').font = bold
+    ws.cell(row, 4, 'NOTAS').font = bold
     ws.cell(row, 6, 'PERSONAL DE OBRA').font = bold
-    ws.cell(row, 9, 'CANTIDAD').font = bold
-    for c in (1, 4, 6, 9):
+    ws.cell(row, 7, 'CANT.').font = bold
+    ws.cell(row, 8, 'EMPRESA').font = bold
+    ws.cell(row, 9, 'NOTAS').font = bold
+    for c in (1, 2, 3, 4, 6, 7, 8, 9):
         ws.cell(row, c).fill = header_fill
 
     detalles = list(informe.detalles.select_related('recurso__categoria'))
@@ -84,18 +88,22 @@ def generar_excel(informe) -> bytes:
             item = maquinaria[i]
             nombre = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
             ws.cell(r + i, 1, nombre).alignment = left
-            ws.cell(r + i, 4, float(item.cantidad)).alignment = center
+            ws.cell(r + i, 2, float(item.cantidad)).alignment = center
+            ws.cell(r + i, 3, getattr(item, 'empresa', '')).alignment = left
+            ws.cell(r + i, 4, getattr(item, 'notas', '')).alignment = left
         if i < len(personal):
             item = personal[i]
             nombre = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
             ws.cell(r + i, 6, nombre).alignment = left
-            ws.cell(r + i, 9, float(item.cantidad)).alignment = center
+            ws.cell(r + i, 7, float(item.cantidad)).alignment = center
+            ws.cell(r + i, 8, getattr(item, 'empresa', '')).alignment = left
+            ws.cell(r + i, 9, getattr(item, 'notas', '')).alignment = left
 
     bottom = r + max_rows + 1
     ws.cell(bottom, 1, 'TOTAL').font = bold
-    ws.cell(bottom, 4, sum(float(d.cantidad) for d in maquinaria))
+    ws.cell(bottom, 2, sum(float(getattr(d, 'cantidad', 0)) for d in maquinaria))
     ws.cell(bottom, 6, 'Total Personal').font = bold
-    ws.cell(bottom, 9, sum(float(d.cantidad) for d in personal))
+    ws.cell(bottom, 7, sum(float(getattr(d, 'cantidad', 0)) for d in personal))
 
     # Observaciones
     bottom += 2

@@ -105,6 +105,14 @@ def _transform_frontend_data(data):
             for idx, it in enumerate(t.get('items_obra') or [])
         ]
 
+    # Asegurar que maquinaria_libre y personal_libre mantengan los campos requeridos
+    for key in ('maquinaria_libre', 'personal_libre'):
+        if key in t:
+            for item in t[key]:
+                # Eliminar IDs de items existentes para evitar conflictos en el bulk-delete/create del serializer
+                item.pop('id', None)
+                item.setdefault('notas', '')
+
     # Limpieza: Eliminar campos de solo lectura para evitar errores 400
     for campo in ('obra_nombre', 'obra_codigo', 'dia_semana',
                   'fotos_urls', 'status_label', 'foto_principal', 'id',

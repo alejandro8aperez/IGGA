@@ -25335,3 +25335,536 @@ INFO 2026-05-30 19:09:19,506 autoreload 49676 51476 C:\Postgres\ERP-8AMPERIOS\in
 INFO 2026-05-30 19:09:30,742 autoreload 31436 31988 Watching for file changes with StatReloader
 INFO 2026-05-30 19:12:18,516 autoreload 31436 31988 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
 INFO 2026-05-30 19:12:26,806 autoreload 35812 46944 Watching for file changes with StatReloader
+INFO 2026-05-30 19:18:46,470 autoreload 22720 35444 Watching for file changes with StatReloader
+INFO 2026-05-30 19:22:23,380 basehttp 22720 9384 - Broken pipe from ('127.0.0.1', 63158)
+INFO 2026-05-30 19:22:23,381 basehttp 22720 47220 - Broken pipe from ('127.0.0.1', 49669)
+INFO 2026-05-30 19:22:23,381 basehttp 22720 27428 - Broken pipe from ('127.0.0.1', 53280)
+ERROR 2026-05-30 19:22:23,859 log 22720 35700 Internal Server Error: /api/informe-diario/informes/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1956, in _fetch_all
+    self._prefetch_related_objects()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1330, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2408, in prefetch_related_objects
+    obj_list, additional_lookups = prefetch_one_level(
+                                   ^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2572, in prefetch_one_level
+    ) = prefetcher.get_prefetch_querysets(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 800, in get_prefetch_querysets
+    for rel_obj in queryset:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1954, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 93, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+INFO 2026-05-30 19:22:23,864 basehttp 22720 35700 - Broken pipe from ('127.0.0.1', 49311)
+INFO 2026-05-30 19:22:25,190 basehttp 22720 14504 "GET /api/informe-diario/obras/ HTTP/1.1" 200 133
+ERROR 2026-05-30 19:22:25,262 log 22720 14504 Internal Server Error: /api/informe-diario/informes/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1956, in _fetch_all
+    self._prefetch_related_objects()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1330, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2408, in prefetch_related_objects
+    obj_list, additional_lookups = prefetch_one_level(
+                                   ^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2572, in prefetch_one_level
+    ) = prefetcher.get_prefetch_querysets(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 800, in get_prefetch_querysets
+    for rel_obj in queryset:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1954, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 93, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+ERROR 2026-05-30 19:22:25,266 basehttp 22720 14504 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 29691
+ERROR 2026-05-30 19:22:26,323 log 22720 14504 Internal Server Error: /api/informe-diario/informes/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1956, in _fetch_all
+    self._prefetch_related_objects()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1330, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2408, in prefetch_related_objects
+    obj_list, additional_lookups = prefetch_one_level(
+                                   ^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2572, in prefetch_one_level
+    ) = prefetcher.get_prefetch_querysets(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 800, in get_prefetch_querysets
+    for rel_obj in queryset:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1954, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 93, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+ERROR 2026-05-30 19:22:26,326 basehttp 22720 14504 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 29691
+ERROR 2026-05-30 19:22:28,389 log 22720 14504 Internal Server Error: /api/informe-diario/informes/
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1956, in _fetch_all
+    self._prefetch_related_objects()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1330, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2408, in prefetch_related_objects
+    obj_list, additional_lookups = prefetch_one_level(
+                                   ^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 2572, in prefetch_one_level
+    ) = prefetcher.get_prefetch_querysets(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 800, in get_prefetch_querysets
+    for rel_obj in queryset:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 386, in __iter__
+    self._fetch_all()
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 1954, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\query.py", line 93, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\postgres\erp-8amperios\venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column informe_diario_detallerecurso.notas does not exist
+LINE 1: ...idad", "informe_diario_detallerecurso"."empresa", "informe_d...
+                                                             ^
+
+ERROR 2026-05-30 19:22:28,392 basehttp 22720 14504 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 29691
+INFO 2026-05-30 19:22:29,738 basehttp 22720 14504 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:22:29,811 basehttp 22720 2184 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:22:29,812 basehttp 22720 14504 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:22:29,846 basehttp 22720 14504 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:22:29,916 basehttp 22720 14504 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:22:29,952 basehttp 22720 14504 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+WARNING 2026-05-30 19:22:29,986 basehttp 22720 2184 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+INFO 2026-05-30 19:22:30,079 basehttp 22720 16536 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:22:30,114 basehttp 22720 44788 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:22:30,123 basehttp 22720 16536 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:22:30,145 basehttp 22720 44788 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+WARNING 2026-05-30 19:22:30,184 basehttp 22720 14504 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+INFO 2026-05-30 19:22:30,193 basehttp 22720 10796 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:22:30,209 basehttp 22720 7312 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+WARNING 2026-05-30 19:22:30,225 basehttp 22720 2184 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:22:30,298 basehttp 22720 2184 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:22:30,396 basehttp 22720 16536 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:22:30,422 basehttp 22720 44788 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:22:30,439 basehttp 22720 7312 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:22:30,460 basehttp 22720 7312 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:23:21,867 basehttp 22720 7312 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,716 basehttp 22720 7312 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-05-30 19:23:22,945 basehttp 22720 44788 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,945 basehttp 22720 7312 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,947 basehttp 22720 10796 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,947 basehttp 22720 2184 "OPTIONS /api/undefined/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,947 basehttp 22720 16536 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,947 basehttp 22720 14504 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,949 basehttp 22720 7312 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,952 basehttp 22720 44788 "OPTIONS /api/undefined/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,953 basehttp 22720 10796 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,958 basehttp 22720 2184 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,958 basehttp 22720 16536 "OPTIONS /api/undefined/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,959 basehttp 22720 14504 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,961 basehttp 22720 7312 "OPTIONS /api/undefined/ventas/facturas/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,962 basehttp 22720 44788 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,962 basehttp 22720 10796 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,966 basehttp 22720 2184 "OPTIONS /api/undefined/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,970 basehttp 22720 16536 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:22,983 basehttp 22720 14504 "OPTIONS /api/undefined/kave/disenos/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:23,064 basehttp 22720 7312 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:23:23,078 basehttp 22720 2184 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:23:23,108 basehttp 22720 10796 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:23:23,108 basehttp 22720 16536 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:23:23,116 basehttp 22720 7312 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:23:23,154 basehttp 22720 16536 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:23:23,164 basehttp 22720 7312 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:23:23,213 basehttp 22720 44788 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:23:23,220 basehttp 22720 16536 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:23:23,233 basehttp 22720 7312 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:23:23,251 basehttp 22720 44788 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:23:23,332 basehttp 22720 16536 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+WARNING 2026-05-30 19:23:23,383 basehttp 22720 14504 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:23:23,412 basehttp 22720 2184 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+WARNING 2026-05-30 19:23:23,425 basehttp 22720 10796 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+INFO 2026-05-30 19:23:23,443 basehttp 22720 10796 "OPTIONS /api/inventario/productos/resumen/ HTTP/1.1" 200 0
+INFO 2026-05-30 19:23:23,513 basehttp 22720 10796 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:23:23,621 basehttp 22720 16536 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:23:23,634 basehttp 22720 14504 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+WARNING 2026-05-30 19:23:23,640 basehttp 22720 2184 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+INFO 2026-05-30 19:23:23,658 basehttp 22720 2184 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:23:51,560 basehttp 22720 2184 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:23:51,582 basehttp 22720 44788 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:23:51,593 basehttp 22720 14504 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:23:51,610 basehttp 22720 2184 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:23:51,612 basehttp 22720 7312 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:23:52,842 basehttp 22720 2184 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:23:52,843 basehttp 22720 7312 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:23:52,877 basehttp 22720 7312 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:23:52,898 basehttp 22720 16536 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:23:52,898 basehttp 22720 2184 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:23:52,923 basehttp 22720 7312 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:23:52,992 basehttp 22720 16536 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+WARNING 2026-05-30 19:23:53,036 basehttp 22720 10796 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:23:53,053 basehttp 22720 44788 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:23:53,064 basehttp 22720 14504 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:23:53,121 basehttp 22720 14504 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:23:53,259 basehttp 22720 7312 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:23:53,262 basehttp 22720 16536 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:23:53,266 basehttp 22720 44788 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:23:53,285 basehttp 22720 44788 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:24:16,153 autoreload 47292 24004 Watching for file changes with StatReloader
+INFO 2026-05-30 19:24:20,961 basehttp 47292 50104 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:20,990 basehttp 47292 39620 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:20,999 basehttp 47292 20580 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:21,029 basehttp 47292 39620 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:21,065 basehttp 47292 39620 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:21,069 basehttp 47292 20580 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:21,084 basehttp 47292 4544 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+WARNING 2026-05-30 19:24:21,109 basehttp 47292 46404 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+WARNING 2026-05-30 19:24:21,110 basehttp 47292 18612 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+INFO 2026-05-30 19:24:21,210 basehttp 47292 46404 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:24:21,243 basehttp 47292 50104 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:21,293 basehttp 47292 4544 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:21,297 basehttp 47292 20580 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:21,316 basehttp 47292 20580 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:24:27,218 basehttp 47292 20580 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:27,235 basehttp 47292 4544 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:27,253 basehttp 47292 20580 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:27,256 basehttp 47292 39620 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:27,272 basehttp 47292 18612 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:27,298 basehttp 47292 39620 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:27,333 basehttp 47292 39620 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:27,336 basehttp 47292 18612 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:27,340 basehttp 47292 50104 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:24:27,369 basehttp 47292 18612 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:27,386 basehttp 47292 39620 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:27,450 basehttp 47292 50104 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+WARNING 2026-05-30 19:24:27,502 basehttp 47292 46404 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:27,529 basehttp 47292 4544 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:27,542 basehttp 47292 20580 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:27,602 basehttp 47292 20580 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:24:27,726 basehttp 47292 50104 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:27,739 basehttp 47292 46404 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:27,745 basehttp 47292 4544 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:27,764 basehttp 47292 4544 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:24:32,060 basehttp 47292 4544 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:32,060 basehttp 47292 39620 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:32,088 basehttp 47292 46404 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:32,102 basehttp 47292 18612 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:32,109 basehttp 47292 4544 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:32,143 basehttp 47292 18612 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:32,150 basehttp 47292 4544 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:32,179 basehttp 47292 50104 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:24:32,197 basehttp 47292 18612 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:32,205 basehttp 47292 4544 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:32,217 basehttp 47292 50104 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:32,303 basehttp 47292 18612 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+WARNING 2026-05-30 19:24:32,352 basehttp 47292 20580 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:32,374 basehttp 47292 39620 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:32,386 basehttp 47292 46404 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:32,452 basehttp 47292 46404 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:24:32,578 basehttp 47292 18612 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:32,597 basehttp 47292 20580 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:32,602 basehttp 47292 39620 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:32,618 basehttp 47292 39620 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:24:35,324 basehttp 47292 39620 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:35,335 basehttp 47292 50104 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:35,360 basehttp 47292 20580 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:35,364 basehttp 47292 4544 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:35,372 basehttp 47292 39620 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:35,407 basehttp 47292 4544 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-05-30 19:24:35,410 basehttp 47292 39620 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-05-30 19:24:35,450 basehttp 47292 18612 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-05-30 19:24:35,461 basehttp 47292 4544 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-05-30 19:24:35,463 basehttp 47292 39620 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-05-30 19:24:35,479 basehttp 47292 18612 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-05-30 19:24:35,559 basehttp 47292 4544 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+WARNING 2026-05-30 19:24:35,607 basehttp 47292 46404 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:35,630 basehttp 47292 50104 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:35,646 basehttp 47292 20580 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:35,707 basehttp 47292 20580 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+WARNING 2026-05-30 19:24:35,819 basehttp 47292 4544 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 404 12282
+WARNING 2026-05-30 19:24:35,832 basehttp 47292 46404 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 404 12300
+WARNING 2026-05-30 19:24:35,837 basehttp 47292 50104 "GET /api/undefined/kave/disenos/ HTTP/1.1" 404 12273
+INFO 2026-05-30 19:24:35,855 basehttp 47292 50104 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-05-30 19:26:51,803 autoreload 47292 24004 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-30 19:27:15,633 autoreload 12552 30860 Watching for file changes with StatReloader
+INFO 2026-05-30 19:28:25,350 autoreload 12552 30860 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-05-30 19:28:39,709 autoreload 41608 51264 Watching for file changes with StatReloader
