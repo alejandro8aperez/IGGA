@@ -41,6 +41,12 @@ urlpatterns = [
     path('api/informe-diario/maestro-recursos/', get_master_recursos, name='get_master_recursos'),
     path('api/informe-diario/obras/', get_operaciones_proyectos), # Alias para corregir el error 500 del frontend
     path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),
+
+    # --- Soporte para errores de interpolación del Frontend (undefined/null) ---
+    path('api/undefined/ventas/', include('venta.urls')),
+    path('api/undefined/operaciones/', include('operaciones.urls')),
+    path('api/undefined/kave/', include('kave.urls')),
+
     path('api/multi-empresa/', include('multi_empresa.urls')),
     path('api/mrp/', include('mrp.urls')),
     path('api/crm/', include('crm.urls')),
