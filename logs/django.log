@@ -27861,3 +27861,40 @@ INFO 2026-06-01 09:08:29,739 basehttp 29652 5784 "GET /api/undefined/kave/diseno
 INFO 2026-06-01 09:08:29,750 basehttp 29652 9220 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
 INFO 2026-06-01 09:08:29,763 basehttp 29652 5784 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
 INFO 2026-06-01 09:15:14,437 autoreload 22240 4400 Watching for file changes with StatReloader
+INFO 2026-06-01 09:41:50,273 autoreload 4516 14064 Watching for file changes with StatReloader
+INFO 2026-06-01 09:42:59,953 basehttp 4516 37128 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-06-01 09:43:00,019 basehttp 4516 28856 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-06-01 09:43:00,032 basehttp 4516 27952 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-06-01 09:43:00,072 basehttp 4516 37128 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-06-01 09:43:00,114 basehttp 4516 35628 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-06-01 09:43:00,117 basehttp 4516 28880 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-06-01 09:43:00,123 basehttp 4516 28856 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 200 525
+INFO 2026-06-01 09:43:00,132 basehttp 4516 37128 "GET /api/compras/proveedores/ HTTP/1.1" 200 588
+INFO 2026-06-01 09:43:00,146 basehttp 4516 27200 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-06-01 09:43:00,166 basehttp 4516 35628 "GET /api/undefined/ventas/facturas/ HTTP/1.1" 200 260
+INFO 2026-06-01 09:43:00,168 basehttp 4516 28856 "GET /api/inventario/productos/ HTTP/1.1" 200 6392
+INFO 2026-06-01 09:43:00,186 basehttp 4516 37128 "GET /api/crm/clientes/ HTTP/1.1" 200 6309
+INFO 2026-06-01 09:43:00,195 basehttp 4516 28880 "GET /api/compras/ordenes/ HTTP/1.1" 200 241
+INFO 2026-06-01 09:43:00,208 basehttp 4516 27200 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 698
+INFO 2026-06-01 09:43:00,211 basehttp 4516 27952 "GET /api/undefined/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-06-01 09:43:00,223 basehttp 4516 35628 "GET /api/undefined/operaciones/proyectos/ HTTP/1.1" 200 525
+INFO 2026-06-01 09:43:00,261 basehttp 4516 28856 "GET /api/venta/pedidos/ HTTP/1.1" 200 965
+INFO 2026-06-01 09:43:00,262 basehttp 4516 27952 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-06-01 09:43:00,262 basehttp 4516 28880 "GET /api/undefined/kave/disenos/ HTTP/1.1" 200 3585
+INFO 2026-06-01 09:43:00,288 basehttp 4516 28880 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 193
+INFO 2026-06-01 09:43:34,702 basehttp 4516 28880 "GET /api/informe-diario/obras/ HTTP/1.1" 200 245
+INFO 2026-06-01 09:43:34,802 basehttp 4516 27952 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 200 766
+INFO 2026-06-01 09:43:37,490 basehttp 4516 27952 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 766
+INFO 2026-06-01 09:43:38,782 basehttp 4516 35628 "OPTIONS /api/informe-diario/anexos/?informe=3 HTTP/1.1" 200 0
+INFO 2026-06-01 09:43:38,782 basehttp 4516 28880 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-06-01 09:43:38,782 basehttp 4516 28856 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-06-01 09:43:38,812 basehttp 4516 28856 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-06-01 09:43:38,813 basehttp 4516 27952 "GET /api/informe-diario/obras/ HTTP/1.1" 200 245
+INFO 2026-06-01 09:43:38,813 basehttp 4516 28880 "GET /api/informe-diario/anexos/?informe=3 HTTP/1.1" 200 1177
+INFO 2026-06-01 09:43:38,813 basehttp 4516 35628 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-06-01 09:45:53,439 basehttp 4516 28856 "GET /api/informe-diario/anexos/?informe=3 HTTP/1.1" 200 1177
+INFO 2026-06-01 09:45:53,441 basehttp 4516 27952 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 14016
+INFO 2026-06-01 09:45:53,455 basehttp 4516 27200 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 896
+INFO 2026-06-01 09:45:53,464 basehttp 4516 28880 "GET /api/informe-diario/obras/ HTTP/1.1" 200 245
+INFO 2026-06-01 09:45:53,487 basehttp 4516 35628 "GET /api/informe-diario/informes/ HTTP/1.1" 200 766
+INFO 2026-06-01 10:37:25,679 autoreload 20012 20800 Watching for file changes with StatReloader
