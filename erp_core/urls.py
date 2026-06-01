@@ -31,22 +31,20 @@ router = DefaultRouter()
 router.register(r'users', UserViewSet)
 
 urlpatterns = [
-    path('', ping, name='index'), # Root redirect to ping for cleaner logs
+    path('', ping, name='index'),
     path('admin/', admin.site.urls),
-    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')), # Silencia el error 404 del favicon
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')),
     path('api/ping/', ping, name='ping'),
     path('api/admin/migrate/', run_migrations, name='run_migrations'),
     path('api/admin/seed-informe-diario/', seed_informe_diario, name='seed_informe_diario'),
     path('api/operaciones/proyectos-selector/', get_operaciones_proyectos, name='get_operaciones_proyectos'),
     path('api/informe-diario/maestro-recursos/', get_master_recursos, name='get_master_recursos'),
-    path('api/informe-diario/obras/', get_operaciones_proyectos), # Alias para corregir el error 500 del frontend
+    path('api/informe-diario/obras/', get_operaciones_proyectos),
     path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),
 
-    # --- Soporte para errores de interpolación del Frontend (undefined/null) ---
-    path('api/undefined/ventas/', include('venta.urls')),
-    path('api/undefined/operaciones/', include('operaciones.urls')),
-    path('api/undefined/kave/', include('kave.urls')),
-
+    # ═══════════════════════════════════════════════════════════════════════════
+    #  RUTAS PRINCIPALES DEL ERP
+    # ═══════════════════════════════════════════════════════════════════════════
     path('api/multi-empresa/', include('multi_empresa.urls')),
     path('api/mrp/', include('mrp.urls')),
     path('api/crm/', include('crm.urls')),
@@ -70,7 +68,6 @@ urlpatterns = [
     path('api/marketing/', include('marketing.urls')),
     path('api/empresa/', include('empresa.urls')),
     path('api/workflow/', include('workflow.urls')),
-    path('api/reportes-avanzados/', include('reportes_avanzados.urls')),
     path('api/planeacion/', include('planeacion.urls')),
     path('api/mantenimiento/', include('mantenimiento.urls')),
     path('api/kpis/', include('kpis.urls')),
@@ -78,7 +75,14 @@ urlpatterns = [
     path('api/kave/', include('kave.urls')),
     path('api/pos/', include('pos.urls')),
     path('api/facturacion-electronica/', include('facturacion_electronica.urls')),
-    path('api/informe-diario/', include('informe_diario.urls')),  # ← Módulo Informe Diario
+    path('api/informe-diario/', include('informe_diario.urls')),
+
+    # ✅ AGREGADO: Rutas faltantes
+    path('api/interventoria/', include('interventoria.urls')),  # Interventoria
+    path('api/usuarios/', include('usuarios.urls')),             # Usuarios
+
+    # ═══════════════════════════════════════════════════════════════════════════
+
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/import-data/', import_data_api, name='import_data'),
@@ -90,5 +94,5 @@ urlpatterns = [
     path('test-image/<str:filename>/', test_image, name='test_image'),
 ]
 
-# Servir archivos de media (tanto en desarrollo como en producción)
+# Servir archivos de media
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
