@@ -18,9 +18,9 @@ const Login = () => {
     const [error, setError] = useState('');
 
     const empresas = [
-        { id: '1', nombre: 'IGGA', codigo: 'BOQ' },
-        { id: '2', nombre: 'numero2', codigo: 'PAN1' },
-        { id: '3', nombre: 'numero3', codigo: 'PAN2' },
+        { id: '1', nombre: 'IGGA', codigo: 'IGG' },
+        { id: '2', nombre: 'numero 1', codigo: 'NUM1' },
+        { id: '3', nombre: 'numero 2', codigo: 'NUM2' },
     ];
 
     const handleSubmit = async (e) => {
@@ -106,8 +106,8 @@ const Login = () => {
                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
                         <img 
-                            src="/logo_boquilla.png" 
-                            alt="Logotipo La Boquilla" 
+                            src="/logo.png" 
+                            alt="Logo ERP 8AMPERIOS" 
                             style={{ width: '100%', height: '100%', objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
                             onError={(e) => {
                                 e.target.style.display = 'none';
@@ -115,11 +115,11 @@ const Login = () => {
                             }}
                         />
                     </div>
-                    <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 0.4rem' }}>
-                        IGGA
+                    <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 0.4rem' }}>
+                        INGENIERIA Y GESTION ADMINISTRATIVA
                     </h1>
                     <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>
-                        Interventoria
+                        ERP 8AMPERIOS
                     </p>
                 </div>
 
@@ -198,6 +198,7 @@ const Login = () => {
                     <div style={{ color: '#475569', fontSize: '0.72rem', lineHeight: 1.7, fontFamily: 'monospace' }}>
                         admin / admin123 · Administrador<br />
                         gerente / gerente123 · Gerente<br />
+                        contador / contador123 · Contador<br />
                         produccion / produccion123 · Producción<br />
                         rrhh / rrhh123 · Recursos Humanos
                     </div>
@@ -239,6 +240,7 @@ function autenticarDemo(username, password, empresaId) {
     const usuarios = {
         admin: { password: 'admin123', cargo: 'Administrador', nombre: 'Administrador Sistema' },
         gerente: { password: 'gerente123', cargo: 'Gerente', nombre: 'Gerente General' },
+        contador: { password: 'contador123', cargo: 'Contador', nombre: 'Jefe Contabilidad' },
         produccion: { password: 'produccion123', cargo: 'Jefe Producción', nombre: 'Jefe de Producción' },
         ventas: { password: 'ventas123', cargo: 'Vendedor', nombre: 'Ejecutivo de Ventas' },
         compras: { password: 'compras123', cargo: 'Comprador', nombre: 'Jefe de Compras' },
@@ -248,9 +250,9 @@ function autenticarDemo(username, password, empresaId) {
         mrp: { password: 'mrp123', cargo: 'Planificador', nombre: 'Planificador MRP' },
     };
     const empresas = [
-        { id: '1', nombre: 'numero1', codigo: 'PAN1' },
-        { id: '2', nombre: 'Igga', codigo: 'BOQ' },
-        { id: '3', nombre: 'numero2', codigo: 'PAN2' },
+        { id: '1', nombre: 'IGGA', codigo: 'IGG' },
+        { id: '2', nombre: 'numero 1', codigo: 'NUM1' },
+        { id: '3', nombre: 'numero 2', codigo: 'NUM2' },
     ];
     const info = usuarios[username];
     if (!info || info.password !== password) return null;
