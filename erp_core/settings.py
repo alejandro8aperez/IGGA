@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8amp-local-dev-key-fallback')
 
 if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
-    raise ImproperlyConfigured("La variable SECRET_KEY debe estar configurada en el entorno para producción.")
+    raise ImproperlyConfigured("La variable SECRET_KEY debe estar configurada en el entorno para produccion.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
@@ -42,10 +42,10 @@ ALLOWED_HOSTS = [
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
-# Configuración necesaria para Render (detrás de un balanceador de carga)
+# Configuracion necesaria para Render (detras de un balanceador de carga)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Forzar la redirección de todo el tráfico HTTP a HTTPS en producción
+# Forzar la redireccion de todo el trafico HTTP a HTTPS en produccion
 SECURE_SSL_REDIRECT = not DEBUG
 
 
@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third party apps
     'rest_framework',
+    'rest_framework_simplejwt',  # ✅ AGREGADO: JWT Authentication
     'corsheaders',
     'storages',  # AWS S3 storage
     # Local apps
@@ -92,7 +93,9 @@ INSTALLED_APPS = [
     'kave',
     'pos',
     'facturacion_electronica',
-    'informe_diario',  # ← Módulo Informe Diario de Obra (F-141-IN)
+    'informe_diario',
+    'interventoria',  # ✅ AGREGADO
+    'usuarios',       # ✅ AGREGADO
 ]
 
 MIDDLEWARE = [
@@ -109,7 +112,7 @@ MIDDLEWARE = [
 ]
 
 # ─── CORS ────────────────────────────────────────────────────────────────────
-# Permitir todos los orígenes solo si estamos en modo DEBUG para facilitar desarrollo
+# Permitir todos los origenes solo si estamos en modo DEBUG para facilitar desarrollo
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 CORS_ALLOWED_ORIGINS = [
@@ -150,7 +153,7 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Configuración de seguridad de cookies para producción
+# Configuracion de seguridad de cookies para produccion
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = 31536000
