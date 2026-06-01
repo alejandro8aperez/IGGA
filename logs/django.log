@@ -27911,3 +27911,9 @@ INFO 2026-06-01 12:13:02,816 autoreload 32576 31780 Watching for file changes wi
 INFO 2026-06-01 13:41:19,595 autoreload 32576 31780 C:\Postgres\ERP-8AMPERIOS\interventoria\apps.py changed, reloading.
 INFO 2026-06-01 13:41:25,635 autoreload 28568 14484 Watching for file changes with StatReloader
 INFO 2026-06-01 13:42:45,387 autoreload 33460 32620 Watching for file changes with StatReloader
+INFO 2026-06-01 15:28:40,408 autoreload 29192 29196 Watching for file changes with StatReloader
+INFO 2026-06-01 15:46:04,408 autoreload 29192 29196 C:\Postgres\ERP-8AMPERIOS\interventoria\serializers.py changed, reloading.
+INFO 2026-06-01 15:46:09,495 autoreload 23276 20972 Watching for file changes with StatReloader
+INFO 2026-06-01 15:58:30,841 autoreload 23276 20972 C:\Postgres\ERP-8AMPERIOS\interventoria\serializers.py changed, reloading.
+INFO 2026-06-01 15:58:34,725 autoreload 15008 27400 Watching for file changes with StatReloader
+INFO 2026-06-01 16:02:10,522 autoreload 16576 25108 Watching for file changes with StatReloader
