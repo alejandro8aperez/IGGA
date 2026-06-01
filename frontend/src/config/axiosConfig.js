@@ -1,7 +1,7 @@
 // =============================================================================
 // axiosConfig.js — ERP 8AMPERIOS
-// Configuración global de axios: baseURL, headers, interceptores de request.
-// El manejo del 401 con refresh de token está en AuthContext.jsx.
+// Configuracion global de axios: baseURL, headers, interceptores de request.
+// El manejo del 401 con refresh de token esta en AuthContext.jsx.
 // Importar este archivo UNA vez en App.jsx o main.jsx: import './config/axiosConfig';
 // =============================================================================
 import axios from 'axios';
@@ -15,7 +15,7 @@ let BASE_URL =
         : `${window.location.origin}/api`);
 
 /**
- * Normalización crítica: Asegura que la baseURL siempre termine en /api/
+ * Normalizacion critica: Asegura que la baseURL siempre termine en /api/
  * para que las peticiones relativas (ej: 'token/') no causen un 404.
  */
 const cleanBaseUrl = BASE_URL.replace(/\/+$/, '').replace(/\/api$/, '');
@@ -35,19 +35,11 @@ axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 // ─── Interceptor de REQUEST ───────────────────────────────────────────────────
-// Adjunta el token JWT a cada petición si existe en localStorage.
-// Esto cubre el caso en que axios.defaults.headers no esté seteado todavía
-// (por ejemplo al recargar la página antes de que AuthContext se monte).
+// Adjunta el token JWT a cada peticion si existe en localStorage.
 axios.interceptors.request.use(
     (config) => {
-        // FORZADO: Sobreescribir cualquier timeout local (como los 10s del POS)
-        // para dar tiempo a Render de iniciar el servicio.
         config.timeout = 60000;
-
-        // No sobreescribir si ya viene con Authorization (lo puso AuthContext)
-        // Y NO adjuntar en peticiones de login o refresh para evitar conflictos
         const isAuthRequest = config.url.includes('token/');
-
         if (!config.headers.Authorization && !isAuthRequest) {
             const userData = localStorage.getItem('erpUser');
             if (userData) {
@@ -58,9 +50,7 @@ axios.interceptors.request.use(
                         config.headers.Authorization = `Bearer ${token}`;
                     }
                 } catch (e) {
-                    // Error al parsear el JSON o acceso a localStorage.
-                    // Evitamos el borrado automático para que AuthContext decida el flujo.
-                    console.error('[ERP] Error al recuperar datos de sesión:', e);
+                    console.error('[ERP] Error al recuperar datos de sesion:', e);
                 }
             }
         }
@@ -70,33 +60,51 @@ axios.interceptors.request.use(
 );
 
 // ─── Interceptor de RESPONSE ──────────────────────────────────────────────────
-// SOLO maneja errores que NO son 401.
-// El 401 lo gestiona AuthContext.jsx con lógica de refresh de token.
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
-
         if (status === 403) {
-            // Sin permisos — no redirigir, dejar que el componente lo maneje
             console.warn('[ERP] Acceso denegado (403):', error.config?.url);
         } else if (status === 500) {
             console.error('[ERP] Error del servidor (500) en:', error.config?.url);
-            if (error.response?.data) {
-                console.error('[ERP] Detalle del error:', error.response.data);
-            }
         } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-            // Error específico de tiempo de espera excedido
-            console.error('[ERP] Tiempo de espera agotado (Timeout). El servidor de Render podría estar despertando:', error.config?.url);
+            console.error('[ERP] Timeout en:', error.config?.url);
         } else if (!error.response) {
-            // Sin conexión con el backend
-            console.error('[ERP] Sin conexión con el backend (Network Error):', error.config?.url);
+            console.error('[ERP] Sin conexion con el backend:', error.config?.url);
         }
-
-        // IMPORTANTE: No manejar el 401 aquí.
-        // AuthContext.jsx tiene el interceptor con refresh que lo captura primero.
         return Promise.reject(error);
     }
 );
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  HELPERS PARA CONSTRUIR URLs CORRECTAS (usar en todos los modulos)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Construye una URL completa para un endpoint de la API.
+ * Ejemplo: apiUrl('inventarios/productos/') -> https://.../api/inventarios/productos/
+ */
+export function apiUrl(endpoint) {
+    // Eliminar slash inicial si existe
+    const cleanEndpoint = endpoint.replace(/^\//, '');
+    return `${axios.defaults.baseURL}${cleanEndpoint}`;
+}
+
+/**
+ * Devuelve la base URL del backend (sin /api/)
+ * Ejemplo: getBaseUrl() -> https://erp-backend-a37b.onrender.com
+ */
+export function getBaseUrl() {
+    return axios.defaults.baseURL.replace(/\/api\/$/, '');
+}
+
+/**
+ * Devuelve la base URL de la API (con /api/)
+ * Ejemplo: getApiBaseUrl() -> https://erp-backend-a37b.onrender.com/api/
+ */
+export function getApiBaseUrl() {
+    return axios.defaults.baseURL;
+}
 
 export default axios;
