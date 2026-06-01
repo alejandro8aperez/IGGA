@@ -10,18 +10,20 @@ import {
     Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { API } from '../config/api';
 import { buscarProductoPorCodigoBarras, productoParaPOS } from '../utils/productoBarcode';
 import './POS.css';
 
-// Unidades que activan el módulo de pesaje SAP
-const UNIDADES_PESO = ['KG', 'KILOGRAMO', 'KILOGRAMOS', 'KILOS', 'GR', 'GRAMO', 'GRAMOS', 'LB', 'LIBRA', 'LIBRAS', 'KG.', 'GR.', 'G.', 'GRA'];
+// ═══════════════════════════════════════════════════════════════════════════════
+//  IMPORTAR LA INSTANCIA CONFIGURADA DE AXIOS
+// ═══════════════════════════════════════════════════════════════════════════════
+// En vez de crear URLs manualmente, usamos la instancia global de axios
+// que ya tiene baseURL configurada en axiosConfig.js
+// Las peticiones serán relativas: axios.get('inventarios/productos/')
+// y se resolverán a: https://erp-backend-a37b.onrender.com/api/inventarios/productos/
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// Usar URL absoluta para evitar que el POS busque datos en el puerto equivocado (5173) en Render
-const API_BASE = import.meta.env.VITE_API_URL || API.BASE || `http://${window.location.hostname}:8000/api`;
-const MEDIA_BASE = API_BASE.replace(/\/api\/?$/, ''); 
-console.log('API_BASE detectada:', API_BASE);
-console.log('MEDIA_BASE detectada:', MEDIA_BASE);
+// Unidades que activan el modulo de pesaje SAP
+const UNIDADES_PESO = ['KG', 'KILOGRAMO', 'KILOGRAMOS', 'KILOS', 'GR', 'GRAMO', 'GRAMOS', 'LB', 'LIBRA', 'LIBRAS', 'KG.', 'GR.', 'G.', 'GRA'];
 
 function POS() {
     const navigate = useNavigate();
@@ -36,7 +38,7 @@ function POS() {
     const [pendingWeightProduct, setPendingWeightProduct] = useState(null);
     const [manualWeight, setManualWeight] = useState('');
 
-    // Báscula Serial
+    // Bascula Serial
     const [serialPort, setSerialPort] = useState(null);
     const [basiclaConectada, setBasiclaConectada] = useState(false);
     const [pesoEnVivo, setPesoEnVivo] = useState('');
@@ -47,13 +49,13 @@ function POS() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    
+
     // Payment Modal
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('efectivo');
     const [montoRecibido, setMontoRecibido] = useState('');
     const [lastSaleReceipt, setLastSaleReceipt] = useState(null);
-    
+
     // Session Management
     const [sesionActiva, setSesionActiva] = useState(null);
     const [showCloseSessionModal, setShowCloseSessionModal] = useState(false);
@@ -64,22 +66,25 @@ function POS() {
         fetchData();
     }, []);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  FETCH DATA - Usando URLs relativas (axios ya tiene baseURL configurada)
+    // ═══════════════════════════════════════════════════════════════════════════
     const fetchData = async () => {
         setLoading(true);
         setError(null);
         try {
-            const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+            // Usamos URLs relativas - axios.defaults.baseURL ya apunta a /api/
             const config = { timeout: 10000 };
 
             const [prodRes, catRes, sesionRes] = await Promise.all([
-                axios.get(`${base}/inventarios/productos/`, config),
-                axios.get(`${base}/inventarios/categorias/`, config),
-                axios.get(`${base}/pos/sesiones/activa/`, config).catch(() => ({ data: null }))
+                axios.get('inventarios/productos/', config),
+                axios.get('inventarios/categorias/', config),
+                axios.get('pos/sesiones/activa/', config).catch(() => ({ data: null }))
             ]);
-            
+
             setProductos(prodRes.data || []);
-            
-            // Deduplicar categorías por nombre para limpiar la interfaz del POS
+
+            // Deduplicar categorias por nombre para limpiar la interfaz del POS
             const uniqueCategories = [];
             const seenNames = new Set();
             (catRes.data || []).forEach(cat => {
@@ -93,12 +98,12 @@ function POS() {
             if (sesionRes.data) {
                 setSesionActiva(sesionRes.data);
             } else {
-                console.warn('Caja cerrada, intentando apertura automática...');
-                try { await handleOpenSession(); } catch(e) { console.error("Error sesión:", e); }
+                console.warn('Caja cerrada, intentando apertura automatica...');
+                try { await handleOpenSession(); } catch(e) { console.error("Error sesion:", e); }
             }
         } catch (err) {
             console.error('Error fatal POS:', err);
-            setError('Error de conexión: Verifique que el Backend esté encendido.');
+            setError('Error de conexion: Verifique que el Backend este encendido.');
         } finally {
             setLoading(false);
         }
@@ -106,30 +111,30 @@ function POS() {
 
     const handleOpenSession = async () => {
         try {
-            const res = await axios.post(`${API_BASE}/pos/sesiones/`, {
+            const res = await axios.post('pos/sesiones/', {
                 monto_inicial: 50000,
                 estado: 'abierta'
             });
             setSesionActiva(res.data);
         } catch (err) {
-            setError('No se pudo abrir la caja. Verifique la conexión.');
+            setError('No se pudo abrir la caja. Verifique la conexion.');
         }
     };
 
     const handleCloseSession = async () => {
         if (!montoContado) return alert('Ingrese el monto contado en caja');
         try {
-            await axios.post(`${API_BASE}/pos/sesiones/${sesionActiva.id}/cerrar/`, {
+            await axios.post(`pos/sesiones/${sesionActiva.id}/cerrar/`, {
                 monto_final_contado: Number(montoContado)
             });
-            alert('Caja cerrada con éxito.');
+            alert('Caja cerrada con exito.');
             navigate('/');
         } catch (err) {
             alert('Error al cerrar caja.');
         }
     };
 
-    // ── Báscula USB/Serial ─────────────────────────────────────────────────────
+    // ── Bascula USB/Serial ─────────────────────────────────────────────────────
     const conectarBascula = async () => {
         try {
             const port = await navigator.serial.requestPort();
@@ -162,7 +167,7 @@ function POS() {
                 }
             })();
         } catch (err) {
-            alert('No se pudo conectar la báscula: ' + err.message);
+            alert('No se pudo conectar la bascula: ' + err.message);
         }
     };
 
@@ -179,7 +184,7 @@ function POS() {
 
     const addToCart = (product) => {
         if (product.activo === false) {
-            alert('Este producto está inactivo y no se puede vender.');
+            alert('Este producto esta inactivo y no se puede vender.');
             return;
         }
 
@@ -204,8 +209,8 @@ function POS() {
 
     const confirmWeightEntry = () => {
         const weight = parseFloat(manualWeight);
-        if (isNaN(weight) || weight <= 0) return alert("Ingrese un peso válido");
-        
+        if (isNaN(weight) || weight <= 0) return alert("Ingrese un peso valido");
+
         setCart(prev => {
             const existing = prev.find(item => item.id === pendingWeightProduct.id);
             if (existing) {
@@ -246,9 +251,9 @@ function POS() {
                 return;
             }
 
-            alert(`No se encontró producto para: ${trimmed}`);
+            alert(`No se encontro producto para: ${trimmed}`);
         } catch {
-            alert('Error al buscar por código de barras. Verifique la conexión.');
+            alert('Error al buscar por codigo de barras. Verifique la conexion.');
         } finally {
             setBarcodeBusy(false);
         }
@@ -304,6 +309,9 @@ function POS() {
         }
     };
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  PROCESAR VENTA - Usando URL relativa
+    // ═══════════════════════════════════════════════════════════════════════════
     const handleProcessSale = async () => {
         if (cart.length === 0) return;
         setIsProcessing(true);
@@ -316,10 +324,10 @@ function POS() {
                 metodo_pago: paymentMethod,
                 monto_recibido: Number(montoRecibido) || grandTotal
             };
-            
+
             console.log('Procesando venta:', payload);
-            const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
-            const response = await axios.post(`${base}/pos/ventas/`, payload);
+            // URL relativa - axios ya tiene baseURL configurada
+            const response = await axios.post('pos/ventas/', payload);
             setLastSaleReceipt(response.data);
             setCart([]);
             setMontoRecibido('');
@@ -370,7 +378,7 @@ function POS() {
                     <input
                         ref={searchInputRef}
                         type="text"
-                        placeholder="Escanear código de barras, SKU o buscar..."
+                        placeholder="Escanear codigo de barras, SKU o buscar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyDown={handleSearchKeyDown}
@@ -411,23 +419,23 @@ function POS() {
                 </div>
             </div>
 
-            {/* ── Modal Báscula Digital ─────────────────────────────────────────── */}
+            {/* ── Modal Bascula Digital ─────────────────────────────────────────── */}
             {showWeightModal && (
                 <div style={modalOverlayStyle} onClick={() => setShowWeightModal(false)}>
                     <div style={{ ...paymentModalStyle, maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
                         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                             <Scale size={48} style={{ color: '#8b5cf6', marginBottom: '1rem' }} />
-                            <h2 style={{ margin: 0, color: '#1e293b' }}>Báscula Digital</h2>
+                            <h2 style={{ margin: 0, color: '#1e293b' }}>Bascula Digital</h2>
                             <p style={{ color: '#64748b', margin: '0.25rem 0 0' }}>{pendingWeightProduct?.nombre}</p>
                         </div>
 
-                        {/* Estado de conexión báscula */}
+                        {/* Estado de conexion bascula */}
                         <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                             {basiclaConectada ? (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', background: '#f0fdf4', padding: '0.6rem 1rem', borderRadius: 12 }}>
                                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} />
                                     <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 700 }}>
-                                        Báscula conectada {pesoEnVivo ? `— ${pesoEnVivo} ${pendingWeightProduct?.unidad_medida}` : '— esperando peso...'}
+                                        Bascula conectada {pesoEnVivo ? `— ${pesoEnVivo} ${pendingWeightProduct?.unidad_medida}` : '— esperando peso...'}
                                     </span>
                                     <button onClick={desconectarBascula} style={{ background: '#fee2e2', border: 'none', borderRadius: 8, padding: '4px 10px', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}>
                                         Desconectar
@@ -435,7 +443,7 @@ function POS() {
                                 </div>
                             ) : (
                                 <button onClick={conectarBascula} style={{ background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                    <Zap size={14} /> Conectar Báscula USB/Serial
+                                    <Zap size={14} /> Conectar Bascula USB/Serial
                                 </button>
                             )}
                         </div>
@@ -516,10 +524,10 @@ function POS() {
                         {error && (
                             <div style={{ gridColumn: '1 / -1', padding: '3rem', textAlign: 'center', background: '#fee2e2', borderRadius: '20px', border: '1px solid #fecaca' }}>
                                 <AlertCircle size={48} style={{ color: '#ef4444', margin: '0 auto 1rem' }} />
-                                <h3 style={{ color: '#991b1b', margin: '0 0 0.5rem 0' }}>Error de Comunicación</h3>
+                                <h3 style={{ color: '#991b1b', margin: '0 0 0.5rem 0' }}>Error de Comunicacion</h3>
                                 <p style={{ color: '#b91c1c', marginBottom: '1.5rem' }}>{error}</p>
                                 <button onClick={fetchData} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '0.75rem 2rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                    Reintentar Conexión
+                                    Reintentar Conexion
                                 </button>
                             </div>
                         )}
@@ -588,7 +596,7 @@ function POS() {
                             <span>TOTAL</span>
                             <span>${grandTotal.toLocaleString()}</span>
                         </div>
-                        
+
                         <button 
                             disabled={cart.length === 0}
                             onClick={() => setShowPaymentModal(true)}
@@ -635,7 +643,7 @@ function POS() {
                                         label="Transferencia" icon={Smartphone} color="#a855f7"
                                     />
                                 </div>
-                                
+
                                 {paymentMethod === 'efectivo' && (
                                     <div style={{ marginTop: '1.5rem' }}>
                                         <label style={labelStyle}>Monto Recibido</label>
@@ -650,7 +658,7 @@ function POS() {
                                                 <div style={{ fontSize: '2rem', fontWeight: '900', color: '#047857' }}>${cambio.toLocaleString()}</div>
                                             </div>
                                         )}
-                                        
+
                                         <div style={{ marginTop: '1.5rem' }}>
                                             <Numpad onInput={handleNumpad} />
                                         </div>
@@ -675,7 +683,7 @@ function POS() {
                                     </div>
                                 </div>
                                 <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#64748b', textAlign: 'center' }}>
-                                    Genera factura electrónica POS automáticamente
+                                    Genera factura electronica POS automaticamente
                                 </div>
                             </div>
                         </div>
@@ -702,9 +710,9 @@ function POS() {
                 <div style={modalOverlayStyle}>
                     <div style={{ ...paymentModalStyle, maxWidth: '400px', textAlign: 'center' }}>
                         <CheckCircle2 size={64} style={{ color: '#10b981', marginBottom: '1rem' }} />
-                        <h2 style={{ margin: 0 }}>¡Venta Exitosa!</h2>
+                        <h2 style={{ margin: 0 }}>Venta Exitosa!</h2>
                         <p style={{ color: '#64748b' }}>Factura {lastSaleReceipt.factura_detalle?.numero_factura} emitida correctamente.</p>
-                        
+
                         <div id="ticket-pos" style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', margin: '1.5rem 0', textAlign: 'left', fontFamily: 'monospace' }}>
                             <div style={{ textAlign: 'center', fontWeight: 'bold' }}>PANADERIA LA BOQUILLA</div>
                             <div style={{ textAlign: 'center', fontSize: '0.8rem' }}>NIT: 79867452-4</div>
@@ -751,7 +759,7 @@ function POS() {
                             <RefreshCw size={24} />
                             Cierre de Caja y Reporte
                         </h2>
-                        
+
                         {sesionActiva && (
                             <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem' }}>
                                 <div style={summaryRowStyle}>
@@ -763,7 +771,7 @@ function POS() {
                                     <span style={{ fontWeight: 'bold' }}>$Calculando...</span>
                                 </div>
                                 <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                    Sesión abierta desde: {new Date(sesionActiva.fecha_apertura).toLocaleString()}
+                                    Sesion abierta desde: {new Date(sesionActiva.fecha_apertura).toLocaleString()}
                                 </p>
                             </div>
                         )}
@@ -773,7 +781,7 @@ function POS() {
                             <input 
                                 type="number" style={paymentInputStyle} 
                                 value={montoContado} onChange={e => setMontoContado(e.target.value)}
-                                placeholder="Efectivo real en cajón..."
+                                placeholder="Efectivo real en cajon..."
                             />
                         </div>
 
@@ -840,6 +848,9 @@ function ProductCard({ product, onClick }) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  IMAGEN - Usando URL relativa para las imagenes
+    // ═══════════════════════════════════════════════════════════════════════════
     const rawImage = product.imagen_url || product.imagen;
     let imageUrl = null;
 
@@ -847,7 +858,10 @@ function ProductCard({ product, onClick }) {
         imageUrl = rawImage;
     } else if (rawImage) {
         const filename = rawImage.split('/').pop();
-        imageUrl = `${MEDIA_BASE}/test-image/${filename}?v=${product.id}`;
+        // Usamos URL relativa - axios ya tiene baseURL configurada
+        // Pero para imagenes necesitamos la URL completa del backend
+        const baseUrl = axios.defaults.baseURL?.replace(/\/api\/?$/, '') || '';
+        imageUrl = `${baseUrl}/test-image/${filename}?v=${product.id}`;
         console.log(`Cargando imagen para ${product.nombre}: ${imageUrl}`);
     }
 
@@ -889,7 +903,7 @@ function ProductCard({ product, onClick }) {
                     </div>
                 )}
             </div>
-            
+
             <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
                 <div style={{ marginBottom: '0.5rem' }}>
                     <div style={{ background: '#f5f3ff', color: '#7c3aed', fontSize: '0.65rem', fontWeight: '800', width: 'fit-content', padding: '2px 8px', borderRadius: '8px', marginBottom: '0.5rem' }}>
@@ -931,9 +945,10 @@ function CartItem({ item, onRemove, onUpdateQty, onReweigh, onForceWeight, isPes
         imageUrl = rawImage;
     } else if (rawImage) {
         const filename = rawImage.split('/').pop();
-        imageUrl = `${MEDIA_BASE}/test-image/${filename}?v=${item.id}`;
+        const baseUrl = axios.defaults.baseURL?.replace(/\/api\/?$/, '') || '';
+        imageUrl = `${baseUrl}/test-image/${filename}?v=${item.id}`;
     }
-    
+
     return (
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: '#fcfcfc', padding: '0.75rem', borderRadius: '12px' }}>
             <div style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
@@ -947,7 +962,7 @@ function CartItem({ item, onRemove, onUpdateQty, onReweigh, onForceWeight, isPes
                     <Package size={24} color="#8b5cf6" />
                 )}
             </div>
-            
+
             <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#1e293b' }}>{item.nombre}</div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b' }}>${Number(item.precio_venta).toLocaleString()} / {item.unidad_medida || 'u'}</div>
