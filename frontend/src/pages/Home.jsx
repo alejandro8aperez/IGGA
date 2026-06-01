@@ -394,8 +394,8 @@ export default function Home() {
                 flexWrap: 'wrap'
             }}>
                 <img
-                    src="/logo-8amperios-part2.svg"
-                    alt="8AMPERIOS"
+                    src="/logo.png"
+                    alt="IGGA"
                     style={{
                         maxHeight: '120px',
                         width: 'auto',
@@ -403,17 +403,10 @@ export default function Home() {
                     }}
                 />
                 <div style={{ width: '2px', height: '80px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }} />
-                <img
-                    src="/logo_boquilla.png"
-                    alt="La Boquilla"
-                    style={{
-                        maxHeight: '140px',
-                        width: 'auto',
-                        borderRadius: '50%',
-                        border: '4px solid rgba(255,255,255,0.2)',
-                        boxShadow: '0 8px 16px rgba(0,0,0,0.3)'
-                    }}
-                />
+                <div style={{ color: 'white', textAlign: 'left' }}>
+                    <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 900 }}>IGGA</h1>
+                    <p style={{ margin: 0, fontSize: '1.1rem', opacity: 0.8 }}>INGENIERIA Y GESTION ADMINISTRATIVA</p>
+                </div>
             </div>
 
             {/* Stats Cards */}

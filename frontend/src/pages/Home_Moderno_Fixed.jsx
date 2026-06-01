@@ -309,7 +309,7 @@ export default function Home() {
                             fontWeight: 'bold',
                             fontSize: '1.2rem'
                         }}>
-                            ERP
+                            IGGA
                         </div>
                         <div>
                             <h1 style={{ 
@@ -322,14 +322,14 @@ export default function Home() {
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text'
                             }}>
-                                8AMPERIOS
+                                INGENIERIA Y GESTION ADMINISTRATIVA
                             </h1>
                             <p style={{ 
                                 margin: '0.25rem 0 0 0', 
                                 color: '#718096',
                                 fontSize: '0.875rem'
                             }}>
-                                Sistema Integral de Gestión Empresarial
+                                ERP 8AMPERIOS
                             </p>
                         </div>
                     </div>
@@ -502,7 +502,7 @@ export default function Home() {
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text'
                     }}>
-                        Bienvenido al Sistema ERP
+                        Bienvenido a IGGA
                     </h2>
                     <p style={{ 
                         fontSize: '1.2rem', 
