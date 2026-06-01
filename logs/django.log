@@ -27899,3 +27899,4 @@ INFO 2026-06-01 09:45:53,464 basehttp 4516 28880 "GET /api/informe-diario/obras/
 INFO 2026-06-01 09:45:53,487 basehttp 4516 35628 "GET /api/informe-diario/informes/ HTTP/1.1" 200 766
 INFO 2026-06-01 10:37:25,679 autoreload 20012 20800 Watching for file changes with StatReloader
 INFO 2026-06-01 11:16:16,072 autoreload 20012 20800 C:\Postgres\ERP-8AMPERIOS\erp_core\urls.py changed, reloading.
+INFO 2026-06-01 11:16:20,046 autoreload 33396 5508 Watching for file changes with StatReloader
