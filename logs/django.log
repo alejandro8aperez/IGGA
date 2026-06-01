@@ -27903,3 +27903,9 @@ INFO 2026-06-01 11:16:20,046 autoreload 33396 5508 Watching for file changes wit
 INFO 2026-06-01 12:04:16,047 autoreload 33396 5508 C:\Postgres\ERP-8AMPERIOS\erp_core\settings.py changed, reloading.
 INFO 2026-06-01 12:04:30,926 autoreload 30340 35932 Watching for file changes with StatReloader
 INFO 2026-06-01 12:04:44,021 autoreload 30340 35932 C:\Postgres\ERP-8AMPERIOS\interventoria\apps.py changed, reloading.
+INFO 2026-06-01 12:04:49,940 autoreload 22064 7980 Watching for file changes with StatReloader
+INFO 2026-06-01 12:12:41,436 autoreload 22064 7980 C:\Postgres\ERP-8AMPERIOS\interventoria\__init__.py changed, reloading.
+INFO 2026-06-01 12:12:44,779 autoreload 13028 14656 Watching for file changes with StatReloader
+INFO 2026-06-01 12:12:58,163 autoreload 13028 14656 C:\Postgres\ERP-8AMPERIOS\interventoria\apps.py changed, reloading.
+INFO 2026-06-01 12:13:02,816 autoreload 32576 31780 Watching for file changes with StatReloader
+INFO 2026-06-01 13:41:19,595 autoreload 32576 31780 C:\Postgres\ERP-8AMPERIOS\interventoria\apps.py changed, reloading.

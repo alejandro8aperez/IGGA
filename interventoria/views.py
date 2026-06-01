@@ -1,17 +1,15 @@
-from rest_framework import viewsets, permissions
-from django.contrib.auth.models import User
-from .serializers import UserSerializer
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import viewsets
+from .models import ContratoInterventoria, VisitaInterventoria, Hallazgo
+from .serializers import ContratoInterventoriaSerializer, VisitaInterventoriaSerializer, HallazgoSerializer
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    ViewSet para listar y ver detalles de usuarios.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
+class ContratoInterventoriaViewSet(viewsets.ModelViewSet):
+    queryset = ContratoInterventoria.objects.all().order_by('-fecha_inicio')
+    serializer_class = ContratoInterventoriaSerializer
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
-    def me(self, request):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+class VisitaInterventoriaViewSet(viewsets.ModelViewSet):
+    queryset = VisitaInterventoria.objects.all().order_by('-fecha')
+    serializer_class = VisitaInterventoriaSerializer
+
+class HallazgoViewSet(viewsets.ModelViewSet):
+    queryset = Hallazgo.objects.all()
+    serializer_class = HallazgoSerializer

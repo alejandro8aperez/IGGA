@@ -15,11 +15,3 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'perfil', 'is_staff']
         read_only_fields = ['id']
-
-class UserUpdateSerializer(serializers.ModelSerializer):
-    perfil = PerfilSerializer()
-
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email', 'perfil']
-    # Aquí se podría implementar el método update para guardar datos del perfil
