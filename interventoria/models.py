@@ -1,24 +1,42 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
-class Perfil(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
-    cargo = models.CharField(max_length=100, blank=True)
-    telefono = models.CharField(max_length=20, blank=True)
-    bio = models.TextField(max_length=500, blank=True)
-    
+class ContratoInterventoria(models.Model):
+    codigo = models.CharField(max_length=50, unique=True)
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    presupuesto = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    interventor_encargado = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='contratos_interventoria')
+    activo = models.BooleanField(default=True)
+
     def __str__(self):
-        return f"Perfil de {self.user.username}"
+        return f"{self.codigo} - {self.nombre}"
 
-# Signals para crear/actualizar el perfil automáticamente al crear un usuario
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Perfil.objects.create(user=instance)
+class VisitaInterventoria(models.Model):
+    contrato = models.ForeignKey(ContratoInterventoria, on_delete=models.CASCADE, related_name='visitas')
+    fecha = models.DateTimeField()
+    ubicacion = models.CharField(max_length=255)
+    observaciones = models.TextField()
+    registrado_por = models.ForeignKey(User, on_delete=models.CASCADE)
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'perfil'):
-        instance.perfil.save()
+    def __str__(self):
+        return f"Visita {self.fecha.date()} - {self.contrato.codigo}"
+
+class Hallazgo(models.Model):
+    NIVEL_CHOICES = (
+        ('bajo', 'Bajo'),
+        ('medio', 'Medio'),
+        ('alto', 'Alto'),
+        ('critico', 'Crítico'),
+    )
+    visita = models.ForeignKey(VisitaInterventoria, on_delete=models.CASCADE, related_name='hallagzos')
+    descripcion = models.TextField()
+    nivel_riesgo = models.CharField(max_length=10, choices=NIVEL_CHOICES, default='bajo')
+    plan_accion = models.TextField(blank=True)
+    cerrado = models.BooleanField(default=False)
+    fecha_cierre = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Hallazgo {self.id} ({self.nivel_riesgo})"
