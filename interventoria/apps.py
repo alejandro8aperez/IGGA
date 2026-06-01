@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-class InterventoriaConfig(AppConfig):
+class UsuariosConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'interventoria'
-    verbose_name = 'Gestión de Interventoría'
+    name = 'usuarios'
+    verbose_name = 'Gestión de Usuarios'

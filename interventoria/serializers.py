@@ -1,23 +1,25 @@
 from rest_framework import serializers
-from .models import ContratoInterventoria, VisitaInterventoria, Hallazgo
+from django.contrib.auth.models import User
+from .models import Perfil
 
-class HallazgoSerializer(serializers.ModelSerializer):
+class PerfilSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Hallazgo
-        fields = '__all__'
+        model = Perfil
+        fields = ['cargo', 'telefono', 'bio']
 
-class VisitaInterventoriaSerializer(serializers.ModelSerializer):
-    hallazgos = HallazgoSerializer(many=True, read_only=True)
-    registrado_por_nombre = serializers.ReadOnlyField(source='registrado_por.get_full_name')
-
-    class Meta:
-        model = VisitaInterventoria
-        fields = '__all__'
-
-class ContratoInterventoriaSerializer(serializers.ModelSerializer):
-    visitas_count = serializers.IntegerField(source='visitas.count', read_only=True)
-    interventor_nombre = serializers.ReadOnlyField(source='interventor_encargado.get_full_name')
+class UserSerializer(serializers.ModelSerializer):
+    perfil = PerfilSerializer(read_only=True)
+    full_name = serializers.ReadOnlyField(source='get_full_name')
 
     class Meta:
-        model = ContratoInterventoria
-        fields = '__all__'
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'perfil', 'is_staff']
+        read_only_fields = ['id']
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    perfil = PerfilSerializer()
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'perfil']
+    # Aquí se podría implementar el método update para guardar datos del perfil

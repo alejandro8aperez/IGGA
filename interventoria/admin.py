@@ -1,24 +1,15 @@
 from django.contrib import admin
-from .models import ContratoInterventoria, VisitaInterventoria, Hallazgo
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+from .models import Perfil
 
-class HallazgoInline(admin.TabularInline):
-    model = Hallazgo
-    extra = 1
+class PerfilInline(admin.StackedInline):
+    model = Perfil
+    can_delete = False
+    verbose_name_plural = 'Perfil'
 
-@admin.register(ContratoInterventoria)
-class ContratoInterventoriaAdmin(admin.ModelAdmin):
-    list_display = ('codigo', 'nombre', 'fecha_inicio', 'fecha_fin', 'activo')
-    search_fields = ('codigo', 'nombre')
-    list_filter = ('activo',)
+class UserAdmin(BaseUserAdmin):
+    inlines = (PerfilInline,)
 
-@admin.register(VisitaInterventoria)
-class VisitaInterventoriaAdmin(admin.ModelAdmin):
-    list_display = ('contrato', 'fecha', 'ubicacion', 'registrado_por')
-    list_filter = ('fecha', 'contrato')
-    inlines = [HallazgoInline]
-
-@admin.register(Hallazgo)
-class HallazgoAdmin(admin.ModelAdmin):
-    list_display = ('visita', 'nivel_riesgo', 'cerrado', 'fecha_cierre')
-    list_filter = ('nivel_riesgo', 'cerrado')
-    search_fields = ('descripcion', 'plan_accion')
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
