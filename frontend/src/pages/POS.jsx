@@ -617,16 +617,27 @@ function POS() {
                 </div>
             </div>
 
-            {/* Payment Modal */}
+            {/* ═══════════════════════════════════════════════════════════════════
+                 PAYMENT MODAL — COMPLETAR VENTA
+                 CAMBIOS: Altura reducida 30%, ancho aumentado 25%
+                 ═══════════════════════════════════════════════════════════════════ */}
             {showPaymentModal && (
                 <div style={modalOverlayStyle} onClick={() => setShowPaymentModal(false)}>
+                    {/* 
+                        CAMBIOS APLICADOS:
+                        - maxWidth: 720px → 900px (+25% ancho)
+                        - maxHeight: 95vh → 66vh (-30% altura)  
+                        - padding: 1.5rem → 1rem 1.5rem (menos vertical)
+                    */}
                     <div style={paymentModalStyle} onClick={e => e.stopPropagation()}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                        {/* Header: marginBottom reducido 2rem → 1rem */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                             <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0 }}>Completar Venta</h2>
                             <button onClick={() => setShowPaymentModal(false)} style={iconBtnStyle}><X size={24}/></button>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        {/* Grid: gap reducido 2rem → 1.5rem, columns ajustadas */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
                             <div>
                                 <label style={labelStyle}>Medio de Pago</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
@@ -645,7 +656,7 @@ function POS() {
                                 </div>
 
                                 {paymentMethod === 'efectivo' && (
-                                    <div style={{ marginTop: '1.5rem' }}>
+                                    <div style={{ marginTop: '1rem' }}>
                                         <label style={labelStyle}>Monto Recibido</label>
                                         <input 
                                             type="number" style={paymentInputStyle} placeholder="Recibido..."
@@ -653,22 +664,23 @@ function POS() {
                                             autoFocus
                                         />
                                         {cambio >= 0 && montoRecibido && (
-                                            <div style={{ marginTop: '1rem', background: '#ecfdf5', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}>
+                                            <div style={{ marginTop: '0.75rem', background: '#ecfdf5', padding: '0.75rem', borderRadius: '12px', textAlign: 'center' }}>
                                                 <div style={{ fontSize: '0.875rem', color: '#059669' }}>Cambio (Vuelto)</div>
-                                                <div style={{ fontSize: '2rem', fontWeight: '900', color: '#047857' }}>${cambio.toLocaleString()}</div>
+                                                <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#047857' }}>${cambio.toLocaleString()}</div>
                                             </div>
                                         )}
 
-                                        <div style={{ marginTop: '1.5rem' }}>
+                                        <div style={{ marginTop: '1rem' }}>
                                             <Numpad onInput={handleNumpad} />
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '20px' }}>
-                                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem' }}>Resumen de Ticket</h3>
-                                <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '1rem' }}>
+                            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '20px' }}>
+                                <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem' }}>Resumen de Ticket</h3>
+                                {/* maxHeight reducido 200px → 140px */}
+                                <div style={{ maxHeight: '140px', overflowY: 'auto', marginBottom: '0.75rem' }}>
                                     {cart.map(i => (
                                         <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
                                             <span>{i.cantidad}x {i.nombre}</span>
@@ -682,17 +694,18 @@ function POS() {
                                         <span>${grandTotal.toLocaleString()}</span>
                                     </div>
                                 </div>
-                                <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#64748b', textAlign: 'center' }}>
+                                <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#64748b', textAlign: 'center' }}>
                                     Genera factura electronica POS automaticamente
                                 </div>
                             </div>
                         </div>
 
+                        {/* marginTop reducido 2rem → 1rem, padding reducido */}
                         <button 
                             onClick={handleProcessSale}
                             disabled={isProcessing || (paymentMethod === 'efectivo' && Number(montoRecibido) < grandTotal)}
                             style={{
-                                width: '100%', marginTop: '2rem', padding: '1.25rem', borderRadius: '16px',
+                                width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '16px',
                                 border: 'none', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                 color: 'white', fontSize: '1.25rem', fontWeight: '900', cursor: 'pointer',
                                 boxShadow: '0 10px 20px rgba(16, 185, 129, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem'
@@ -1038,13 +1051,31 @@ function Numpad({ onInput }) {
 }
 
 // ── Styles ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+//  ESTILOS MODIFICADOS PARA "COMPLETAR VENTA"
+//  - maxWidth: 720px → 900px (+25% ancho)
+//  - maxHeight: 95vh → 66vh (-30% altura)
+//  - padding: 1.5rem → 1rem 1.5rem (menos espacio vertical)
+// ═══════════════════════════════════════════════════════════════════════════════
 const iconBtnStyle = { background: '#f1f5f9', border: 'none', borderRadius: '10px', padding: '0.5rem', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const searchContainerStyle = { background: '#f1f5f9', borderRadius: '12px', padding: '0.4rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', width: '35%', maxWidth: '500px' };
 const searchInputStyle = { background: 'none', border: 'none', outline: 'none', fontSize: '0.9rem', width: '100%' };
 const summaryRowStyle = { display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.95rem' };
 const qtyBtnStyle = { background: 'white', border: 'none', borderRadius: '6px', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
 const modalOverlayStyle = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' };
-const paymentModalStyle = { background: 'white', borderRadius: '24px', padding: '1.5rem', width: '95%', maxWidth: '720px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', maxHeight: '95vh', overflowY: 'auto' };
+
+// ESTILO MODIFICADO: Payment Modal (Completar Venta)
+const paymentModalStyle = { 
+    background: 'white', 
+    borderRadius: '24px', 
+    padding: '1rem 1.5rem',        // ← ANTES: '1.5rem'  |  AHORA: '1rem 1.5rem' (menos vertical)
+    width: '95%', 
+    maxWidth: '900px',             // ← ANTES: '720px'   |  AHORA: '900px' (+25% ancho)
+    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', 
+    maxHeight: '66vh',             // ← ANTES: '95vh'    |  AHORA: '66vh' (-30% altura)
+    overflowY: 'auto' 
+};
+
 const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: '700', color: '#475569', marginBottom: '0.75rem' };
 const paymentInputStyle = { width: '100%', padding: '1rem', background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '16px', fontSize: '1.5rem', fontWeight: '900', outline: 'none', color: '#1e293b', boxSizing: 'border-box' };
 const formGroupStyle = { marginBottom: '1.5rem' };
