@@ -12,7 +12,7 @@ services:
     runtime: python
     plan: free
     buildCommand: "chmod +x build.sh && ./build.sh"
-    startCommand: "gunicorn erp_core.wsgi:application"
+    startCommand: "python manage.py migrate --no-input && gunicorn erp_core.wsgi:application --workers 2 --timeout 120"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
