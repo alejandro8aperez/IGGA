@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import axios from 'axios';
-import { Camera, X, UploadCloud, Loader2 } from 'lucide-react';
+import { Camera, X, UploadCloud, Loader2, Pencil } from 'lucide-react';
 import { API } from '@/config/api';
 
 const HojaFotosInforme = ({ informeId, obraId }) => {
     const [fotos, setFotos] = useState({});
     const [loading, setLoading] = useState({});
+    const [editingId, setEditingId] = useState(null);
+    const [editValue, setEditValue] = useState("");
+    const debounceRef = useRef(null);
 
     // Cargar fotos existentes al montar el componente
     useEffect(() => {
         const cargarFotos = async () => {
             try {
-                // Si hay informeId, cargamos sus fotos. Si no, pero hay obraId, cargamos la galería de la obra.
                 let url = `${API.INFORME_DIARIO.ANEXOS}`;
                 if (informeId) {
                     url += `?informe=${informeId}`;
                 } else if (obraId) {
-                    // Soporte para selectores que envían el objeto completo {id, nombre...}
                     const oid = typeof obraId === 'object' ? obraId.id : obraId;
                     if (oid) url += `?obra=${oid}`;
                     else return;
@@ -42,7 +43,7 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
             if (!informeId) alert("Debe guardar el informe antes de subir fotografías.");
             return;
         }
-        
+
         setLoading(prev => ({ ...prev, [posicion]: true }));
         const formData = new FormData();
         formData.append('imagen', file);
@@ -73,6 +74,62 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
             alert("No se pudo eliminar la foto.");
         }
     };
+
+    // ── EDICIÓN INLINE DE DESCRIPCIÓN ──────────────────────────────
+    const startEdit = (foto) => {
+        setEditingId(foto.id);
+        setEditValue(foto.descripcion || "");
+    };
+
+    const saveDescripcion = useCallback(async (id, value) => {
+        try {
+            await axios.patch(`${API.INFORME_DIARIO.ANEXOS}${id}/`, {
+                descripcion: value.trim()
+            }, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            setFotos(prev => {
+                const nuevas = { ...prev };
+                Object.keys(nuevas).forEach(key => {
+                    if (nuevas[key].id === id) {
+                        nuevas[key] = { ...nuevas[key], descripcion: value.trim() };
+                    }
+                });
+                return nuevas;
+            });
+            setEditingId(null);
+        } catch (err) {
+            console.error("Error guardando descripción:", err);
+            alert("No se pudo guardar la descripción.");
+        }
+    }, []);
+
+    const handleChangeEdit = (e) => {
+        const val = e.target.value;
+        setEditValue(val);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            if (editingId) saveDescripcion(editingId, val);
+        }, 800);
+    };
+
+    const handleBlur = (id) => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        saveDescripcion(id, editValue);
+    };
+
+    const handleKeyDown = (e, id) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            saveDescripcion(id, editValue);
+        }
+        if (e.key === "Escape") {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            setEditingId(null);
+        }
+    };
+    // ────────────────────────────────────────────────────────────────
 
     // Generamos los 24 slots (4 columnas x 6 filas)
     const slots = Array.from({ length: 24 }, (_, i) => i + 1);
@@ -106,12 +163,37 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                             <>
                                 <img 
                                     src={fotos[num].imagen_url || fotos[num].imagen} 
-                                    alt={`Foto ${num}`} 
+                                    alt={fotos[num].descripcion || `Foto ${num}`} 
                                     className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                    {/* Descripción editable inline */}
+                                    {editingId === fotos[num].id ? (
+                                        <input
+                                            autoFocus
+                                            value={editValue}
+                                            onChange={handleChangeEdit}
+                                            onBlur={() => handleBlur(fotos[num].id)}
+                                            onKeyDown={(e) => handleKeyDown(e, fotos[num].id)}
+                                            placeholder="Descripción..."
+                                            className="w-[90%] px-2 py-1 text-[10px] rounded bg-white/90 text-slate-900 outline-none"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    ) : (
+                                        <div
+                                            onClick={(e) => { e.stopPropagation(); startEdit(fotos[num]); }}
+                                            className="w-[90%] px-2 py-1 text-[10px] text-white text-center cursor-text truncate"
+                                            title="Click para editar descripción"
+                                        >
+                                            {fotos[num].descripcion ? (
+                                                <span className="font-medium">{fotos[num].descripcion}</span>
+                                            ) : (
+                                                <span className="italic text-white/60">Sin descripción — click para agregar</span>
+                                            )}
+                                        </div>
+                                    )}
                                     <button 
-                                        onClick={() => handleDelete(num, fotos[num].id)}
+                                        onClick={(e) => { e.stopPropagation(); handleDelete(num, fotos[num].id); }}
                                         className="bg-red-500/90 p-1.5 rounded-full text-white shadow-xl"
                                         title="Eliminar"
                                     >
@@ -137,9 +219,9 @@ const HojaFotosInforme = ({ informeId, obraId }) => {
                     </div>
                 ))}
             </div>
-            
+
             <div className="mt-4 text-[10px] text-slate-500 italic text-center">
-                * Las imágenes se guardan automáticamente al ser seleccionadas.
+                * Las imágenes se guardan automáticamente al ser seleccionadas. Click en la descripción para editarla.
             </div>
         </div>
     );
