@@ -212,11 +212,11 @@ function InformeDiarioContent() {
 
   useQuery({ queryKey: ["informes-diarios"], queryFn: () => informeDiarioService.list() });
 
+  // ── Tab "Historial" eliminada — ahora son sólo 3 tabs ──
   const tabs = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Panel"     },
-    { id: "fotos",     icon: ImageIcon,        label: "Fotos"     },
-    { id: "reportes",  icon: BarChart2,         label: "Reportes"  },
-    { id: "lista",     icon: BookOpen,          label: "Historial" },
+    { id: "dashboard", icon: LayoutDashboard, label: "Panel"    },
+    { id: "fotos",     icon: ImageIcon,        label: "Fotos"    },
+    { id: "reportes",  icon: BarChart2,         label: "Reportes" },
   ];
 
   return (
@@ -287,8 +287,30 @@ function InformeDiarioContent() {
 
         <div style={{ background: C.white, borderRadius: 24, border: `1px solid ${C.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)", padding: "1.5rem", minHeight: 600 }}>
 
+          {/* ── PANEL: Historial arriba + Dashboard abajo ── */}
           {activeTab === "dashboard" && (
-            <InformeDashboard onNuevoInforme={() => { setEditingInforme(null); setActiveTab("formulario"); }} />
+            <div>
+              {/* ── HISTORIAL (parte superior del Panel) ── */}
+              <div style={{ marginBottom: "2rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: `2px solid ${C.borderLight}` }}>
+                  <BookOpen size={18} style={{ color: C.indigo }} />
+                  <h2 style={{ margin: 0, fontSize: "1rem", fontWeight: 800, color: C.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Historial de Informes
+                  </h2>
+                </div>
+                <InformeLista
+                  onEditar={(inf) => { setEditingInforme(inf); setActiveTab("formulario"); }}
+                />
+              </div>
+
+              {/* ── DIVISOR ── */}
+              <div style={{ height: 1, background: C.border, marginBottom: "2rem" }} />
+
+              {/* ── DASHBOARD (parte inferior del Panel) ── */}
+              <InformeDashboard
+                onNuevoInforme={() => { setEditingInforme(null); setActiveTab("formulario"); }}
+              />
+            </div>
           )}
 
           {activeTab === "fotos" && (
@@ -299,15 +321,11 @@ function InformeDiarioContent() {
             <ReportesInforme informeId={editingInforme?.id} informe={editingInforme} />
           )}
 
-          {activeTab === "lista" && (
-            <InformeLista onEditar={(inf) => { setEditingInforme(inf); setActiveTab("formulario"); }} />
-          )}
-
           {activeTab === "formulario" && (
             <InformeFormulario
               informe={editingInforme}
-              onGuardado={() => setActiveTab("lista")}
-              onCancelar={() => setActiveTab("lista")}
+              onGuardado={() => setActiveTab("dashboard")}
+              onCancelar={() => setActiveTab("dashboard")}
             />
           )}
 
