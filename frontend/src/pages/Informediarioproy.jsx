@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
   Image as ImageIcon, ArrowLeft, Package, Loader2,
-  BarChart2, Printer, Pencil
+  BarChart2, Printer, Pencil, UploadCloud, X
 } from "lucide-react";
 
 import InformeDashboard  from "@/components/informe-diario/InformeDashboard";
