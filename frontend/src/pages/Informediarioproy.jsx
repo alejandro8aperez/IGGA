@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tan
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
   Image as ImageIcon, ArrowLeft, Package, Loader2,
-  BarChart2, Printer,
+  BarChart2, Printer, Pencil
 } from "lucide-react";
 
 import InformeDashboard  from "@/components/informe-diario/InformeDashboard";
@@ -52,7 +52,7 @@ function imprimirFotos(fotos, informe) {
         <div class="foto-info">
           <span class="foto-num">${String(num).padStart(2, "0")}</span>
           ${sec  ? `<span class="foto-sec">${sec}</span>`  : ""}
-          ${desc ? `<span class="foto-desc">${desc}</span>` : ""}
+          <span class="foto-desc ${!desc ? 'vacia' : ''}">${desc || "Sin descripción"}</span>
         </div>
       </div>`;
   }).join("");
@@ -72,15 +72,17 @@ function imprimirFotos(fotos, informe) {
   .header-meta strong{color:#1e293b}
   .header-cod{font-size:8px;font-family:monospace;color:#94a3b8;text-align:right;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;gap:2px}
   .count-bar{font-size:8px;color:#64748b;margin-bottom:10px;text-align:right;text-transform:uppercase;letter-spacing:.06em}
-  .fotos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .foto-card{border:1px solid #e2e8f0;border-radius:5px;overflow:hidden;break-inside:avoid}
-  .foto-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
-  .foto-info{padding:4px 5px;background:#f8fafc;display:flex;flex-direction:column;gap:1px}
+  .fotos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .foto-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
+  .foto-card img{width:100%;height:220px;object-fit:cover;display:block}
+  .foto-info{padding:10px 12px;background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;flex-direction:column;gap:2px}
   .foto-num{font-family:monospace;font-size:8px;font-weight:700;color:#1B3A5C}
   .foto-sec{font-size:7px;font-weight:700;text-transform:uppercase;color:#7c3aed}
-  .foto-desc{font-size:8px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .foto-desc{font-size:11px;color:#374151;line-height:1.5;word-wrap:break-word;white-space:normal}
+  .foto-desc.vacia{color:#9ca3af;font-style:italic}
   .footer{margin-top:16px;border-top:1px solid #e2e8f0;padding-top:8px;display:flex;justify-content:space-between;font-size:8px;color:#94a3b8}
   @media print{@page{size:A4 landscape;margin:12mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  @media (max-width:640px){.fotos-grid{grid-template-columns:1fr}}
 </style></head><body>
   <div class="header">
     <div class="header-logo">IGGA<span>INTERVENTORÍA</span></div>
@@ -112,6 +114,10 @@ function imprimirFotos(fotos, informe) {
 function InformeFotos({ informeId }) {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [descripcionUpload, setDescripcionUpload] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState("");
+  const debounceRef = useRef(null);
 
   const { data: fotos = [], isLoading } = useQuery({
     queryKey: ["informe-fotos", informeId],
@@ -129,12 +135,74 @@ function InformeFotos({ informeId }) {
         const fd = new FormData();
         fd.append("informe", informeId);
         fd.append("imagen", file);
+        if (descripcionUpload.trim()) {
+          fd.append("descripcion", descripcionUpload.trim());
+        }
         await axios.post(API.INFORME_DIARIO.ANEXOS, fd, { headers: { "Content-Type": "multipart/form-data" } });
       }
       queryClient.invalidateQueries(["informe-fotos", informeId]);
+      setDescripcionUpload("");
       toast.success("Fotos subidas exitosamente!");
     } catch { toast.error("Error al subir las fotos"); }
     finally { setUploading(false); e.target.value = ""; }
+  };
+
+  // ── EDICIÓN INLINE DE DESCRIPCIÓN ──────────────────────────────
+  const startEdit = (foto) => {
+    setEditingId(foto.id);
+    setEditValue(foto.descripcion || "");
+  };
+
+  const saveDescripcion = async (id, value) => {
+    try {
+      await axios.patch(`${API.INFORME_DIARIO.ANEXOS}${id}/`, {
+        descripcion: value.trim()
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+      queryClient.invalidateQueries(["informe-fotos", informeId]);
+      setEditingId(null);
+    } catch {
+      toast.error("Error al guardar la descripción");
+    }
+  };
+
+  const handleChangeEdit = (e) => {
+    const val = e.target.value;
+    setEditValue(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (editingId) saveDescripcion(editingId, val);
+    }, 800);
+  };
+
+  const handleBlur = (id) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    saveDescripcion(id, editValue);
+  };
+
+  const handleKeyDown = (e, id) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      saveDescripcion(id, editValue);
+    }
+    if (e.key === "Escape") {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      setEditingId(null);
+    }
+  };
+  // ────────────────────────────────────────────────────────────────
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar esta foto?")) return;
+    try {
+      await axios.delete(`${API.INFORME_DIARIO.ANEXOS}${id}/`);
+      queryClient.invalidateQueries(["informe-fotos", informeId]);
+      toast.success("Foto eliminada");
+    } catch {
+      toast.error("Error al eliminar la foto");
+    }
   };
 
   if (!informeId) return (
@@ -148,13 +216,51 @@ function InformeFotos({ informeId }) {
 
   return (
     <div>
+      {/* Zona de upload con descripción */}
+      <div style={{ background: C.white, border: `2px dashed ${C.border}`, borderRadius: 16, padding: "1.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: C.textMuted, fontWeight: 700, fontSize: "0.9rem" }}>
+            <UploadCloud size={18} />
+            Subir nueva foto
+          </div>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <input
+              type="text"
+              placeholder="Descripción de la foto (opcional)"
+              value={descripcionUpload}
+              onChange={(e) => setDescripcionUpload(e.target.value)}
+              style={{ flex: 1, minWidth: 200, padding: "0.5rem 0.75rem", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: "0.85rem", outline: "none" }}
+            />
+            <div style={{ position: "relative" }}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleUpload}
+                disabled={uploading}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: uploading ? "wait" : "pointer" }}
+                id="foto-upload-inline"
+              />
+              <label
+                htmlFor="foto-upload-inline"
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.4rem",
+                  padding: "0.5rem 1rem", background: C.indigo, color: "#fff",
+                  borderRadius: 8, fontWeight: 700, fontSize: "0.85rem",
+                  cursor: uploading ? "wait" : "pointer",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
+                {uploading ? "Subiendo..." : "Seleccionar imagen"}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <input type="file" accept="image/*" multiple onChange={handleUpload} style={{ display: "none" }} id="foto-upload" disabled={uploading} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1rem" }}>
-        <label htmlFor="foto-upload" style={{ display: "block" }}>
-          <div style={{ background: C.white, borderRadius: 16, cursor: uploading ? "wait" : "pointer", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", border: "2px dashed #8b5cf6", height: 260, gap: "0.75rem", color: "#8b5cf6" }}>
-            {uploading ? <><Loader2 size={48} className="animate-spin" /><span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Subiendo...</span></> : <><Plus size={48} /><span style={{ fontSize: "0.85rem", fontWeight: 700 }}>+ Agregar Fotos</span></>}
-          </div>
-        </label>
         {isLoading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} style={{ background: C.white, borderRadius: 16, height: 260, padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -167,14 +273,51 @@ function InformeFotos({ informeId }) {
               const src = foto?.imagen_url || foto?.imagen;
               return (
                 <div key={foto.id} style={{ background: C.white, borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", height: 260 }}>
-                  <div style={{ width: "100%", height: 140, background: "linear-gradient(135deg,#f5f3ff,#ede9fe)", overflow: "hidden" }}>
+                  <div style={{ width: "100%", height: 140, background: "linear-gradient(135deg,#f5f3ff,#ede9fe)", overflow: "hidden", position: "relative" }}>
                     {src ? <img src={src} alt={foto.descripcion || "Foto"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", color: "#8b5cf6", gap: "0.5rem" }}><Package size={48} /><span style={{ fontSize: "0.75rem" }}>SIN IMAGEN</span></div>}
+                    <button
+                      onClick={() => handleDelete(foto.id)}
+                      style={{ position: "absolute", top: 6, right: 6, background: "rgba(239,68,68,0.85)", color: "#fff", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                      title="Eliminar"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                   <div style={{ padding: "1rem" }}>
                     <div style={{ background: "#f5f3ff", color: "#7c3aed", fontSize: "0.65rem", fontWeight: 800, width: "fit-content", padding: "2px 8px", borderRadius: 8, marginBottom: "0.5rem" }}>{foto.seccion_display || "Foto"}</div>
-                    <h3 style={{ margin: 0, fontSize: "0.95rem", color: C.text, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{foto.descripcion || "Sin descripción"}</h3>
-                    <span style={{ fontSize: "0.75rem", color: C.textFaint }}>{foto.fecha_captura ? new Date(foto.fecha_captura).toLocaleString("es-CO") : "Fecha no disponible"}</span>
+
+                    {/* DESCRIPCIÓN EDITABLE INLINE */}
+                    {editingId === foto.id ? (
+                      <input
+                        autoFocus
+                        value={editValue}
+                        onChange={handleChangeEdit}
+                        onBlur={() => handleBlur(foto.id)}
+                        onKeyDown={(e) => handleKeyDown(e, foto.id)}
+                        placeholder="Descripción..."
+                        style={{
+                          width: "100%", padding: "0.25rem 0.5rem", fontSize: "0.85rem",
+                          border: `1px solid ${C.indigo}`, borderRadius: 6,
+                          outline: "none", color: C.text
+                        }}
+                      />
+                    ) : (
+                      <div
+                        onClick={() => startEdit(foto)}
+                        style={{ display: "flex", alignItems: "flex-start", gap: "0.3rem", cursor: "text", minHeight: 22 }}
+                        title="Click para editar descripción"
+                      >
+                        <Pencil size={12} style={{ color: C.textFaint, marginTop: 3, flexShrink: 0, opacity: 0.5 }} />
+                        <p style={{ margin: 0, fontSize: "0.85rem", color: C.text, fontWeight: 700, lineHeight: 1.4, wordBreak: "break-word", flex: 1 }}>
+                          {foto.descripcion ? (
+                            foto.descripcion
+                          ) : (
+                            <span style={{ color: C.textFaint, fontStyle: "italic", fontWeight: 400 }}>Sin descripción — click para agregar</span>
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
