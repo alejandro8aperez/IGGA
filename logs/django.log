@@ -28683,3 +28683,4 @@ INFO 2026-06-04 13:50:08,162 basehttp 32336 2560 "OPTIONS /api/informe-diario/in
 INFO 2026-06-04 13:50:08,162 basehttp 32336 32500 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
 INFO 2026-06-04 13:50:08,207 basehttp 32336 2560 "GET /api/informe-diario/obras/ HTTP/1.1" 200 245
 INFO 2026-06-04 13:50:08,276 basehttp 32336 32500 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 766
+INFO 2026-06-04 14:57:33,854 autoreload 36644 18372 Watching for file changes with StatReloader
