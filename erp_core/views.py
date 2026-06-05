@@ -103,7 +103,7 @@ def seed_informe_diario(request):
         }, status=500)
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser]) # SOLO administradores autenticados
+@permission_classes([AllowAny]) # Seguridad manejada por ADMIN_SETUP_KEY
 def create_initial_superuser(request):
     """
     Gestión de Superusuarios de Emergencia.
