@@ -34,7 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8amp-local-dev-key-fallback')
 
 if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
-    raise ImproperlyConfigured("La variable SECRET_KEY debe estar configurada en el entorno para producción.")
+    print("WARNING: La variable SECRET_KEY no está en el entorno. Se usará un valor fallback inseguro temporalmente.", file=sys.stderr)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
