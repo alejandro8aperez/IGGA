@@ -12,12 +12,16 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Solo cargar .env en desarrollo local (Render inyecta RENDER=true automáticamente)
+# Esto evita que el archivo .env local sobreescriba las variables de entorno de Render
+IS_RENDER = os.environ.get('RENDER') is not None
+if not IS_RENDER:
+    from dotenv import load_dotenv
+    load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -209,17 +213,25 @@ WSGI_APPLICATION = 'erp_core.wsgi.application'
 
 # Database
 # ============================================================
-# FIX PARA RENDER: Si DATABASE_URL existe (producción), usar PostgreSQL.
-# Si no existe (desarrollo local), usar SQLite para evitar error de localhost.
+# Si DATABASE_URL existe → PostgreSQL (producción/Render)
+# Si no existe → SQLite (desarrollo local)
+# Usamos dj_database_url.parse() en lugar de config() para
+# parsear directamente el valor sin releer el entorno.
 # ============================================================
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+
+# Debug: confirmar en logs de Render qué URL se está usando
+print(f"[DB CONFIG] IS_RENDER={IS_RENDER} | DATABASE_URL presente={bool(DATABASE_URL)}", file=sys.stderr, flush=True)
+if DATABASE_URL and '@' in DATABASE_URL:
+    _host = DATABASE_URL.split('@')[-1].split('/')[0]
+    print(f"[DB CONFIG] DB host={_host}", file=sys.stderr, flush=True)
 
 if DATABASE_URL:
     # Producción / Render — usar PostgreSQL vía DATABASE_URL
     DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
+        'default': dj_database_url.parse(
+            DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
         )
