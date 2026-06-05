@@ -216,7 +216,7 @@ class Cotizacion(models.Model):
         ('rechazada', 'Rechazada'),
         ('facturada', 'Facturada'),
     ]
-    numero_cotizacion = models.CharField(max_length=20, unique=True, blank=True, verbose_name="N° Cotización")
+    numero_cotizacion = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="N° Cotización")
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='cotizaciones', verbose_name="Cliente")
     asunto = models.CharField(max_length=200, verbose_name="Asunto")
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='borrador', verbose_name="Estado")
@@ -257,7 +257,7 @@ class CotizacionDetalle(models.Model):
     unidad = models.CharField(max_length=50, default='UND', verbose_name="Unidad")
     cantidad = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Cantidad")
     valor_unitario = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor Unitario")
-    valor_total = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor Total")
+    valor_total = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Valor Total")
 
     class Meta:
         verbose_name = "Detalle de Cotización"
