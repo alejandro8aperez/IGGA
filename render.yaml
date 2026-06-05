@@ -15,9 +15,7 @@ services:
       - key: DEBUG
         value: "False"
       - key: DATABASE_URL
-        fromDatabase:
-          name: erp-postgres
-          property: connectionString
+        sync: false
       - key: ALLOWED_HOSTS
         value: ".onrender.com,localhost,127.0.0.1"
       - key: RENDER_EXTERNAL_HOSTNAME
@@ -25,11 +23,3 @@ services:
       - key: USE_S3
         value: "False"
     healthCheckPath: /api/health/
-
-databases:
-  # PostgreSQL Database gestionada por Render
-  - name: erp-postgres
-    plan: free
-    region: oregon
-    databaseName: erpmanufactura
-    user: erpmanufactura_user
