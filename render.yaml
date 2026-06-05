@@ -1,33 +1,21 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: erp-postgres
-    env: docker
-    plan: free
-    dockerfilePath: ./Dockerfile.postgres
-    autoDeploy: false
-    disk:
-      name: postgres-data
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 1
-
   # Django Web Service
   - type: web
     name: erp-backend
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
+    region: oregon
+    buildCommand: "chmod +x build.sh && ./build.sh"
     startCommand: "python manage.py migrate --no-input && gunicorn erp_core.wsgi:application --workers 2 --timeout 120"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: "False"
       - key: DATABASE_URL
-        fromService:
-          type: pserv
+        fromDatabase:
           name: erp-postgres
           property: connectionString
       - key: ALLOWED_HOSTS
@@ -37,3 +25,11 @@ services:
       - key: USE_S3
         value: "False"
     healthCheckPath: /api/health/
+
+databases:
+  # PostgreSQL Database gestionada por Render
+  - name: erp-postgres
+    plan: free
+    region: oregon
+    databaseName: erpmanufactura
+    user: erpmanufactura_user
