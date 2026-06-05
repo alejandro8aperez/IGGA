@@ -1,12 +1,11 @@
 services:
-  # Django Web Service
   - type: web
     name: erp-backend
     env: python
     plan: free
     region: oregon
     buildCommand: "chmod +x build.sh && ./build.sh"
-    startCommand: "python startup_fix.py && python manage.py migrate --no-input && gunicorn erp_core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    startCommand: "python auto_setup.py && python manage.py migrate --no-input && gunicorn erp_core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.0"
@@ -23,5 +22,5 @@ services:
       - key: USE_S3
         value: "False"
       - key: ADMIN_PASSWORD
-        value: "TuPasswordSeguro123"
+        value: "admin123456"
     healthCheckPath: /api/ping/
