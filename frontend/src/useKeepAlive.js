@@ -4,7 +4,9 @@
 //  Usar en App.jsx o en el layout raíz autenticado.
 // ============================================================
 import { useEffect, useRef } from 'react';
-import { BASE_URL } from './axiosConfig';
+
+const BACKEND_URL =
+  import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api';
 
 /**
  * @param {object} options
@@ -12,39 +14,29 @@ import { BASE_URL } from './axiosConfig';
  * @param {boolean} options.enabled     Activar / desactivar (default: true en producción)
  */
 const useKeepAlive = ({
-  intervalMs = 10 * 60 * 1000,   // 10 minutos
-  enabled = import.meta.env.PROD, // solo en producción
+  intervalMs = 10 * 60 * 1000,
+  enabled = import.meta.env.PROD,
 } = {}) => {
   const intervalRef = useRef(null);
-  const lastPingRef = useRef(null);
 
   useEffect(() => {
     if (!enabled) return;
 
     const ping = async () => {
       try {
-        // Usamos el endpoint público /api/health/ (lo crearemos en Django)
-        // Si no existe aún, cae en 404 pero el servidor igualmente despierta.
-        const url = `${BASE_URL}health/`;
+        const url = `${BACKEND_URL}/health/`;
         const res = await fetch(url, { method: 'GET', cache: 'no-store' });
-        lastPingRef.current = new Date();
-        console.debug(`[ERP Keep-Alive] Ping OK → ${res.status} @ ${lastPingRef.current.toLocaleTimeString()}`);
+        console.debug(`[ERP Keep-Alive] Ping OK → ${res.status} @ ${new Date().toLocaleTimeString()}`);
       } catch (err) {
-        console.warn('[ERP Keep-Alive] Ping falló (sin conexión?):', err.message);
+        console.warn('[ERP Keep-Alive] Ping falló:', err.message);
       }
     };
 
-    // Primer ping inmediato al montar
     ping();
-
     intervalRef.current = setInterval(ping, intervalMs);
 
-    return () => {
-      clearInterval(intervalRef.current);
-    };
+    return () => clearInterval(intervalRef.current);
   }, [enabled, intervalMs]);
-
-  return { lastPing: lastPingRef.current };
 };
 
 export default useKeepAlive;
