@@ -26,6 +26,7 @@ from django.views.generic.base import RedirectView
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, ping, create_initial_superuser, verify_credentials, test_image, generar_comprobante_nomina_pdf, reporte_pyl_api, dashboard_stats, run_migrations, seed_informe_diario, get_operaciones_proyectos, get_master_recursos
 from .views_import import import_data_api, export_data_api, list_models
+from .views_health import health_check  # ← NUEVO
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -34,6 +35,7 @@ urlpatterns = [
     path('', ping, name='index'),
     path('admin/', admin.site.urls),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')),
+    path('api/health/', health_check, name='health-check'),  # ← NUEVO (keep-alive Render)
     path('api/ping/', ping, name='ping'),
     path('api/admin/migrate/', run_migrations, name='run_migrations'),
     path('api/admin/seed-informe-diario/', seed_informe_diario, name='seed_informe_diario'),
