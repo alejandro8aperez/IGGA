@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DemoBanner from './components/DemoBanner';
 import { initializeDemoData } from './components/DemoDataSeeder';
+import useKeepAlive from './useKeepAlive';   // ← NUEVO
 import './config/axiosConfig';
 import './index.css';
 
@@ -343,6 +344,8 @@ function AppContent() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isDemoMode, setIsDemoMode] = useState(false);
     const location = useLocation();
+
+    useKeepAlive();   // ← NUEVO: ping cada 10 min para evitar hibernación en Render
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
