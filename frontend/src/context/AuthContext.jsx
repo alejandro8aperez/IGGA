@@ -1,10 +1,9 @@
 // ============================================================
 //  AuthContext.jsx  –  ERP-8AMPERIOS
-//  Manejo de sesión JWT compatible con el interceptor anti-cascada
 // ============================================================
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import axiosInstance, { BASE_URL } from '../config/axiosConfig';  // ← corregido
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 
 const AuthContext = createContext(null);
 
@@ -12,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ── Logout ─────────────────────────────────────────────────
+  // ── Logout ──────────────────────────────────────────────────
   const logout = useCallback(() => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -20,15 +19,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
-  // ── Verificar token al arrancar la app ──────────────────────
+  // alias que usa App.jsx (logoutUser)
+  const logoutUser = logout;
+
+  // ── Verificar token al arrancar ──────────────────────────────
   useEffect(() => {
     const verifySession = async () => {
       const access  = localStorage.getItem('access_token');
       const refresh = localStorage.getItem('refresh_token');
-      if (!access || !refresh) {
-        setLoading(false);
-        return;
-      }
+      if (!access || !refresh) { setLoading(false); return; }
       try {
         const res = await axiosInstance.get('usuarios/perfil/');
         setUser(res.data);
@@ -41,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     verifySession();
   }, []);
 
-  // ── Login ───────────────────────────────────────────────────
+  // ── Login ────────────────────────────────────────────────────
   const login = async (username, password) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -55,8 +54,30 @@ export const AuthProvider = ({ children }) => {
     return perfil.data;
   };
 
+  // ── loginUser: compatible con Login.jsx (recibe objeto con tokens) ──
+  const loginUser = (userData) => {
+    if (userData.access) {
+      localStorage.setItem('access_token', userData.access);
+    }
+    if (userData.refresh || userData.refreshToken) {
+      localStorage.setItem('refresh_token', userData.refresh || userData.refreshToken);
+    }
+    if (userData.access) {
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${userData.access}`;
+    }
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{
+      user,
+      login,
+      loginUser,   // ← usado por Login.jsx
+      logout,
+      logoutUser,  // ← usado por App.jsx (Sidebar)
+      loading,
+      isAuthenticated: !!user
+    }}>
       {children}
     </AuthContext.Provider>
   );
