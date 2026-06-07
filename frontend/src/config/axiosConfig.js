@@ -5,8 +5,11 @@
 import axios from 'axios';
 
 // ── Base URL ────────────────────────────────────────────────
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api/';
+// Garantiza que la URL siempre termine en /api/
+const rawUrl = import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api/';
+const BASE_URL = rawUrl.endsWith('/api/') ? rawUrl
+               : rawUrl.endsWith('/api')  ? rawUrl + '/'
+               : rawUrl.replace(/\/?$/, '/api/');
 
 console.log('[ERP] Axios BaseURL:', BASE_URL);
 console.log('[ERP] Conectando al Backend en:', BASE_URL);
@@ -20,7 +23,7 @@ const axiosInstance = axios.create({
 
 // ── Estado de refresco (evita cascada de logout) ─────────────
 let isRefreshing = false;
-let failedQueue = [];       // requests en espera mientras se refresca
+let failedQueue = [];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
@@ -35,7 +38,6 @@ const performLogout = () => {
   console.warn('[ERP] Refresh token inválido o expirado. Cerrando sesión.');
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
-  // Redirigir al login sin recargar el historial
   if (window.location.pathname !== '/login') {
     window.location.replace('/login');
   }
@@ -59,12 +61,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Solo actuar ante 401 y evitar loop infinito
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
-    // Si ya hay un refresh en curso → encolar este request
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
@@ -76,13 +76,11 @@ axiosInstance.interceptors.response.use(
         .catch((err) => Promise.reject(err));
     }
 
-    // Primera petición que detecta el 401 → inicia refresh
     originalRequest._retry = true;
     isRefreshing = true;
 
     const refreshToken = localStorage.getItem('refresh_token');
 
-    // Sin refresh token: logout directo sin intentar nada
     if (!refreshToken) {
       isRefreshing = false;
       processQueue(error, null);
@@ -91,15 +89,12 @@ axiosInstance.interceptors.response.use(
     }
 
     try {
-      // Usar axios plano (no la instancia) para evitar interceptors recursivos
       const response = await axios.post(`${BASE_URL}token/refresh/`, {
         refresh: refreshToken,
       });
 
       const newAccessToken = response.data.access;
       localStorage.setItem('access_token', newAccessToken);
-
-      // Actualizar header por defecto para futuros requests
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
