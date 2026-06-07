@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import AuthContext from '../context/AuthContext';
+import axiosInstance from '../config/axiosConfig';
 import { Lock, User, Building2, Eye, EyeOff, AlertCircle, Loader } from 'lucide-react';
 
 const Login = () => {
@@ -34,13 +34,14 @@ const Login = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post('token/', { username, password }, { timeout: 8000 });
+            // ← usa axiosInstance (con BASE_URL correcto)
+            const res = await axiosInstance.post('token/', { username, password });
             const { access, refresh, user: userData } = res.data;
 
             loginUser({
                 ...userData,
-                access: access,
-                refresh: refresh,
+                access,
+                refresh,
                 refreshToken: refresh,
                 empresa: empresas.find(e => e.id === selectedEmpresa),
             });
@@ -71,7 +72,6 @@ const Login = () => {
             background: 'linear-gradient(135deg, #0a1628 0%, #0f172a 50%, #1a1035 100%)',
             padding: '1rem'
         }}>
-            {/* Fondo decorativo */}
             <div style={{
                 position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0
             }}>
@@ -94,10 +94,9 @@ const Login = () => {
                 border: '1px solid #1e3a5f', borderRadius: '20px',
                 boxShadow: '0 25px 50px rgba(0,0,0,0.5)', padding: '2.5rem'
             }}>
-                {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <div style={{
-                        width: '192px !important', height: '192px !important',
+                        width: '120px', height: '120px',
                         margin: '0 auto 1.5rem',
                         borderRadius: '50%',
                         overflow: 'hidden',
@@ -105,10 +104,10 @@ const Login = () => {
                         boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
-                        <img 
-                            src="/logo.png" 
-                            alt="Logo ERP 8AMPERIOS" 
-                            style={{ width: '100%', height: '100%', objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+                        <img
+                            src="/logo.png"
+                            alt="Logo ERP 8AMPERIOS"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                             onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.parentElement.innerHTML = '<span style="color:#d97706; font-weight:bold;">LOGO</span>';
@@ -118,12 +117,9 @@ const Login = () => {
                     <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 0.4rem' }}>
                         INGENIERIA Y GESTION ADMINISTRATIVA
                     </h1>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>
-                        ERP 8AMPERIOS
-                    </p>
+                    <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>ERP 8AMPERIOS</p>
                 </div>
 
-                {/* Error */}
                 {error && (
                     <div style={{
                         display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -136,7 +132,6 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    {/* Empresa */}
                     <Field label="Empresa" icon={<Building2 size={15} />}>
                         <select value={selectedEmpresa} onChange={e => setEmpresa(e.target.value)}
                             required style={inputStyle}>
@@ -147,13 +142,11 @@ const Login = () => {
                         </select>
                     </Field>
 
-                    {/* Usuario */}
                     <Field label="Usuario" icon={<User size={15} />}>
                         <input type="text" value={username} onChange={e => setUsername(e.target.value)}
                             placeholder="Ingrese su usuario" required style={inputStyle} />
                     </Field>
 
-                    {/* Contraseña */}
                     <Field label="Contraseña" icon={<Lock size={15} />}>
                         <div style={{ position: 'relative' }}>
                             <input type={showPassword ? 'text' : 'password'}
@@ -184,7 +177,6 @@ const Login = () => {
                     </button>
                 </form>
 
-                {/* Usuarios de prueba */}
                 <div style={{
                     marginTop: '1.5rem', background: 'rgba(30,58,95,0.4)',
                     border: '1px solid #1e3a5f', borderRadius: '10px', padding: '0.875rem'
@@ -192,9 +184,7 @@ const Login = () => {
                     <p style={{
                         color: '#64748b', fontSize: '0.72rem', fontWeight: 600,
                         textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.5rem'
-                    }}>
-                        Usuarios de demo
-                    </p>
+                    }}>Usuarios de demo</p>
                     <div style={{ color: '#475569', fontSize: '0.72rem', lineHeight: 1.7, fontFamily: 'monospace' }}>
                         admin / admin123 · Administrador<br />
                         gerente / gerente123 · Gerente<br />
@@ -213,7 +203,6 @@ const Login = () => {
     );
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const inputStyle = {
     width: '100%', padding: '0.7rem 0.9rem',
     background: 'rgba(15,23,42,0.8)', border: '1px solid #1e3a5f',
@@ -235,19 +224,18 @@ function Field({ label, icon, children }) {
     );
 }
 
-// Autenticación demo (solo cuando el backend no está disponible)
 function autenticarDemo(username, password, empresaId) {
     const usuarios = {
-        admin: { password: 'admin123', cargo: 'Administrador', nombre: 'Administrador Sistema' },
-        gerente: { password: 'gerente123', cargo: 'Gerente', nombre: 'Gerente General' },
-        contador: { password: 'contador123', cargo: 'Contador', nombre: 'Jefe Contabilidad' },
-        produccion: { password: 'produccion123', cargo: 'Jefe Producción', nombre: 'Jefe de Producción' },
-        ventas: { password: 'ventas123', cargo: 'Vendedor', nombre: 'Ejecutivo de Ventas' },
-        compras: { password: 'compras123', cargo: 'Comprador', nombre: 'Jefe de Compras' },
-        almacen: { password: 'almacen123', cargo: 'Almacenista', nombre: 'Encargado Almacén' },
-        mantenimiento: { password: 'mantenimiento123', cargo: 'Técnico', nombre: 'Jefe Mantenimiento' },
-        rrhh: { password: 'rrhh123', cargo: 'RH', nombre: 'Jefe RRHH' },
-        mrp: { password: 'mrp123', cargo: 'Planificador', nombre: 'Planificador MRP' },
+        admin:         { password: 'admin123',         cargo: 'Administrador',   nombre: 'Administrador Sistema' },
+        gerente:       { password: 'gerente123',       cargo: 'Gerente',         nombre: 'Gerente General' },
+        contador:      { password: 'contador123',      cargo: 'Contador',        nombre: 'Jefe Contabilidad' },
+        produccion:    { password: 'produccion123',    cargo: 'Jefe Producción', nombre: 'Jefe de Producción' },
+        ventas:        { password: 'ventas123',        cargo: 'Vendedor',        nombre: 'Ejecutivo de Ventas' },
+        compras:       { password: 'compras123',       cargo: 'Comprador',       nombre: 'Jefe de Compras' },
+        almacen:       { password: 'almacen123',       cargo: 'Almacenista',     nombre: 'Encargado Almacén' },
+        mantenimiento: { password: 'mantenimiento123', cargo: 'Técnico',         nombre: 'Jefe Mantenimiento' },
+        rrhh:          { password: 'rrhh123',          cargo: 'RH',              nombre: 'Jefe RRHH' },
+        mrp:           { password: 'mrp123',           cargo: 'Planificador',    nombre: 'Planificador MRP' },
     };
     const empresas = [
         { id: '1', nombre: 'IGGA', codigo: 'IGG' },
@@ -257,8 +245,7 @@ function autenticarDemo(username, password, empresaId) {
     const info = usuarios[username];
     if (!info || info.password !== password) return null;
     return {
-        username,
-        ...info,
+        username, ...info,
         empresa: empresas.find(e => e.id === empresaId),
         modoDemo: true,
         access: 'demo-mode-access-token',
