@@ -1,11 +1,9 @@
 // ============================================================
 //  axiosConfig.js  –  ERP-8AMPERIOS
-//  Fixes: 401-cascade, token refresh, Render keep-alive ping
 // ============================================================
 import axios from 'axios';
 
 // ── Base URL ────────────────────────────────────────────────
-// Garantiza que la URL siempre termine en /api/
 const rawUrl = import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api/';
 const BASE_URL = rawUrl.endsWith('/api/') ? rawUrl
                : rawUrl.endsWith('/api')  ? rawUrl + '/'
@@ -21,7 +19,7 @@ const axiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ── Estado de refresco (evita cascada de logout) ─────────────
+// ── Estado de refresco ───────────────────────────────────────
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -33,7 +31,7 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// ── Helper: logout limpio ────────────────────────────────────
+// ── Logout limpio ────────────────────────────────────────────
 const performLogout = () => {
   console.warn('[ERP] Refresh token inválido o expirado. Cerrando sesión.');
   localStorage.removeItem('access_token');
@@ -43,7 +41,7 @@ const performLogout = () => {
   }
 };
 
-// ── Request interceptor: adjuntar access token ───────────────
+// ── Request interceptor ──────────────────────────────────────
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -55,11 +53,18 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// ── Response interceptor: refresh automático anti-cascada ────
+// ── Response interceptor ─────────────────────────────────────
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // ── Ignorar 401 en rutas de autenticación ──────────────
+    // Un 401 en /token/ significa credenciales incorrectas, no token expirado
+    const isAuthRoute = originalRequest.url?.includes('token/');
+    if (isAuthRoute) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
