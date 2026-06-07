@@ -4,13 +4,13 @@
 // ============================================================
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import axiosInstance, { BASE_URL } from './axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';  // ← corregido
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser]       = useState(null);
-  const [loading, setLoading] = useState(true); // true mientras verifica token inicial
+  const [loading, setLoading] = useState(true);
 
   // ── Logout ─────────────────────────────────────────────────
   const logout = useCallback(() => {
@@ -25,45 +25,33 @@ export const AuthProvider = ({ children }) => {
     const verifySession = async () => {
       const access  = localStorage.getItem('access_token');
       const refresh = localStorage.getItem('refresh_token');
-
       if (!access || !refresh) {
         setLoading(false);
         return;
       }
-
       try {
-        // Intentar obtener perfil del usuario con el access token actual
         const res = await axiosInstance.get('usuarios/perfil/');
         setUser(res.data);
       } catch {
-        // El interceptor ya intentó el refresh; si llegamos aquí es que falló todo
-        // No hacemos logout explícito aquí — el interceptor ya redirigió
         setUser(null);
       } finally {
         setLoading(false);
       }
     };
-
     verifySession();
   }, []);
 
   // ── Login ───────────────────────────────────────────────────
   const login = async (username, password) => {
-    // Limpiar tokens previos antes de un nuevo login
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-
     const response = await axios.post(`${BASE_URL}token/`, { username, password });
-
     const { access, refresh } = response.data;
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
     axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-
-    // Cargar datos del usuario
     const perfil = await axiosInstance.get('usuarios/perfil/');
     setUser(perfil.data);
-
     return perfil.data;
   };
 
