@@ -108,7 +108,7 @@ class Almacen(models.Model):
         ('consignacion', 'Consignación'),
     ], default='principal')
     
-    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='centros_costo_multi_empresa')
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='almacenes_multi_empresa')
     activo = models.BooleanField(default=True)
     
     class Meta:
