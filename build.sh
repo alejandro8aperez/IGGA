@@ -1,12 +1,17 @@
-#!/usr/bin/env bash
-# exit on error
-set -o errexit
+#!/bin/bash
+set -e
 
 echo "🔧 Instalando dependencias…"
-pip install --upgrade pip --quiet
-pip install -r requirements.txt --quiet
+poetry install --no-interaction --no-ansi
 
 echo "📦 Preparando archivos estáticos…"
-python manage.py collectstatic --no-input --clear
+python manage.py collectstatic --no-input
+
+echo "🗄️  Verificando migraciones..."
+# Fake migration defensiva para usuarios
+python manage.py migrate --fake-initial usuarios || true
+
+echo "🔄 Aplicando migraciones..."
+python manage.py migrate --no-input
 
 echo "✅ Build completado"
