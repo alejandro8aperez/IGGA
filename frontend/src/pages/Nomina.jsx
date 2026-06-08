@@ -43,22 +43,42 @@ const Nomina = () => {
         try {
             const res = await axios.get(API.NOMINA.PERIODOS);
             console.log("Periodos cargados:", res.data);
-            setPeriodos(res.data);
-            if (res.data.length > 0 && !selectedPeriod) {
-                setSelectedPeriod(res.data[0]);
+            
+            // ✅ DEFENSA: Normalizar la respuesta sin importar el formato
+            let data = res?.data;
+            let listaPeriodos = [];
+            
+            if (Array.isArray(data)) {
+                listaPeriodos = data;
+            } else if (data && typeof data === 'object') {
+                // Si el backend envuelve en PERIODOS, periodos, results, etc.
+                listaPeriodos = data.PERIODOS || data.periodos || data.results || data.data || [];
+            }
+            
+            setPeriodos(listaPeriodos);
+            
+            if (listaPeriodos.length > 0 && !selectedPeriod) {
+                setSelectedPeriod(listaPeriodos[0]);
             }
         } catch (error) {
             console.error("Error fetching periodos:", error);
+            setPeriodos([]); // ✅ No dejar el estado en limbo
         }
     };
 
     const fetchNominas = async (periodoId) => {
+        if (!periodoId) {
+            console.warn("fetchNominas llamado sin periodoId");
+            return;
+        }
+        
         setLoading(true);
         try {
             const res = await axios.get(`${API.NOMINA.NOMINAS}?periodo=${periodoId}`);
-            setNominas(res.data);
+            setNominas(res?.data || []);
         } catch (error) {
             console.error("Error fetching nominas:", error);
+            setNominas([]);
         } finally {
             setLoading(false);
         }
@@ -119,6 +139,11 @@ const Nomina = () => {
     };
 
     const handleDownloadVoucher = async (nomina) => {
+        if (!selectedPeriod) {
+            alert("No hay periodo seleccionado");
+            return;
+        }
+        
         try {
             const res = await axios.post(`${API.NOMINA.NOMINAS}voucher/pdf/`, {
                 nombre: nomina.empleado_nombre,
@@ -126,11 +151,11 @@ const Nomina = () => {
                 cargo: nomina.empleado_cargo || 'N/A',
                 periodo: selectedPeriod.nombre,
                 neto: nomina.neto_pagar,
-                conceptos: nomina.detalles.map(d => ({
+                conceptos: nomina.detalles?.map(d => ({
                     nombre: d.concepto_nombre,
                     valor: parseFloat(d.valor),
                     tipo: d.concepto_tipo === 'DEV' ? 'devengado' : 'deduccion'
-                }))
+                })) || []
             }, { responseType: 'blob' });
 
             const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -185,9 +210,14 @@ const Nomina = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
                             <select 
                                 value={selectedPeriod?.id || ''} 
-                                onChange={(e) => setSelectedPeriod(periodos.find(p => p.id === parseInt(e.target.value)))}
+                                onChange={(e) => {
+                                    const id = parseInt(e.target.value);
+                                    const periodo = periodos.find(p => p.id === id);
+                                    setSelectedPeriod(periodo || null);
+                                }}
                                 style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', fontWeight: '600', color: '#475569' }}
                             >
+                                {periodos.length === 0 && <option value="">Sin periodos</option>}
                                 {periodos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                             </select>
                             <button onClick={() => setIsNewPeriodModalOpen(true)} style={{ color: '#6366f1', background: 'none', border: 'none', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -289,12 +319,12 @@ const Nomina = () => {
                                         <div style={{ fontWeight: '700', color: '#1e293b' }}>{n.empleado_nombre}</div>
                                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Días: {n.dias_trabajados}</div>
                                     </td>
-                                    <td style={tdStyle}>${parseFloat(n.salario_base).toLocaleString()}</td>
-                                    <td style={tdStyle}><span style={{ color: '#059669', fontWeight: '600' }}>+${parseFloat(n.total_devengados).toLocaleString()}</span></td>
-                                    <td style={tdStyle}><span style={{ color: '#dc2626', fontWeight: '600' }}>-${parseFloat(n.total_deducciones).toLocaleString()}</span></td>
+                                    <td style={tdStyle}>${parseFloat(n.salario_base || 0).toLocaleString()}</td>
+                                    <td style={tdStyle}><span style={{ color: '#059669', fontWeight: '600' }}>+${parseFloat(n.total_devengados || 0).toLocaleString()}</span></td>
+                                    <td style={tdStyle}><span style={{ color: '#dc2626', fontWeight: '600' }}>-${parseFloat(n.total_deducciones || 0).toLocaleString()}</span></td>
                                     <td style={tdStyle}>
                                         <div style={{ padding: '6px 12px', borderRadius: '10px', background: '#f0fdf4', color: '#166534', fontWeight: '800', display: 'inline-block' }}>
-                                            ${parseFloat(n.neto_pagar).toLocaleString()}
+                                            ${parseFloat(n.neto_pagar || 0).toLocaleString()}
                                         </div>
                                     </td>
                                     <td style={tdStyle}>
@@ -350,7 +380,7 @@ const Nomina = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <div>
                                 <h2 style={{ margin: 0, fontWeight: '900', color: '#1e293b' }}>Detalle de Liquidación</h2>
-                                <p style={{ margin: 0, color: '#64748b' }}>{currentNomina.empleado_nombre} · {selectedPeriod?.nombre}</p>
+                                <p style={{ margin: 0, color: '#64748b' }}>{currentNomina.empleado_nombre} · {selectedPeriod?.nombre || 'Sin periodo'}</p>
                             </div>
                             <button onClick={() => setIsDetailModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X /></button>
                         </div>
@@ -358,40 +388,40 @@ const Nomina = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                             <div>
                                 <h4 style={sectionHeaderStyle}>Devengados</h4>
-                                {currentNomina.detalles.filter(d => d.concepto_tipo !== 'DED' && d.concepto_tipo !== 'PROV').map(d => (
+                                {currentNomina.detalles?.filter(d => d.concepto_tipo !== 'DED' && d.concepto_tipo !== 'PROV').map(d => (
                                     <div key={d.id} style={detailRowStyle}>
                                         <span>{d.concepto_nombre}</span>
-                                        <span style={{ fontWeight: '700', color: '#059669' }}>+${parseFloat(d.valor).toLocaleString()}</span>
+                                        <span style={{ fontWeight: '700', color: '#059669' }}>+${parseFloat(d.valor || 0).toLocaleString()}</span>
                                     </div>
-                                ))}
+                                )) || <p style={{ color: '#94a3b8' }}>Sin devengados</p>}
                             </div>
                             <div>
                                 <h4 style={sectionHeaderStyle}>Deducciones</h4>
-                                {currentNomina.detalles.filter(d => d.concepto_tipo === 'DED').map(d => (
+                                {currentNomina.detalles?.filter(d => d.concepto_tipo === 'DED').map(d => (
                                     <div key={d.id} style={detailRowStyle}>
                                         <span>{d.concepto_nombre}</span>
-                                        <span style={{ fontWeight: '700', color: '#dc2626' }}>-${parseFloat(d.valor).toLocaleString()}</span>
+                                        <span style={{ fontWeight: '700', color: '#dc2626' }}>-${parseFloat(d.valor || 0).toLocaleString()}</span>
                                     </div>
-                                ))}
+                                )) || <p style={{ color: '#94a3b8' }}>Sin deducciones</p>}
                             </div>
                         </div>
 
                         <div style={{ marginTop: '2rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '16px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: '900' }}>
                                 <span>NETO A PAGAR</span>
-                                <span style={{ color: '#166534' }}>${parseFloat(currentNomina.neto_pagar).toLocaleString()}</span>
+                                <span style={{ color: '#166534' }}>${parseFloat(currentNomina.neto_pagar || 0).toLocaleString()}</span>
                             </div>
                         </div>
 
                         <div style={{ marginTop: '1.5rem' }}>
                             <h4 style={sectionHeaderStyle}>Provisiones Patronales (No afectan el neto)</h4>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                {currentNomina.detalles.filter(d => d.concepto_tipo === 'PROV').map(d => (
+                                {currentNomina.detalles?.filter(d => d.concepto_tipo === 'PROV').map(d => (
                                     <div key={d.id} style={{ ...detailRowStyle, border: 'none', padding: '4px 0' }}>
                                         <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{d.concepto_nombre}</span>
-                                        <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>${parseFloat(d.valor).toLocaleString()}</span>
+                                        <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>${parseFloat(d.valor || 0).toLocaleString()}</span>
                                     </div>
-                                ))}
+                                )) || <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Sin provisiones</p>}
                             </div>
                         </div>
                     </div>
