@@ -1,499 +1,188 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from decimal import Decimal
 
-
-# ═══════════════════════════════════════════════════════
-# 1. CATÁLOGOS BÁSICOS
-# ═══════════════════════════════════════════════════════
+class Empresa(models.Model):
+    """Modelo principal para gestión multi-empresa"""
+    nit = models.CharField(max_length=20, unique=True, verbose_name="NIT")
+    razon_social = models.CharField(max_length=200, verbose_name="Razón Social")
+    nombre_comercial = models.CharField(max_length=200, blank=True, verbose_name="Nombre Comercial")
+    tipo_empresa = models.CharField(max_length=50, choices=[
+        ('matriz', 'Matriz'),
+        ('sucursal', 'Sucursal'),
+        ('filial', 'Filial'),
+        ('independiente', 'Independiente'),
+    ], default='independiente')
+    
+    # Relaciones jerárquicas
+    empresa_matriz = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
+                                       related_name='sucursales', verbose_name="Empresa Matriz")
+    
+    # Información fiscal y legal
+    regimen_fiscal = models.CharField(max_length=50, choices=[
+        ('comun', 'Régimen Común'),
+        ('simplificado', 'Régimen Simplificado'),
+        ('especial', 'Régimen Especial'),
+    ], default='comun')
+    tipo_contribuyente = models.CharField(max_length=50, choices=[
+        ('persona_natural', 'Persona Natural'),
+        ('persona_juridica', 'Persona Jurídica'),
+    ], default='persona_juridica')
+    
+    # Información de contacto
+    direccion = models.TextField(blank=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    sitio_web = models.URLField(blank=True)
+    
+    # Información económica
+    moneda_base = models.CharField(max_length=3, default='COP')
+    pais = models.CharField(max_length=50, default='Colombia')
+    ciudad = models.CharField(max_length=50, blank=True)
+    
+    # Configuración del sistema
+    activa = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_ultima_modificacion = models.DateTimeField(auto_now=True)
+    
+    # Responsables
+    administrador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, 
+                                      related_name='empresas_administradas', verbose_name="Administrador")
+    
+    class Meta:
+        verbose_name = "Empresa"
+        verbose_name_plural = "Empresas"
+        ordering = ['razon_social']
+    
+    def __str__(self):
+        return f"{self.razon_social} ({self.nit})"
+    
+    @property
+    def es_matriz(self):
+        return self.tipo_empresa == 'matriz'
+    
+    @property
+    def sucursales_count(self):
+        return self.sucursales.count()
 
 class CentroCosto(models.Model):
-    """
-    Centros de costo para análisis de gastos por área
-    """
-    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
-    nombre = models.CharField(max_length=100, verbose_name="Nombre del Centro")
-    descripcion = models.TextField(blank=True, verbose_name="Descripción")
+    """Centros de costo para control presupuestal"""
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='centros_costo')
+    codigo = models.CharField(max_length=20, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    descripcion = models.TextField(blank=True)
     
-    TIPO_CHOICES = [
+    tipo_centro = models.CharField(max_length=50, choices=[
         ('produccion', 'Producción'),
         ('administrativo', 'Administrativo'),
         ('ventas', 'Ventas'),
         ('distribucion', 'Distribución'),
-        ('servicios', 'Servicios'),
-        ('otro', 'Otro'),
-    ]
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='administrativo', verbose_name="Tipo")
+        ('servicio', 'Servicio'),
+    ], default='administrativo')
     
-    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='centros_costo_contabilidad', verbose_name="Responsable")
-    presupuesto_anual = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name="Presupuesto Anual")
-    activo = models.BooleanField(default=True, verbose_name="Activo")
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='centros_costo_multi_empresa')
+    activo = models.BooleanField(default=True)
     
-    # Auditoría
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.codigo} - {self.nombre}"
-
     class Meta:
         verbose_name = "Centro de Costo"
         verbose_name_plural = "Centros de Costo"
-        ordering = ['codigo']
-
-
-# ═══════════════════════════════════════════════════════
-# 2. PERÍODO CONTABLE - MEJORADO
-# ═══════════════════════════════════════════════════════
-
-class PeriodoContable(models.Model):
-    """
-    Períodos contables (meses, trimestres, años fiscales)
-    MEJORADO: + auditoría, + usuario cierre, + validaciones
-    """
-    ESTADO_CHOICES = [
-        ('abierto', 'Abierto'),
-        ('cerrado', 'Cerrado'),
-    ]
-
-    nombre = models.CharField(max_length=50, verbose_name="Nombre del Período")
-    fecha_inicio = models.DateField(verbose_name="Fecha Inicio")
-    fecha_fin = models.DateField(verbose_name="Fecha Fin")
-    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='abierto', verbose_name="Estado")
-    descripcion = models.TextField(blank=True, verbose_name="Descripción")
+        unique_together = ['empresa', 'codigo']
+        ordering = ['empresa', 'codigo']
     
-    # Cierre
-    fecha_cierre = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Cierre")
-    usuario_cierre = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Usuario que cerró")
-    asiento_cierre = models.ForeignKey('AsientoContable', on_delete=models.SET_NULL, null=True, blank=True, related_name='cierre_periodo')
-    
-    # Resultados
-    resultado = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Resultado del Período")
-    utilidad_retenida = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Utilidad Retenida")
-    
-    # Auditoría
-    permite_descuadre = models.BooleanField(default=False, verbose_name="¿Permite descuadre?")
-
     def __str__(self):
-        return f"{self.nombre} ({self.fecha_inicio.strftime('%Y-%m-%d')} - {self.fecha_fin.strftime('%Y-%m-%d')})"
+        return f"{self.codigo} - {self.nombre} ({self.empresa.razon_social})"
 
-    def puede_cerrarse(self):
-        """Valida si período puede cerrarse"""
-        # Todas las cuentas deben estar balanceadas
-        for cuenta in Cuenta.objects.filter(activa=True):
-            if not self.permite_descuadre:
-                saldo = cuenta.get_saldo_periodo(self)
-                if saldo != 0 and not cuenta.requiere_tercero:
-                    return False, f"Cuenta {cuenta.codigo} descuadrada"
-        return True, "OK"
-
+class Almacen(models.Model):
+    """Gestión de múltiples almacenes por empresa"""
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='almacenes')
+    codigo = models.CharField(max_length=20, verbose_name="Código Almacén")
+    nombre = models.CharField(max_length=100, verbose_name="Nombre")
+    direccion = models.TextField(blank=True)
+    ciudad = models.CharField(max_length=50, blank=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    
+    tipo_almacen = models.CharField(max_length=50, choices=[
+        ('principal', 'Principal'),
+        ('secundario', 'Secundario'),
+        ('transito', 'Tránsito'),
+        ('devoluciones', 'Devoluciones'),
+        ('consignacion', 'Consignación'),
+    ], default='principal')
+    
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='centros_costo_multi_empresa')
+    activo = models.BooleanField(default=True)
+    
     class Meta:
-        verbose_name = "Período Contable"
-        verbose_name_plural = "Períodos Contables"
-        ordering = ['-fecha_inicio']
-
-
-# ═══════════════════════════════════════════════════════
-# 3. CUENTA - MEJORADA
-# ═══════════════════════════════════════════════════════
-
-class Cuenta(models.Model):
-    """
-    Catálogo de cuentas contables (Plan Único de Cuentas - PUC Colombia)
-    MEJORADO: + naturaleza, + validaciones, + controladores
-    """
-    TIPO_CHOICES = [
-        ('activo', 'Activo'),
-        ('pasivo', 'Pasivo'),
-        ('patrimonio', 'Patrimonio'),
-        ('ingreso', 'Ingreso'),
-        ('gasto', 'Gasto'),
-    ]
+        verbose_name = "Almacén"
+        verbose_name_plural = "Almacenes"
+        unique_together = ['empresa', 'codigo']
+        ordering = ['empresa', 'codigo']
     
-    NATURALEZA_CHOICES = [
-        ('deudora', 'Deudora'),
-        ('acreedora', 'Acreedora'),
-    ]
-
-    # Identificación PUC
-    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código PUC")
-    nombre = models.CharField(max_length=100, verbose_name="Nombre de la Cuenta")
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name="Tipo de Cuenta")
-    nivel = models.PositiveSmallIntegerField(default=2, verbose_name="Nivel (1=Mayor, 2=Auxiliar, 3=Sub, 4=Detalle)")
-    
-    # Jerárquico
-    cuenta_padre = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcuentas', verbose_name="Cuenta Padre")
-    
-    # Características
-    naturaleza = models.CharField(max_length=10, choices=NATURALEZA_CHOICES, verbose_name="Naturaleza")
-    requiere_tercero = models.BooleanField(default=False, verbose_name="¿Requiere Tercero (Cliente/Proveedor)?")
-    requiere_centro_costo = models.BooleanField(default=False, verbose_name="¿Requiere Centro de Costo?")
-    requiere_proyecto = models.BooleanField(default=False, verbose_name="¿Requiere Proyecto?")
-    es_verificable = models.BooleanField(default=True, verbose_name="¿Es verificable en flujo?")
-    
-    # Control
-    activa = models.BooleanField(default=True, verbose_name="Cuenta Activa")
-    saldo_minimo = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name="Saldo Mínimo Permitido")
-    saldo_maximo = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name="Saldo Máximo Permitido")
-    clasificacion_dian = models.CharField(max_length=10, blank=True, verbose_name="Clasificación DIAN")
-
     def __str__(self):
-        return f"{self.codigo} - {self.nombre}"
+        return f"{self.codigo} - {self.nombre} ({self.empresa.razon_social})"
 
-    def get_saldo(self, fecha_hasta=None):
-        """Calcula el saldo real de la cuenta (CORREGIDO)"""
-        from datetime import datetime
-        movimientos = self.movimientos.filter(asiento_contable__estado='confirmado')
-        
-        if fecha_hasta:
-            movimientos = movimientos.filter(asiento_contable__fecha__lte=fecha_hasta)
-        
-        total_debe = movimientos.aggregate(models.Sum('debe'))['debe__sum'] or Decimal('0.00')
-        total_haber = movimientos.aggregate(models.Sum('haber'))['haber__sum'] or Decimal('0.00')
-        
-        # Calcula según naturaleza
-        if self.naturaleza == 'deudora':
-            saldo = total_debe - total_haber
-        else:  # acreedora
-            saldo = total_haber - total_debe
-            
-        return Decimal(str(saldo))
-
-    def get_saldo_periodo(self, periodo):
-        """Obtiene saldo para un período específico"""
-        movimientos = self.movimientos.filter(
-            asiento_contable__estado='confirmado',
-            asiento_contable__periodo_contable=periodo
-        )
-        
-        total_debe = movimientos.aggregate(models.Sum('debe'))['debe__sum'] or Decimal('0.00')
-        total_haber = movimientos.aggregate(models.Sum('haber'))['haber__sum'] or Decimal('0.00')
-        
-        if self.naturaleza == 'deudora':
-            saldo = total_debe - total_haber
-        else:
-            saldo = total_haber - total_debe
-            
-        return Decimal(str(saldo))
-
-    def validar_limites_saldo(self):
-        """Valida si saldo está dentro de límites permitidos"""
-        saldo = self.get_saldo()
-        
-        if self.saldo_minimo and saldo < self.saldo_minimo:
-            return False, f"Saldo ({saldo}) por debajo del mínimo ({self.saldo_minimo})"
-        
-        if self.saldo_maximo and saldo > self.saldo_maximo:
-            return False, f"Saldo ({saldo}) por encima del máximo ({self.saldo_maximo})"
-        
-        return True, "OK"
-
+class ConfiguracionEmpresa(models.Model):
+    """Configuraciones específicas por empresa"""
+    empresa = models.OneToOneField(Empresa, on_delete=models.CASCADE, related_name='configuracion')
+    
+    # Configuración financiera
+    año_fiscal_inicio = models.IntegerField(default=1)  # Mes de inicio (1-12)
+    moneda_reportes = models.CharField(max_length=3, default='COP')
+    formato_fecha = models.CharField(max_length=20, default='DD/MM/YYYY')
+    
+    # Configuración de inventarios
+    metodo_valuacion_inventario = models.CharField(max_length=50, choices=[
+        ('fifo', 'FIFO'),
+        ('lifo', 'LIFO'),
+        ('promedio_ponderado', 'Promedio Ponderado'),
+        ('identificacion_especifica', 'Identificación Específica'),
+    ], default='promedio_ponderado')
+    
+    # Configuración de ventas
+    porcentaje_iva_default = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
+    porcentaje_retefuente_default = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    porcentaje_reteica_default = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    
+    # Configuración de contabilidad
+    digitos_cuenta_contable = models.IntegerField(default=8)
+    permite_asientos_automaticos = models.BooleanField(default=True)
+    
+    # Configuración de aprovisionamiento
+    requiere_aprobacion_compras = models.BooleanField(default=True)
+    monto_minimo_aprobacion = models.DecimalField(max_digits=14, decimal_places=2, default=1000000)
+    
     class Meta:
-        verbose_name = "Cuenta Contable"
-        verbose_name_plural = "Catálogo de Cuentas"
-        ordering = ['codigo']
-        indexes = [
-            models.Index(fields=['codigo', 'activa']),
-            models.Index(fields=['tipo']),
-        ]
-
-
-# ═══════════════════════════════════════════════════════
-# 4. ASIENTO CONTABLE - MEJORADO
-# ═══════════════════════════════════════════════════════
-
-class AsientoContable(models.Model):
-    """
-    Modelo central del Libro Mayor (General Ledger).
-    Registra cada movimiento financiero disparado por los módulos del ERP.
-    MEJORADO: + numeración, + estado, + auditoría, + usuario_creador
-    """
-    TIPO_CHOICES = [
-        ('ingreso', 'Ingreso (Entrada de Dinero)'),
-        ('egreso', 'Egreso (Salida de Dinero)'),
-        ('ajuste', 'Ajuste Contable'),
-        ('contra_asiento', 'Contra-asiento (Reverso)'),
-    ]
+        verbose_name = "Configuración de Empresa"
+        verbose_name_plural = "Configuraciones de Empresa"
     
-    ESTADO_CHOICES = [
-        ('borrador', 'Borrador'),
-        ('confirmado', 'Confirmado'),
-        ('reversado', 'Reversado'),
-        ('procesado', 'Procesado'),
-    ]
-
-    # Identificación
-    numero_asiento = models.CharField(max_length=20, unique=True, verbose_name="Número Asiento")
-    periodo_contable = models.ForeignKey(PeriodoContable, on_delete=models.PROTECT, verbose_name="Período")
-    
-    # Datos principales
-    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha del Registro")
-    fecha_documento = models.DateField(verbose_name="Fecha Documento", null=True, blank=True)
-    descripcion = models.CharField(max_length=255, verbose_name="Concepto/Descripción")
-    referencia = models.CharField(max_length=100, blank=True, verbose_name="Referencia Documento")
-    
-    # Importes
-    valor = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Monto Total")
-    total_debe = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Total Débitos")
-    total_haber = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Total Créditos")
-    
-    # Clasificación
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='ingreso', verbose_name="Tipo de Movimiento")
-    modulo_origen = models.CharField(max_length=50, default='sistema', verbose_name="Módulo de Origen")
-    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='borrador', verbose_name="Estado")
-    
-    # Auditoría - Creación
-    usuario_creador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='asientos_creados', verbose_name="Usuario Creador")
-    
-    # Auditoría - Modificación
-    usuario_modificador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='asientos_modificados', verbose_name="Usuario Modificador")
-    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Fecha Modificación")
-    
-    # Reverso
-    asiento_original = models.OneToOneField('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='asiento_reverso', verbose_name="Asiento Original (si es reverso)")
-    motivo_reverso = models.TextField(blank=True, verbose_name="Motivo del Reverso")
-    
-    # Flexible
-    comentarios = models.TextField(blank=True, verbose_name="Comentarios")
-    metadata = models.JSONField(default=dict, blank=True, null=True, verbose_name="Datos Adicionales (JSON)")
-
     def __str__(self):
-        return f"[{self.numero_asiento}] {self.fecha.strftime('%d/%m/%Y')} - {self.descripcion} - ${self.valor:,.0f}"
+        return f"Configuración - {self.empresa.razon_social}"
 
-    def confirmar(self):
-        """Confirma el asiento (no permite edición posterior)"""
-        if self.estado != 'borrador':
-            raise ValidationError("Solo se pueden confirmar asientos en borrador")
-        
-        # Valida integridad
-        self.validar_integridad()
-        
-        self.estado = 'confirmado'
-        self.save()
-
-    def validar_integridad(self):
-        """Valida que debe = haber y otros controles"""
-        if self.total_debe != self.total_haber:
-            raise ValidationError(f"Asiento descuadrado: Debe ({self.total_debe}) ≠ Haber ({self.total_haber})")
-        
-        movimientos = self.movimientos.all()
-        if movimientos.count() < 2:
-            raise ValidationError("El asiento debe tener al menos 2 movimientos")
-        
-        for mov in movimientos:
-            if mov.debe > 0 and mov.haber > 0:
-                raise ValidationError(f"Movimiento {mov.id} tiene debe y haber al mismo tiempo")
-
-    def puede_modificarse(self):
-        """Verifica si el asiento puede modificarse"""
-        return self.estado == 'borrador' and self.periodo_contable.estado == 'abierto'
-
-    def puede_reversarse(self):
-        """Verifica si el asiento puede reversarse"""
-        return self.estado in ['borrador', 'confirmado']
-
-    def reversar(self, motivo, usuario):
-        """Crea un asiento de reverso"""
-        if not self.puede_reversarse():
-            raise ValidationError("Este asiento no puede reversarse")
-        
-        # Crear asiento de reverso
-        reverso = AsientoContable.objects.create(
-            numero_asiento=f"REVERSO-{self.numero_asiento}",
-            periodo_contable=self.periodo_contable,
-            fecha_documento=self.fecha_documento,
-            descripcion=f"REVERSO: {self.descripcion}",
-            referencia=self.referencia,
-            valor=self.valor,
-            total_debe=self.total_haber,
-            total_haber=self.total_debe,
-            tipo='contra_asiento',
-            modulo_origen=self.modulo_origen,
-            estado='borrador',
-            usuario_creador=usuario,
-            asiento_original=self,
-            motivo_reverso=motivo,
-        )
-        
-        # Crear movimientos de reverso (invertidos)
-        for mov in self.movimientos.all():
-            MovimientoContable.objects.create(
-                asiento_contable=reverso,
-                cuenta=mov.cuenta,
-                descripcion=f"Reverso: {mov.descripcion}",
-                debe=mov.haber,
-                haber=mov.debe,
-                centro_costo=mov.centro_costo,
-                proyecto=mov.proyecto,
-                linea=mov.linea,
-            )
-        
-        # Marcar original como reversado
-        self.estado = 'reversado'
-        self.save()
-        
-        return reverso
-
+class UsuarioEmpresa(models.Model):
+    """Asignación de usuarios a empresas con roles específicos"""
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='usuarios_asignados')
+    
+    rol_empresa = models.CharField(max_length=50, choices=[
+        ('administrador', 'Administrador'),
+        ('gerente', 'Gerente'),
+        ('supervisor', 'Supervisor'),
+        ('operador', 'Operador'),
+        ('consultor', 'Consultor'),
+    ], default='operador')
+    
+    permisos_especificos = models.JSONField(default=dict, blank=True, 
+                                           help_text="Permisos específicos por módulo")
+    
+    activo = models.BooleanField(default=True)
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
-        verbose_name = "Asiento Contable"
-        verbose_name_plural = "Libro Mayor (Asientos Contables)"
-        ordering = ['-fecha']
-        indexes = [
-            models.Index(fields=['fecha', 'modulo_origen']),
-            models.Index(fields=['estado', 'periodo_contable']),
-            models.Index(fields=['numero_asiento']),
-        ]
-
-
-# ═══════════════════════════════════════════════════════
-# 5. MOVIMIENTO CONTABLE - MEJORADO
-# ═══════════════════════════════════════════════════════
-
-class MovimientoContable(models.Model):
-    """
-    Movimientos contables asociados a un asiento contable (Partida Doble).
-    MEJORADO: + centro_costo, + proyecto, + linea
-    """
-    asiento_contable = models.ForeignKey(AsientoContable, on_delete=models.CASCADE, null=True, related_name='movimientos')
-    cuenta = models.ForeignKey(Cuenta, on_delete=models.CASCADE, related_name='movimientos')
+        verbose_name = "Usuario Empresa"
+        verbose_name_plural = "Usuarios Empresa"
+        unique_together = ['usuario', 'empresa']
+        ordering = ['empresa', 'rol_empresa', 'usuario']
     
-    # Datos básicos
-    descripcion = models.CharField(max_length=255, blank=True, verbose_name="Descripción del Movimiento")
-    debe = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Débito")
-    haber = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Crédito")
-    
-    # Segmentación
-    centro_costo = models.ForeignKey(CentroCosto, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Centro de Costo")
-    proyecto = models.ForeignKey('proyectos.Proyecto', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Proyecto")
-    
-    # Referencia
-    documento_referencia = models.CharField(max_length=100, blank=True, verbose_name="Documento Referencia")
-    tercero = models.CharField(max_length=100, blank=True, verbose_name="Tercero (Cliente/Proveedor)")
-    linea = models.PositiveSmallIntegerField(default=1, verbose_name="Línea en Asiento")
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="Porcentaje (si aplica)")
-
     def __str__(self):
-        tipo = "DEBE" if self.debe > 0 else "HABER"
-        monto = self.debe if self.debe > 0 else self.haber
-        fecha_str = self.asiento_contable.fecha.strftime('%d/%m/%Y') if self.asiento_contable else 'N/A'
-        return f"{fecha_str} - {self.cuenta.codigo} - {tipo} ${monto:,.0f}"
+        return f"{self.usuario.username} - {self.empresa.razon_social} ({self.rol_empresa})"
 
-    def clean(self):
-        """Validaciones antes de guardar"""
-        if self.debe > 0 and self.haber > 0:
-            raise ValidationError("Un movimiento no puede tener débito y crédito al mismo tiempo")
-        
-        if self.debe == 0 and self.haber == 0:
-            raise ValidationError("El movimiento debe tener un monto debe o haber")
-        
-        if self.cuenta.requiere_centro_costo and not self.centro_costo:
-            raise ValidationError(f"La cuenta {self.cuenta.codigo} requiere un centro de costo")
-        
-        if self.cuenta.requiere_proyecto and not self.proyecto:
-            raise ValidationError(f"La cuenta {self.cuenta.codigo} requiere un proyecto")
-
-    class Meta:
-        verbose_name = "Movimiento Contable"
-        verbose_name_plural = "Movimientos Contables"
-        ordering = ['asiento_contable', 'linea']
-        indexes = [
-            models.Index(fields=['asiento_contable', 'linea']),
-            models.Index(fields=['cuenta', 'centro_costo']),
-        ]
-
-
-# ═══════════════════════════════════════════════════════
-# 6. RETENCIONES (NUEVO)
-# ═══════════════════════════════════════════════════════
-
-class Retencion(models.Model):
-    """
-    Gestión de retenciones en la fuente (RTE-FUENTE) y retenciones RETEICA
-    """
-    TIPO_RETENCION = [
-        ('rte-fuente', 'Retención en la Fuente'),
-        ('reteica', 'RETEICA'),
-        ('rete-iva', 'RETE IVA'),
-        ('otra', 'Otra'),
-    ]
-    
-    TIPO_TERCERO = [
-        ('proveedor', 'Proveedor'),
-        ('cliente', 'Cliente'),
-    ]
-
-    numero_documento = models.CharField(max_length=50, unique=True, verbose_name="Número Documento")
-    fecha = models.DateField(verbose_name="Fecha")
-    tipo_retencion = models.CharField(max_length=20, choices=TIPO_RETENCION, verbose_name="Tipo Retencion")
-    
-    # Tercero
-    tipo_tercero = models.CharField(max_length=20, choices=TIPO_TERCERO, verbose_name="Tipo Tercero")
-    tercero_nit = models.CharField(max_length=20, verbose_name="NIT Tercero")
-    tercero_nombre = models.CharField(max_length=200, verbose_name="Nombre Tercero")
-    
-    # Importes
-    base_retencion = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Base Retención")
-    porcentaje_retencion = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Porcentaje (%)")
-    valor_retencion = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor Retención")
-    
-    # Referencia
-    documento_origen = models.CharField(max_length=100, verbose_name="Documento Origen (Factura, OC)")
-    asiento_contable = models.ForeignKey(AsientoContable, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Asiento Contable")
-    
-    # Auditoría
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Usuario")
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.numero_documento} - {self.tipo_retencion} - ${self.valor_retencion:,.0f}"
-
-    def calcular_valor(self):
-        """Calcula automáticamente el valor de retención"""
-        self.valor_retencion = self.base_retencion * (self.porcentaje_retencion / 100)
-        return self.valor_retencion
-
-    class Meta:
-        verbose_name = "Retención"
-        verbose_name_plural = "Retenciones"
-        ordering = ['-fecha']
-
-
-# ═══════════════════════════════════════════════════════
-# 7. AUDITORÍA Y CONTROL (NUEVO)
-# ═══════════════════════════════════════════════════════
-
-class ControlAuditoria(models.Model):
-    """
-    Trail completo de auditoría de los asientos contables
-    """
-    ACCION_CHOICES = [
-        ('creacion', 'Creación'),
-        ('modificacion', 'Modificación'),
-        ('confirmacion', 'Confirmación'),
-        ('reverso', 'Reverso'),
-        ('acceso', 'Acceso a Información'),
-        ('exportacion', 'Exportación'),
-        ('otro', 'Otro'),
-    ]
-
-    asiento = models.ForeignKey(AsientoContable, on_delete=models.CASCADE, related_name='auditorias', verbose_name="Asiento")
-    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Usuario")
-    accion = models.CharField(max_length=20, choices=ACCION_CHOICES, verbose_name="Acción")
-    descripcion = models.TextField(verbose_name="Descripción de Cambios")
-    direccion_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name="Dirección IP")
-    fecha_hora = models.DateTimeField(auto_now_add=True, verbose_name="Fecha/Hora")
-    datos_anteriores = models.JSONField(null=True, blank=True, verbose_name="Datos Anteriores")
-    datos_nuevos = models.JSONField(null=True, blank=True, verbose_name="Datos Nuevos")
-
-    def __str__(self):
-        return f"{self.asiento.numero_asiento} - {self.accion} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')}"
-
-    class Meta:
-        verbose_name = "Control de Auditoría"
-        verbose_name_plural = "Controles de Auditoría"
-        ordering = ['-fecha_hora']
-        indexes = [
-            models.Index(fields=['asiento', 'fecha_hora']),
-            models.Index(fields=['usuario', 'accion']),
-        ]
+# Create your models here.
