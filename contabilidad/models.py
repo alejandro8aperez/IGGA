@@ -26,7 +26,7 @@ class CentroCosto(models.Model):
     ]
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='administrativo', verbose_name="Tipo")
     
-    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Responsable")
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='centros_costo_contabilidad', verbose_name="Responsable")
     presupuesto_anual = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name="Presupuesto Anual")
     activo = models.BooleanField(default=True, verbose_name="Activo")
     
