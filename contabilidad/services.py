@@ -471,45 +471,108 @@ def crear_asiento_cobro(factura, monto_cobro, usuario):
     confirmar_asiento(asiento, usuario)
     return asiento
 
-def crear_asiento_pago_proveedor(orden_pago, usuario):
-    """Crea asiento por pago a proveedor (integración compras)"""
+def crear_asiento_pago_proveedor(fecha, orden, monto, usuario=None):
+    """Crea asiento por pago a proveedor (integracion compras)
+
+    Args:
+        fecha: fecha del pago
+        orden: instancia de OrdenCompra
+        monto: monto pagado
+        usuario: usuario que registra (opcional)
+    """
     periodo = PeriodoContable.objects.filter(
         estado='abierto',
-        fecha_inicio__lte=datetime.now().date(),
-        fecha_fin__gte=datetime.now().date()
+        fecha_inicio__lte=fecha,
+        fecha_fin__gte=fecha
     ).first()
 
     if not periodo:
-        raise ValidationError("No hay período abierto")
+        raise ValidationError("No hay periodo abierto para esta fecha")
 
     cuenta_caja = obtener_cuenta('100101', 'Caja y bancos', 'activo', naturaleza='deudora')
     cuenta_cxp = obtener_cuenta('210101', 'Cuentas por pagar proveedores', 'pasivo', naturaleza='acreedora')
 
     asiento = crear_asiento_contable(
-        numero_asiento=f"PAGO-{orden_pago.id}",
+        numero_asiento=f"PAGO-{orden.id}",
         periodo_contable=periodo,
-        fecha_documento=datetime.now().date(),
-        descripcion=f"Pago a proveedor {orden_pago.proveedor.nombre}",
-        referencia=f"PAGO:{orden_pago.numero}",
+        fecha_documento=fecha,
+        descripcion=f"Pago a proveedor {orden.proveedor.razon_social}",
+        referencia=f"PAGO:OC-{orden.numero}",
         movimientos_data=[
             {
                 'cuenta': cuenta_cxp,
-                'debe': orden_pago.total,
+                'debe': monto,
                 'haber': Decimal('0.00'),
-                'descripcion': f'Baja CxP {orden_pago.numero}',
-                'tercero': orden_pago.proveedor.nombre,
+                'descripcion': f'Baja CxP OC-{orden.numero}',
+                'tercero': orden.proveedor.razon_social,
             },
             {
                 'cuenta': cuenta_caja,
                 'debe': Decimal('0.00'),
-                'haber': orden_pago.total,
-                'descripcion': f'Pago proveedor {orden_pago.proveedor.nombre}',
+                'haber': monto,
+                'descripcion': f'Pago proveedor {orden.proveedor.razon_social}',
             },
         ],
         tipo='egreso',
         modulo_origen='compras',
         usuario=usuario,
-        metadata={'orden_pago_id': orden_pago.id, 'proveedor_id': orden_pago.proveedor.id}
+        metadata={'orden_compra_id': orden.id, 'proveedor_id': orden.proveedor.id}
+    )
+
+    confirmar_asiento(asiento, usuario)
+    return asiento
+
+
+def crear_asiento_mantenimiento(costo_mantenimiento, usuario):
+    """Crea asiento por costo de mantenimiento (integracion mantenimiento)
+
+    Args:
+        costo_mantenimiento: instancia de CostoMantenimiento
+        usuario: usuario que registra
+    """
+    orden = costo_mantenimiento.orden
+    fecha = costo_mantenimiento.fecha_registro.date() if costo_mantenimiento.fecha_registro else datetime.now().date()
+
+    periodo = PeriodoContable.objects.filter(
+        estado='abierto',
+        fecha_inicio__lte=fecha,
+        fecha_fin__gte=fecha
+    ).first()
+
+    if not periodo:
+        raise ValidationError("No hay periodo abierto para esta fecha")
+
+    cuenta_gastos_mtto = obtener_cuenta('510201', 'Gastos de mantenimiento', 'gasto', naturaleza='deudora')
+    cuenta_caja = obtener_cuenta('100101', 'Caja y bancos', 'activo', naturaleza='deudora')
+
+    asiento = crear_asiento_contable(
+        numero_asiento=f"MTTO-{orden.numero}",
+        periodo_contable=periodo,
+        fecha_documento=fecha,
+        descripcion=f"Costo mantenimiento {orden.equipo.nombre} - {orden.numero}",
+        referencia=f"MTTO:{orden.numero}",
+        movimientos_data=[
+            {
+                'cuenta': cuenta_gastos_mtto,
+                'debe': costo_mantenimiento.costo_total,
+                'haber': Decimal('0.00'),
+                'descripcion': f'Gasto mantenimiento {orden.equipo.nombre}',
+            },
+            {
+                'cuenta': cuenta_caja,
+                'debe': Decimal('0.00'),
+                'haber': costo_mantenimiento.costo_total,
+                'descripcion': f'Pago mantenimiento {orden.numero}',
+            },
+        ],
+        tipo='egreso',
+        modulo_origen='mantenimiento',
+        usuario=usuario,
+        metadata={
+            'orden_mantenimiento_id': orden.id,
+            'equipo_id': orden.equipo.id,
+            'costo_mantenimiento_id': costo_mantenimiento.id
+        }
     )
 
     confirmar_asiento(asiento, usuario)
