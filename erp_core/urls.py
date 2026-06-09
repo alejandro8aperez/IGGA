@@ -64,6 +64,7 @@ urlpatterns = [
     path('api/venta/', include('venta.urls')),
     path('api/ventas/', include('venta.urls')),  # Alias para el frontend
     path('api/contabilidad/', include('contabilidad.urls')),
+    path('api/tesoreria/', include('tesoreria.urls')),
     path('api/proyectos/', include('proyectos.urls')),
     path('api/logistica/', include('logistica.urls')),
     path('api/calidad/', include('calidad.urls')),

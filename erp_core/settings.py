@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'marketing',
     'facturacion',
     'contabilidad',
+    'tesoreria',
     'empresa',
     'venta',
     'workflow',
