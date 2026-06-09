@@ -3,6 +3,7 @@
 // ============================================================
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axiosInstance, { BASE_URL } from '../config/axiosConfig';
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -17,7 +18,6 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
-  // alias que usa App.jsx (logoutUser)
   const logoutUser = logout;
 
   // ── Verificar token al arrancar ──────────────────────────────
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
       const refresh = localStorage.getItem('refresh_token');
       if (!access || !refresh) { setLoading(false); return; }
       try {
-        const res = await axiosInstance.get('usuarios/perfil/');
+        const res = await axiosInstance.get('usuarios/me/');
         setUser(res.data);
       } catch {
         setUser(null);
@@ -42,18 +42,17 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    // Usamos axiosInstance (baseURL ya incluye /api/)
     const response = await axiosInstance.post('token/', { username, password });
     const { access, refresh } = response.data;
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
     axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-    const perfil = await axiosInstance.get('usuarios/perfil/');
+    const perfil = await axiosInstance.get('usuarios/me/');
     setUser(perfil.data);
     return perfil.data;
   };
 
-  // ── loginUser: compatible con Login.jsx (recibe objeto con tokens) ──
+  // ── loginUser: compatible con Login.jsx ──────────────────────
   const loginUser = (userData) => {
     if (userData.access) {
       localStorage.setItem('access_token', userData.access);
@@ -71,9 +70,9 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       login,
-      loginUser,   // ← usado por Login.jsx
+      loginUser,
       logout,
-      logoutUser,  // ← usado por App.jsx (Sidebar)
+      logoutUser,
       loading,
       isAuthenticated: !!user
     }}>
