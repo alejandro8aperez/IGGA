@@ -1,4 +1,3 @@
-$content = @'
 // ============================================================
 //  AuthContext.jsx  –  ERP-8AMPERIOS
 // ============================================================
@@ -91,10 +90,3 @@ export const useAuth = () => {
 };
 
 export default AuthContext;
-'@
-
-Set-Content "C:\postgres\erp-8amperios\frontend\src\context\AuthContext.jsx" $content -NoNewline
-
-# Marcar como resuelto y continuar rebase
-git add C:\postgres\erp-8amperios\frontend\src\context\AuthContext.jsx
-git rebase --continue
