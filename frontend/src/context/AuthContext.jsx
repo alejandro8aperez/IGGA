@@ -2,8 +2,7 @@
 //  AuthContext.jsx  –  ERP-8AMPERIOS
 // ============================================================
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import axiosInstance, { BASE_URL } from '../config/axiosConfig';
+import axiosInstance from '../config/axiosConfig';
 
 const AuthContext = createContext(null);
 
@@ -44,7 +43,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    const response = await axios.post(`${BASE_URL}token/`, { username, password });
+    // Usamos axiosInstance (baseURL ya incluye /api/)
+    const response = await axiosInstance.post('token/', { username, password });
     const { access, refresh } = response.data;
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
