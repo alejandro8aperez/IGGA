@@ -3,6 +3,7 @@
 // ============================================================
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axiosInstance, { BASE_URL } from '../config/axiosConfig';
+import { API } from '../config/api';
 
 const AuthContext = createContext(null);
 
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       const refresh = localStorage.getItem('refresh_token');
       if (!access || !refresh) { setLoading(false); return; }
       try {
-        const res = await axiosInstance.get('usuarios/me/');
+        const res = await axiosInstance.get(API.USERS.PROFILE); // ← CORREGIDO
         setUser(res.data);
       } catch {
         setUser(null);
@@ -42,12 +43,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    const response = await axiosInstance.post('token/', { username, password });
+    const response = await axiosInstance.post(API.AUTH.LOGIN, { username, password }); // ← CORREGIDO
     const { access, refresh } = response.data;
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
     axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-    const perfil = await axiosInstance.get('usuarios/me/');
+    const perfil = await axiosInstance.get(API.USERS.PROFILE); // ← CORREGIDO
     setUser(perfil.data);
     return perfil.data;
   };
