@@ -1,3 +1,6 @@
+// ============================================================
+//  InformeDiarioProy.jsx  –  ERP-8AMPERIOS  (CORREGIDO)
+// ============================================================
 import { useState, useRef } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -12,7 +15,8 @@ import InformeFormulario from "@/components/informe-diario/InformeFormulario";
 import HojaFotosInforme  from "@/components/informe-diario/HojaFotosInforme";
 import ReportesInforme   from "@/components/informe-diario/ReportesInforme";
 
-import axios from "axios";
+// ✅ CORREGIDO: Importar axiosInstance (con baseURL configurada) en lugar de axios
+import axiosInstance from "@/config/axiosConfig";
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { API } from "@/config/api";
@@ -134,11 +138,11 @@ function InformeFotos({ informeId }) {
   const [editValue, setEditValue] = useState("");
   const debounceRef = useRef(null);
 
-  // ✅ FIX: Normalizar respuesta a array
+  // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
   const { data: rawFotos, isLoading } = useQuery({
     queryKey: ["informe-fotos", informeId],
     queryFn: () =>
-      informeId ? axios.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`).then(r => r.data) : [],
+      informeId ? axiosInstance.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`).then(r => r.data) : [],
     enabled: !!informeId,
   });
   const fotos = normalizeArray(rawFotos);
@@ -155,7 +159,8 @@ function InformeFotos({ informeId }) {
         if (descripcionUpload.trim()) {
           fd.append("descripcion", descripcionUpload.trim());
         }
-        await axios.post(API.INFORME_DIARIO.ANEXOS, fd, { headers: { "Content-Type": "multipart/form-data" } });
+        // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
+        await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, fd, { headers: { "Content-Type": "multipart/form-data" } });
       }
       queryClient.invalidateQueries(["informe-fotos", informeId]);
       setDescripcionUpload("");
@@ -172,7 +177,8 @@ function InformeFotos({ informeId }) {
 
   const saveDescripcion = async (id, value) => {
     try {
-      await axios.patch(`${API.INFORME_DIARIO.ANEXOS}${id}/`, {
+      // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
+      await axiosInstance.patch(`${API.INFORME_DIARIO.ANEXOS}${id}/`, {
         descripcion: value.trim()
       }, {
         headers: { "Content-Type": "application/json" }
@@ -214,7 +220,8 @@ function InformeFotos({ informeId }) {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Eliminar esta foto?")) return;
     try {
-      await axios.delete(`${API.INFORME_DIARIO.ANEXOS}${id}/`);
+      // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
+      await axiosInstance.delete(`${API.INFORME_DIARIO.ANEXOS}${id}/`);
       queryClient.invalidateQueries(["informe-fotos", informeId]);
       toast.success("Foto eliminada");
     } catch {
@@ -358,12 +365,12 @@ function InformeDiarioContent() {
   const [activeTab, setActiveTab]           = useState("dashboard");
   const [editingInforme, setEditingInforme] = useState(null);
 
-  // ✅ FIX: Normalizar respuesta a array antes de reduce
+  // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
   const { data: rawFotosData } = useQuery({
     queryKey: ["informe-fotos", editingInforme?.id],
     queryFn: () =>
       editingInforme?.id
-        ? axios.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${editingInforme.id}`).then(r => r.data)
+        ? axiosInstance.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${editingInforme.id}`).then(r => r.data)
         : [],
     enabled: !!editingInforme?.id,
   });
