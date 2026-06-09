@@ -1,5 +1,6 @@
 // ============================================================
-//  InformeDiarioProy.jsx  –  ERP-8AMPERIOS  (CORREGIDO)
+//  InformeDiarioProy.jsx  –  ERP-8AMPERIOS  (CORREGIDO v2)
+//  Fix: URLs de imágenes relativas → absolutas con BASE_URL
 // ============================================================
 import { useState, useRef } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,8 +16,7 @@ import InformeFormulario from "@/components/informe-diario/InformeFormulario";
 import HojaFotosInforme  from "@/components/informe-diario/HojaFotosInforme";
 import ReportesInforme   from "@/components/informe-diario/ReportesInforme";
 
-// ✅ CORREGIDO: Importar axiosInstance (con baseURL configurada) en lugar de axios
-import axiosInstance from "@/config/axiosConfig";
+import axiosInstance, { BASE_URL } from "@/config/axiosConfig"; // ✅ Importar BASE_URL
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { API } from "@/config/api";
@@ -38,13 +38,24 @@ function normalizeArray(data) {
   if (data?.results && Array.isArray(data.results)) return data.results;
   if (data?.data && Array.isArray(data.data)) return data.data;
   if (data && typeof data === "object" && !Array.isArray(data)) {
-    // Si es un objeto con keys numéricas, convertir a array
     const keys = Object.keys(data);
     if (keys.length > 0 && keys.every(k => !isNaN(Number(k)))) {
       return keys.map(k => data[k]);
     }
   }
   return [];
+}
+
+// ✅ NUEVO: Helper para construir URL absoluta de imagen
+function getImageUrl(src) {
+  if (!src) return null;
+  // Si ya es URL absoluta (http/https), devolver tal cual
+  if (src.startsWith('http://') || src.startsWith('https://')) return src;
+  // Si es ruta relativa, anteponer BASE_URL (sin el /api/ final)
+  const base = BASE_URL.replace(/\/api\/$/, ''); // quita /api/ del final
+  // Asegurar que src empiece con /
+  const path = src.startsWith('/') ? src : '/' + src;
+  return base + path;
 }
 
 // ── Función de impresión de fotos ─────────────────────────────────────────
@@ -62,7 +73,7 @@ function imprimirFotos(fotos, informe) {
   const obra  = informe?.obra_nombre || "Informe Diario";
 
   const fotosHTML = fotosLlenas.map(([num, f]) => {
-    const src  = f.imagen_url || f.imagen;
+    const src  = getImageUrl(f.imagen_url || f.imagen); // ✅ Usar helper
     const desc = f.descripcion || "";
     const sec  = f.seccion_display || "";
     return `
@@ -138,7 +149,6 @@ function InformeFotos({ informeId }) {
   const [editValue, setEditValue] = useState("");
   const debounceRef = useRef(null);
 
-  // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
   const { data: rawFotos, isLoading } = useQuery({
     queryKey: ["informe-fotos", informeId],
     queryFn: () =>
@@ -159,7 +169,6 @@ function InformeFotos({ informeId }) {
         if (descripcionUpload.trim()) {
           fd.append("descripcion", descripcionUpload.trim());
         }
-        // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
         await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, fd, { headers: { "Content-Type": "multipart/form-data" } });
       }
       queryClient.invalidateQueries(["informe-fotos", informeId]);
@@ -177,7 +186,6 @@ function InformeFotos({ informeId }) {
 
   const saveDescripcion = async (id, value) => {
     try {
-      // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
       await axiosInstance.patch(`${API.INFORME_DIARIO.ANEXOS}${id}/`, {
         descripcion: value.trim()
       }, {
@@ -220,7 +228,6 @@ function InformeFotos({ informeId }) {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Eliminar esta foto?")) return;
     try {
-      // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
       await axiosInstance.delete(`${API.INFORME_DIARIO.ANEXOS}${id}/`);
       queryClient.invalidateQueries(["informe-fotos", informeId]);
       toast.success("Foto eliminada");
@@ -294,7 +301,8 @@ function InformeFotos({ informeId }) {
               </div>
             ))
           : fotos.map(foto => {
-              const src = foto?.imagen_url || foto?.imagen;
+              // ✅ CORREGIDO: Usar helper getImageUrl para URLs absolutas
+              const src = getImageUrl(foto?.imagen_url || foto?.imagen);
               return (
                 <div key={foto.id} style={{ background: C.white, borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", height: 260 }}>
                   <div style={{ width: "100%", height: 140, background: "linear-gradient(135deg,#f5f3ff,#ede9fe)", overflow: "hidden", position: "relative" }}>
@@ -365,7 +373,6 @@ function InformeDiarioContent() {
   const [activeTab, setActiveTab]           = useState("dashboard");
   const [editingInforme, setEditingInforme] = useState(null);
 
-  // ✅ CORREGIDO: Usar axiosInstance con baseURL configurada
   const { data: rawFotosData } = useQuery({
     queryKey: ["informe-fotos", editingInforme?.id],
     queryFn: () =>
