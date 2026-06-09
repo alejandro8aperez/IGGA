@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance from '../../config/axiosConfig';
 import { Camera, X, UploadCloud, Loader2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '@/config/api';
@@ -196,160 +196,30 @@ function imprimirFotos(fotos, informe) {
   <title>Registro Fotográfico — ${obra}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: Arial, sans-serif;
-      font-size: 10px;
-      color: #1e293b;
-      background: #fff;
-    }
-
-    /* ── Encabezado ── */
-    .header {
-      display: flex;
-      align-items: stretch;
-      border: 2px solid #1B3A5C;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-bottom: 14px;
-    }
-    .header-logo {
-      background: #1B3A5C;
-      color: #fff;
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      padding: 10px 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 80px;
-    }
-    .header-logo span {
-      font-size: 8px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      margin-top: 2px;
-      opacity: 0.8;
-    }
-    .header-info {
-      flex: 1;
-      padding: 8px 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 3px;
-      border-left: 3px solid #1B3A5C;
-    }
-    .header-title {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #1B3A5C;
-    }
-    .header-meta {
-      display: flex;
-      gap: 20px;
-      font-size: 9px;
-      color: #475569;
-    }
+    body { font-family: Arial, sans-serif; font-size: 10px; color: #1e293b; background: #fff; }
+    .header { display: flex; align-items: stretch; border: 2px solid #1B3A5C; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+    .header-logo { background: #1B3A5C; color: #fff; font-size: 22px; font-weight: 900; letter-spacing: 0.08em; padding: 10px 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; }
+    .header-logo span { font-size: 8px; font-weight: 400; letter-spacing: 0.1em; margin-top: 2px; opacity: 0.8; }
+    .header-info { flex: 1; padding: 8px 14px; display: flex; flex-direction: column; justify-content: center; gap: 3px; border-left: 3px solid #1B3A5C; }
+    .header-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1B3A5C; }
+    .header-meta { display: flex; gap: 20px; font-size: 9px; color: #475569; }
     .header-meta strong { color: #1e293b; }
-    .header-cod {
-      margin-left: auto;
-      font-size: 8px;
-      font-family: monospace;
-      color: #94a3b8;
-      text-align: right;
-      padding: 8px 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-    }
-
-    /* ── Contador ── */
-    .count-bar {
-      font-size: 8px;
-      color: #64748b;
-      margin-bottom: 10px;
-      text-align: right;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    /* ── Grilla fotos ── */
-    .fotos-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    .foto-card {
-      border: 1px solid #e2e8f0;
-      border-radius: 5px;
-      overflow: hidden;
-      break-inside: avoid;
-    }
-    .foto-card img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-    }
-    .foto-info {
-      padding: 4px 5px;
-      background: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-    .foto-num {
-      font-family: monospace;
-      font-size: 8px;
-      font-weight: 700;
-      color: #1B3A5C;
-    }
-    .foto-sec {
-      font-size: 7px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #7c3aed;
-      letter-spacing: 0.04em;
-    }
-    .foto-desc {
-      font-size: 8px;
-      color: #334155;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* ── Pie ── */
-    .footer {
-      margin-top: 16px;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 8px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 8px;
-      color: #94a3b8;
-    }
-
-    /* ── Print ── */
-    @media print {
-      @page { size: A4 landscape; margin: 12mm; }
-      body  { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    }
+    .header-cod { margin-left: auto; font-size: 8px; font-family: monospace; color: #94a3b8; text-align: right; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+    .count-bar { font-size: 8px; color: #64748b; margin-bottom: 10px; text-align: right; text-transform: uppercase; letter-spacing: 0.06em; }
+    .fotos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .foto-card { border: 1px solid #e2e8f0; border-radius: 5px; overflow: hidden; break-inside: avoid; }
+    .foto-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+    .foto-info { padding: 4px 5px; background: #f8fafc; display: flex; flex-direction: column; gap: 1px; }
+    .foto-num { font-family: monospace; font-size: 8px; font-weight: 700; color: #1B3A5C; }
+    .foto-sec { font-size: 7px; font-weight: 700; text-transform: uppercase; color: #7c3aed; letter-spacing: 0.04em; }
+    .foto-desc { font-size: 8px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .footer { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; }
+    @media print { @page { size: A4 landscape; margin: 12mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
-
   <div class="header">
-    <div class="header-logo">
-      IGGA
-      <span>INTERVENTORÍA</span>
-    </div>
+    <div class="header-logo">IGGA<span>INTERVENTORÍA</span></div>
     <div class="header-info">
       <div class="header-title">Registro Fotográfico de Obra</div>
       <div class="header-meta">
@@ -363,18 +233,12 @@ function imprimirFotos(fotos, informe) {
       <div>Mod: 00</div>
     </div>
   </div>
-
   <div class="count-bar">${fotosLlenas.length} fotografía${fotosLlenas.length !== 1 ? 's' : ''} registrada${fotosLlenas.length !== 1 ? 's' : ''}</div>
-
-  <div class="fotos-grid">
-    ${fotosHTML}
-  </div>
-
+  <div class="fotos-grid">${fotosHTML}</div>
   <div class="footer">
     <span>Generado: ${new Date().toLocaleString('es-CO')}</span>
     <span>${cod} — ${obra} — ${fecha}</span>
   </div>
-
   <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<\/script>
 </body>
 </html>`;
@@ -456,15 +320,12 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
 
   return (
     <div style={S.wrapper}>
-
-      {/* ── Header ── */}
       <div style={S.header}>
         <div>
           <h2 style={S.title}>F-141-IN: Registro Fotográfico</h2>
           <p style={S.subtitle}>Standard Grid Layout 4×6 — {fotasLlenas}/24 fotos</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Botón Imprimir Fotos */}
           <button
             style={S.printBtn}
             onClick={() => imprimirFotos(fotos, informe)}
@@ -477,7 +338,6 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
         </div>
       </div>
 
-      {/* ── Grilla ── */}
       <div style={S.grid}>
         {slots.map(num => {
           const isFilled  = !!fotos[num];
