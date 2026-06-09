@@ -6,7 +6,7 @@ import {
     BarChart3, Box, AlertTriangle, Power
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { API } from '../config/api';
 
 const API_BASE = API.INVENTARIOS.PRODUCTOS.replace('productos/', '');
@@ -54,7 +54,7 @@ export default function Inventario() {
 
     const handleQuickCategoryUpdate = async (productId, categoryId) => {
         try {
-            await axios.patch(`${API.INVENTARIOS.PRODUCTOS}${productId}/`, { categoria: categoryId });
+            await axiosInstance.patch(`${API.INVENTARIOS.PRODUCTOS}${productId}/`, { categoria: categoryId });
             setProductos(productos.map(p => p.id === productId ? { ...p, categoria: categoryId, categoria_nombre: categorias.find(c => c.id === parseInt(categoryId))?.nombre } : p));
         } catch (err) {
             console.error("Error al actualizar categoría:", err);
@@ -66,8 +66,8 @@ export default function Inventario() {
         try {
             setLoading(true);
             const [prodRes, catRes] = await Promise.all([
-                axios.get(`${API_BASE}productos/`),
-                axios.get(`${API_BASE}categorias/`)
+                axiosInstance.get(`${API_BASE}productos/`),
+                axiosInstance.get(`${API_BASE}categorias/`)
             ]);
             setProductos(prodRes.data);
             setCategorias(catRes.data);
@@ -83,9 +83,9 @@ export default function Inventario() {
         try {
             setLoading(true);
             const [prodRes, catRes, unitRes] = await Promise.all([
-                axios.get(`${API_BASE}productos/`),
-                axios.get(`${API_BASE}categorias/`),
-                axios.get(`${API_BASE}unidades-medida/`)
+                axiosInstance.get(`${API_BASE}productos/`),
+                axiosInstance.get(`${API_BASE}categorias/`),
+                axiosInstance.get(`${API_BASE}unidades-medida/`)
             ]);
             setProductos(prodRes.data);
             setCategorias(catRes.data);
@@ -101,7 +101,7 @@ export default function Inventario() {
     const handleUnitSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`${API_BASE}unidades-medida/`, unitForm);
+            const res = await axiosInstance.post(`${API_BASE}unidades-medida/`, unitForm);
             setUnidadesMedida([...unidadesMedida, res.data]);
             setProdForm({ ...prodForm, unidad_medida: res.data.nombre });
             setIsUnitModalOpen(false);
@@ -199,7 +199,7 @@ export default function Inventario() {
 
     const toggleActivo = async (product) => {
         try {
-            await axios.patch(`${API_BASE}productos/${product.id}/`, {
+            await axiosInstance.patch(`${API_BASE}productos/${product.id}/`, {
                 activo: !product.activo
             });
             fetchData();
@@ -213,7 +213,7 @@ export default function Inventario() {
     const deleteProd = async (id) => {
         if (window.confirm('¿Eliminar este producto?')) {
             try {
-                await axios.delete(`${API_BASE}productos/${id}/`);
+                await axiosInstance.delete(`${API_BASE}productos/${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar producto:', err);
@@ -240,7 +240,7 @@ export default function Inventario() {
     const deleteCat = async (id) => {
         if (window.confirm('¿Eliminar esta categoría?')) {
             try {
-                await axios.delete(`${API_BASE}categorias/${id}/`);
+                await axiosInstance.delete(`${API_BASE}categorias/${id}/`);
                 fetchData();
             } catch (err) {
                 setError('No se puede eliminar la categoría porque tiene productos asociados');

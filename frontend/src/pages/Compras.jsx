@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     ShoppingCart, AlertCircle, Edit3, Trash2, Plus, X, Truck, FileText, Palette,
     Users, DollarSign, Package, CheckCircle, Clock, TrendingUp,
@@ -114,10 +114,10 @@ export default function Compras() {
     const fetchData = async () => {
         try {
             const [resProv, resOrd, resRecep, resPagos] = await Promise.all([
-                axios.get(API_PROV),
-                axios.get(API_ORD),
-                axios.get(API_RECEPCION),
-                axios.get(API_PAGO)
+                axiosInstance.get(API_PROV),
+                axiosInstance.get(API_ORD),
+                axiosInstance.get(API_RECEPCION),
+                axiosInstance.get(API_PAGO)
             ]);
             setProveedores(resProv.data);
             setOrdenes(resOrd.data);
@@ -133,7 +133,7 @@ export default function Compras() {
 
     const fetchProductosPorProveedor = async () => {
         try {
-            const res = await axios.get(`${API_PROD_PROV}?proveedor=${proveedorSeleccionado}`);
+            const res = await axiosInstance.get(`${API_PROD_PROV}?proveedor=${proveedorSeleccionado}`);
             setProductosProveedor(res.data);
         } catch (err) {
             console.error('Error fetching productos por proveedor:', err);
@@ -175,9 +175,9 @@ export default function Compras() {
         e.preventDefault();
         try {
             if (currentProv) {
-                await axios.put(`${API_PROV}${currentProv.id}/`, provForm);
+                await axiosInstance.put(`${API_PROV}${currentProv.id}/`, provForm);
             } else {
-                await axios.post(API_PROV, provForm);
+                await axiosInstance.post(API_PROV, provForm);
             }
             setIsProvModalOpen(false);
             fetchData();
@@ -190,7 +190,7 @@ export default function Compras() {
     const handleProvDelete = async (id) => {
         if (window.confirm('¿Eliminar proveedor? (Puede fallar si tiene órdenes asociadas)')) {
             try {
-                await axios.delete(`${API_PROV}${id}/`);
+                await axiosInstance.delete(`${API_PROV}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar proveedor:', err);
@@ -232,9 +232,9 @@ export default function Compras() {
             };
 
             if (currentRecep) {
-                await axios.put(`${API_RECEPCION}${currentRecep.id}/`, payload);
+                await axiosInstance.put(`${API_RECEPCION}${currentRecep.id}/`, payload);
             } else {
-                await axios.post(API_RECEPCION, payload);
+                await axiosInstance.post(API_RECEPCION, payload);
             }
             setIsRecepModalOpen(false);
             fetchData();
@@ -255,7 +255,7 @@ export default function Compras() {
         if (isNaN(cantidad) || cantidad <= 0) return;
 
         try {
-            await axios.post(API_RECEPCION, {
+            await axiosInstance.post(API_RECEPCION, {
                 orden: orden.id,
                 cantidad_recibida: cantidad,
                 fecha_recepcion: new Date().toISOString().split('T')[0],
@@ -272,7 +272,7 @@ export default function Compras() {
     const handleRecepcionDelete = async (id) => {
         if (window.confirm('¿Está seguro de eliminar esta recepción? Esto afectará el saldo pendiente de la orden.')) {
             try {
-                await axios.delete(`${API_RECEPCION}${id}/`);
+                await axiosInstance.delete(`${API_RECEPCION}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar recepción:', err);
@@ -304,7 +304,7 @@ export default function Compras() {
                 return;
             }
 
-            await axios.post(API_PAGO, {
+            await axiosInstance.post(API_PAGO, {
                 orden: Number(pagoForm.orden),
                 monto: montoNum,
                 metodo: pagoForm.metodo,
@@ -326,7 +326,7 @@ export default function Compras() {
     const openProdProvModal = async (pp = null) => {
         // Cargar productos disponibles
         try {
-            const res = await axios.get(API_PRODUCTOS);
+            const res = await axiosInstance.get(API_PRODUCTOS);
             setProductosDisponibles(res.data);
         } catch (err) {
             console.error('Error cargando productos:', err);
@@ -370,9 +370,9 @@ export default function Compras() {
             };
 
             if (currentProdProv) {
-                await axios.put(`${API_PROD_PROV}${currentProdProv.id}/`, data);
+                await axiosInstance.put(`${API_PROD_PROV}${currentProdProv.id}/`, data);
             } else {
-                await axios.post(API_PROD_PROV, data);
+                await axiosInstance.post(API_PROD_PROV, data);
             }
             setIsProdProvModalOpen(false);
             fetchProductosPorProveedor();
@@ -385,7 +385,7 @@ export default function Compras() {
     const handleProdProvDelete = async (id) => {
         if (window.confirm('¿Eliminar este producto del proveedor?')) {
             try {
-                await axios.delete(`${API_PROD_PROV}${id}/`);
+                await axiosInstance.delete(`${API_PROD_PROV}${id}/`);
                 fetchProductosPorProveedor();
             } catch (err) {
                 console.error('Error al eliminar producto-proveedor:', err);
@@ -401,7 +401,7 @@ export default function Compras() {
             return;
         }
         try {
-            const res = await axios.get(`${API_PROD_PROV}?proveedor=${proveedorId}`);
+            const res = await axiosInstance.get(`${API_PROD_PROV}?proveedor=${proveedorId}`);
             setProductosProveedorActual(res.data);
         } catch (err) {
             console.error('Error cargando productos del proveedor:', err);
@@ -410,7 +410,7 @@ export default function Compras() {
 
     const openOrdModal = async (ord = null) => {
         try {
-            const res = await axios.get(API_PRODUCTOS);
+            const res = await axiosInstance.get(API_PRODUCTOS);
             setProductosDisponibles(res.data);
         } catch (err) { console.error('Error cargando productos:', err); }
 
@@ -517,9 +517,9 @@ export default function Compras() {
             };
 
             if (currentOrd) {
-                await axios.put(`${API_ORD}${currentOrd.id}/`, payload);
+                await axiosInstance.put(`${API_ORD}${currentOrd.id}/`, payload);
             } else {
-                await axios.post(API_ORD, payload);
+                await axiosInstance.post(API_ORD, payload);
             }
             setIsOrdModalOpen(false);
             fetchData();
@@ -535,7 +535,7 @@ export default function Compras() {
     const handleOrdDelete = async (id) => {
         if (window.confirm('¿Eliminar orden de compra?')) {
             try {
-                await axios.delete(`${API_ORD}${id}/`);
+                await axiosInstance.delete(`${API_ORD}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar orden:', err);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, PieChart, Calendar, RefreshCw } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 
 const ReportePyL = () => {
     const [data, setData] = useState(null);
@@ -14,7 +14,7 @@ const ReportePyL = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('/api/reportes/pyl/');
+            const response = await axiosInstance.get('/api/reportes/pyl/');
             setData(response.data);
         } catch (error) {
             console.error("Error al cargar P&L:", error);

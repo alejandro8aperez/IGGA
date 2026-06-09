@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 
 function ProyectosPS() {
     const navigate = useNavigate();
@@ -11,7 +11,7 @@ function ProyectosPS() {
     useEffect(() => {
         const fetchProyectosPS = async () => {
             try {
-                const res = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/proyectos/proyectos-ps/');
+                const res = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/proyectos/proyectos-ps/');
                 setProyectos(res.data);
             } catch (err) {
                 setError('No se pudieron cargar los proyectos PS.');

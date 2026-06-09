@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     MonitorSmartphone, ShoppingCart, X, 
     CreditCard, DollarSign, ArrowLeft, RefreshCw, 
@@ -18,7 +18,7 @@ import './POS.css';
 // ═══════════════════════════════════════════════════════════════════════════════
 // En vez de crear URLs manualmente, usamos la instancia global de axios
 // que ya tiene baseURL configurada en axiosConfig.js
-// Las peticiones serán relativas: axios.get('inventarios/productos/')
+// Las peticiones serán relativas: axiosInstance.get('inventarios/productos/')
 // y se resolverán a: https://erp-backend-a37b.onrender.com/api/inventarios/productos/
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -77,9 +77,9 @@ function POS() {
             const config = { timeout: 10000 };
 
             const [prodRes, catRes, sesionRes] = await Promise.all([
-                axios.get('inventarios/productos/', config),
-                axios.get('inventarios/categorias/', config),
-                axios.get('pos/sesiones/activa/', config).catch(() => ({ data: null }))
+                axiosInstance.get('inventarios/productos/', config),
+                axiosInstance.get('inventarios/categorias/', config),
+                axiosInstance.get('pos/sesiones/activa/', config).catch(() => ({ data: null }))
             ]);
 
             setProductos(prodRes.data || []);
@@ -111,7 +111,7 @@ function POS() {
 
     const handleOpenSession = async () => {
         try {
-            const res = await axios.post('pos/sesiones/', {
+            const res = await axiosInstance.post('pos/sesiones/', {
                 monto_inicial: 50000,
                 estado: 'abierta'
             });
@@ -124,7 +124,7 @@ function POS() {
     const handleCloseSession = async () => {
         if (!montoContado) return alert('Ingrese el monto contado en caja');
         try {
-            await axios.post(`pos/sesiones/${sesionActiva.id}/cerrar/`, {
+            await axiosInstance.post(`pos/sesiones/${sesionActiva.id}/cerrar/`, {
                 monto_final_contado: Number(montoContado)
             });
             alert('Caja cerrada con exito.');
@@ -327,7 +327,7 @@ function POS() {
 
             console.log('Procesando venta:', payload);
             // URL relativa - axios ya tiene baseURL configurada
-            const response = await axios.post('pos/ventas/', payload);
+            const response = await axiosInstance.post('pos/ventas/', payload);
             setLastSaleReceipt(response.data);
             setCart([]);
             setMontoRecibido('');

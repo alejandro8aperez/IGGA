@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { Users, AlertCircle, Edit3, Trash2, Plus, X, ChevronLeft, Search, FileText, Award, Briefcase, Heart, Shield, Stethoscope, TrendingUp, Package, Palette, LayoutDashboard, ChevronRight, DollarSign, Calendar, Building2 } from 'lucide-react';
 import { API } from '../config/api';
@@ -478,9 +478,9 @@ function EmpleadoModal({ empleado, onClose, onSaved }) {
                 estrato: formData.estrato || null,
             };
             if (empleado) {
-                await axios.put(`${API_RRHH}/empleados/${empleado.id}/`, payload);
+                await axiosInstance.put(`${API_RRHH}/empleados/${empleado.id}/`, payload);
             } else {
-                await axios.post(`${API_RRHH}/empleados/`, payload);
+                await axiosInstance.post(`${API_RRHH}/empleados/`, payload);
             }
             onSaved();
         } catch (err) {
@@ -724,7 +724,7 @@ function RRHH() {
 
     const fetchEmpleados = async () => {
         try {
-            const r = await axios.get(`${API_RRHH}/empleados/`);
+            const r = await axiosInstance.get(`${API_RRHH}/empleados/`);
             setEmpleados(r.data);
             setLoading(false);
         } catch {
@@ -739,7 +739,7 @@ function RRHH() {
 
     const handleDelete = async (id) => {
         if (window.confirm('¿Eliminar empleado?')) {
-            try { await axios.delete(`${API_RRHH}/empleados/${id}/`); fetchEmpleados(); }
+            try { await axiosInstance.delete(`${API_RRHH}/empleados/${id}/`); fetchEmpleados(); }
             catch { alert('Error al eliminar.'); }
         }
     };

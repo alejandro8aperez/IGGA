@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { Users, AlertCircle, Edit3, Trash2, Plus, X, FileText, Phone, Mail, Building2, Calendar, DollarSign, Palette, Paperclip } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
@@ -80,7 +80,7 @@ function Proveedores() {
     const fetchProveedores = async () => {
         try {
             console.log('CRM: Cargando proveedores desde:', API_URL);
-            const response = await axios.get(API_URL);
+            const response = await axiosInstance.get(API_URL);
             console.log('CRM: Proveedors cargados:', response.data);
             setProveedores(response.data);
             setLoading(false);
@@ -245,9 +245,9 @@ function Proveedores() {
                 // Usamos PATCH para actualizaciones parciales y más seguras
                 // Aseguramos que la URL termine con barra para Django REST Framework
                 const url = API_URL.endsWith('/') ? `${API_URL}${currentProvider.id}/` : `${API_URL}/${currentProvider.id}/`;
-                await axios.patch(url, data, config);
+                await axiosInstance.patch(url, data, config);
             } else {
-                await axios.post(API_URL, data, config);
+                await axiosInstance.post(API_URL, data, config);
             }
             closeModal();
             fetchProveedores();
@@ -260,7 +260,7 @@ function Proveedores() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Eliminar este prove definitivamente?')) {
             try {
-                await axios.delete(`${API_URL}${id}/`);
+                await axiosInstance.delete(`${API_URL}${id}/`);
                 fetchProveedores();
             } catch (err) {
                 alert("Error al eliminar el prove.");

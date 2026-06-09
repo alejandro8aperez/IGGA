@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { API } from '../config/api';
 import { 
     Briefcase, AlertCircle, Edit3, Trash2, Plus, X, ListTodo, User, 
@@ -40,8 +40,8 @@ export default function Operaciones() {
         try {
             setLoading(true);
             const [proyectosRes, clientesRes] = await Promise.all([
-                axios.get(API.OPERACIONES.PROYECTOS),
-                axios.get(API.CRM.CLIENTES).catch(() => ({ data: [] }))
+                axiosInstance.get(API.OPERACIONES.PROYECTOS),
+                axiosInstance.get(API.CRM.CLIENTES).catch(() => ({ data: [] }))
             ]);
             setProyectos(proyectosRes.data);
             setClientes(clientesRes.data);
@@ -133,9 +133,9 @@ export default function Operaciones() {
             };
 
             if (currentProyecto) {
-                await axios.put(`${API.OPERACIONES.PROYECTOS}${currentProyecto.id}/`, payload);
+                await axiosInstance.put(`${API.OPERACIONES.PROYECTOS}${currentProyecto.id}/`, payload);
             } else {
-                await axios.post(API.OPERACIONES.PROYECTOS, payload);
+                await axiosInstance.post(API.OPERACIONES.PROYECTOS, payload);
             }
             closeModal();
             fetchData();
@@ -148,7 +148,7 @@ export default function Operaciones() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
             try {
-                await axios.delete(`${API.OPERACIONES.PROYECTOS}${id}/`);
+                await axiosInstance.delete(`${API.OPERACIONES.PROYECTOS}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error deleting proyecto:', err);

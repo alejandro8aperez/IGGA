@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import {
   Type,
   Square,
@@ -74,7 +74,7 @@ function FormDesigner() {
 
   const loadTemplateByName = async (name) => {
     try {
-      const response = await axios.get(API_BASE);
+      const response = await axiosInstance.get(API_BASE);
       const template = response.data.find(f => f.nombre === name);
       if (template) {
         loadFromCloud(template);
@@ -86,7 +86,7 @@ function FormDesigner() {
 
   const fetchFormats = async () => {
     try {
-      const response = await axios.get(API_BASE);
+      const response = await axiosInstance.get(API_BASE);
       setCloudFormats(response.data);
     } catch (error) {
       console.error('Error fetching formats:', error);
@@ -105,7 +105,7 @@ function FormDesigner() {
         version: '1.0'
       };
 
-      await axios.post(API_BASE, {
+      await axiosInstance.post(API_BASE, {
         nombre: name,
         json_design: design,
         creado_por: 1 // TODO: Get current user ID

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { FileText, AlertCircle, Edit3, Trash2, Plus, X, FileSpreadsheet, Calendar, DollarSign, User, Package, Clock, Shield, Percent, ShoppingCart, RefreshCw } from 'lucide-react';
 import { API } from '../config/api';
 import { useAuth } from '../context/AuthContext';
@@ -58,9 +58,9 @@ export default function CotizacionesCRM() {
                 return;
             }
             const [cotizacionesRes, clientesRes, productosRes] = await Promise.all([
-                axios.get(API_URL),
-                axios.get(CLIENTES_URL),
-                axios.get(API.INVENTARIOS.PRODUCTOS)
+                axiosInstance.get(API_URL),
+                axiosInstance.get(CLIENTES_URL),
+                axiosInstance.get(API.INVENTARIOS.PRODUCTOS)
             ]);
             setCotizaciones(cotizacionesRes.data);
             setClientes(clientesRes.data);
@@ -188,9 +188,9 @@ export default function CotizacionesCRM() {
 
         try {
             if (currentCoti) {
-                await axios.put(`${API_URL}${currentCoti.id}/`, payload);
+                await axiosInstance.put(`${API_URL}${currentCoti.id}/`, payload);
             } else {
-                await axios.post(API_URL, payload);
+                await axiosInstance.post(API_URL, payload);
             }
             closeModal();
             fetchDatos();
@@ -206,7 +206,7 @@ export default function CotizacionesCRM() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Eliminar esta cotización definitivamente?')) {
             try {
-                await axios.delete(`${API_URL}${id}/`);
+                await axiosInstance.delete(`${API_URL}${id}/`);
                 fetchDatos();
             } catch (err) {
                 alert("Error al eliminar la cotización.");
@@ -216,7 +216,7 @@ export default function CotizacionesCRM() {
 
     const handleDownloadExcel = async (id) => {
         try {
-            const response = await axios.get(`${API_URL}${id}/excel/`, {
+            const response = await axiosInstance.get(`${API_URL}${id}/excel/`, {
                 responseType: 'blob',
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -258,11 +258,11 @@ export default function CotizacionesCRM() {
             };
 
             // Usamos la constante centralizada para garantizar compatibilidad en Render
-            await axios.post('/ventas/pedidos/', saleData);
+            await axiosInstance.post('/ventas/pedidos/', saleData);
             
             // Actualizamos la cotización original a 'aceptada'
             const patchUrl = API_URL.endsWith('/') ? `${API_URL}${coti.id}/` : `${API_URL}/${coti.id}/`;
-            await axios.patch(patchUrl, { estado: 'aceptada' });
+            await axiosInstance.patch(patchUrl, { estado: 'aceptada' });
             
             alert('¡Éxito! Cotización convertida en Orden de Venta.');
             fetchDatos(); 

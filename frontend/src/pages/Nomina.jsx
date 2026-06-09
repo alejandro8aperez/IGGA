@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Users, FileText, Download, Calculator, CheckCircle, Search, 
     Calendar, Plus, Play, Eye, FileJson, AlertCircle, X, ChevronRight,
@@ -41,7 +41,7 @@ const Nomina = () => {
 
     const fetchPeriodos = async () => {
         try {
-            const res = await axios.get(API.NOMINA.PERIODOS);
+            const res = await axiosInstance.get(API.NOMINA.PERIODOS);
             console.log("Periodos cargados:", res.data);
             
             // ✅ DEFENSA: Normalizar la respuesta sin importar el formato
@@ -74,7 +74,7 @@ const Nomina = () => {
         
         setLoading(true);
         try {
-            const res = await axios.get(`${API.NOMINA.NOMINAS}?periodo=${periodoId}`);
+            const res = await axiosInstance.get(`${API.NOMINA.NOMINAS}?periodo=${periodoId}`);
             setNominas(res?.data || []);
         } catch (error) {
             console.error("Error fetching nominas:", error);
@@ -88,7 +88,7 @@ const Nomina = () => {
     const handleCreatePeriod = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(API.NOMINA.PERIODOS, newPeriodForm);
+            const res = await axiosInstance.post(API.NOMINA.PERIODOS, newPeriodForm);
             setPeriodos([res.data, ...periodos]);
             setSelectedPeriod(res.data);
             setIsNewPeriodModalOpen(false);
@@ -104,7 +104,7 @@ const Nomina = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post(`${API.NOMINA.PERIODOS}${selectedPeriod.id}/liquidar/`);
+            const res = await axiosInstance.post(`${API.NOMINA.PERIODOS}${selectedPeriod.id}/liquidar/`);
             if (res.data.status === 'warning') {
                 alert(res.data.message);
             } else {
@@ -122,7 +122,7 @@ const Nomina = () => {
     const handleExportXML = async () => {
         if (!selectedPeriod) return;
         try {
-            const res = await axios.get(`${API.NOMINA.NOMINAS}exportar-electronica/?periodo_id=${selectedPeriod.id}`, {
+            const res = await axiosInstance.get(`${API.NOMINA.NOMINAS}exportar-electronica/?periodo_id=${selectedPeriod.id}`, {
                 responseType: 'blob'
             });
             const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -145,7 +145,7 @@ const Nomina = () => {
         }
         
         try {
-            const res = await axios.post(`${API.NOMINA.NOMINAS}voucher/pdf/`, {
+            const res = await axiosInstance.post(`${API.NOMINA.NOMINAS}voucher/pdf/`, {
                 nombre: nomina.empleado_nombre,
                 cedula: nomina.empleado_numero_documento || 'N/A',
                 cargo: nomina.empleado_cargo || 'N/A',

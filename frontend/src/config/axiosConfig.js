@@ -1,7 +1,7 @@
 // ============================================================
 //  axiosConfig.js  –  ERP-8AMPERIOS
 // ============================================================
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 
 // ── Base URL ────────────────────────────────────────────────
 const rawUrl = import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api/';
@@ -94,7 +94,7 @@ axiosInstance.interceptors.response.use(
     }
 
     try {
-      const response = await axios.post(`${BASE_URL}token/refresh/`, {
+      const response = await axiosInstance.post(`${BASE_URL}token/refresh/`, {
         refresh: refreshToken,
       });
 

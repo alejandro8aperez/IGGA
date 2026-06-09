@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import {
   Type,
   Square,
@@ -71,7 +71,7 @@ function FormDesigner() {
 
   const loadTemplateByName = async (name) => {
     try {
-      const response = await axios.get(API_BASE);
+      const response = await axiosInstance.get(API_BASE);
       const template = response.data.find(f => f.nombre === name);
       if (template) {
         loadFromCloud(template);
@@ -83,7 +83,7 @@ function FormDesigner() {
 
   const fetchFormats = async () => {
     try {
-      const response = await axios.get(API_BASE);
+      const response = await axiosInstance.get(API_BASE);
       setCloudFormats(response.data);
     } catch (error) {
       console.error('Error fetching formats:', error);
@@ -102,7 +102,7 @@ function FormDesigner() {
         fecha_creacion: new Date().toISOString()
       };
       
-      await axios.post(API_BASE, formatData);
+      await axiosInstance.post(API_BASE, formatData);
       setCurrentFormatName(name);
       fetchFormats();
       alert('Formato guardado exitosamente');
@@ -129,7 +129,7 @@ function FormDesigner() {
     if (!window.confirm('¿Está seguro de eliminar este formato?')) return;
 
     try {
-      await axios.delete(`${API_BASE}${formatId}/`);
+      await axiosInstance.delete(`${API_BASE}${formatId}/`);
       fetchFormats();
       alert('Formato eliminado exitosamente');
     } catch (error) {

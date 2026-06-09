@@ -5,7 +5,7 @@ import {
   Calculator, ChevronLeft, AlertTriangle, CheckCircle, FileText, Activity, 
   Thermometer, Wind, ZapOff, TrendingUp, BarChart3, Info, Settings, RefreshCw
 } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, AreaChart, Area 
@@ -190,7 +190,7 @@ function VistaCalculador({ onGuardar }) {
     setError('');
     try {
       console.log('🔧 Enviando datos a KAVE:', form);
-      const response = await axios.post(KAVE_QUOTE, form);
+      const response = await axiosInstance.post(KAVE_QUOTE, form);
       const data = response.data;
 
       let calcData = null;
@@ -216,7 +216,7 @@ function VistaCalculador({ onGuardar }) {
 
   const guardar = async () => {
     try {
-      await axios.post(KAVE_DESIGN, form);
+      await axiosInstance.post(KAVE_DESIGN, form);
       setGuardado(true);
       setError('');
       if (onGuardar) onGuardar();
@@ -488,7 +488,7 @@ function VistaHistorial({ refresh }) {
     setLoading(true);
     setError(null);
     try {
-      const r = await axios.get(KAVE_DESIGNS);
+      const r = await axiosInstance.get(KAVE_DESIGNS);
       if (Array.isArray(r.data)) {
         setDesigns(r.data);
       } else if (r.data?.transformadores) {
@@ -517,7 +517,7 @@ function VistaHistorial({ refresh }) {
 
   const cargarDetalle = async (id) => {
     try {
-      const r = await axios.get(`${KAVE_DESIGNS}${id}/`);
+      const r = await axiosInstance.get(`${KAVE_DESIGNS}${id}/`);
       setSelected(r.data.transformador);
       setDetailedCalc(r.data.calculos?.[0] || null);
     } catch (error) {
@@ -528,7 +528,7 @@ function VistaHistorial({ refresh }) {
   const eliminar = async (id) => {
     if (!window.confirm('¿Eliminar este diseño?')) return;
     try {
-      await axios.delete(`${KAVE_DESIGNS}${id}/`);
+      await axiosInstance.delete(`${KAVE_DESIGNS}${id}/`);
       setDesigns(designs.filter(d => d.id !== id));
     } catch (error) {
       alert(`Error al eliminar el diseño: ${error.response?.data?.error || error.message}`);
@@ -538,7 +538,7 @@ function VistaHistorial({ refresh }) {
   const enviarAMRP = async (id) => {
     if (!window.confirm('¿Aprobar y enviar los requerimientos de este diseño al MRP?')) return;
     try {
-      const res = await axios.post(`${KAVE_DESIGNS}${id}/send_to_mrp/`);
+      const res = await axiosInstance.post(`${KAVE_DESIGNS}${id}/send_to_mrp/`);
       alert('¡Éxito! ' + res.data.mensaje);
     } catch (e) {
       alert('Error al enviar a MRP: ' + (e.response?.data?.error || e.message));

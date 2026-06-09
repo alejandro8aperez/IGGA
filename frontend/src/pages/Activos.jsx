@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Building, DollarSign, TrendingDown, TrendingUp, AlertCircle, 
     Plus, Edit3, Trash2, Eye, Search, Filter, Calendar, X,
@@ -35,7 +35,7 @@ export default function Activos() {
     const fetchActivos = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(API_BASE);
+            const res = await axiosInstance.get(API_BASE);
             setActivos(res.data);
             setLoading(false);
         } catch (err) {
@@ -53,7 +53,7 @@ export default function Activos() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(API_BASE, {
+            await axiosInstance.post(API_BASE, {
                 ...form,
                 valor_adquisicion: Number(form.valor_adquisicion),
                 vida_util_meses: Number(form.vida_util_meses),
@@ -107,7 +107,7 @@ export default function Activos() {
     const deleteActivo = async (id) => {
         if (window.confirm('¿Está seguro de eliminar este activo fijo?')) {
             try {
-                await axios.delete(`${API_BASE}${id}/`);
+                await axiosInstance.delete(`${API_BASE}${id}/`);
                 fetchActivos();
             } catch (err) {
                 console.error('Error deleting activo:', err);

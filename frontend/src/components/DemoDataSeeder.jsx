@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { API } from '../config/api';
 
 const API_BASE = API.BASE;
@@ -205,7 +205,7 @@ export class DemoDataSeeder {
             
             for (const cliente of demoData.clientes) {
                 try {
-                    const response = await axios.post(`${API_BASE}/crm/clientes/`, cliente);
+                    const response = await axiosInstance.post(`${API_BASE}/crm/clientes/`, cliente);
                     console.log(`✅ Cliente creado: ${cliente.nombre}`);
                 } catch (error) {
                     if (error.response?.status === 400) {
@@ -226,7 +226,7 @@ export class DemoDataSeeder {
             
             for (const producto of demoData.productos) {
                 try {
-                    const response = await axios.post(`${API_BASE}/inventarios/productos/`, producto);
+                    const response = await axiosInstance.post(`${API_BASE}/inventarios/productos/`, producto);
                     console.log(`✅ Producto creado: ${producto.nombre}`);
                 } catch (error) {
                     if (error.response?.status === 400) {
@@ -246,7 +246,7 @@ export class DemoDataSeeder {
             console.log('📄 Sembrando cotizaciones...');
             
             // Obtener clientes para asignar IDs
-            const clientesResponse = await axios.get(`${API_BASE}/crm/clientes/`);
+            const clientesResponse = await axiosInstance.get(`${API_BASE}/crm/clientes/`);
             const clientes = clientesResponse.data;
             
             for (const cotizacionData of demoData.cotizaciones) {
@@ -261,7 +261,7 @@ export class DemoDataSeeder {
                         gran_total: cotizacionData.detalles.reduce((sum, item) => sum + item.valor_total, 0) * 1.19
                     };
                     
-                    const response = await axios.post(`${API_BASE}/crm/cotizaciones/`, cotizacion);
+                    const response = await axiosInstance.post(`${API_BASE}/crm/cotizaciones/`, cotizacion);
                     console.log(`✅ Cotización creada: ${cotizacion.asunto}`);
                 } catch (error) {
                     if (error.response?.status === 400) {
@@ -282,9 +282,9 @@ export class DemoDataSeeder {
             
             // Limpiar cotizaciones
             try {
-                const cotizacionesResponse = await axios.get(`${API_BASE}/crm/cotizaciones/`);
+                const cotizacionesResponse = await axiosInstance.get(`${API_BASE}/crm/cotizaciones/`);
                 for (const cotizacion of cotizacionesResponse.data) {
-                    await axios.delete(`${API_BASE}/crm/cotizaciones/${cotizacion.id}/`);
+                    await axiosInstance.delete(`${API_BASE}/crm/cotizaciones/${cotizacion.id}/`);
                 }
                 console.log('✅ Cotizaciones eliminadas');
             } catch (error) {
@@ -293,9 +293,9 @@ export class DemoDataSeeder {
             
             // Limpiar productos
             try {
-                const productosResponse = await axios.get(`${API_BASE}/inventarios/productos/`);
+                const productosResponse = await axiosInstance.get(`${API_BASE}/inventarios/productos/`);
                 for (const producto of productosResponse.data) {
-                    await axios.delete(`${API_BASE}/inventarios/productos/${producto.id}/`);
+                    await axiosInstance.delete(`${API_BASE}/inventarios/productos/${producto.id}/`);
                 }
                 console.log('✅ Productos eliminados');
             } catch (error) {
@@ -304,10 +304,10 @@ export class DemoDataSeeder {
             
             // Limpiar clientes (solo los de demo)
             try {
-                const clientesResponse = await axios.get(`${API_BASE}/crm/clientes/`);
+                const clientesResponse = await axiosInstance.get(`${API_BASE}/crm/clientes/`);
                 for (const cliente of clientesResponse.data) {
                     if (demoData.clientes.some(c => c.nombre === cliente.nombre)) {
-                        await axios.delete(`${API_BASE}/crm/clientes/${cliente.id}/`);
+                        await axiosInstance.delete(`${API_BASE}/crm/clientes/${cliente.id}/`);
                     }
                 }
                 console.log('✅ Clientes de demo eliminados');

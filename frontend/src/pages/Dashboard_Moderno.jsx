@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     LayoutDashboard, Target, Package, DollarSign, Activity, Users, Briefcase, 
     RotateCcw, BarChart3, PieChart, ShoppingCart, AlertCircle, MonitorSmartphone
@@ -32,7 +32,7 @@ export default function Dashboard() {
         try {
             setLoading(true);
             setError(null);
-            const response = await axios.get(API.BASE + '/dashboard/stats/');
+            const response = await axiosInstance.get(API.BASE + '/dashboard/stats/');
             const stats = response.data;
             setData({
                 resumen:          stats.resumen          || {},
@@ -53,7 +53,7 @@ export default function Dashboard() {
     const calcularKPIs = async () => {
         setCalculatingKPIs(true);
         try {
-            await axios.post(API.KPIS.CALCULAR);
+            await axiosInstance.post(API.KPIS.CALCULAR);
             await fetchDashboardData();
         } catch (err) {
             console.error('Error calculating KPIs:', err);

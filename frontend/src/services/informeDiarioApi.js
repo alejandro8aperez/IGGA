@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { API as ENDPOINTS } from '@/config/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,10 +22,10 @@ const toArray = (data) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const obraService = {
-  list:   (params) => axios.get(ENDPOINTS.INFORME_DIARIO.OBRAS, { params }).then(r => toArray(r.data)),
-  create: (data)   => axios.post(ENDPOINTS.INFORME_DIARIO.OBRAS, data).then(r => r.data),
-  update: (id, data) => axios.patch(`${ENDPOINTS.INFORME_DIARIO.OBRAS}${id}/`, data).then(r => r.data),
-  delete: (id)     => axios.delete(`${ENDPOINTS.INFORME_DIARIO.OBRAS}${id}/`),
+  list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.OBRAS, { params }).then(r => toArray(r.data)),
+  create: (data)   => axiosInstance.post(ENDPOINTS.INFORME_DIARIO.OBRAS, data).then(r => r.data),
+  update: (id, data) => axiosInstance.patch(`${ENDPOINTS.INFORME_DIARIO.OBRAS}${id}/`, data).then(r => r.data),
+  delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.OBRAS}${id}/`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,10 +33,10 @@ export const obraService = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const categoriaRecursoService = {
-  list:   (params) => axios.get(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS, { params }).then(r => toArray(r.data)),
-  create: (data)   => axios.post(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS, data).then(r => r.data),
-  update: (id, data) => axios.patch(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS}${id}/`, data).then(r => r.data),
-  delete: (id)     => axios.delete(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS}${id}/`),
+  list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS, { params }).then(r => toArray(r.data)),
+  create: (data)   => axiosInstance.post(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS, data).then(r => r.data),
+  update: (id, data) => axiosInstance.patch(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS}${id}/`, data).then(r => r.data),
+  delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_RECURSOS}${id}/`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,10 +44,10 @@ export const categoriaRecursoService = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const recursoService = {
-  list:   (params) => axios.get(ENDPOINTS.INFORME_DIARIO.RECURSOS, { params }).then(r => toArray(r.data)),
-  create: (data)   => axios.post(ENDPOINTS.INFORME_DIARIO.RECURSOS, data).then(r => r.data),
-  update: (id, data) => axios.patch(`${ENDPOINTS.INFORME_DIARIO.RECURSOS}${id}/`, data).then(r => r.data),
-  delete: (id)     => axios.delete(`${ENDPOINTS.INFORME_DIARIO.RECURSOS}${id}/`),
+  list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.RECURSOS, { params }).then(r => toArray(r.data)),
+  create: (data)   => axiosInstance.post(ENDPOINTS.INFORME_DIARIO.RECURSOS, data).then(r => r.data),
+  update: (id, data) => axiosInstance.patch(`${ENDPOINTS.INFORME_DIARIO.RECURSOS}${id}/`, data).then(r => r.data),
+  delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.RECURSOS}${id}/`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,10 +55,10 @@ export const recursoService = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const categoriaService = {
-  list:   (params) => axios.get(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES, { params }).then(r => toArray(r.data)),
-  create: (data)   => axios.post(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES, data).then(r => r.data),
-  update: (id, data) => axios.patch(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES}${id}/`, data).then(r => r.data),
-  delete: (id)     => axios.delete(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES}${id}/`),
+  list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES, { params }).then(r => toArray(r.data)),
+  create: (data)   => axiosInstance.post(ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES, data).then(r => r.data),
+  update: (id, data) => axiosInstance.patch(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES}${id}/`, data).then(r => r.data),
+  delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.CATEGORIAS_ACTIVIDADES}${id}/`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -66,17 +66,17 @@ export const categoriaService = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const informeDiarioService = {
-  list:   (params) => axios.get(ENDPOINTS.INFORME_DIARIO.INFORMES, { params }).then(r => toArray(r.data)),
-  get:    (id)     => axios.get(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/`).then(r => r.data),
-  create: (data)   => axios.post(ENDPOINTS.INFORME_DIARIO.INFORMES, data).then(r => r.data),
-  update: (id, data) => axios.patch(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/`, data).then(r => r.data),
-  delete: (id)     => axios.delete(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/`),
+  list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.INFORMES, { params }).then(r => toArray(r.data)),
+  get:    (id)     => axiosInstance.get(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/`).then(r => r.data),
+  create: (data)   => axiosInstance.post(ENDPOINTS.INFORME_DIARIO.INFORMES, data).then(r => r.data),
+  update: (id, data) => axiosInstance.patch(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/`, data).then(r => r.data),
+  delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/`),
 
   pdfUrl:   (id) => `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/exportar-pdf/`,
   excelUrl: (id) => `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/exportar-excel/`,
 
   subirAnexo: (id, formData) =>
-    axios.post(
+    axiosInstance.post(
       `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/subir-anexo/`,
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -88,8 +88,8 @@ export const informeDiarioService = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const anexoService = {
-  list:   (params) => axios.get(ENDPOINTS.INFORME_DIARIO.ANEXOS, { params }).then(r => toArray(r.data)),
-  delete: (id)     => axios.delete(`${ENDPOINTS.INFORME_DIARIO.ANEXOS}${id}/`),
+  list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.ANEXOS, { params }).then(r => toArray(r.data)),
+  delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.ANEXOS}${id}/`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -97,8 +97,8 @@ export const anexoService = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const dashboardService = {
-  resumen:      (params) => axios.get(ENDPOINTS.INFORME_DIARIO.DASHBOARD,      { params }).then(r => r.data),
-  statusCounts: (params) => axios.get(ENDPOINTS.INFORME_DIARIO.STATUS_COUNTS,  { params }).then(r => r.data),
+  resumen:      (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.DASHBOARD,      { params }).then(r => r.data),
+  statusCounts: (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.STATUS_COUNTS,  { params }).then(r => r.data),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ export const dashboardService = {
 export const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  const r = await axios.post('upload/', formData, {
+  const r = await axiosInstance.post('upload/', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return { file_url: r.data.url };

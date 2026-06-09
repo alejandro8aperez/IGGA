@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     DollarSign, AlertCircle, Edit3, Trash2, Plus, X, FileText, 
     Calculator, BookOpen, Search, Filter,
@@ -69,7 +69,7 @@ function Contabilidad() {
 
     const fetchData = async () => {
         try {
-            const [resCuentas, resAsientos] = await Promise.all([axios.get(API_CUENTAS), axios.get(API_ASIENTOS)]);
+            const [resCuentas, resAsientos] = await Promise.all([axiosInstance.get(API_CUENTAS), axiosInstance.get(API_ASIENTOS)]);
             setCuentas(resCuentas.data);
             setAsientos(resAsientos.data);
             setLoading(false);
@@ -84,7 +84,7 @@ function Contabilidad() {
             const params = {};
             if (fechaInicio) params.fecha_inicio = fechaInicio;
             if (fechaFin) params.fecha_fin = fechaFin;
-            const res = await axios.get(`${API_ASIENTOS}estado-resultados/`, { params });
+            const res = await axiosInstance.get(`${API_ASIENTOS}estado-resultados/`, { params });
             setEstadoResultados(res.data.estado_resultados);
         } catch (err) {
             console.error('Error al cargar estado de resultados:', err);
@@ -100,8 +100,8 @@ function Contabilidad() {
     const handleCuentaSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (currentCuenta) { await axios.put(`${API_CUENTAS}${currentCuenta.id}/`, cuentaForm); }
-            else { await axios.post(API_CUENTAS, cuentaForm); }
+            if (currentCuenta) { await axiosInstance.put(`${API_CUENTAS}${currentCuenta.id}/`, cuentaForm); }
+            else { await axiosInstance.post(API_CUENTAS, cuentaForm); }
             fetchData();
             setIsCuentaModalOpen(false);
         } catch (err) { console.error('Error al guardar cuenta:', err); }
@@ -109,7 +109,7 @@ function Contabilidad() {
 
     const deleteCuenta = async (id) => {
         if (window.confirm('¿Eliminar esta cuenta?')) {
-            try { await axios.delete(`${API_CUENTAS}${id}/`); fetchData(); }
+            try { await axiosInstance.delete(`${API_CUENTAS}${id}/`); fetchData(); }
             catch (err) { console.error('Error al eliminar cuenta:', err); }
         }
     };

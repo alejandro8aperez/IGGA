@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { Camera, X, UploadCloud, Loader2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '@/config/api';
@@ -407,7 +407,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
         } else {
           return;
         }
-        const res = await axios.get(url);
+        const res = await axiosInstance.get(url);
         const mapa = {};
         res.data.forEach(f => { if (f.posicion > 0) mapa[f.posicion] = f; });
         setFotos(mapa);
@@ -428,7 +428,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
     formData.append('posicion', posicion);
     formData.append('seccion',  'actividades');
     try {
-      const res = await axios.post(API.INFORME_DIARIO.ANEXOS, formData, {
+      const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setFotos(prev => ({ ...prev, [posicion]: res.data }));
@@ -443,7 +443,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
   const handleDelete = async (posicion, fotoId) => {
     if (!window.confirm('¿Eliminar esta fotografía?')) return;
     try {
-      await axios.delete(`${API.INFORME_DIARIO.ANEXOS}${fotoId}/`);
+      await axiosInstance.delete(`${API.INFORME_DIARIO.ANEXOS}${fotoId}/`);
       setFotos(prev => { const n = { ...prev }; delete n[posicion]; return n; });
       toast.success('Fotografía eliminada');
     } catch {

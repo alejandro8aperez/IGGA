@@ -1,7 +1,7 @@
 mport { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     LayoutDashboard, Target, Package, DollarSign, Activity, Users, Briefcase, 
     RotateCcw, BarChart3, PieChart, ShoppingCart, AlertCircle, MonitorSmartphone
@@ -36,7 +36,7 @@ export default function Dashboard() {
             setError(null);
 
             // Usamos URL relativa - axios.defaults.baseURL apunta a /api/
-            const response = await axios.get('dashboard/stats/');
+            const response = await axiosInstance.get('dashboard/stats/');
             const stats = response.data;
             setData({
                 resumen:          stats.resumen          || {},
@@ -58,7 +58,7 @@ export default function Dashboard() {
         setCalculatingKPIs(true);
         try {
             // URL relativa
-            await axios.post('kpis/calcular/');
+            await axiosInstance.post('kpis/calcular/');
             await fetchDashboardData();
         } catch (err) {
             console.error('Error calculating KPIs:', err);

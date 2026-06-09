@@ -4,7 +4,7 @@ import {
   Eye, Download, Clock,
   AlertCircle, TrendingUp, DollarSign, Printer, Trash2
 } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { API } from '../config/api';
 
 const s = {
@@ -114,9 +114,9 @@ export default function Ventas() {
       setLoading(true);
       setError(null);
       const [ordRes, cliRes, prodRes] = await Promise.all([
-        axios.get(API.PEDIDOS.LIST).catch(() => ({ data: [] })),
-        axios.get(API.CRM.CLIENTES).catch(() => ({ data: [] })),
-        axios.get(API.INVENTARIO.PRODUCTOS).catch(() => ({ data: [] }))
+        axiosInstance.get(API.PEDIDOS.LIST).catch(() => ({ data: [] })),
+        axiosInstance.get(API.CRM.CLIENTES).catch(() => ({ data: [] })),
+        axiosInstance.get(API.INVENTARIO.PRODUCTOS).catch(() => ({ data: [] }))
       ]);
       setOrdenes(Array.isArray(ordRes.data) ? ordRes.data : []);
       setClientes(Array.isArray(cliRes.data) ? cliRes.data : []);
@@ -230,10 +230,10 @@ export default function Ventas() {
         }))
       };
       if (currentOrd) {
-        await axios.put(API.PEDIDOS.DETAIL(currentOrd.id), payload);
+        await axiosInstance.put(API.PEDIDOS.DETAIL(currentOrd.id), payload);
         alert('Pedido actualizado correctamente');
       } else {
-        await axios.post(API.PEDIDOS.CREATE, payload);
+        await axiosInstance.post(API.PEDIDOS.CREATE, payload);
         alert('Pedido creado correctamente');
       }
       closeOrdModal();
@@ -247,7 +247,7 @@ export default function Ventas() {
   const eliminarOrden = async (id) => {
     if (!window.confirm('¿Eliminar pedido?')) return;
     try {
-      await axios.delete(API.PEDIDOS.DETAIL(id));
+      await axiosInstance.delete(API.PEDIDOS.DETAIL(id));
       alert('Pedido eliminado');
       fetchData();
     } catch (err) {

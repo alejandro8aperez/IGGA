@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 
 function Contratos() {
     const navigate = useNavigate();
@@ -23,8 +23,8 @@ function Contratos() {
         const fetchData = async () => {
             try {
                 const [contratosRes, proveedoresRes] = await Promise.all([
-                    axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/contratos/'),
-                    axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/proveedores/')
+                    axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/contratos/'),
+                    axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/proveedores/')
                 ]);
                 setContratos(contratosRes.data);
                 setProveedores(proveedoresRes.data);
@@ -45,11 +45,11 @@ function Contratos() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/contratos/', {
+            await axiosInstance.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/contratos/', {
                 ...form,
                 valor_contrato: Number(form.valor_contrato),
             });
-            const res = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/contratos/');
+            const res = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/contratos/');
             setContratos(res.data);
             setForm({
                 codigo: '', proveedor: '', tipo: 'compra', descripcion: '', fecha_inicio: '', fecha_fin: '', valor_contrato: '', estado: 'negociacion'

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Factory, Wrench, Plus, CheckCircle, Play, AlertCircle, Save, Trash2, 
     BookOpen, X, Search, Filter, Package, Clock, DollarSign,
@@ -276,10 +276,10 @@ function Produccion() {
         setLoading(true);
         try {
             const [resProd, resRec, resOrd, resDocs] = await Promise.allSettled([
-                axios.get(`${API_BASE}inventarios/productos/`),
-                axios.get(`${API_BASE}produccion/recetas/`),
-                axios.get(`${API_BASE}produccion/ordenes/`),
-                axios.get(`${API_BASE}calidad/documentos-iso/`)
+                axiosInstance.get(`${API_BASE}inventarios/productos/`),
+                axiosInstance.get(`${API_BASE}produccion/recetas/`),
+                axiosInstance.get(`${API_BASE}produccion/ordenes/`),
+                axiosInstance.get(`${API_BASE}calidad/documentos-iso/`)
             ]);
 
             if (resProd.status === 'fulfilled') setProductos(resProd.value.data);
@@ -330,7 +330,7 @@ function Produccion() {
             return;
         }
         try {
-            const res = await axios.post(`${API_BASE}produccion/recetas/`, {
+            const res = await axiosInstance.post(`${API_BASE}produccion/recetas/`, {
                 producto_terminado: recetaForm.producto_terminado,
                 tiempo_estimado_horas: recetaForm.tiempo_estimado_horas,
                 costo_adicional_fijo: recetaForm.costo_adicional_fijo,
@@ -339,7 +339,7 @@ function Produccion() {
             });
             const recetaId = res.data.id;
             for (let insumo of recetaForm.insumos) {
-                await axios.post(`${API_BASE}produccion/insumos/`, {
+                await axiosInstance.post(`${API_BASE}produccion/insumos/`, {
                     receta: recetaId,
                     producto_materia_prima: insumo.producto_materia_prima,
                     cantidad_requerida: insumo.cantidad_requerida
@@ -368,7 +368,7 @@ function Produccion() {
             return;
         }
         try {
-            await axios.post(`${API_BASE}produccion/ordenes/`, ordenForm);
+            await axiosInstance.post(`${API_BASE}produccion/ordenes/`, ordenForm);
             fetchData();
             setShowNewOrdenForm(false);
             setOrdenForm({

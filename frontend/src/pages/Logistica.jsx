@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Truck, AlertCircle, Edit3, Trash2, Plus, X, MapPin, Package,
     Navigation, Clock, CheckCircle, Users, Fuel, Gauge,
@@ -38,8 +38,8 @@ export default function Logistica() {
     const fetchData = async () => {
         try {
             const [resVeh, resEnv] = await Promise.all([
-                axios.get(API_VEHICULOS),
-                axios.get(API_ENVIOS)
+                axiosInstance.get(API_VEHICULOS),
+                axiosInstance.get(API_ENVIOS)
             ]);
             setVehiculos(resVeh.data);
             setEnvios(resEnv.data);
@@ -74,9 +74,9 @@ export default function Logistica() {
         e.preventDefault();
         try {
             if (currentVeh) {
-                await axios.put(`${API_VEHICULOS}${currentVeh.id}/`, vehForm);
+                await axiosInstance.put(`${API_VEHICULOS}${currentVeh.id}/`, vehForm);
             } else {
-                await axios.post(API_VEHICULOS, vehForm);
+                await axiosInstance.post(API_VEHICULOS, vehForm);
             }
             fetchData();
             setIsVehModalOpen(false);
@@ -89,7 +89,7 @@ export default function Logistica() {
     const deleteVeh = async (id) => {
         if (window.confirm('¿Eliminar este vehículo?')) {
             try {
-                await axios.delete(`${API_VEHICULOS}${id}/`);
+                await axiosInstance.delete(`${API_VEHICULOS}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar vehículo:', err);

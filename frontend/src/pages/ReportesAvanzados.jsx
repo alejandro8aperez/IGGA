@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { TrendingUp, AlertCircle, BarChart3, PieChart as PieChartIcon, Activity } from 'lucide-react';
 
@@ -71,12 +71,12 @@ function ReportesAvanzados() {
                     resProyectos, resLeads, resCalidad
                 ] = await Promise.race([
                     Promise.all([
-                        axios.get(`${API_BASE}ventas-mensuales/`),
-                        axios.get(`${API_BASE}compras-mensuales/`),
-                        axios.get(`${API_BASE}productos-mas-vendidos/`),
-                        axios.get(`${API_BASE}estado-proyectos/`),
-                        axios.get(`${API_BASE}conversion-leads/`),
-                        axios.get(`${API_BASE}calidad-productos/`)
+                        axiosInstance.get(`${API_BASE}ventas-mensuales/`),
+                        axiosInstance.get(`${API_BASE}compras-mensuales/`),
+                        axiosInstance.get(`${API_BASE}productos-mas-vendidos/`),
+                        axiosInstance.get(`${API_BASE}estado-proyectos/`),
+                        axiosInstance.get(`${API_BASE}conversion-leads/`),
+                        axiosInstance.get(`${API_BASE}calidad-productos/`)
                     ]),
                     timeout
                 ]);

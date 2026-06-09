@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Wrench, AlertCircle, Edit3, Trash2, Plus, X, Settings, Calendar,
     Search, Filter, Clock, CheckCircle, AlertTriangle, Zap,
@@ -45,9 +45,9 @@ export default function Mantenimiento() {
             setLoading(true);
                 // Intentamos cargar equipos específicos y también activos fijos
                 const [ordenesRes, equipoRes, activosRes] = await Promise.all([
-                axios.get(API_ORDENES),
-                    axios.get(API_EQUIPOS),
-                    axios.get('/activos/activos/').catch(() => ({ data: [] }))
+                axiosInstance.get(API_ORDENES),
+                    axiosInstance.get(API_EQUIPOS),
+                    axiosInstance.get('/activos/activos/').catch(() => ({ data: [] }))
             ]);
                 setOrdenes(Array.isArray(ordenesRes.data) ? ordenesRes.data : []);
                 
@@ -205,9 +205,9 @@ export default function Mantenimiento() {
         e.preventDefault();
         try {
             if (currentOrden) {
-                await axios.put(`${API_ORDENES}${currentOrden.id}/`, form);
+                await axiosInstance.put(`${API_ORDENES}${currentOrden.id}/`, form);
             } else {
-                await axios.post(API_ORDENES, form);
+                await axiosInstance.post(API_ORDENES, form);
             }
             closeModal();
             fetchData();
@@ -220,7 +220,7 @@ export default function Mantenimiento() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar esta orden de mantenimiento?')) {
             try {
-                await axios.delete(`${API_ORDENES}${id}/`);
+                await axiosInstance.delete(`${API_ORDENES}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error deleting orden:', err);

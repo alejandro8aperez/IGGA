@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { Download, BarChart2, PieChart, TrendingUp, Users, Package, DollarSign, Calendar, ShoppingCart, Factory, CreditCard, AlertTriangle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -14,7 +14,7 @@ function Reportes() {
     useEffect(() => {
         const fetchPowerBI = async () => {
             try {
-                const res = await axios.get(`${API_BASE}reportes/powerbi/`);
+                const res = await axiosInstance.get(`${API_BASE}reportes/powerbi/`);
                 setData(res.data);
                 setLoading(false);
             } catch (err) {

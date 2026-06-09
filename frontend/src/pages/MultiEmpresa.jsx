@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { Building2, Plus, Edit3, Trash2, X, Users, Settings, Globe, Shield, Edit, Eye } from 'lucide-react';
 
 function MultiEmpresa() {
@@ -31,7 +31,7 @@ function MultiEmpresa() {
 
     const fetchEmpresas = async () => {
         try {
-            const response = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/multi-empresa/empresas/');
+            const response = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/multi-empresa/empresas/');
             setEmpresas(response.data);
         } catch (error) {
             console.error('Error fetching empresas:', error);
@@ -44,9 +44,9 @@ function MultiEmpresa() {
         e.preventDefault();
         try {
             if (editingEmpresa) {
-                await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/multi-empresa/empresas/${editingEmpresa.id}/`, formData);
+                await axiosInstance.put(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/multi-empresa/empresas/${editingEmpresa.id}/`, formData);
             } else {
-                await axios.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/multi-empresa/empresas/', formData);
+                await axiosInstance.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/multi-empresa/empresas/', formData);
             }
             setShowModal(false);
             setEditingEmpresa(null);
@@ -66,7 +66,7 @@ function MultiEmpresa() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Está seguro de eliminar esta empresa?')) {
             try {
-                await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/multi-empresa/empresas/${id}/`);
+                await axiosInstance.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/multi-empresa/empresas/${id}/`);
                 fetchEmpresas();
             } catch (error) {
                 console.error('Error deleting empresa:', error);

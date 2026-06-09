@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Calculator, FileText, Save, Download, Upload, Plus, X, Edit3, Trash2,
     Search, Filter, User, Mail, Phone, Building, DollarSign, Calendar,
@@ -54,8 +54,8 @@ export default function CotizadorProfesional() {
         try {
             setLoading(true);
             const [clientesRes, cotizacionesRes] = await Promise.all([
-                axios.get(API_CLIENTES),
-                axios.get(API_COTIZACIONES)
+                axiosInstance.get(API_CLIENTES),
+                axiosInstance.get(API_COTIZACIONES)
             ]);
             setClientes(clientesRes.data);
             setCotizaciones(cotizacionesRes.data);
@@ -182,9 +182,9 @@ export default function CotizadorProfesional() {
     const handleSave = async () => {
         try {
             if (editingCotizacion) {
-                await axios.put(`${API_COTIZACIONES}${editingCotizacion.id}/`, formData);
+                await axiosInstance.put(`${API_COTIZACIONES}${editingCotizacion.id}/`, formData);
             } else {
-                await axios.post(API_COTIZACIONES, formData);
+                await axiosInstance.post(API_COTIZACIONES, formData);
             }
             
             fetchData();
@@ -219,7 +219,7 @@ export default function CotizadorProfesional() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar esta cotización?')) {
             try {
-                await axios.delete(`${API_COTIZACIONES}${id}/`);
+                await axiosInstance.delete(`${API_COTIZACIONES}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error deleting cotizacion:', err);
@@ -250,7 +250,7 @@ export default function CotizadorProfesional() {
 
     const handleCreateCliente = async (clienteData) => {
         try {
-            await axios.post(API_CLIENTES, clienteData);
+            await axiosInstance.post(API_CLIENTES, clienteData);
             fetchData();
             setShowClienteModal(false);
             alert('Cliente creado exitosamente');

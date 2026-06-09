@@ -5,7 +5,7 @@ import {
   Calculator, ChevronLeft, AlertTriangle, CheckCircle, FileText, Activity, 
   Thermometer, Wind, ZapOff, TrendingUp, BarChart3, Info, Settings, RefreshCw
 } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, AreaChart, Area 
@@ -232,7 +232,7 @@ function VistaCalculador({ onGuardar }) {
       console.log('🌐 URL:', API_URL + 'quote/');
 
       // Usar axios para aprovechar los interceptores de JWT y timeout global
-      const response = await axios.post(API_URL + 'quote/', form);
+      const response = await axiosInstance.post(API_URL + 'quote/', form);
       const data = response.data;
 
       console.log('>>> Respuesta KAVE completa:', data);
@@ -293,7 +293,7 @@ function VistaCalculador({ onGuardar }) {
       console.log('KAVE: URL:', API_URL + 'design/');
       console.log('KAVE: Datos a guardar:', form);
       
-      const response = await axios.post(API_URL + 'design/', form);
+      const response = await axiosInstance.post(API_URL + 'design/', form);
       console.log('KAVE: Respuesta del servidor:', response.status, response.data);
       
       setGuardado(true);
@@ -627,7 +627,7 @@ function VistaHistorial({ refresh }) {
     
     try {
       console.log('KAVE: Enviando petición a:', API_URL + 'designs/');
-      const r = await axios.get(API_URL + 'designs/');
+      const r = await axiosInstance.get(API_URL + 'designs/');
       console.log('KAVE: Respuesta recibida:', r.status, r.data);
       
       if (r.data && Array.isArray(r.data)) {
@@ -682,7 +682,7 @@ function VistaHistorial({ refresh }) {
   const cargarDetalle = async (id) => {
     try {
       console.log(`KAVE: Cargando detalle del diseño ${id}`);
-      const r = await axios.get(API_URL + `designs/${id}/`);
+      const r = await axiosInstance.get(API_URL + `designs/${id}/`);
       console.log(`KAVE: Detalle del diseño ${id}:`, r.data);
       setSelected(r.data.transformador);
       setDetailedCalc(r.data.calculos?.[0] || null);
@@ -703,7 +703,7 @@ function VistaHistorial({ refresh }) {
       console.log(`KAVE: Eliminando diseño ${id}`);
       
       // Llamar al backend para eliminar permanentemente
-      await axios.delete(API_URL + `designs/${id}/`);
+      await axiosInstance.delete(API_URL + `designs/${id}/`);
       
       // Actualizar el estado local después de eliminar exitosamente
       setDesigns(designs.filter(d => d.id !== id));
@@ -726,7 +726,7 @@ function VistaHistorial({ refresh }) {
     if (!window.confirm("¿Aprobar y enviar los requerimientos de este diseño técnico al Plan Maestro de MRP para su producción/compra de materiales?")) return;
     try {
       console.log(`KAVE: Enviando diseño ${id} a MRP`);
-      const res = await axios.post(API_URL + `designs/${id}/send_to_mrp/`);
+      const res = await axiosInstance.post(API_URL + `designs/${id}/send_to_mrp/`);
       console.log(`KAVE: Respuesta de MRP:`, res.data);
       alert("¡Éxito! " + res.data.mensaje);
     } catch(e) {

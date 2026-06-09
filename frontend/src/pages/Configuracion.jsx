@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Users, Building2, Plus, Edit3, Trash2, X, Save, AlertCircle, Briefcase } from 'lucide-react';
 import { API } from '../config/api';
@@ -230,8 +230,8 @@ function Configuracion() {
         setError(null);
         try {
             const [resEmpresas, resDeptos] = await Promise.all([
-                axios.get(`${API_BASE}configuracion/empresas/`),
-                axios.get(`${API_BASE}configuracion/departamentos/`)
+                axiosInstance.get(`${API_BASE}configuracion/empresas/`),
+                axiosInstance.get(`${API_BASE}configuracion/departamentos/`)
             ]);
             if (resEmpresas.data.length > 0) {
                 setEmpresa(resEmpresas.data[0]);
@@ -253,9 +253,9 @@ function Configuracion() {
     const saveEmpresa = async () => {
         try {
             if (empresaId) {
-                await axios.put(`${API_BASE}configuracion/empresas/${empresaId}/`, empresa);
+                await axiosInstance.put(`${API_BASE}configuracion/empresas/${empresaId}/`, empresa);
             } else {
-                const res = await axios.post(`${API_BASE}configuracion/empresas/`, empresa);
+                const res = await axiosInstance.post(`${API_BASE}configuracion/empresas/`, empresa);
                 setEmpresaId(res.data.id);
             }
             alert('Configuración de empresa guardada con éxito.');
@@ -267,9 +267,9 @@ function Configuracion() {
     const saveDepartamento = async () => {
         try {
             if (currentDepto.id) {
-                await axios.put(`${API_BASE}configuracion/departamentos/${currentDepto.id}/`, currentDepto);
+                await axiosInstance.put(`${API_BASE}configuracion/departamentos/${currentDepto.id}/`, currentDepto);
             } else {
-                await axios.post(`${API_BASE}configuracion/departamentos/`, currentDepto);
+                await axiosInstance.post(`${API_BASE}configuracion/departamentos/`, currentDepto);
             }
             setShowDeptoModal(false);
             fetchData();
@@ -281,7 +281,7 @@ function Configuracion() {
     const deleteDepartamento = async (id) => {
         if (window.confirm('¿Seguro que deseas eliminar este departamento?')) {
             try {
-                await axios.delete(`${API_BASE}configuracion/departamentos/${id}/`);
+                await axiosInstance.delete(`${API_BASE}configuracion/departamentos/${id}/`);
                 fetchData();
             } catch (error) {
                 console.error('Error deleting department:', error);
@@ -294,7 +294,7 @@ function Configuracion() {
         
         setSeeding(true);
         try {
-            await axios.post(`${API_BASE}pos/seed-bakery/`);
+            await axiosInstance.post(`${API_BASE}pos/seed-bakery/`);
             alert('¡Datos de panadería cargados con éxito! Ahora puedes ir al POS.');
             fetchData();
         } catch (error) {

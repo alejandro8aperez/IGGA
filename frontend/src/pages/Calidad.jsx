@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { ShieldCheck, BookOpen, AlertOctagon, ClipboardCheck, Users, Search, Plus, Filter, FileText, CheckCircle, Clock, AlertTriangle, Palette } from 'lucide-react';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/calidad/';
@@ -37,7 +37,7 @@ function VistaDocumentacion() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(API_BASE + 'documentos-iso/').then(r => { setDocs(r.data); setLoading(false); }).catch(() => setLoading(false));
+    axiosInstance.get(API_BASE + 'documentos-iso/').then(r => { setDocs(r.data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={{ color: '#94A3B8' }}>Cargando Repositorio ISO...</div>;
@@ -104,7 +104,7 @@ function VistaCAPA() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(API_BASE + 'noconformidades/').then(r => { setNcs(r.data); setLoading(false); }).catch(() => setLoading(false));
+    axiosInstance.get(API_BASE + 'noconformidades/').then(r => { setNcs(r.data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={{ color: '#94A3B8' }}>Cargando Hallazgos...</div>;
@@ -172,7 +172,7 @@ function VistaCAPA() {
 
 function VistaAuditorias() {
   const [auditorias, setAuditorias] = useState([]);
-  useEffect(() => { axios.get(API_BASE + 'auditorias/').then(r => setAuditorias(r.data)); }, []);
+  useEffect(() => { axiosInstance.get(API_BASE + 'auditorias/').then(r => setAuditorias(r.data)); }, []);
 
   return (
     <div style={s.card}>
@@ -203,7 +203,7 @@ function VistaAuditorias() {
 
 function VistaProveedores() {
   const [evs, setEvs] = useState([]);
-  useEffect(() => { axios.get(API_BASE + 'evaluaciones-proveedor/').then(r => setEvs(r.data)); }, []);
+  useEffect(() => { axiosInstance.get(API_BASE + 'evaluaciones-proveedor/').then(r => setEvs(r.data)); }, []);
 
   return (
     <div style={s.card}>

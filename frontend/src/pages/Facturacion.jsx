@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     FileText, Plus, Save, Send, Trash2, Edit3, CheckCircle, AlertCircle, 
     ArrowLeft, Search, Filter, Download, X, TrendingUp, DollarSign,
@@ -43,10 +43,10 @@ function Facturacion() {
         setError(null);
         try {
             const [resFacturas, resClientes, resProd, resRes] = await Promise.all([
-                axios.get(API.FACTURACION.FACTURAS),
-                axios.get(API.CRM.CLIENTES),
-                axios.get(API.INVENTARIOS.PRODUCTOS),
-                axios.get(API.FACTURACION.RESOLUCIONES)
+                axiosInstance.get(API.FACTURACION.FACTURAS),
+                axiosInstance.get(API.CRM.CLIENTES),
+                axiosInstance.get(API.INVENTARIOS.PRODUCTOS),
+                axiosInstance.get(API.FACTURACION.RESOLUCIONES)
             ]);
             setFacturas(resFacturas.data);
             setClientes(resClientes.data);
@@ -124,9 +124,9 @@ function Facturacion() {
 
         try {
             if (currentFacturaId) {
-                await axios.put(`${API.FACTURACION.FACTURAS}${currentFacturaId}/`, formData);
+                await axiosInstance.put(`${API.FACTURACION.FACTURAS}${currentFacturaId}/`, formData);
             } else {
-                await axios.post(API.FACTURACION.FACTURAS, formData);
+                await axiosInstance.post(API.FACTURACION.FACTURAS, formData);
             }
             setShowNewForm(false);
             setCurrentFacturaId(null);
@@ -144,7 +144,7 @@ function Facturacion() {
     const emitirFactura = async (id) => {
         if (window.confirm('¿Desea emitir esta factura? Esta acción descontará inventario y generará el número de factura.')) {
             try {
-                await axios.post(`${API.FACTURACION.FACTURAS}${id}/emitir/`);
+                await axiosInstance.post(`${API.FACTURACION.FACTURAS}${id}/emitir/`);
                 alert('Factura emitida exitosamente.');
                 fetchData();
             } catch (error) {
@@ -194,10 +194,10 @@ function Facturacion() {
                     }
                 };
 
-                const xmlRes = await axios.post(`${API_FE}/generar-xml/`, xmlData);
+                const xmlRes = await axiosInstance.post(`${API_FE}/generar-xml/`, xmlData);
                 const xmlContent = xmlRes.data.xml;
 
-                const envioRes = await axios.post(`${API_FE}/enviar/`, {
+                const envioRes = await axiosInstance.post(`${API_FE}/enviar/`, {
                     factura_id: factura.id,
                     factura_numero: factura.numero_factura,
                     xml_content: xmlContent,
@@ -221,7 +221,7 @@ function Facturacion() {
     const deleteFactura = async (id) => {
         if (window.confirm('¿Está seguro de eliminar esta factura?')) {
             try {
-                await axios.delete(`${API.FACTURACION.FACTURAS}${id}/`);
+                await axiosInstance.delete(`${API.FACTURACION.FACTURAS}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar factura:', err);
@@ -390,7 +390,7 @@ function Facturacion() {
 
     const createResolution = async () => {
         try {
-            await axios.post(API.FACTURACION.RESOLUCIONES, {
+            await axiosInstance.post(API.FACTURACION.RESOLUCIONES, {
                 prefijo: 'FE', numero_inicial: 1, numero_final: 10000, numero_actual: 1,
                 fecha_inicio: new Date().toISOString().split('T')[0],
                 fecha_fin: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { Briefcase, AlertCircle, Edit3, Trash2, Plus, X, Users, Calendar } from 'lucide-react';
 
 const API_PROYECTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/proyectos/proyectos/';
@@ -27,8 +27,8 @@ function Proyectos() {
     const fetchData = async () => {
         try {
             const [resProy, resTareas] = await Promise.all([
-                axios.get(API_PROYECTOS),
-                axios.get(API_TAREAS)
+                axiosInstance.get(API_PROYECTOS),
+                axiosInstance.get(API_TAREAS)
             ]);
             setProyectos(resProy.data);
             setTareas(resTareas.data);
@@ -54,9 +54,9 @@ function Proyectos() {
         e.preventDefault();
         try {
             if (currentProy) {
-                await axios.put(`${API_PROYECTOS}${currentProy.id}/`, proyForm);
+                await axiosInstance.put(`${API_PROYECTOS}${currentProy.id}/`, proyForm);
             } else {
-                await axios.post(API_PROYECTOS, proyForm);
+                await axiosInstance.post(API_PROYECTOS, proyForm);
             }
             fetchData();
             setIsProyModalOpen(false);
@@ -68,7 +68,7 @@ function Proyectos() {
     const deleteProy = async (id) => {
         if (window.confirm('¿Eliminar este proyecto?')) {
             try {
-                await axios.delete(`${API_PROYECTOS}${id}/`);
+                await axiosInstance.delete(`${API_PROYECTOS}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar proyecto:', err);

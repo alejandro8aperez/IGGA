@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Factory, Package, AlertCircle, BarChart3, Play, Settings, 
     Plus, Edit3, Trash2, Eye, RefreshCw, TrendingUp, Clock, 
@@ -55,9 +55,9 @@ export default function MRP() {
         setLoading(true);
         try {
             const [mpsRes, capRes, ejecRes] = await Promise.all([
-                axios.get(`${API_BASE}plan-maestro-produccion/resumen/`),
-                axios.get(`${API_BASE}planes-capacidad/resumen/`),
-                axios.get(`${API_BASE}ejecuciones-mrp/`)
+                axiosInstance.get(`${API_BASE}plan-maestro-produccion/resumen/`),
+                axiosInstance.get(`${API_BASE}planes-capacidad/resumen/`),
+                axiosInstance.get(`${API_BASE}ejecuciones-mrp/`)
             ]);
             
             setMpsResumen(mpsRes.data);
@@ -74,7 +74,7 @@ export default function MRP() {
     const fetchMpsData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE}plan-maestro-produccion/`);
+            const response = await axiosInstance.get(`${API_BASE}plan-maestro-produccion/`);
             setMpsItems(response.data);
         } catch (err) {
             console.error('Error fetching MPS:', err);
@@ -87,7 +87,7 @@ export default function MRP() {
     const fetchBomData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE}listas-materiales/`);
+            const response = await axiosInstance.get(`${API_BASE}listas-materiales/`);
             setBomItems(response.data);
         } catch (err) {
             console.error('Error fetching BOM:', err);
@@ -100,7 +100,7 @@ export default function MRP() {
     const fetchRequerimientosData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE}requerimientos-materiales/pendientes/`);
+            const response = await axiosInstance.get(`${API_BASE}requerimientos-materiales/pendientes/`);
             setRequerimientos(response.data);
         } catch (err) {
             console.error('Error fetching requerimientos:', err);
@@ -113,7 +113,7 @@ export default function MRP() {
     const ejecutarMRP = async () => {
         setLoading(true);
         try {
-            const response = await axios.post(`${API_BASE}ejecuciones-mrp/ejecutar/`, {
+            const response = await axiosInstance.post(`${API_BASE}ejecuciones-mrp/ejecutar/`, {
                 fecha_inicio: new Date().toISOString().split('T')[0],
                 fecha_fin: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                 parametros: {

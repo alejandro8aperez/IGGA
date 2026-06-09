@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     Landmark, ArrowUpCircle, ArrowDownCircle, Plus, Search, 
     X, Wallet, FileText, RefreshCw, AlertCircle, TrendingUp,
@@ -33,8 +33,8 @@ function Tesoreria() {
         setLoading(true);
         try {
             const [cuentasRes, transRes] = await Promise.allSettled([
-                axios.get(`${API_BASE}/finanzas/cuentas/`),
-                axios.get(`${API_BASE}/finanzas/transacciones/`)
+                axiosInstance.get(`${API_BASE}/finanzas/cuentas/`),
+                axiosInstance.get(`${API_BASE}/finanzas/transacciones/`)
             ]);
 
             if (cuentasRes.status === 'fulfilled') setCuentas(cuentasRes.value.data);
@@ -59,7 +59,7 @@ function Tesoreria() {
         e.preventDefault();
         try {
             const payload = { ...form, monto: Number(form.monto) };
-            await axios.post(`${API_BASE}/finanzas/transacciones/`, payload);
+            await axiosInstance.post(`${API_BASE}/finanzas/transacciones/`, payload);
             setIsModalOpen(false);
             setForm({ cuenta: '', monto: '', tipo: 'debito', descripcion: '' });
             fetchData();

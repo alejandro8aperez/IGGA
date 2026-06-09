@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     LayoutDashboard, Users, ShoppingCart, Package, Truck, Wrench, Settings,
     TrendingUp, BarChart3, FileText, Zap, Database, DollarSign,
@@ -301,15 +301,15 @@ export default function Home() {
                 return; // No intentar peticiones reales en modo demo o sin usuario
             }
             const results = await Promise.allSettled([
-                axios.get(API_CLIENTES),
-                axios.get(API_COTIZACIONES),
-                axios.get(API_PEDIDOS),
-                axios.get(API_FACTURAS),
-                axios.get(API_PROVEEDORES),
-                axios.get(API_ORDENES),
-                axios.get(API_PRODUCTOS),
-                axios.get(API_PROYECTOS),
-                axios.get(API_DISEÑOS)
+                axiosInstance.get(API_CLIENTES),
+                axiosInstance.get(API_COTIZACIONES),
+                axiosInstance.get(API_PEDIDOS),
+                axiosInstance.get(API_FACTURAS),
+                axiosInstance.get(API_PROVEEDORES),
+                axiosInstance.get(API_ORDENES),
+                axiosInstance.get(API_PRODUCTOS),
+                axiosInstance.get(API_PROYECTOS),
+                axiosInstance.get(API_DISEÑOS)
             ]);
 
             const getValue = (result) => 
@@ -317,7 +317,7 @@ export default function Home() {
 
             let totalProductosMaestro = getValue(results[6]);
             try {
-                const resumen = await axios.get(API.PRODUCTOS.RESUMEN);
+                const resumen = await axiosInstance.get(API.PRODUCTOS.RESUMEN);
                 totalProductosMaestro = resumen.data?.total_productos ?? totalProductosMaestro;
             } catch {
                 /* usar conteo de inventarios si el maestro no responde */

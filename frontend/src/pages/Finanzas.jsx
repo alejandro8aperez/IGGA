@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { DollarSign, AlertCircle, TrendingUp, TrendingDown, Wallet, ArrowRightLeft } from 'lucide-react';
 
 const API_CUENTAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/finanzas/cuentas/';
@@ -17,8 +17,8 @@ function Finanzas() {
 
     const fetchData = async () => {
         try {
-            const respCuentas = await axios.get(API_CUENTAS);
-            const respTrans = await axios.get(API_TRANSACCIONES);
+            const respCuentas = await axiosInstance.get(API_CUENTAS);
+            const respTrans = await axiosInstance.get(API_TRANSACCIONES);
             setCuentas(respCuentas.data);
             setTransacciones(respTrans.data);
             setLoading(false);

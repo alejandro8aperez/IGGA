@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { API } from '../config/api';
 
 /**
@@ -9,7 +9,7 @@ export async function buscarProductoPorCodigoBarras(codigo) {
     const trimmed = String(codigo || '').trim();
     if (!trimmed) return null;
     try {
-        const { data } = await axios.get(API.PRODUCTOS.POR_CODIGO_BARRAS, {
+        const { data } = await axiosInstance.get(API.PRODUCTOS.POR_CODIGO_BARRAS, {
             params: { codigo: trimmed },
         });
         return data;

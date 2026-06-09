@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 
 function Equipos() {
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ function Equipos() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/');
+                const res = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/');
                 setEquipos(res.data);
             } catch (err) {
                 setError('Error al cargar equipos.');
@@ -35,11 +35,11 @@ function Equipos() {
         e.preventDefault();
         try {
             if (editingId) {
-                await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/mantenimiento/equipos/${editingId}/`, form);
+                await axiosInstance.put(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/mantenimiento/equipos/${editingId}/`, form);
             } else {
-                await axios.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/', form);
+                await axiosInstance.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/', form);
             }
-            const res = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/');
+            const res = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/');
             setEquipos(res.data);
             setForm({ codigo: '', nombre: '', descripcion: '', ubicacion: '', tipo: '', fecha_instalacion: '', proveedor: '', estado: 'activo' });
             setEditingId(null);
@@ -51,8 +51,8 @@ function Equipos() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Está seguro que desea eliminar este equipo?')) {
             try {
-                await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/mantenimiento/equipos/${id}/`);
-                const res = await axios.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/');
+                await axiosInstance.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/mantenimiento/equipos/${id}/`);
+                const res = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mantenimiento/equipos/');
                 setEquipos(res.data);
             } catch {
                 setError('Error al eliminar equipo.');

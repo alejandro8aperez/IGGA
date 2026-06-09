@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
     FileText, Plus, Trash2, Search, Download, Save, Send, 
     User, Calendar, DollarSign, Package, Percent, Clock,
@@ -61,8 +61,8 @@ export default function CotizadorProfesional() {
     const cargarDatos = async () => {
         try {
             const [clientesRes, productosRes] = await Promise.all([
-                axios.get(CLIENTES_URL),
-                axios.get(PRODUCTOS_URL)
+                axiosInstance.get(CLIENTES_URL),
+                axiosInstance.get(PRODUCTOS_URL)
             ]);
             setClientes(clientesRes.data);
             setProductos(productosRes.data);
@@ -145,7 +145,7 @@ export default function CotizadorProfesional() {
                 }))
             };
             
-            await axios.post(API_URL, datosGuardar);
+            await axiosInstance.post(API_URL, datosGuardar);
             alert('Cotización guardada exitosamente');
         } catch (err) {
             console.error("Error al guardar:", err);

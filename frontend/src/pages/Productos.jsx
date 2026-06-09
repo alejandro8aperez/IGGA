@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import {
     Package, Plus, Edit3, Trash2, Search, X, Barcode, Box,
     ShoppingCart, TrendingUp, Factory, Warehouse, FileText,
@@ -132,14 +132,14 @@ export default function Productos() {
             if (filterTipo) params.tipo = filterTipo;
 
             const results = await Promise.allSettled([
-                axios.get(API.INVENTARIOS.PRODUCTOS, { 
+                axiosInstance.get(API.INVENTARIOS.PRODUCTOS, { 
                     params: search ? { search } : {} 
                 }), // 0 - Simplificamos params para asegurar compatibilidad
-                axios.get(API.INVENTARIOS.CATEGORIAS),            // 1
-                axios.get(API.PRODUCTOS.GRUPOS_MATERIAL),         // 2
-                axios.get(API.PRODUCTOS.FAMILIAS),                // 3
-                axios.get(API.PRODUCTOS.TIPOS_EMPAQUE),           // 4
-                axios.get(API.INVENTARIOS.ALMACENES),             // 5
+                axiosInstance.get(API.INVENTARIOS.CATEGORIAS),            // 1
+                axiosInstance.get(API.PRODUCTOS.GRUPOS_MATERIAL),         // 2
+                axiosInstance.get(API.PRODUCTOS.FAMILIAS),                // 3
+                axiosInstance.get(API.PRODUCTOS.TIPOS_EMPAQUE),           // 4
+                axiosInstance.get(API.INVENTARIOS.ALMACENES),             // 5
             ]);
 
             // Validamos la respuesta de productos (índice 0)
@@ -177,7 +177,7 @@ export default function Productos() {
         setActiveTab('general');
         if (prod?.id) {
             try {
-                const res = await axios.get(`${API.INVENTARIOS.PRODUCTOS}${prod.id}/`);
+                const res = await axiosInstance.get(`${API.INVENTARIOS.PRODUCTOS}${prod.id}/`);
                 const p = res.data;
                 setCurrent(p);
                 setForm({
@@ -202,7 +202,7 @@ export default function Productos() {
     const handleBarcodeLookup = async () => {
         if (!barcodeScan.trim()) return;
         try {
-            const res = await axios.get(API.PRODUCTOS.POR_CODIGO_BARRAS, {
+            const res = await axiosInstance.get(API.PRODUCTOS.POR_CODIGO_BARRAS, {
                 params: { codigo: barcodeScan.trim() },
             });
             openModal(res.data);
@@ -278,9 +278,9 @@ export default function Productos() {
         try {
             const payload = buildPayload();
             if (current?.id) {
-                await axios.put(`${API.INVENTARIOS.PRODUCTOS}${current.id}/`, payload);
+                await axiosInstance.put(`${API.INVENTARIOS.PRODUCTOS}${current.id}/`, payload);
             } else {
-                await axios.post(API.INVENTARIOS.PRODUCTOS, payload);
+                await axiosInstance.post(API.INVENTARIOS.PRODUCTOS, payload);
             }
             setModalOpen(false);
             loadData();
@@ -294,7 +294,7 @@ export default function Productos() {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Eliminar o desactivar este producto?')) return;
         try {
-            await axios.delete(`${API.INVENTARIOS.PRODUCTOS}${id}/`);
+            await axiosInstance.delete(`${API.INVENTARIOS.PRODUCTOS}${id}/`);
             loadData();
         } catch {
             alert('No se pudo eliminar');

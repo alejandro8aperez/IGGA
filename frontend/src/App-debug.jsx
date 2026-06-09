@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, PackageOpen, Settings, DollarSign, ShoppingCart, Briefcase, UserCheck, Truck, ShieldCheck, Megaphone, TrendingUp, Building2, Factory, LogOut } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -16,7 +16,7 @@ function Sidebar() {
     useEffect(() => {
         const fetchMenuConfig = async () => {
             try {
-                const response = await axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '') + '/customization/menu-config/');
+                const response = await axiosInstance.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '') + '/customization/menu-config/');
                 setMenuConfig(response.data);
             } catch (err) {
                 console.error('Error fetching menu config:', err);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { 
   FileText, ShieldCheck, Download, Upload, Plus, Edit, Trash2, 
   Search, Filter, Calendar, Clock, CheckCircle, AlertTriangle, 
@@ -98,7 +98,7 @@ function DashboardISO() {
   const cargarDashboard = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}dashboard/`);
+      const response = await axiosInstance.get(`${API_BASE}dashboard/`);
       setStats(response.data);
     } catch (error) {
       console.error('Error cargando dashboard:', error);
@@ -318,7 +318,7 @@ function ListaFormatos() {
       
       if (params.toString()) url += '?' + params.toString();
       
-      const response = await axios.get(url);
+      const response = await axiosInstance.get(url);
       setFormatos(response.data);
     } catch (error) {
       console.error('Error cargando formatos:', error);

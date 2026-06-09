@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target, Calendar, DollarSign, BarChart3, ChevronLeft } from 'lucide-react';
 
 const API_CAMPANAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/campanas/';
@@ -231,8 +231,8 @@ function Marketing() {
     const fetchData = async () => {
         try {
             const [resCamp, resLeads] = await Promise.all([
-                axios.get(API_CAMPANAS),
-                axios.get(API_LEADS)
+                axiosInstance.get(API_CAMPANAS),
+                axiosInstance.get(API_LEADS)
             ]);
             setCampanas(resCamp.data);
             setLeads(resLeads.data);
@@ -258,9 +258,9 @@ function Marketing() {
         e.preventDefault();
         try {
             if (currentCamp) {
-                await axios.put(`${API_CAMPANAS}${currentCamp.id}/`, campForm);
+                await axiosInstance.put(`${API_CAMPANAS}${currentCamp.id}/`, campForm);
             } else {
-                await axios.post(API_CAMPANAS, campForm);
+                await axiosInstance.post(API_CAMPANAS, campForm);
             }
             fetchData();
             setIsCampModalOpen(false);
@@ -272,7 +272,7 @@ function Marketing() {
     const deleteCamp = async (id) => {
         if (window.confirm('¿Eliminar esta campaña?')) {
             try {
-                await axios.delete(`${API_CAMPANAS}${id}/`);
+                await axiosInstance.delete(`${API_CAMPANAS}${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Error al eliminar campaña:', err);

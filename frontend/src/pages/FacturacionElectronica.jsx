@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 import {
     FileText, Settings, Activity, Send, RefreshCw, CheckCircle,
     XCircle, AlertTriangle, Search, Plus, Edit3, Trash2, X,
@@ -81,9 +81,9 @@ function FacturacionElectronica() {
     const fetchData = async () => {
         try {
             const [logsRes, configRes, statsRes] = await Promise.all([
-                axios.get(`${API_URL}/logs/`),
-                axios.get(`${API_URL}/configuracion/activa/`).catch(() => ({ data: null })),
-                axios.get(`${API_URL}/estadisticas/`)
+                axiosInstance.get(`${API_URL}/logs/`),
+                axiosInstance.get(`${API_URL}/configuracion/activa/`).catch(() => ({ data: null })),
+                axiosInstance.get(`${API_URL}/estadisticas/`)
             ]);
             setLogs(logsRes.data);
             setConfig(configRes.data);
@@ -97,7 +97,7 @@ function FacturacionElectronica() {
 
     const generateHash = async () => {
         try {
-            const res = await axios.get(`${API_URL}/hash-password/`, {
+            const res = await axiosInstance.get(`${API_URL}/hash-password/`, {
                 params: { password: passwordInput }
             });
             setHashResult(res.data.hash_sha256);
@@ -110,9 +110,9 @@ function FacturacionElectronica() {
         e.preventDefault();
         try {
             if (config) {
-                await axios.put(`${API_URL}/configuracion/${config.id}/`, configForm);
+                await axiosInstance.put(`${API_URL}/configuracion/${config.id}/`, configForm);
             } else {
-                await axios.post(`${API_URL}/configuracion/`, configForm);
+                await axiosInstance.post(`${API_URL}/configuracion/`, configForm);
             }
             setIsConfigModalOpen(false);
             fetchData();
@@ -363,7 +363,7 @@ function FacturacionElectronica() {
                                                 {log.estado_interno === 'error' && (
                                                     <button
                                                         style={styles.btnIcon}
-                                                        onClick={() => axios.post(`${API_URL}/logs/${log.id}/reenviar/`).then(fetchData)}
+                                                        onClick={() => axiosInstance.post(`${API_URL}/logs/${log.id}/reenviar/`).then(fetchData)}
                                                         title="Reenviar"
                                                     >
                                                         <Send size={16} color="#667eea" />
