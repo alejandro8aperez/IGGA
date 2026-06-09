@@ -1,9 +1,8 @@
 // ============================================================
-//  axiosConfig.js  –  ERP-8AMPERIOS
+//  axiosConfig.js  �  ERP-8AMPERIOS
 // ============================================================
-import axiosInstance from '../config/axiosConfig';
+import axios from 'axios';
 
-// ── Base URL ────────────────────────────────────────────────
 const rawUrl = import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api/';
 const BASE_URL = rawUrl.endsWith('/api/') ? rawUrl
                : rawUrl.endsWith('/api')  ? rawUrl + '/'
@@ -12,14 +11,12 @@ const BASE_URL = rawUrl.endsWith('/api/') ? rawUrl
 console.log('[ERP] Axios BaseURL:', BASE_URL);
 console.log('[ERP] Conectando al Backend en:', BASE_URL);
 
-// ── Instancia principal ──────────────────────────────────────
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ── Estado de refresco ───────────────────────────────────────
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -31,9 +28,8 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// ── Logout limpio ────────────────────────────────────────────
 const performLogout = () => {
-  console.warn('[ERP] Refresh token inválido o expirado. Cerrando sesión.');
+  console.warn('[ERP] Refresh token inv�lido o expirado. Cerrando sesi�n.');
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   if (window.location.pathname !== '/login') {
@@ -41,7 +37,6 @@ const performLogout = () => {
   }
 };
 
-// ── Request interceptor ──────────────────────────────────────
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -53,14 +48,10 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// ── Response interceptor ─────────────────────────────────────
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    // ── Ignorar 401 en rutas de autenticación ──────────────
-    // Un 401 en /token/ significa credenciales incorrectas, no token expirado
     const isAuthRoute = originalRequest.url?.includes('token/');
     if (isAuthRoute) {
       return Promise.reject(error);
@@ -94,7 +85,7 @@ axiosInstance.interceptors.response.use(
     }
 
     try {
-      const response = await axiosInstance.post(`${BASE_URL}token/refresh/`, {
+      const response = await axios.post(`${BASE_URL}token/refresh/`, {
         refresh: refreshToken,
       });
 
