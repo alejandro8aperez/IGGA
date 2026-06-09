@@ -1,5 +1,9 @@
+// ============================================================
+//  HojaFotosInforme.jsx  –  ERP-8AMPERIOS  (CORREGIDO)
+//  Fix: URLs de imagen absolutas con getImageUrl helper
+// ============================================================
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../../config/axiosConfig';  // ✅ Importar BASE_URL
 import { Camera, X, UploadCloud, Loader2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '@/config/api';
@@ -158,6 +162,18 @@ const S = {
   },
 };
 
+// ✅ NUEVO: Helper para construir URL absoluta de imagen
+function getImageUrl(src) {
+  if (!src) return null;
+  // Si ya es URL absoluta (http/https), devolver tal cual
+  if (src.startsWith('http://') || src.startsWith('https://')) return src;
+  // Si es ruta relativa, anteponer BASE_URL (sin el /api/ final)
+  const base = BASE_URL.replace(/\/api\/$/, ''); // quita /api/ del final
+  // Asegurar que src empiece con /
+  const path = src.startsWith('/') ? src : '/' + src;
+  return base + path;
+}
+
 // ── Función de impresión ───────────────────────────────────────────────────
 function imprimirFotos(fotos, informe) {
   const fotosLlenas = Object.entries(fotos)
@@ -174,7 +190,7 @@ function imprimirFotos(fotos, informe) {
   const cod    = 'F-141-IN';
 
   const fotosHTML = fotosLlenas.map(([num, f]) => {
-    const src  = f.imagen_url || f.imagen;
+    const src  = getImageUrl(f.imagen_url || f.imagen);  // ✅ Usar helper
     const desc = f.descripcion || '';
     const sec  = f.seccion_display || '';
     return `
@@ -239,7 +255,7 @@ function imprimirFotos(fotos, informe) {
     <span>Generado: ${new Date().toLocaleString('es-CO')}</span>
     <span>${cod} — ${obra} — ${fecha}</span>
   </div>
-  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<\/script>
+  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<<\/script>
 </body>
 </html>`;
 
@@ -359,7 +375,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
               ) : isFilled ? (
                 <>
                   <img
-                    src={fotos[num].imagen_url || fotos[num].imagen}
+                    src={getImageUrl(fotos[num].imagen_url || fotos[num].imagen)}  // ✅ Usar helper
                     alt={`Foto ${num}`}
                     style={S.img}
                   />
