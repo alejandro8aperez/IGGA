@@ -12,15 +12,18 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { API } from '../config/api';
 
-const API_CLIENTES = API.CRM.CLIENTES;
-const API_COTIZACIONES = API.CRM.COTIZACIONES;
-const API_PEDIDOS = API.VENTAS.PEDIDOS;
-const API_FACTURAS = `${API.BASE}/ventas/facturas/`;
-const API_PROVEEDORES = API.COMPRAS.PROVEEDORES;
-const API_ORDENES = API.COMPRAS.ORDENES;
-const API_PRODUCTOS = API.INVENTARIOS.PRODUCTOS;
-const API_PROYECTOS = `${API.BASE}/operaciones/proyectos/`;
-const API_DISEÑOS = `${API.BASE}/kave/disenos/`;
+// =============================================================================
+// RUTAS API CORREGIDAS — sin API.BASE (no existe en api.js)
+// =============================================================================
+const API_CLIENTES      = API.CRM.CLIENTES;
+const API_COTIZACIONES  = API.CRM.COTIZACIONES;
+const API_PEDIDOS       = API.VENTAS.PEDIDOS;
+const API_FACTURAS      = API.VENTAS.FACTURAS;
+const API_PROVEEDORES   = API.COMPRAS.PROVEEDORES;
+const API_ORDENES       = API.COMPRAS.ORDENES;
+const API_PRODUCTOS     = API.INVENTARIOS.PRODUCTOS;
+const API_PROYECTOS     = API.OPERACIONES.PROYECTOS;
+const API_DISEÑOS       = API.KAVE.DESIGNS;
 
 const modules = [
     {
