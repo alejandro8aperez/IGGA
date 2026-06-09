@@ -28,6 +28,21 @@ const C = {
   indigo: "#6366f1", skeleton: "#e2e8f0",
 };
 
+// ── Helper: normalizar respuesta de API a array ─────────────────────────
+function normalizeArray(data) {
+  if (Array.isArray(data)) return data;
+  if (data?.results && Array.isArray(data.results)) return data.results;
+  if (data?.data && Array.isArray(data.data)) return data.data;
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    // Si es un objeto con keys numéricas, convertir a array
+    const keys = Object.keys(data);
+    if (keys.length > 0 && keys.every(k => !isNaN(Number(k)))) {
+      return keys.map(k => data[k]);
+    }
+  }
+  return [];
+}
+
 // ── Función de impresión de fotos ─────────────────────────────────────────
 function imprimirFotos(fotos, informe) {
   const fotosLlenas = Object.entries(fotos)
@@ -119,12 +134,14 @@ function InformeFotos({ informeId }) {
   const [editValue, setEditValue] = useState("");
   const debounceRef = useRef(null);
 
-  const { data: fotos = [], isLoading } = useQuery({
+  // ✅ FIX: Normalizar respuesta a array
+  const { data: rawFotos, isLoading } = useQuery({
     queryKey: ["informe-fotos", informeId],
     queryFn: () =>
       informeId ? axios.get(`${API.INFORME_DIARIO.ANEXOS}?informe=${informeId}`).then(r => r.data) : [],
     enabled: !!informeId,
   });
+  const fotos = normalizeArray(rawFotos);
 
   const handleUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -341,8 +358,8 @@ function InformeDiarioContent() {
   const [activeTab, setActiveTab]           = useState("dashboard");
   const [editingInforme, setEditingInforme] = useState(null);
 
-  // fotos en memoria para el botón imprimir
-  const { data: fotosData = [] } = useQuery({
+  // ✅ FIX: Normalizar respuesta a array antes de reduce
+  const { data: rawFotosData } = useQuery({
     queryKey: ["informe-fotos", editingInforme?.id],
     queryFn: () =>
       editingInforme?.id
@@ -350,8 +367,15 @@ function InformeDiarioContent() {
         : [],
     enabled: !!editingInforme?.id,
   });
-  // convertir array a mapa { posicion: foto }
-  const fotosMap = fotosData.reduce((acc, f) => { if (f.posicion > 0) acc[f.posicion] = f; return acc; }, {});
+
+  // Normalizar SIEMPRE a array
+  const fotosData = normalizeArray(rawFotosData);
+
+  // Ahora reduce es seguro
+  const fotosMap = fotosData.reduce((acc, f) => { 
+    if (f?.posicion > 0) acc[f.posicion] = f; 
+    return acc; 
+  }, {});
 
   useQuery({ queryKey: ["informes-diarios"], queryFn: () => informeDiarioService.list() });
 
