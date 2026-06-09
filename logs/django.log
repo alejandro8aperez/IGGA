@@ -28965,3 +28965,4 @@ INFO 2026-06-07 18:45:02,350 basehttp 3480 15236 "GET /api/calidad/formatos-iso9
 INFO 2026-06-07 19:14:46,819 autoreload 19472 35296 Watching for file changes with StatReloader
 INFO 2026-06-08 11:05:51,309 autoreload 34008 25644 Watching for file changes with StatReloader
 INFO 2026-06-09 07:43:51,855 autoreload 31208 2112 Watching for file changes with StatReloader
+INFO 2026-06-09 08:02:30,412 autoreload 30060 26856 Watching for file changes with StatReloader
