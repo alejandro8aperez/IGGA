@@ -28977,3 +28977,7 @@ INFO 2026-06-09 16:19:43,684 autoreload 7240 32996 Watching for file changes wit
 INFO 2026-06-09 16:44:24,085 autoreload 27216 28180 Watching for file changes with StatReloader
 INFO 2026-06-09 16:52:50,383 autoreload 20036 33188 Watching for file changes with StatReloader
 INFO 2026-06-09 17:13:52,359 autoreload 19788 13072 Watching for file changes with StatReloader
+WARNING 2026-06-09 17:17:56,534 basehttp 19788 29776 "GET /media/informe_diario/anexos/2026/06/he_querido_correr_un_km_mas.png HTTP/1.1" 404 11580
+WARNING 2026-06-09 17:18:22,246 basehttp 19788 25092 "GET /media/informe_diario/anexos/2026/06/he_querido_correr_un_km_mas.png HTTP/1.1" 404 11580
+INFO 2026-06-09 17:28:56,204 autoreload 17768 21756 Watching for file changes with StatReloader
+INFO 2026-06-09 17:36:44,115 autoreload 31736 13000 Watching for file changes with StatReloader
