@@ -2,8 +2,7 @@
 //  AuthContext.jsx  –  ERP-8AMPERIOS
 // ============================================================
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axiosInstance from '../config/axiosConfig';
-
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
