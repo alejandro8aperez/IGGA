@@ -6,7 +6,7 @@ import {
     Hash, Lock, Globe, Database, TrendingUp, Clock, Shield
 } from 'lucide-react';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/facturacion-electronica';
+const API_URL = 'facturacion-electronica/';
 
 const styles = {
     container: { padding: '2rem', maxWidth: '1400px', margin: '0 auto', fontFamily: 'Inter, sans-serif' },
@@ -29,10 +29,10 @@ const styles = {
     badge: (estado) => {
         const colors = {
             pendiente: { bg: '#fef3c7', text: '#92400e' },
-            enviada: { bg: '#dbeafe', text: '#1e40af' },
-            aceptada: { bg: '#d1fae5', text: '#065f46' },
+            enviada:   { bg: '#dbeafe', text: '#1e40af' },
+            aceptada:  { bg: '#d1fae5', text: '#065f46' },
             rechazada: { bg: '#fecaca', text: '#991b1b' },
-            error: { bg: '#fee2e2', text: '#dc2626' }
+            error:     { bg: '#fee2e2', text: '#dc2626' }
         };
         const c = colors[estado] || colors.pendiente;
         return { padding: '4px 12px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, background: c.bg, color: c.text, display: 'inline-block' };
@@ -55,7 +55,6 @@ function FacturacionElectronica() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Modal Config
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     const [configForm, setConfigForm] = useState({
         nombre_config: '',
@@ -69,7 +68,6 @@ function FacturacionElectronica() {
         activo: true
     });
 
-    // Modal Hash Generator
     const [isHashModalOpen, setIsHashModalOpen] = useState(false);
     const [passwordInput, setPasswordInput] = useState('');
     const [hashResult, setHashResult] = useState('');
@@ -81,9 +79,9 @@ function FacturacionElectronica() {
     const fetchData = async () => {
         try {
             const [logsRes, configRes, statsRes] = await Promise.all([
-                axiosInstance.get(`${API_URL}/logs/`),
-                axiosInstance.get(`${API_URL}/configuracion/activa/`).catch(() => ({ data: null })),
-                axiosInstance.get(`${API_URL}/estadisticas/`)
+                axiosInstance.get(`${API_URL}logs/`),
+                axiosInstance.get(`${API_URL}configuracion/activa/`).catch(() => ({ data: null })),
+                axiosInstance.get(`${API_URL}estadisticas/`)
             ]);
             setLogs(logsRes.data);
             setConfig(configRes.data);
@@ -97,7 +95,7 @@ function FacturacionElectronica() {
 
     const generateHash = async () => {
         try {
-            const res = await axiosInstance.get(`${API_URL}/hash-password/`, {
+            const res = await axiosInstance.get(`${API_URL}hash-password/`, {
                 params: { password: passwordInput }
             });
             setHashResult(res.data.hash_sha256);
@@ -110,9 +108,9 @@ function FacturacionElectronica() {
         e.preventDefault();
         try {
             if (config) {
-                await axiosInstance.put(`${API_URL}/configuracion/${config.id}/`, configForm);
+                await axiosInstance.put(`${API_URL}configuracion/${config.id}/`, configForm);
             } else {
-                await axiosInstance.post(`${API_URL}/configuracion/`, configForm);
+                await axiosInstance.post(`${API_URL}configuracion/`, configForm);
             }
             setIsConfigModalOpen(false);
             fetchData();
@@ -127,7 +125,7 @@ function FacturacionElectronica() {
             setConfigForm({
                 nombre_config: config.nombre_config || '',
                 nit: config.nit || '',
-                password_hash: '', // No mostrar hash existente
+                password_hash: '',
                 wsdl_demo_ventas: config.wsdl_demo_ventas || '',
                 wsdl_demo_pos: config.wsdl_demo_pos || '',
                 wsdl_prod_ventas: config.wsdl_prod_ventas || '',
@@ -173,24 +171,17 @@ function FacturacionElectronica() {
                     Facturación Electrónica
                 </h1>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button
-                        style={styles.btnSecondary}
-                        onClick={() => setIsHashModalOpen(true)}
-                    >
+                    <button style={styles.btnSecondary} onClick={() => setIsHashModalOpen(true)}>
                         <Hash size={18} />
                         Generar SHA256
                     </button>
-                    <button
-                        style={styles.btnPrimary}
-                        onClick={openConfigModal}
-                    >
+                    <button style={styles.btnPrimary} onClick={openConfigModal}>
                         <Settings size={18} />
                         Configuración
                     </button>
                 </div>
             </div>
 
-            {/* Stats */}
             {estadisticas && (
                 <div style={styles.statsGrid}>
                     <div style={styles.statCard}>
@@ -224,31 +215,19 @@ function FacturacionElectronica() {
                 </div>
             )}
 
-            {/* Config Status */}
             <div style={{ ...styles.card, marginBottom: '2rem' }}>
                 <div style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '50%',
-                        background: config ? '#d1fae5' : '#fee2e2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
+                    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: config ? '#d1fae5' : '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {config ? <Shield size={24} color="#065f46" /> : <AlertTriangle size={24} color="#dc2626" />}
                     </div>
                     <div style={{ flex: 1 }}>
-                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#1e293b' }}>
-                            Estado de Configuración
-                        </h3>
+                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#1e293b' }}>Estado de Configuración</h3>
                         <p style={{ margin: '0.25rem 0 0 0', color: '#64748b', fontSize: '0.875rem' }}>
                             {config ? (
                                 <>
                                     <Globe size={14} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />
                                     Ambiente: <strong>{config.ambiente_activo === 'produccion' ? 'Producción' : 'Demo'}</strong>
-                                    {' | '}
-                                    NIT: <strong>{config.nit}</strong>
+                                    {' | '}NIT: <strong>{config.nit}</strong>
                                 </>
                             ) : (
                                 'No hay configuración activa. Configure las credenciales de Facturatech.'
@@ -258,25 +237,17 @@ function FacturacionElectronica() {
                 </div>
             </div>
 
-            {/* Tabs */}
             <div style={styles.tabs}>
-                <button
-                    style={styles.tab(activeTab === 'logs')}
-                    onClick={() => setActiveTab('logs')}
-                >
+                <button style={styles.tab(activeTab === 'logs')} onClick={() => setActiveTab('logs')}>
                     <Activity size={16} style={{ marginRight: '0.5rem' }} />
                     Logs de Envío
                 </button>
-                <button
-                    style={styles.tab(activeTab === 'por-estado')}
-                    onClick={() => setActiveTab('por-estado')}
-                >
+                <button style={styles.tab(activeTab === 'por-estado')} onClick={() => setActiveTab('por-estado')}>
                     <CheckCircle size={16} style={{ marginRight: '0.5rem' }} />
                     Por Estado
                 </button>
             </div>
 
-            {/* Logs Tab */}
             {activeTab === 'logs' && (
                 <div style={styles.card}>
                     <div style={styles.cardHeader}>
@@ -295,10 +266,7 @@ function FacturacionElectronica() {
                                     style={{ ...styles.formInput, paddingLeft: '2.5rem', width: '300px' }}
                                 />
                             </div>
-                            <button
-                                style={styles.btnSecondary}
-                                onClick={fetchData}
-                            >
+                            <button style={styles.btnSecondary} onClick={fetchData}>
                                 <RefreshCw size={16} />
                             </button>
                         </div>
@@ -320,36 +288,12 @@ function FacturacionElectronica() {
                                 {filteredLogs.length > 0 ? (
                                     filteredLogs.map((log) => (
                                         <tr key={log.id}>
+                                            <td style={styles.td}><strong>{log.factura_numero || `#${log.id}`}</strong></td>
+                                            <td style={styles.td}><span style={styles.badge(log.estado_interno)}>{log.estado_interno}</span></td>
+                                            <td style={styles.td}><code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>{log.codigo_respuesta || '-'}</code></td>
+                                            <td style={styles.td}>{log.cufe ? <span title={log.cufe}>{log.cufe.substring(0, 20)}...</span> : '-'}</td>
                                             <td style={styles.td}>
-                                                <strong>{log.factura_numero || `#${log.id}`}</strong>
-                                            </td>
-                                            <td style={styles.td}>
-                                                <span style={styles.badge(log.estado_interno)}>
-                                                    {log.estado_interno}
-                                                </span>
-                                            </td>
-                                            <td style={styles.td}>
-                                                <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
-                                                    {log.codigo_respuesta || '-'}
-                                                </code>
-                                            </td>
-                                            <td style={styles.td}>
-                                                {log.cufe ? (
-                                                    <span title={log.cufe}>
-                                                        {log.cufe.substring(0, 20)}...
-                                                    </span>
-                                                ) : (
-                                                    '-'
-                                                )}
-                                            </td>
-                                            <td style={styles.td}>
-                                                <span style={{
-                                                    padding: '2px 8px',
-                                                    borderRadius: '4px',
-                                                    fontSize: '0.75rem',
-                                                    background: log.es_produccion ? '#fecaca' : '#dbeafe',
-                                                    color: log.es_produccion ? '#991b1b' : '#1e40af'
-                                                }}>
+                                                <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', background: log.es_produccion ? '#fecaca' : '#dbeafe', color: log.es_produccion ? '#991b1b' : '#1e40af' }}>
                                                     {log.es_produccion ? 'Producción' : 'Demo'}
                                                 </span>
                                             </td>
@@ -361,19 +305,11 @@ function FacturacionElectronica() {
                                             </td>
                                             <td style={styles.td}>
                                                 {log.estado_interno === 'error' && (
-                                                    <button
-                                                        style={styles.btnIcon}
-                                                        onClick={() => axiosInstance.post(`${API_URL}/logs/${log.id}/reenviar/`).then(fetchData)}
-                                                        title="Reenviar"
-                                                    >
+                                                    <button style={styles.btnIcon} onClick={() => axiosInstance.post(`${API_URL}logs/${log.id}/reenviar/`).then(fetchData)} title="Reenviar">
                                                         <Send size={16} color="#667eea" />
                                                     </button>
                                                 )}
-                                                <button
-                                                    style={styles.btnIcon}
-                                                    onClick={() => alert(`XML: ${log.xml_enviado?.substring(0, 200)}...`)}
-                                                    title="Ver XML"
-                                                >
+                                                <button style={styles.btnIcon} onClick={() => alert(`XML: ${log.xml_enviado?.substring(0, 200)}...`)} title="Ver XML">
                                                     <FileText size={16} />
                                                 </button>
                                             </td>
@@ -393,7 +329,6 @@ function FacturacionElectronica() {
                 </div>
             )}
 
-            {/* Por Estado Tab */}
             {activeTab === 'por-estado' && estadisticas && (
                 <div style={styles.card}>
                     <div style={styles.cardHeader}>
@@ -405,29 +340,12 @@ function FacturacionElectronica() {
                     <div style={{ padding: '2rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                             {estadisticas.por_estado?.map((item) => (
-                                <div
-                                    key={item.estado_interno}
-                                    style={{
-                                        padding: '1.5rem',
-                                        borderRadius: '12px',
-                                        background: '#f8fafc',
-                                        border: '1px solid #e2e8f0',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center'
-                                    }}
-                                >
+                                <div key={item.estado_interno} style={{ padding: '1.5rem', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div>
-                                        <span style={{ fontSize: '0.875rem', color: '#64748b', textTransform: 'capitalize' }}>
-                                            {item.estado_interno}
-                                        </span>
-                                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', marginTop: '0.25rem' }}>
-                                            {item.cantidad}
-                                        </div>
+                                        <span style={{ fontSize: '0.875rem', color: '#64748b', textTransform: 'capitalize' }}>{item.estado_interno}</span>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', marginTop: '0.25rem' }}>{item.cantidad}</div>
                                     </div>
-                                    <span style={styles.badge(item.estado_interno)}>
-                                        {Math.round((item.cantidad / estadisticas.total_facturas) * 100)}%
-                                    </span>
+                                    <span style={styles.badge(item.estado_interno)}>{Math.round((item.cantidad / estadisticas.total_facturas) * 100)}%</span>
                                 </div>
                             ))}
                         </div>
@@ -435,110 +353,57 @@ function FacturacionElectronica() {
                 </div>
             )}
 
-            {/* Config Modal */}
             {isConfigModalOpen && (
                 <div style={styles.modalOverlay}>
                     <div style={styles.modal}>
                         <div style={styles.modalHeader}>
-                            <h3 style={{ margin: 0, fontSize: '1.25rem' }}>
-                                {config ? 'Editar Configuración' : 'Nueva Configuración'} Facturatech
-                            </h3>
-                            <button
-                                onClick={() => setIsConfigModalOpen(false)}
-                                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', color: '#fff' }}
-                            >
+                            <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{config ? 'Editar Configuración' : 'Nueva Configuración'} Facturatech</h3>
+                            <button onClick={() => setIsConfigModalOpen(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', color: '#fff' }}>
                                 <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleConfigSubmit} style={{ padding: '1.5rem' }}>
                             <div style={styles.formGroup}>
                                 <label style={styles.formLabel}>Nombre Configuración</label>
-                                <input
-                                    type="text"
-                                    value={configForm.nombre_config}
-                                    onChange={(e) => setConfigForm({ ...configForm, nombre_config: e.target.value })}
-                                    style={styles.formInput}
-                                    required
-                                />
+                                <input type="text" value={configForm.nombre_config} onChange={(e) => setConfigForm({ ...configForm, nombre_config: e.target.value })} style={styles.formInput} required />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div style={styles.formGroup}>
                                     <label style={styles.formLabel}>NIT (sin DV) *</label>
-                                    <input
-                                        type="text"
-                                        value={configForm.nit}
-                                        onChange={(e) => setConfigForm({ ...configForm, nit: e.target.value })}
-                                        style={styles.formInput}
-                                        required
-                                    />
+                                    <input type="text" value={configForm.nit} onChange={(e) => setConfigForm({ ...configForm, nit: e.target.value })} style={styles.formInput} required />
                                 </div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.formLabel}>Password Hash SHA256 *</label>
-                                    <input
-                                        type="password"
-                                        value={configForm.password_hash}
-                                        onChange={(e) => setConfigForm({ ...configForm, password_hash: e.target.value })}
-                                        style={styles.formInput}
-                                        placeholder={config ? 'Dejar en blanco para mantener actual' : ''}
-                                    />
+                                    <input type="password" value={configForm.password_hash} onChange={(e) => setConfigForm({ ...configForm, password_hash: e.target.value })} style={styles.formInput} placeholder={config ? 'Dejar en blanco para mantener actual' : ''} />
                                 </div>
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.formLabel}>WSDL Demo Ventas</label>
-                                <input
-                                    type="url"
-                                    value={configForm.wsdl_demo_ventas}
-                                    onChange={(e) => setConfigForm({ ...configForm, wsdl_demo_ventas: e.target.value })}
-                                    style={styles.formInput}
-                                    placeholder="https://demo.facturatech.co/ws/ventas?wsdl"
-                                />
+                                <input type="url" value={configForm.wsdl_demo_ventas} onChange={(e) => setConfigForm({ ...configForm, wsdl_demo_ventas: e.target.value })} style={styles.formInput} placeholder="https://demo.facturatech.co/ws/ventas?wsdl" />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.formLabel}>WSDL Producción Ventas</label>
-                                <input
-                                    type="url"
-                                    value={configForm.wsdl_prod_ventas}
-                                    onChange={(e) => setConfigForm({ ...configForm, wsdl_prod_ventas: e.target.value })}
-                                    style={styles.formInput}
-                                    placeholder="https://facturatech.co/ws/ventas?wsdl"
-                                />
+                                <input type="url" value={configForm.wsdl_prod_ventas} onChange={(e) => setConfigForm({ ...configForm, wsdl_prod_ventas: e.target.value })} style={styles.formInput} placeholder="https://facturatech.co/ws/ventas?wsdl" />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div style={styles.formGroup}>
                                     <label style={styles.formLabel}>Ambiente</label>
-                                    <select
-                                        value={configForm.ambiente_activo}
-                                        onChange={(e) => setConfigForm({ ...configForm, ambiente_activo: e.target.value })}
-                                        style={styles.formSelect}
-                                    >
+                                    <select value={configForm.ambiente_activo} onChange={(e) => setConfigForm({ ...configForm, ambiente_activo: e.target.value })} style={styles.formSelect}>
                                         <option value="demo">Demo / Pruebas</option>
                                         <option value="produccion">Producción</option>
                                     </select>
                                 </div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.formLabel}>Estado</label>
-                                    <select
-                                        value={configForm.activo}
-                                        onChange={(e) => setConfigForm({ ...configForm, activo: e.target.value === 'true' })}
-                                        style={styles.formSelect}
-                                    >
+                                    <select value={configForm.activo} onChange={(e) => setConfigForm({ ...configForm, activo: e.target.value === 'true' })} style={styles.formSelect}>
                                         <option value="true">Activo</option>
                                         <option value="false">Inactivo</option>
                                     </select>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsConfigModalOpen(false)}
-                                    style={{ ...styles.btnSecondary, padding: '0.75rem 1.5rem' }}
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    style={styles.btnPrimary}
-                                >
+                                <button type="button" onClick={() => setIsConfigModalOpen(false)} style={{ ...styles.btnSecondary, padding: '0.75rem 1.5rem' }}>Cancelar</button>
+                                <button type="submit" style={styles.btnPrimary}>
                                     <CheckCircle size={18} />
                                     {config ? 'Actualizar' : 'Guardar'}
                                 </button>
@@ -548,7 +413,6 @@ function FacturacionElectronica() {
                 </div>
             )}
 
-            {/* Hash Generator Modal */}
             {isHashModalOpen && (
                 <div style={styles.modalOverlay}>
                     <div style={{ ...styles.modal, maxWidth: '500px' }}>
@@ -557,10 +421,7 @@ function FacturacionElectronica() {
                                 <Hash size={24} />
                                 Generar SHA256
                             </h3>
-                            <button
-                                onClick={() => setIsHashModalOpen(false)}
-                                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', color: '#fff' }}
-                            >
+                            <button onClick={() => setIsHashModalOpen(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', color: '#fff' }}>
                                 <X size={20} />
                             </button>
                         </div>
@@ -570,39 +431,16 @@ function FacturacionElectronica() {
                             </p>
                             <div style={styles.formGroup}>
                                 <label style={styles.formLabel}>Contraseña Facturatech</label>
-                                <input
-                                    type="password"
-                                    value={passwordInput}
-                                    onChange={(e) => setPasswordInput(e.target.value)}
-                                    style={styles.formInput}
-                                    placeholder="Ingrese la contraseña..."
-                                />
+                                <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} style={styles.formInput} placeholder="Ingrese la contraseña..." />
                             </div>
-                            <button
-                                onClick={generateHash}
-                                style={{ ...styles.btnPrimary, width: '100%', marginBottom: '1.5rem' }}
-                            >
+                            <button onClick={generateHash} style={{ ...styles.btnPrimary, width: '100%', marginBottom: '1.5rem' }}>
                                 <Hash size={18} />
                                 Generar Hash
                             </button>
                             {hashResult && (
-                                <div style={{
-                                    background: '#f0fdf4',
-                                    border: '1px solid #86efac',
-                                    borderRadius: '8px',
-                                    padding: '1rem'
-                                }}>
+                                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '1rem' }}>
                                     <label style={{ ...styles.formLabel, color: '#166534' }}>Hash SHA256 Resultante:</label>
-                                    <code style={{
-                                        display: 'block',
-                                        background: '#fff',
-                                        padding: '0.75rem',
-                                        borderRadius: '6px',
-                                        fontSize: '0.8rem',
-                                        wordBreak: 'break-all',
-                                        fontFamily: 'monospace',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
+                                    <code style={{ display: 'block', background: '#fff', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', wordBreak: 'break-all', fontFamily: 'monospace', border: '1px solid #e2e8f0' }}>
                                         {hashResult}
                                     </code>
                                     <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
