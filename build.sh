@@ -2,7 +2,7 @@
 set -e
 
 echo "🔧 Instalando dependencias…"
-poetry install --no-interaction --no-ansi
+pip install -r requirements-prod.txt
 
 echo "📦 Preparando archivos estáticos…"
 python manage.py collectstatic --no-input
