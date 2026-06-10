@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import React, { useState, useRef, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import {
   Type,
   Square,
@@ -20,7 +20,7 @@ import {
   FileJson
 } from 'lucide-react';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/customization/form-formats/';
+const API_BASE = BASE_URL + '/customization/form-formats/';
 
 const COMPONENT_TYPES = {
   INPUT: { label: 'Campo de Texto', icon: Type, defaultProps: { placeholder: 'Ingrese texto...', width: 200, height: 40, fontSize: 14, color: '#000000', backgroundColor: '#ffffff', borderRadius: 4 } },

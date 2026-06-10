@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FolderKanban, CheckSquare, Clock, DollarSign, Search, Plus, Edit, Trash2, Zap, 
   Calculator, ChevronLeft, AlertTriangle, CheckCircle, FileText, Activity, 
   Thermometer, Wind, ZapOff, TrendingUp, BarChart3, Info, Settings, RefreshCw
 } from 'lucide-react';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/kave/';
+const API_URL = BASE_URL + '/kave/';
 
 // ── Estilos globales ──────────────────────────────────────────────────────
 const s = {

@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     Truck, AlertCircle, Edit3, Trash2, Plus, X, MapPin, Package,
     Navigation, Clock, CheckCircle, Users, Fuel, Gauge,
     Search, Filter, TrendingUp, Activity
 } from 'lucide-react';
 
-const API_VEHICULOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/logistica/vehiculos/';
-const API_ENVIOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/logistica/envios/';
+const API_VEHICULOS = BASE_URL + '/logistica/vehiculos/';
+const API_ENVIOS = BASE_URL + '/logistica/envios/';
 
 export default function Logistica() {
     const [vehiculos, setVehiculos] = useState([]);

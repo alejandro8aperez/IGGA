@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { Megaphone, AlertCircle, Edit3, Trash2, Plus, X, Users, Target, Calendar, DollarSign, BarChart3, ChevronLeft } from 'lucide-react';
 
-const API_CAMPANAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/campanas/';
-const API_LEADS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/marketing/leads/';
+const API_CAMPANAS = BASE_URL + '/marketing/campanas/';
+const API_LEADS = BASE_URL + '/marketing/leads/';
 
 // ── Estilos CRM-style ─────────────────────────────────
 const s = {

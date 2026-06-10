@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { Briefcase, AlertCircle, Edit3, Trash2, Plus, X, Users, Calendar } from 'lucide-react';
 
-const API_PROYECTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/proyectos/proyectos/';
-const API_TAREAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/proyectos/tareas/';
+const API_PROYECTOS = BASE_URL + '/proyectos/proyectos/';
+const API_TAREAS = BASE_URL + '/proyectos/tareas/';
 
 function Proyectos() {
     const navigate = useNavigate();

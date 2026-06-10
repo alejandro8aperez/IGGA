@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     ShoppingCart, AlertCircle, Edit3, Trash2, Plus, X, Truck, FileText, Palette,
     Users, DollarSign, Package, CheckCircle, Clock, TrendingUp,
     Search, Filter, Calendar, CreditCard
 } from 'lucide-react';
 
-const API_PROV = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/proveedores/';
-const API_ORD = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/ordenes/';
-const API_RECEPCION = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/recepciones/';
-const API_PAGO = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/pagos/';
-const API_PROD_PROV = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/compras/productos-proveedor/';
-const API_PRODUCTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/inventarios/productos/';
+const API_PROV = BASE_URL + '/compras/proveedores/';
+const API_ORD = BASE_URL + '/compras/ordenes/';
+const API_RECEPCION = BASE_URL + '/compras/recepciones/';
+const API_PAGO = BASE_URL + '/compras/pagos/';
+const API_PROD_PROV = BASE_URL + '/compras/productos-proveedor/';
+const API_PRODUCTOS = BASE_URL + '/inventarios/productos/';
 
 export default function Compras() {
     const [proveedores, setProveedores] = useState([]);

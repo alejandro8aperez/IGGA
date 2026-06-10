@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { DollarSign, AlertCircle, TrendingUp, TrendingDown, Wallet, ArrowRightLeft } from 'lucide-react';
 
-const API_CUENTAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/finanzas/cuentas/';
-const API_TRANSACCIONES = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/finanzas/transacciones/';
+const API_CUENTAS = BASE_URL + '/finanzas/cuentas/';
+const API_TRANSACCIONES = BASE_URL + '/finanzas/transacciones/';
 
 function Finanzas() {
     const [cuentas, setCuentas] = useState([]);

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { Building2, Plus, Edit3, Trash2, X, Users, Settings, Globe, Shield, Edit, Eye } from 'lucide-react';
 
 function MultiEmpresa() {
@@ -31,7 +31,7 @@ function MultiEmpresa() {
 
     const fetchEmpresas = async () => {
         try {
-            const response = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/multi-empresa/empresas/');
+            const response = await axiosInstance.get(BASE_URL + '/multi-empresa/empresas/');
             setEmpresas(response.data);
         } catch (error) {
             console.error('Error fetching empresas:', error);
@@ -46,7 +46,7 @@ function MultiEmpresa() {
             if (editingEmpresa) {
                 await axiosInstance.put(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/multi-empresa/empresas/${editingEmpresa.id}/`, formData);
             } else {
-                await axiosInstance.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/multi-empresa/empresas/', formData);
+                await axiosInstance.post(BASE_URL + '/multi-empresa/empresas/', formData);
             }
             setShowModal(false);
             setEditingEmpresa(null);

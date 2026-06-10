@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
   FileText, ShieldCheck, Download, Upload, Plus, Edit, Trash2, 
   Search, Filter, Calendar, Clock, CheckCircle, AlertTriangle, 
@@ -9,7 +9,7 @@ import {
   X
 } from 'lucide-react';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/calidad/formatos-iso9001/';
+const API_BASE = BASE_URL + '/calidad/formatos-iso9001/';
 
 const s = {
   page: { background: '#0F172A', minHeight: '100vh', color: '#F8FAFC', fontFamily: 'Inter, sans-serif' },

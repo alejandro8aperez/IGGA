@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     Building, DollarSign, TrendingDown, TrendingUp, AlertCircle, 
     Plus, Edit3, Trash2, Eye, Search, Filter, Calendar, X,
     Package, BarChart3, CheckCircle, Clock, Wrench, Archive
 } from 'lucide-react';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/finanzas/activos-fijos/';
+const API_BASE = BASE_URL + '/finanzas/activos-fijos/';
 
 export default function Activos() {
     const navigate = useNavigate();

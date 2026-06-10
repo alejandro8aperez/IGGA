@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     Factory, Package, AlertCircle, BarChart3, Play, Settings, 
     Plus, Edit3, Trash2, Eye, RefreshCw, TrendingUp, Clock, 
@@ -9,7 +9,7 @@ import {
     ShoppingCart, Calendar, FileText, Search, Filter
 } from 'lucide-react';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/mrp/';
+const API_BASE = BASE_URL + '/mrp/';
 
 export default function MRP() {
     const navigate = useNavigate();

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { Download, BarChart2, PieChart, TrendingUp, Users, Package, DollarSign, Calendar, ShoppingCart, Factory, CreditCard, AlertTriangle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/';
+const API_BASE = BASE_URL + '/';
 
 function Reportes() {
     const [data, setData] = useState(null);

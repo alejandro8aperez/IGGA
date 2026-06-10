@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
     Plus, Edit3, Trash2, FileText, TrendingUp, AlertCircle, 
     DollarSign, ShoppingCart, Users, Calendar, CheckCircle, 
@@ -182,7 +182,7 @@ export default function Inventario() {
             // Usar PATCH para actualizaciones para evitar enviar campos no modificados
             const method = currentProd ? 'patch' : 'post';
             
-            await axios({
+            await axiosInstance({
                 method: method,
                 url: url,
                 data: formData,
@@ -229,7 +229,7 @@ export default function Inventario() {
         try {
             const url = currentCat ? `${API_BASE}categorias/${currentCat.id}/` : `${API_BASE}categorias/`;
             const method = currentCat ? 'put' : 'post';
-            await axios({ method, url, data: catForm });
+            await axiosInstance({ method, url, data: catForm });
             fetchData();
             setIsCatModalOpen(false);
         } catch (err) {

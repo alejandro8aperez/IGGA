@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     DollarSign, AlertCircle, Edit3, Trash2, Plus, X, FileText, 
     Calculator, BookOpen, Search, Filter,
     ArrowUpCircle, ArrowDownCircle, Scale
 } from 'lucide-react';
 
-const API_CUENTAS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/contabilidad/cuentas/';
-const API_ASIENTOS = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/contabilidad/asientos/';
+const API_CUENTAS = BASE_URL + '/contabilidad/cuentas/';
+const API_ASIENTOS = BASE_URL + '/contabilidad/asientos/';
 
 const styles = {
     container: { padding: '2rem', maxWidth: '1400px', margin: '0 auto', fontFamily: 'Inter, sans-serif' },

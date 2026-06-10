@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 
 function Planeacion() {
     const navigate = useNavigate();
@@ -16,8 +16,8 @@ function Planeacion() {
         const load = async () => {
             try {
                 const [plansRes, objRes] = await Promise.all([
-                    axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/planeacion/planes/'),
-                    axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/planeacion/objetivos/')
+                    axiosInstance.get(BASE_URL + '/planeacion/planes/'),
+                    axiosInstance.get(BASE_URL + '/planeacion/objetivos/')
                 ]);
                 setPlanes(plansRes.data);
                 setObjetivos(objRes.data);
@@ -38,8 +38,8 @@ function Planeacion() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.post((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/planeacion/planes/', form);
-            const res = await axiosInstance.get((import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/planeacion/planes/');
+            await axiosInstance.post(BASE_URL + '/planeacion/planes/', form);
+            const res = await axiosInstance.get(BASE_URL + '/planeacion/planes/');
             setPlanes(res.data);
             setForm({ codigo: '', nombre: '', descripcion: '', fecha_inicio: '', fecha_fin: '', estado: 'borrador' });
         } catch {

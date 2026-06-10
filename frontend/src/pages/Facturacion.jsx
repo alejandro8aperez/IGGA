@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     FileText, Plus, Save, Send, Trash2, Edit3, CheckCircle, AlertCircle, 
     ArrowLeft, Search, Filter, Download, X, TrendingUp, DollarSign,
@@ -12,7 +12,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const API_FE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api') + '/facturacion-electronica';
+const API_FE = BASE_URL + '/facturacion-electronica';
 
 function Facturacion() {
     const navigate = useNavigate();

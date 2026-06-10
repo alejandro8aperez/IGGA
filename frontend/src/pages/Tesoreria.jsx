@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../config/axiosConfig';
+﻿import { useState, useEffect } from 'react';
+import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { 
     Landmark, ArrowUpCircle, ArrowDownCircle, Plus, Search, 
     X, Wallet, FileText, RefreshCw, AlertCircle, TrendingUp,
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE = BASE_URL;
 
 function Tesoreria() {
     const navigate = useNavigate();
