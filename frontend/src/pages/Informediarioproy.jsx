@@ -1,6 +1,7 @@
 // ============================================================
-//  InformeDiarioProy.jsx  –  ERP-8AMPERIOS  (CORREGIDO v3)
-//  Fix: Integra HojaFotosInforme en tab "Fotos", elimina botón duplicado
+//  InformeDiarioProy.jsx  –  ERP-8AMPERIOS  (CORREGIDO v4)
+//  Fix v4: Agrega tab "FORM" visible cuando el formulario está activo
+//  Fix v3: Integra HojaFotosInforme en tab "Fotos", elimina botón duplicado
 // ============================================================
 import { useState, useRef } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -71,11 +72,12 @@ function InformeDiarioContent() {
 
   useQuery({ queryKey: ["informes-diarios"], queryFn: () => informeDiarioService.list() });
 
-  // ── Solo 3 tabs — "Imprimir Fotos" eliminado de la barra (ya está en HojaFotosInforme) ──
+  // ── 4 tabs: Panel / FORM (aparece activo al llenar formulario) / Fotos / Reportes ──
   const tabs = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Panel"    },
-    { id: "fotos",     icon: ImageIcon,        label: "Fotos"    },
-    { id: "reportes",  icon: BarChart2,         label: "Reportes" },
+    { id: "dashboard",  icon: LayoutDashboard, label: "Panel"    },
+    { id: "formulario", icon: ClipboardList,   label: "FORM"     },
+    { id: "fotos",      icon: ImageIcon,        label: "Fotos"    },
+    { id: "reportes",   icon: BarChart2,        label: "Reportes" },
   ];
 
   return (
@@ -114,11 +116,11 @@ function InformeDiarioContent() {
       {/* CONTENIDO */}
       <div style={{ maxWidth: 1600, margin: "0 auto", padding: "1.5rem" }}>
 
-        {/* Tabs — SIN botón "Imprimir Fotos" (ahora está dentro de HojaFotosInforme) */}
+        {/* Tabs — FORM se activa al presionar NUEVO REGISTRO o al editar un informe */}
         <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.5rem", alignItems: "center" }}>
           {tabs.map(t => (
             <TabChip key={t.id} active={activeTab === t.id}
-              onClick={() => { if (t.id === "formulario") setEditingInforme(null); setActiveTab(t.id); }}
+              onClick={() => setActiveTab(t.id)}
               label={t.label} icon={t.icon}
             />
           ))}
