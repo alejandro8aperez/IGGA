@@ -6,31 +6,25 @@ import { informeDiarioService, obraService, recursoService, categoriaService } f
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-// ─── Estilos base ────────────────────────────────────────────────────────────
-const card     = { background: "white", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "1.25rem" };
-const cardHead = { padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid #f1f5f9", fontWeight: 700, fontSize: "0.8rem", color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" };
-const cardBody = { padding: "1.25rem" };
-const label    = { display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.35rem" };
+// ─── Estilos base ─────────────────────────────────────────────────────────────
+const card      = { background: "white", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "1.25rem" };
+const cardHead  = { padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid #f1f5f9", fontWeight: 700, fontSize: "0.8rem", color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" };
+const cardBody  = { padding: "1.25rem" };
+const label     = { display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: "0.35rem" };
 const inputStyle = { width: "100%", padding: "0.5rem 0.75rem", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "0.875rem", background: "white", outline: "none", boxSizing: "border-box" };
-const grid3    = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" };
-const grid2    = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" };
+const grid3     = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" };
+const grid2     = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" };
 const btnPrimary = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "none", background: "#667eea", color: "white", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" };
 const btnOutline = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "1px solid #cbd5e1", background: "white", color: "#475569", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" };
 const btnGhost   = { background: "none", border: "none", cursor: "pointer", padding: "0.2rem", color: "#ef4444", display: "flex", alignItems: "center" };
 
 const thStyle = {
-  padding: "0.4rem 0.5rem",
-  fontSize: "0.68rem",
-  fontWeight: 700,
-  color: "#64748b",
-  textTransform: "uppercase",
-  letterSpacing: "0.04em",
-  textAlign: "left",
-  borderBottom: "1px solid #e2e8f0",
-  background: "#f8fafc",
+  padding: "0.4rem 0.5rem", fontSize: "0.68rem", fontWeight: 700, color: "#64748b",
+  textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "left",
+  borderBottom: "1px solid #e2e8f0", background: "#f8fafc",
 };
 
-// ─── Constantes predefinidas ──────────────────────────────────────────────────
+// ─── Recursos por defecto ─────────────────────────────────────────────────────
 const EQUIPOS_DEFAULT = [
   { recurso_id: "eq-1",  recurso_nombre: "Camioneta",                         categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Camioneta",                         cantidad: 1, empresa: "Siemens",           notas: "", es_libre: true },
   { recurso_id: "eq-2",  recurso_nombre: "Buseta",                            categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS", descripcion: "Buseta",                            cantidad: 1, empresa: "",                  notas: "", es_libre: true },
@@ -56,8 +50,68 @@ const PERSONAL_DEFAULT = [
 
 const RECURSOS_DEFAULT = [...EQUIPOS_DEFAULT, ...PERSONAL_DEFAULT];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Secciones fijas de actividades ──────────────────────────────────────────
+const SECCIONES_ACTIVIDADES = [
+  {
+    titulo:    "ACTIVIDADES ADMINISTRATIVAS Y DOCUMENTALES",
+    subtitulo: "INGESED",
+    color:     "#6366f1",
+    keywords:  ["admin", "documental", "ingesed"],
+    defActividades: ["Actualización Listado de Pendientes SIEMENS", "Informes Diarios"],
+  },
+  {
+    titulo:    "ACTIVIDADES DE CABLEADO, CONEXIONADO Y PRUEBAS FUNCIONALES",
+    subtitulo: "SIEMENS",
+    color:     "#f59e0b",
+    keywords:  ["cableado", "conexionado", "pruebas funcionales", "siemens"],
+    defActividades: ["Fabricación de marquillas pendientes de colocar", "Sellado de tapas en Tableros de control de Reactores"],
+  },
+  {
+    titulo:    "ACTIVIDADES DE PRUEBAS DE EQUIPOS Y MONTAJE DE REACTORES",
+    subtitulo: "CTE INTERCOLOMBIA",
+    color:     "#f97316",
+    keywords:  ["pruebas de equipo", "montaje", "reactor", "cte"],
+    defActividades: ["NO HAY PROGRAMACIÓN DE ACTIVIDADES"],
+  },
+  {
+    titulo:    "ACTIVIDADES DE OBRA CIVIL",
+    subtitulo: "EDEMSA",
+    color:     "#8b5cf6",
+    keywords:  ["civil", "edemsa"],
+    defActividades: ["NO HAY PROGRAMACIÓN DE ACTIVIDADES"],
+  },
+  {
+    titulo:    "GESTIÓN EN LA SEGURIDAD Y LA SALUD EN EL TRABAJO",
+    subtitulo: "SST",
+    color:     "#10b981",
+    keywords:  ["seguridad", "salud", "sst"],
+    defActividades: ["Seguimiento al ingreso de personal", "Charla \"Uso adecuado de las herramientas de trabajo\"", "Delimitación y señalización de las áreas", "Orden y aseo en las áreas"],
+  },
+  {
+    titulo:    "ACTIVIDADES AMBIENTALES Y SOCIALES",
+    subtitulo: "",
+    color:     "#22c55e",
+    keywords:  ["ambiental", "social"],
+    defActividades: ["Jornadas de orden y aseo de las áreas de trabajo", "Delimitación y señalización de las áreas"],
+  },
+];
 
+// Mapea un categoria_nombre del API al título de sección más cercano
+function normalizarCatNombre(nombre) {
+  if (!nombre) return null;
+  const n = nombre.toLowerCase();
+  for (const sec of SECCIONES_ACTIVIDADES) {
+    if (sec.keywords.some(k => n.includes(k))) return sec.titulo;
+  }
+  return nombre;
+}
+
+// Actividades por defecto para un informe nuevo
+const ACTIVIDADES_DEFAULT = SECCIONES_ACTIVIDADES.flatMap(s =>
+  s.defActividades.map(desc => ({ categoria_nombre: s.titulo, descripcion: desc }))
+);
+
+// ─── Normalizar informe cargado ───────────────────────────────────────────────
 function normalizarInforme(informe) {
   if (!informe) return null;
   let oid = "";
@@ -65,29 +119,32 @@ function normalizarInforme(informe) {
   else if (informe.obra) {
     oid = typeof informe.obra === "object" ? String(informe.obra.id) : String(informe.obra);
   }
+  const actsRaw = Array.isArray(informe.actividades) ? informe.actividades : [];
   return {
     ...informe,
-    obra_id: oid,
+    obra_id:      oid,
     horas_lluvia: Array.isArray(informe.horas_lluvia) ? informe.horas_lluvia.map(Boolean) : Array(24).fill(false),
-    recursos: informe.recursos || [],
-    actividades: informe.actividades || [],
-    items_obra: informe.items_obra || [],
+    recursos:     informe.recursos || [],
+    actividades:  actsRaw.length > 0
+      ? actsRaw.map(a => ({
+          categoria_nombre: normalizarCatNombre(a.categoria_nombre || a.categoria_display || ""),
+          descripcion:      a.descripcion || "",
+        }))
+      : ACTIVIDADES_DEFAULT,
   };
 }
 
-// ─── Selector de obra con búsqueda ───────────────────────────────────────────
+// ─── Selector de obra ─────────────────────────────────────────────────────────
 function ObraSelect({ obras, value, onChange }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]     = useState(false);
   const [search, setSearch] = useState("");
-  const ref = useRef(null);
+  const ref                 = useRef(null);
 
-  const selected = obras.find(o => String(o.id) === String(value));
+  const selected     = obras.find(o => String(o.id) === String(value));
   const displayLabel = selected
     ? (selected.codigo ? `${selected.codigo} — ${selected.nombre}` : selected.nombre)
     : "Seleccionar proyecto de OPERACIONES";
-
   const getClienteNombre = (o) => typeof o.cliente === "object" ? o.cliente?.nombre : (o.cliente_nombre || "");
-
   const filtered = obras.filter(o =>
     (o.nombre || "").toLowerCase().includes(search.toLowerCase()) ||
     (o.codigo || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -104,19 +161,11 @@ function ObraSelect({ obras, value, onChange }) {
     <div ref={ref} style={{ position: "relative" }}>
       <div
         onClick={() => setOpen(o => !o)}
-        style={{
-          ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between",
-          cursor: "pointer", userSelect: "none",
-          border: open ? "1px solid #667eea" : "1px solid #cbd5e1",
-          boxShadow: open ? "0 0 0 2px rgba(102,126,234,0.2)" : "none",
-        }}
+        style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", userSelect: "none", border: open ? "1px solid #667eea" : "1px solid #cbd5e1", boxShadow: open ? "0 0 0 2px rgba(102,126,234,0.2)" : "none" }}
       >
-        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected ? "#1e293b" : "#94a3b8" }}>
-          {displayLabel}
-        </span>
+        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected ? "#1e293b" : "#94a3b8" }}>{displayLabel}</span>
         <ChevronDown size={15} style={{ flexShrink: 0, marginLeft: "0.5rem", color: "#94a3b8", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
       </div>
-
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "white", border: "1px solid #e2e8f0", borderRadius: "10px", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden" }}>
           <div style={{ padding: "0.5rem", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -129,16 +178,16 @@ function ObraSelect({ obras, value, onChange }) {
             {filtered.length === 0 ? (
               <div style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.8rem" }}>Sin resultados</div>
             ) : filtered.map(o => {
-              const isSelected = String(o.id) === String(value);
+              const isSel = String(o.id) === String(value);
               return (
                 <div key={o.id} onClick={() => { onChange(String(o.id)); setOpen(false); setSearch(""); }}
-                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "6px", cursor: "pointer", background: isSelected ? "#f1f5f9" : "transparent" }}
-                  onMouseOver={e => { if (!isSelected) e.currentTarget.style.background = "#f8fafc"; }}
-                  onMouseOut={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "6px", cursor: "pointer", background: isSel ? "#f1f5f9" : "transparent" }}
+                  onMouseOver={e => { if (!isSel) e.currentTarget.style.background = "#f8fafc"; }}
+                  onMouseOut={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
                 >
-                  {isSelected && <Check size={13} color="#667eea" style={{ flexShrink: 0 }} />}
+                  {isSel && <Check size={13} color="#667eea" style={{ flexShrink: 0 }} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: isSelected ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontWeight: isSel ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {o.codigo ? `${o.codigo} — ${o.nombre}` : o.nombre}
                     </div>
                     {o.cliente_nombre && <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{o.cliente_nombre}</div>}
@@ -156,7 +205,7 @@ function ObraSelect({ obras, value, onChange }) {
   );
 }
 
-// ─── Horas de lluvia ─────────────────────────────────────────────────────────
+// ─── Horas de lluvia ──────────────────────────────────────────────────────────
 function HorasLluvia({ horas, onChange }) {
   return (
     <div>
@@ -166,13 +215,7 @@ function HorasLluvia({ horas, onChange }) {
           <button key={h} type="button"
             onClick={() => { const n = [...horas]; n[h] = !n[h]; onChange(n); }}
             title={`${h}:00 - ${h + 1}:00`}
-            style={{
-              height: "2rem", borderRadius: "6px", fontSize: "0.7rem", fontWeight: 700,
-              border: horas[h] ? "none" : "1px solid #e2e8f0",
-              background: horas[h] ? "#3b82f6" : "#f8fafc",
-              color: horas[h] ? "white" : "#94a3b8",
-              cursor: "pointer", transition: "all 0.1s",
-            }}
+            style={{ height: "2rem", borderRadius: "6px", fontSize: "0.7rem", fontWeight: 700, border: horas[h] ? "none" : "1px solid #e2e8f0", background: horas[h] ? "#3b82f6" : "#f8fafc", color: horas[h] ? "white" : "#94a3b8", cursor: "pointer", transition: "all 0.1s" }}
           >{h}</button>
         ))}
       </div>
@@ -183,7 +226,7 @@ function HorasLluvia({ horas, onChange }) {
   );
 }
 
-// ─── Selector simple ──────────────────────────────────────────────────────────
+// ─── Selector simple ───────────────────────────────────────────────────────────
 function SimpleSelect({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -220,42 +263,17 @@ function SimpleSelect({ value, onChange, options, placeholder }) {
 
 // ─── Tabla de recursos (Maquinaria o Personal) ────────────────────────────────
 function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onChange }) {
-  const opciones = allRecursos.filter(r => r.categoria === catKey && r.activo !== false);
   const filas = recursos.filter(r => r.categoria === catKey);
 
-  const agregar = (recursoId) => {
-    const recurso = allRecursos.find(r => String(r.id) === String(recursoId));
-    if (!recurso || recursos.find(r => String(r.recurso_id) === String(recurso.id))) return;
-    onChange([
-      ...recursos,
-      {
-        recurso_id:     recurso.id,
-        recurso_nombre: recurso.nombre,
-        categoria:      recurso.categoria,
-        descripcion:    recurso.nombre,
-        cantidad:       0,
-        empresa:        "",
-        notas:          "",
-      },
-    ]);
-  };
-
-  const update = (recursoId, field, value) => {
+  const update = (recursoId, field, value) =>
     onChange(recursos.map(r => String(r.recurso_id) === String(recursoId) ? { ...r, [field]: value } : r));
-  };
 
-  const remove = (recursoId) => {
+  const remove = (recursoId) =>
     onChange(recursos.filter(r => String(r.recurso_id) !== String(recursoId)));
-  };
 
   return (
     <div style={{ marginBottom: "2rem" }}>
-      <div style={{ marginBottom: "0.6rem" }}>
-        <h4 style={{ margin: 0, fontSize: "0.78rem", fontWeight: 800, color: accentColor, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          {titulo}
-        </h4>
-      </div>
-
+      <h4 style={{ margin: "0 0 0.6rem", fontSize: "0.78rem", fontWeight: 800, color: accentColor, textTransform: "uppercase", letterSpacing: "0.06em" }}>{titulo}</h4>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
         <thead>
           <tr>
@@ -268,72 +286,31 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
         </thead>
         <tbody>
           {filas.length === 0 ? (
-            <tr>
-              <td colSpan={5} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.78rem", fontStyle: "italic" }}>
-                Sin registros — agrega desde el catálogo o usa "Agregar fila libre"
-              </td>
-            </tr>
+            <tr><td colSpan={5} style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.78rem", fontStyle: "italic" }}>Sin registros — usa "Agregar fila libre"</td></tr>
           ) : filas.map((r) => (
             <tr key={r.recurso_id} style={{ borderBottom: "1px solid #f1f5f9" }}>
               <td style={{ padding: "0.35rem 0.4rem" }}>
-                <input
-                  value={r.descripcion || ""}
-                  onChange={e => update(r.recurso_id, "descripcion", e.target.value)}
-                  placeholder="Descripción..."
-                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }}
-                />
+                <input value={r.descripcion || ""} onChange={e => update(r.recurso_id, "descripcion", e.target.value)} placeholder="Descripción..." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
               </td>
               <td style={{ padding: "0.35rem 0.4rem" }}>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={r.cantidad}
-                  onChange={e => update(r.recurso_id, "cantidad", parseFloat(e.target.value) || 0)}
-                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem", textAlign: "right" }}
-                />
+                <input type="number" min="0" step="0.5" value={r.cantidad} onChange={e => update(r.recurso_id, "cantidad", parseFloat(e.target.value) || 0)} style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem", textAlign: "right" }} />
               </td>
               <td style={{ padding: "0.35rem 0.4rem" }}>
-                <input
-                  value={r.empresa || ""}
-                  onChange={e => update(r.recurso_id, "empresa", e.target.value)}
-                  placeholder="Empresa..."
-                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }}
-                />
+                <input value={r.empresa || ""} onChange={e => update(r.recurso_id, "empresa", e.target.value)} placeholder="Empresa..." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
               </td>
               <td style={{ padding: "0.35rem 0.4rem" }}>
-                <input
-                  value={r.notas || ""}
-                  onChange={e => update(r.recurso_id, "notas", e.target.value)}
-                  placeholder="Notas..."
-                  style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }}
-                />
+                <input value={r.notas || ""} onChange={e => update(r.recurso_id, "notas", e.target.value)} placeholder="Notas..." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
               </td>
               <td style={{ padding: "0.35rem 0.4rem", textAlign: "center" }}>
-                <button type="button" onClick={() => remove(r.recurso_id)} style={btnGhost}>
-                  <X size={15} />
-                </button>
+                <button type="button" onClick={() => remove(r.recurso_id)} style={btnGhost}><X size={15} /></button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
       <button
         type="button"
-        onClick={() => onChange([
-          ...recursos,
-          {
-            recurso_id:     `libre-${Date.now()}`,
-            recurso_nombre: "",
-            categoria:      catKey,
-            descripcion:    "",
-            cantidad:       0,
-            empresa:        "",
-            notas:          "",
-            es_libre:       true,
-          },
-        ])}
+        onClick={() => onChange([...recursos, { recurso_id: `libre-${Date.now()}`, recurso_nombre: "", categoria: catKey, descripcion: "", cantidad: 0, empresa: "", notas: "", es_libre: true }])}
         style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.75rem", marginTop: "0.5rem" }}
       >
         <Plus size={12} style={{ marginRight: "4px" }} />Agregar fila libre
@@ -342,44 +319,66 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
   );
 }
 
-// ─── Actividades ──────────────────────────────────────────────────────────────
-function ActividadesSection({ actividades, categorias, onChange }) {
-  const addActividad = () => {
-    const cat = categorias[0];
-    if (!cat) return;
-    onChange([...actividades, { categoria_id: cat.id, categoria_nombre: cat.nombre, descripcion: "" }]);
+// ─── Sección de actividades fija por categoría ────────────────────────────────
+function ActividadesFija({ titulo, subtitulo, color, actividades, onChange }) {
+  const filas = actividades.filter(a => a.categoria_nombre === titulo);
+
+  const add = () =>
+    onChange([...actividades, { categoria_nombre: titulo, descripcion: "" }]);
+
+  const updateDesc = (idxInSec, value) => {
+    let secIdx = -1;
+    onChange(actividades.map(a => {
+      if (a.categoria_nombre === titulo) {
+        secIdx++;
+        if (secIdx === idxInSec) return { ...a, descripcion: value };
+      }
+      return a;
+    }));
   };
-  const update = (idx, field, value) => {
-    const n = [...actividades];
-    n[idx] = { ...n[idx], [field]: value };
-    if (field === "categoria_id") n[idx].categoria_nombre = categorias.find(c => String(c.id) === value)?.nombre || "";
-    onChange(n);
+
+  const remove = (idxInSec) => {
+    let secIdx = -1;
+    onChange(actividades.filter(a => {
+      if (a.categoria_nombre === titulo) { secIdx++; return secIdx !== idxInSec; }
+      return true;
+    }));
   };
-  const remove = (idx) => onChange(actividades.filter((_, i) => i !== idx));
 
   return (
-    <div>
-      {actividades.map((act, idx) => (
-        <div key={idx} style={{ display: "grid", gridTemplateColumns: "1.5fr 3fr auto", gap: "0.5rem", alignItems: "start", marginBottom: "0.5rem" }}>
-          <SimpleSelect
-            value={String(act.categoria_id)}
-            onChange={v => update(idx, "categoria_id", v)}
-            options={categorias.map(c => ({ value: String(c.id), label: c.nombre }))}
-            placeholder="Categoría"
-          />
-          <textarea
-            value={act.descripcion}
-            onChange={e => update(idx, "descripcion", e.target.value)}
-            placeholder="Descripción de la actividad..."
-            rows={2}
-            style={{ ...inputStyle, resize: "vertical", fontSize: "0.8rem", padding: "0.4rem 0.65rem" }}
-          />
-          <button type="button" onClick={() => remove(idx)} style={{ ...btnGhost, marginTop: "0.4rem" }}><X size={15} /></button>
-        </div>
-      ))}
-      <button type="button" onClick={addActividad} style={{ ...btnOutline, fontSize: "0.8rem", padding: "0.4rem 0.75rem", marginTop: "0.5rem" }}>
-        <Plus size={13} style={{ marginRight: "4px" }} />Agregar actividad
-      </button>
+    <div style={{ ...card, borderLeft: `4px solid ${color}` }}>
+      <div style={{ ...cardHead, color, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span>
+          {titulo}
+          {subtitulo && <span style={{ fontWeight: 400, color: "#94a3b8", marginLeft: "0.5rem", fontSize: "0.72rem" }}>— {subtitulo}</span>}
+        </span>
+        <span style={{ fontSize: "0.7rem", fontWeight: 700, background: color + "18", color, borderRadius: 20, padding: "2px 10px" }}>
+          {filas.length} actividad{filas.length !== 1 ? "es" : ""}
+        </span>
+      </div>
+      <div style={cardBody}>
+        {filas.length === 0 && (
+          <p style={{ margin: "0 0 0.75rem", fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic" }}>
+            Sin actividades — agrega con el botón inferior
+          </p>
+        )}
+        {filas.map((a, i) => (
+          <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem", alignItems: "flex-start" }}>
+            <span style={{ color: "#cbd5e1", fontSize: "0.72rem", minWidth: 20, textAlign: "right", paddingTop: "0.65rem", flexShrink: 0 }}>{i + 1}.</span>
+            <textarea
+              value={a.descripcion}
+              onChange={e => updateDesc(i, e.target.value)}
+              rows={2}
+              placeholder="Descripción de la actividad..."
+              style={{ ...inputStyle, resize: "vertical", fontSize: "0.82rem", flex: 1 }}
+            />
+            <button type="button" onClick={() => remove(i)} style={{ ...btnGhost, marginTop: "0.4rem" }}><X size={14} /></button>
+          </div>
+        ))}
+        <button type="button" onClick={add} style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.75rem", marginTop: "0.25rem" }}>
+          <Plus size={12} style={{ marginRight: "4px" }} />Agregar actividad
+        </button>
+      </div>
     </div>
   );
 }
@@ -388,9 +387,9 @@ function ActividadesSection({ actividades, categorias, onChange }) {
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
-  const { data: rawObras = [], isLoading: isLoadingObras }         = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
-  const { data: recursos = [], isLoading: isLoadingRecursos }       = useQuery({ queryKey: ["recursos"],            queryFn: () => recursoService.list() });
-  const { data: categorias = [], isLoading: isLoadingCategorias }   = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
+  const { data: rawObras = [],   isLoading: isLoadingObras }     = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
+  const { data: recursos = [],   isLoading: isLoadingRecursos }   = useQuery({ queryKey: ["recursos"],            queryFn: () => recursoService.list() });
+  const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
 
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
@@ -400,7 +399,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
     elaborado_por: "", cargo_elaborado: "", revisado_por: "", cargo_revisado: "",
     comision_topografia: false, horas_lluvia: Array(24).fill(false),
-    recursos: RECURSOS_DEFAULT, actividades: [], items_obra: [], status: "borrador",
+    recursos: RECURSOS_DEFAULT, actividades: ACTIVIDADES_DEFAULT, status: "borrador",
   });
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
@@ -415,9 +414,15 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     setForm(prev => ({ ...prev, fecha, dia_semana: DIAS[d.getDay()] }));
   };
 
-  const addItemObra    = () => setField("items_obra", [...(form.items_obra || []), { item: "", descripcion: "", empresa: "", responsable: "" }]);
-  const updateItemObra = (idx, f, v) => { const n = [...(form.items_obra || [])]; n[idx] = { ...n[idx], [f]: v }; setField("items_obra", n); };
-  const removeItemObra = (idx) => setField("items_obra", (form.items_obra || []).filter((_, i) => i !== idx));
+  // Busca el ID de categoría en el API por keywords de la sección
+  const lookupCatId = (catNombre) => {
+    const sec = SECCIONES_ACTIVIDADES.find(s => s.titulo === catNombre);
+    if (!sec) return null;
+    const found = categorias.find(c =>
+      sec.keywords.some(k => c.nombre.toLowerCase().includes(k))
+    );
+    return found ? parseInt(found.id, 10) : null;
+  };
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
@@ -426,49 +431,25 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         obra: data.obra_id ? parseInt(data.obra_id, 10) : null,
 
         detalles: (data.recursos || [])
-          .filter(r => !r.es_libre && r.recurso_id && !String(r.recurso_id).startsWith('libre-'))
-          .map(r => ({
-            recurso:   parseInt(r.recurso_id, 10),
-            cantidad:  parseFloat(r.cantidad)  || 0,
-            empresa:   r.empresa  || '',
-            notas:     r.notas    || '',
-          })),
+          .filter(r => !r.es_libre && r.recurso_id && !String(r.recurso_id).startsWith("libre-"))
+          .map(r => ({ recurso: parseInt(r.recurso_id, 10), cantidad: parseFloat(r.cantidad) || 0, empresa: r.empresa || "", notas: r.notas || "" })),
 
         maquinaria_libre: (data.recursos || [])
-          .filter(r => r.es_libre && r.categoria === 'MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS')
-          .map(r => ({
-            descripcion: r.descripcion || '',
-            cantidad:    parseFloat(r.cantidad) || 0,
-            empresa:     r.empresa || '',
-            notas:       r.notas   || '',
-          })),
+          .filter(r => r.es_libre && r.categoria === "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS")
+          .map(r => ({ descripcion: r.descripcion || "", cantidad: parseFloat(r.cantidad) || 0, empresa: r.empresa || "", notas: r.notas || "" })),
 
         personal_libre: (data.recursos || [])
-          .filter(r => r.es_libre && r.categoria === 'PERSONAL DE OBRA')
-          .map(r => ({
-            descripcion: r.descripcion || '',
-            cantidad:    parseFloat(r.cantidad) || 0,
-            empresa:     r.empresa || '',
-            notas:       r.notas   || '',
-          })),
+          .filter(r => r.es_libre && r.categoria === "PERSONAL DE OBRA")
+          .map(r => ({ descripcion: r.descripcion || "", cantidad: parseFloat(r.cantidad) || 0, empresa: r.empresa || "", notas: r.notas || "" })),
 
-        reportes_lluvia: (data.horas_lluvia || []).map((con_lluvia, hora) => ({
-          hora,
-          con_lluvia: Boolean(con_lluvia),
-        })),
+        reportes_lluvia: (data.horas_lluvia || []).map((con_lluvia, hora) => ({ hora, con_lluvia: Boolean(con_lluvia) })),
 
-        actividades: (data.actividades || []).map(a => ({
-          categoria:   parseInt(a.categoria_id, 10),
-          descripcion: a.descripcion || '',
-        })),
+        actividades: (data.actividades || [])
+          .filter(a => (a.descripcion || "").trim())
+          .map(a => ({ categoria: lookupCatId(a.categoria_nombre), descripcion: a.descripcion }))
+          .filter(a => a.categoria != null),
 
-        items_obra: (data.items_obra || []).map((it, i) => ({
-          item:        it.item        || '',
-          descripcion: it.descripcion || '',
-          empresa:     it.empresa     || '',
-          cantidad:    parseFloat(it.cantidad) || 0,
-          orden:       i,
-        })),
+        items_obra: [],
       };
 
       delete payload.recursos;
@@ -502,7 +483,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     <div>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
-      {/* Datos generales */}
+      {/* ── Datos generales ─────────────────────────────────────────────── */}
       <div style={card}>
         <div style={cardHead}>Datos generales</div>
         <div style={{ ...cardBody, ...grid3 }}>
@@ -540,7 +521,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </div>
       </div>
 
-      {/* Lluvia */}
+      {/* ── Reporte de lluvia ────────────────────────────────────────────── */}
       <div style={card}>
         <div style={cardHead}>Reporte de lluvia</div>
         <div style={cardBody}>
@@ -548,9 +529,9 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </div>
       </div>
 
-      {/* ── MAQUINARIA / EQUIPOS / VEHÍCULOS ── */}
+      {/* ── Maquinaria / Equipos / Vehículos ────────────────────────────── */}
       <div style={card}>
-        <div style={cardHead}>Maquinaria / Equipos / Vehículos</div>
+        <div style={cardHead}>Maquinaria / Equipos / Herramientas / Vehículos</div>
         <div style={cardBody}>
           <TablaRecursos
             titulo="Maquinaria — Equipos — Herramientas — Vehículos"
@@ -563,7 +544,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </div>
       </div>
 
-      {/* ── PERSONAL DE OBRA ── */}
+      {/* ── Personal de Obra ─────────────────────────────────────────────── */}
       <div style={card}>
         <div style={cardHead}>Personal de Obra</div>
         <div style={cardBody}>
@@ -578,37 +559,19 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </div>
       </div>
 
-      {/* Actividades */}
-      <div style={card}>
-        <div style={cardHead}>Actividades del día</div>
-        <div style={cardBody}>
-          <ActividadesSection actividades={form.actividades || []} categorias={categorias} onChange={v => setField("actividades", v)} />
-        </div>
-      </div>
+      {/* ── 6 secciones fijas de actividades ────────────────────────────── */}
+      {SECCIONES_ACTIVIDADES.map(sec => (
+        <ActividadesFija
+          key={sec.titulo}
+          titulo={sec.titulo}
+          subtitulo={sec.subtitulo}
+          color={sec.color}
+          actividades={form.actividades || []}
+          onChange={v => setField("actividades", v)}
+        />
+      ))}
 
-      {/* Ítems de obra */}
-      <div style={card}>
-        <div style={{ ...cardHead, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>Ítems de obra</span>
-          <button type="button" onClick={addItemObra} style={{ ...btnOutline, fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}>
-            <Plus size={12} style={{ marginRight: "4px" }} />Agregar ítem
-          </button>
-        </div>
-        <div style={cardBody}>
-          {(form.items_obra || []).length === 0 && <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic" }}>Sin ítems de obra</p>}
-          {(form.items_obra || []).map((item, idx) => (
-            <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 3fr 1.5fr 2fr auto", gap: "0.5rem", marginBottom: "0.5rem", alignItems: "center" }}>
-              <input value={item.item} onChange={e => updateItemObra(idx, "item", e.target.value)} placeholder="Ítem" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
-              <input value={item.descripcion} onChange={e => updateItemObra(idx, "descripcion", e.target.value)} placeholder="Descripción" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
-              <input value={item.empresa} onChange={e => updateItemObra(idx, "empresa", e.target.value)} placeholder="Empresa" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
-              <input value={item.responsable} onChange={e => updateItemObra(idx, "responsable", e.target.value)} placeholder="Responsable" style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem" }} />
-              <button type="button" onClick={() => removeItemObra(idx)} style={btnGhost}><X size={15} /></button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Condiciones */}
+      {/* ── Condiciones y observaciones ─────────────────────────────────── */}
       <div style={card}>
         <div style={cardHead}>Condiciones y observaciones</div>
         <div style={cardBody}>
@@ -629,24 +592,44 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </div>
       </div>
 
-      {/* Firmas */}
+      {/* ── Firmas ──────────────────────────────────────────────────────── */}
       <div style={card}>
         <div style={cardHead}>Firmas</div>
         <div style={{ ...cardBody, ...grid2 }}>
+          {/* Firma 1 */}
           <div>
-            <label style={label}>Elaborado por</label>
-            <input value={form.elaborado_por} onChange={e => setField("elaborado_por", e.target.value)} placeholder="Nombre" style={{ ...inputStyle, marginBottom: "0.5rem" }} />
-            <input value={form.cargo_elaborado} onChange={e => setField("cargo_elaborado", e.target.value)} placeholder="Cargo" style={inputStyle} />
+            <p style={{ margin: "0 0 0.6rem", fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>Elaborado por</p>
+            <div style={{ marginBottom: "0.5rem" }}>
+              <label style={label}>Nombre</label>
+              <input value={form.elaborado_por} onChange={e => setField("elaborado_por", e.target.value)} placeholder="Nombre completo" style={inputStyle} />
+            </div>
+            <div style={{ marginBottom: "0.75rem" }}>
+              <label style={label}>Cargo</label>
+              <input value={form.cargo_elaborado} onChange={e => setField("cargo_elaborado", e.target.value)} placeholder="Cargo / Título" style={inputStyle} />
+            </div>
+            <div style={{ height: 56, border: "1px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontStyle: "italic" }}>Espacio para firma</span>
+            </div>
           </div>
+          {/* Firma 2 */}
           <div>
-            <label style={label}>Revisado por</label>
-            <input value={form.revisado_por} onChange={e => setField("revisado_por", e.target.value)} placeholder="Nombre" style={{ ...inputStyle, marginBottom: "0.5rem" }} />
-            <input value={form.cargo_revisado} onChange={e => setField("cargo_revisado", e.target.value)} placeholder="Cargo" style={inputStyle} />
+            <p style={{ margin: "0 0 0.6rem", fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>Revisado por</p>
+            <div style={{ marginBottom: "0.5rem" }}>
+              <label style={label}>Nombre</label>
+              <input value={form.revisado_por} onChange={e => setField("revisado_por", e.target.value)} placeholder="Nombre completo" style={inputStyle} />
+            </div>
+            <div style={{ marginBottom: "0.75rem" }}>
+              <label style={label}>Cargo</label>
+              <input value={form.cargo_revisado} onChange={e => setField("cargo_revisado", e.target.value)} placeholder="Cargo / Título" style={inputStyle} />
+            </div>
+            <div style={{ height: 56, border: "1px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontStyle: "italic" }}>Espacio para firma</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Botones */}
+      {/* ── Botones guardar ──────────────────────────────────────────────── */}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", paddingBottom: "2rem" }}>
         <button type="button" onClick={onCancelar} disabled={saveMutation.isPending} style={btnOutline}>Cancelar</button>
         <button
@@ -654,11 +637,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
           onClick={() => saveMutation.mutate(form)}
           disabled={!form.obra_id || !form.fecha || saveMutation.isPending}
           title={!form.obra_id ? "Selecciona una obra primero" : ""}
-          style={{
-            ...btnPrimary,
-            opacity: (!form.obra_id || !form.fecha || saveMutation.isPending) ? 0.5 : 1,
-            cursor: (!form.obra_id || !form.fecha || saveMutation.isPending) ? "not-allowed" : "pointer",
-          }}
+          style={{ ...btnPrimary, opacity: (!form.obra_id || !form.fecha || saveMutation.isPending) ? 0.5 : 1, cursor: (!form.obra_id || !form.fecha || saveMutation.isPending) ? "not-allowed" : "pointer" }}
         >
           {saveMutation.isPending && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
           {informe ? "Guardar cambios" : "Crear informe"}
