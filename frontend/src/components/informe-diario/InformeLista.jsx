@@ -73,7 +73,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
           )}
         </div>
       ) : (
-        <div style={{ background: "white", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <div style={{ background: "white", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
           {/* Cabecera tabla */}
           <div style={{
             display: "grid",
@@ -111,6 +111,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
                   padding: "0.75rem 1rem", alignItems: "center",
                   borderBottom: isLast ? "none" : "1px solid #f1f5f9",
                   cursor: "pointer", transition: "background 0.1s",
+                  position: "relative",
                 }}
                 onMouseOver={e => e.currentTarget.style.background = "#f8fafc"}
                 onMouseOut={e => e.currentTarget.style.background = "transparent"}
@@ -143,8 +144,8 @@ export default function InformeLista({ onNuevo, onEditar }) {
                   {inf.status || "borrador"}
                 </span>
 
-                {/* Menú acciones */}
-                <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                {/* Menú acciones — CORREGIDO z-index */}
+                <div style={{ position: "relative", zIndex: menuOpen === inf.id ? 9999 : 1 }} onClick={e => e.stopPropagation()}>
                   <button
                     onClick={() => setMenuOpen(menuOpen === inf.id ? null : inf.id)}
                     style={{
@@ -157,7 +158,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
                   </button>
                   {menuOpen === inf.id && (
                     <div style={{
-                      position: "absolute", right: 0, top: "100%", zIndex: 100,
+                      position: "absolute", right: 0, top: "100%", zIndex: 9999,
                       background: "white", border: "1px solid #e2e8f0", borderRadius: "8px",
                       boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: "130px", padding: "4px",
                     }}>
