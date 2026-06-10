@@ -32,7 +32,8 @@ export default function Dashboard() {
         try {
             setLoading(true);
             setError(null);
-            const response = await axiosInstance.get(API.BASE + '/dashboard/stats/');
+            // ✅ CORREGIDO: Usar API.DASHBOARD.STATS en lugar de API.BASE + '/dashboard/stats/'
+            const response = await axiosInstance.get(API.DASHBOARD.STATS);
             const stats = response.data;
             setData({
                 resumen:          stats.resumen          || {},
