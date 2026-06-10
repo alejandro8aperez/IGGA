@@ -62,7 +62,7 @@ const emptyFicha = () => ({
     proveedor_habitual: '', lead_time_dias: '', cantidad_minima_compra: '',
     moneda_compra: 'COP', ultimo_precio_compra: '', lista_precios: 'General',
     iva_porcentaje: 19, precio_sugerido: '', permite_descuento: true, es_vendible: true,
-    categoria_valoracion: 'mercancia_no_fab', // Equivalente a SAP Valuation Class
+    categoria_valoracion: 'mercancia_no_fab',
     centro_costo_por_defecto: '',
     indicador_impuestos: 'IVA_19',
     sujeto_retencion: false,
@@ -126,45 +126,51 @@ export default function Productos() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const params = {};
-            if (search) params.search = search;
-            if (filterGrupo) params.grupo_material = filterGrupo;
-            if (filterTipo) params.tipo = filterTipo;
 
             const results = await Promise.allSettled([
-                axiosInstance.get(API.INVENTARIOS.PRODUCTOS, { 
-                    params: search ? { search } : {} 
-                }), // 0 - Simplificamos params para asegurar compatibilidad
-                axiosInstance.get(API.INVENTARIOS.CATEGORIAS),            // 1
-                axiosInstance.get(API.PRODUCTOS.GRUPOS_MATERIAL),         // 2
-                axiosInstance.get(API.PRODUCTOS.FAMILIAS),                // 3
-                axiosInstance.get(API.PRODUCTOS.TIPOS_EMPAQUE),           // 4
-                axiosInstance.get(API.INVENTARIOS.ALMACENES),             // 5
+                axiosInstance.get(API.INVENTARIOS.PRODUCTOS, {
+                    params: search ? { search } : {}
+                }),
+                axiosInstance.get(API.INVENTARIOS.CATEGORIAS),
+                axiosInstance.get(API.PRODUCTOS.GRUPOS_MATERIAL),
+                axiosInstance.get(API.PRODUCTOS.FAMILIAS),
+                axiosInstance.get(API.PRODUCTOS.TIPOS_EMPAQUE),
+                axiosInstance.get(API.INVENTARIOS.ALMACENES),
             ]);
 
-            // Validamos la respuesta de productos (índice 0)
             if (results[0].status === 'fulfilled') {
                 const data = results[0].value.data;
                 const lista = Array.isArray(data) ? data : (data.results || []);
                 setProductos(lista);
-                
-                if (lista.length === 0) {
-                    console.warn("La API devolvió 0 productos.");
-                }
+                if (lista.length === 0) console.warn('La API devolvió 0 productos.');
             } else {
                 throw new Error(results[0].reason?.message || 'Error de conexión con Inventarios');
             }
 
-            // Carga de metadatos (opcionales)
-            if (results[1].status === 'fulfilled') setCategorias(results[1].value.data);
-            if (results[2].status === 'fulfilled') setGrupos(results[2].value.data);
-            if (results[3].status === 'fulfilled') setFamilias(results[3].value.data);
-            if (results[4].status === 'fulfilled') setTiposEmpaque(results[4].value.data);
-            if (results[5].status === 'fulfilled') setAlmacenes(results[5].value.data);
-            
+            if (results[1].status === 'fulfilled') {
+                const d = results[1].value.data;
+                setCategorias(Array.isArray(d) ? d : (d.results || []));
+            }
+            if (results[2].status === 'fulfilled') {
+                const d = results[2].value.data;
+                setGrupos(Array.isArray(d) ? d : (d.results || []));
+            }
+            if (results[3].status === 'fulfilled') {
+                const d = results[3].value.data;
+                setFamilias(Array.isArray(d) ? d : (d.results || []));
+            }
+            if (results[4].status === 'fulfilled') {
+                const d = results[4].value.data;
+                setTiposEmpaque(Array.isArray(d) ? d : (d.results || []));
+            }
+            if (results[5].status === 'fulfilled') {
+                const d = results[5].value.data;
+                setAlmacenes(Array.isArray(d) ? d : (d.results || []));
+            }
+
             setError(null);
         } catch (err) {
-            console.error("Error en Maestro de Productos:", err);
+            console.error('Error en Maestro de Productos:', err);
             setError('Error al cargar el maestro de productos');
         } finally {
             setLoading(false);
@@ -441,7 +447,7 @@ export default function Productos() {
                             </Field>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                            <h4 style={{ color: '#e2e8f0', margin: 0, fontSize: '0.9rem' }}>Jerarquía de empaque (unidad → caja → pallet)</h4>
+                            <h4 style={{ color: '#e2e8f0', margin: 0, fontSize: '0.9rem' }}>Jerarquía de empaque</h4>
                             <button type="button" onClick={addEmpaque} style={{ ...btnPri, fontSize: '0.78rem' }}><Plus size={14}/> Agregar nivel</button>
                         </div>
                         {form.unidades_empaque.map((emp, idx) => (
@@ -471,11 +477,11 @@ export default function Productos() {
                 return (
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>Múltiples códigos: EAN-13, UPC, interno, GTIN-14 caja, etc.</p>
+                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>Múltiples códigos: EAN-13, UPC, interno, GTIN-14, etc.</p>
                             <button type="button" onClick={addBarcode} style={btnPri}><Plus size={14}/> Agregar código</button>
                         </div>
                         {form.codigos_barras.length === 0 && (
-                            <p style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>Sin códigos de barras. Agregue al menos uno.</p>
+                            <p style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>Sin códigos de barras.</p>
                         )}
                         {form.codigos_barras.map((cb, idx) => (
                             <div key={idx} style={{ ...card, marginBottom: '0.75rem', padding: '1rem' }}>
@@ -564,13 +570,13 @@ export default function Productos() {
                         <Field label="Lote estándar">
                             <input style={inp} type="number" value={form.ficha.lote_estandar} onChange={e => setFicha('lote_estandar', e.target.value)} />
                         </Field>
-                        <Field label="Stock de Seguridad (Safety Stock)">
+                        <Field label="Stock de Seguridad">
                             <input style={inp} type="number" value={form.ficha.stock_seguridad || 0} onChange={e => setFicha('stock_seguridad', e.target.value)} />
                         </Field>
-                        <Field label="Punto de Pedido / Reorden">
+                        <Field label="Punto de Reorden">
                             <input style={inp} type="number" value={form.punto_reorden || 0} onChange={e => setField('punto_reorden', e.target.value)} />
                         </Field>
-                        <Field label="Plazo Entrega Previsto (días)">
+                        <Field label="Lead Time (días)">
                             <input style={inp} type="number" value={form.ficha.lead_time_dias} onChange={e => setFicha('lead_time_dias', e.target.value)} />
                         </Field>
                     </div>
@@ -654,12 +660,11 @@ export default function Productos() {
 
     return (
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-            {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                     <h1 style={{ color: '#f1f5f9', fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Package color="#667eea" size={28}/>
-                        PRODUCTOS — Maestro de Materiales (SAP MM)
+                        PRODUCTOS — Maestro de Materiales
                     </h1>
                     <p style={{ color: '#64748b', margin: '0.35rem 0 0', fontSize: '0.875rem' }}>
                         Códigos de barras, empaque, clasificación, compras, ventas y MRP
@@ -668,7 +673,6 @@ export default function Productos() {
                 <button onClick={() => openModal()} style={btnPri}><Plus size={16}/> Nuevo producto</button>
             </div>
 
-            {/* KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 {[
                     { label: 'Total productos', value: resumen.total_productos ?? '—', color: '#667eea' },
@@ -683,7 +687,6 @@ export default function Productos() {
                 ))}
             </div>
 
-            {/* Búsqueda por código de barras */}
             <div style={{ ...card, marginBottom: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <ScanLine size={20} color="#667eea"/>
                 <input
@@ -696,10 +699,9 @@ export default function Productos() {
                 <button onClick={handleBarcodeLookup} style={btnPri}>Buscar</button>
             </div>
 
-            {/* Filtros */}
             <div style={{ ...card, marginBottom: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <Search size={18} color="#64748b"/>
-                <input style={{ ...inp, flex: 1, minWidth: 180 }} placeholder="Buscar por nombre, SKU, marca, barras..."
+                <input style={{ ...inp, flex: 1, minWidth: 180 }} placeholder="Buscar por nombre, SKU, marca..."
                     value={search} onChange={e => setSearch(e.target.value)} />
                 <select style={{ ...inp, width: 180 }} value={filterGrupo} onChange={e => setFilterGrupo(e.target.value)}>
                     <option value="">Todos los grupos</option>
@@ -714,7 +716,6 @@ export default function Productos() {
 
             {error && <div style={{ background: '#7f1d1d', color: '#fecaca', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>}
 
-            {/* Tabla */}
             <div style={card}>
                 {loading ? (
                     <p style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>Cargando maestro de productos...</p>
@@ -776,7 +777,6 @@ export default function Productos() {
                 )}
             </div>
 
-            {/* Modal maestro SAP */}
             {modalOpen && (
                 <div style={{
                     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000,
@@ -796,7 +796,6 @@ export default function Productos() {
                             <button onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20}/></button>
                         </div>
 
-                        {/* Tabs estilo SAP */}
                         <div style={{ display: 'flex', overflowX: 'auto', borderBottom: '1px solid #334155', padding: '0 0.5rem' }}>
                             {TABS.map(tab => {
                                 const Icon = tab.icon;
