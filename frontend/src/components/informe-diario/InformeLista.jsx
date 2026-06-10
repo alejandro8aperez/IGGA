@@ -33,7 +33,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
-      {/* Barra superior */}
+      {/* Barra superior — SIN botón + Nuevo informe */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
         <div style={{ position: "relative", flex: 1, minWidth: "200px", maxWidth: "360px" }}>
           <Search size={15} style={{ position: "absolute", left: "0.65rem", top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
@@ -49,17 +49,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
             }}
           />
         </div>
-        <button
-          onClick={onNuevo}
-          style={{
-            padding: "0.5rem 1rem", borderRadius: "8px", border: "none",
-            background: "#667eea", color: "white", fontWeight: 600,
-            fontSize: "0.875rem", cursor: "pointer", display: "flex",
-            alignItems: "center", gap: "0.4rem", flexShrink: 0,
-          }}
-        >
-          + Nuevo informe
-        </button>
+        {/* Botón + Nuevo informe REMOVIDO — se usa NUEVO REGISTRO en top bar */}
       </div>
 
       {/* Contenido */}
@@ -78,7 +68,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
           </p>
           {!search && (
             <p style={{ margin: "0.4rem 0 0", fontSize: "0.8rem" }}>
-              Presiona <strong>+ Nuevo informe</strong> para crear el primero.
+              Usa el botón <strong>NUEVO REGISTRO</strong> en la barra superior para crear el primero.
             </p>
           )}
         </div>
