@@ -1,10 +1,11 @@
 // ============================================================
 //  HojaFotosInforme.jsx  –  ERP-8AMPERIOS  (CORREGIDO)
 //  Fix: URLs de imagen absolutas con getImageUrl helper
+//  Fix v2: Botón imprimir movido al top bar de Informediarioproy
 // ============================================================
 import React, { useState, useEffect } from 'react';
-import axiosInstance, { BASE_URL } from '../../config/axiosConfig';  // ✅ Importar BASE_URL
-import { Camera, X, UploadCloud, Loader2, Printer } from 'lucide-react';
+import axiosInstance, { BASE_URL } from '../../config/axiosConfig';
+import { Camera, X, UploadCloud, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '@/config/api';
 
@@ -144,38 +145,19 @@ const S = {
     fontStyle: 'italic',
     textAlign: 'center',
   },
-  printBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '7px',
-    background: '#1B3A5C',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '8px 18px',
-    fontSize: '12px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    boxShadow: '0 2px 8px rgba(27,58,92,0.35)',
-    letterSpacing: '0.03em',
-    transition: 'background 0.15s',
-  },
 };
 
-// ✅ NUEVO: Helper para construir URL absoluta de imagen
-function getImageUrl(src) {
+// ── Helper: URL absoluta de imagen ─────────────────────────────────────────
+export function getImageUrl(src) {
   if (!src) return null;
-  // Si ya es URL absoluta (http/https), devolver tal cual
   if (src.startsWith('http://') || src.startsWith('https://')) return src;
-  // Si es ruta relativa, anteponer BASE_URL (sin el /api/ final)
-  const base = BASE_URL.replace(/\/api\/$/, ''); // quita /api/ del final
-  // Asegurar que src empiece con /
+  const base = BASE_URL.replace(/\/api\/$/, '');
   const path = src.startsWith('/') ? src : '/' + src;
   return base + path;
 }
 
-// ── Función de impresión ───────────────────────────────────────────────────
-function imprimirFotos(fotos, informe) {
+// ── Función de impresión — exportada para usarla desde el top bar ──────────
+export function imprimirFotos(fotos, informe) {
   const fotosLlenas = Object.entries(fotos)
     .sort(([a], [b]) => Number(a) - Number(b))
     .filter(([, f]) => f?.imagen_url || f?.imagen);
@@ -185,12 +167,12 @@ function imprimirFotos(fotos, informe) {
     return;
   }
 
-  const fecha  = informe?.fecha        || new Date().toLocaleDateString('es-CO');
-  const obra   = informe?.obra_nombre  || 'Informe Diario';
-  const cod    = 'F-141-IN';
+  const fecha = informe?.fecha       || new Date().toLocaleDateString('es-CO');
+  const obra  = informe?.obra_nombre || 'Informe Diario';
+  const cod   = 'F-141-IN';
 
   const fotosHTML = fotosLlenas.map(([num, f]) => {
-    const src  = getImageUrl(f.imagen_url || f.imagen);  // ✅ Usar helper
+    const src  = getImageUrl(f.imagen_url || f.imagen);
     const desc = f.descripcion || '';
     const sec  = f.seccion_display || '';
     return `
@@ -255,7 +237,7 @@ function imprimirFotos(fotos, informe) {
     <span>Generado: ${new Date().toLocaleString('es-CO')}</span>
     <span>${cod} — ${obra} — ${fecha}</span>
   </div>
-  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<<\/script>
+  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<\/script>
 </body>
 </html>`;
 
@@ -269,7 +251,7 @@ function imprimirFotos(fotos, informe) {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-const HojaFotosInforme = ({ informeId, obraId, informe }) => {
+const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange }) => {
   const [fotos, setFotos]     = useState({});
   const [loading, setLoading] = useState({});
   const [hovered, setHovered] = useState(null);
@@ -291,6 +273,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
         const mapa = {};
         res.data.forEach(f => { if (f.posicion > 0) mapa[f.posicion] = f; });
         setFotos(mapa);
+        onFotosChange?.(mapa);
       } catch (err) {
         console.error('Error cargando fotos:', err);
       }
@@ -311,7 +294,9 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
       const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setFotos(prev => ({ ...prev, [posicion]: res.data }));
+      const updated = { ...fotos, [posicion]: res.data };
+      setFotos(updated);
+      onFotosChange?.(updated);
       toast.success(`Foto ${posicion} subida correctamente`);
     } catch {
       toast.error(`Error al subir la foto en posición ${posicion}`);
@@ -324,7 +309,10 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
     if (!window.confirm('¿Eliminar esta fotografía?')) return;
     try {
       await axiosInstance.delete(`${API.INFORME_DIARIO.ANEXOS}${fotoId}/`);
-      setFotos(prev => { const n = { ...prev }; delete n[posicion]; return n; });
+      const updated = { ...fotos };
+      delete updated[posicion];
+      setFotos(updated);
+      onFotosChange?.(updated);
       toast.success('Fotografía eliminada');
     } catch {
       toast.error('No se pudo eliminar la foto.');
@@ -341,17 +329,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
           <h2 style={S.title}>F-141-IN: Registro Fotográfico</h2>
           <p style={S.subtitle}>Standard Grid Layout 4×6 — {fotasLlenas}/24 fotos</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            style={S.printBtn}
-            onClick={() => imprimirFotos(fotos, informe)}
-            title="Imprimir registro fotográfico"
-          >
-            <Printer size={15} />
-            Imprimir Fotos
-          </button>
-          <Camera color="#3b82f6" size={32} />
-        </div>
+        <Camera color="#3b82f6" size={32} />
       </div>
 
       <div style={S.grid}>
@@ -375,7 +353,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe }) => {
               ) : isFilled ? (
                 <>
                   <img
-                    src={getImageUrl(fotos[num].imagen_url || fotos[num].imagen)}  // ✅ Usar helper
+                    src={getImageUrl(fotos[num].imagen_url || fotos[num].imagen)}
                     alt={`Foto ${num}`}
                     style={S.img}
                   />
