@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { FileText, CloudRain, Users, Hammer, Plus } from "lucide-react";
+import { FileText, CloudRain, Users, Hammer } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -53,7 +52,8 @@ export default function InformeDashboard({ onNuevoInforme }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Filtro de obra — SIN botón Nuevo informe */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <Select value={obraFiltro} onValueChange={setObraFiltro}>
           <SelectTrigger className="w-56"><SelectValue placeholder="Filtrar por obra" /></SelectTrigger>
           <SelectContent>
@@ -61,7 +61,6 @@ export default function InformeDashboard({ onNuevoInforme }) {
             {obras.map(o => <SelectItem key={o.id} value={String(o.id)}>{o.codigo} — {o.nombre}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button onClick={onNuevoInforme} className="gap-2"><Plus className="h-4 w-4" /> Nuevo informe</Button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
