@@ -59,11 +59,19 @@ class FichaProductoSerializer(serializers.ModelSerializer):
     estado_material_display = serializers.ReadOnlyField(source='get_estado_material_display')
     politica_inventario_display = serializers.ReadOnlyField(source='get_politica_inventario_display')
     clase_abc_display = serializers.ReadOnlyField(source='get_clase_abc_display')
+    imagen_url = serializers.SerializerMethodField()  # NUEVO: URL completa de la imagen
 
     class Meta:
         model = FichaProducto
         fields = '__all__'
         read_only_fields = ['fecha_creacion', 'fecha_actualizacion']
+
+    def get_imagen_url(self, obj):
+        if not obj.imagen:
+            return None
+        request = self.context.get('request')
+        url = obj.imagen.url
+        return request.build_absolute_uri(url) if request else url
 
 
 class ProductoMaestroListSerializer(serializers.ModelSerializer):
@@ -72,6 +80,9 @@ class ProductoMaestroListSerializer(serializers.ModelSerializer):
     tipo_producto_display = serializers.ReadOnlyField(source='get_tipo_producto_display')
     stock_bajo = serializers.ReadOnlyField()
     codigo_barras_principal = serializers.SerializerMethodField()
+    imagen_url = serializers.SerializerMethodField()      # NUEVO
+    familia = serializers.SerializerMethodField()         # NUEVO
+    familia_nombre = serializers.SerializerMethodField()  # NUEVO
     grupo_material = serializers.SerializerMethodField()
     tipo_empaque = serializers.SerializerMethodField()
     estado_material = serializers.SerializerMethodField()
@@ -83,6 +94,7 @@ class ProductoMaestroListSerializer(serializers.ModelSerializer):
             'tipo_producto', 'tipo_producto_display', 'unidad_medida',
             'precio_venta', 'precio_compra', 'stock_actual', 'stock_bajo',
             'marca', 'activo', 'codigo_barras_principal',
+            'imagen_url', 'familia', 'familia_nombre',  # AGREGADOS
             'grupo_material', 'tipo_empaque', 'estado_material',
         )
 
@@ -99,6 +111,25 @@ class ProductoMaestroListSerializer(serializers.ModelSerializer):
         cb = obj.codigos_barras.filter(es_principal=True, activo=True).first()
         return cb.codigo if cb else None
 
+    def get_imagen_url(self, obj):                          # NUEVO
+        try:
+            imagen = obj.ficha.imagen
+        except FichaProducto.DoesNotExist:
+            return None
+        if not imagen:
+            return None
+        request = self.context.get('request')
+        url = imagen.url
+        return request.build_absolute_uri(url) if request else url
+
+    def get_familia(self, obj):                             # NUEVO
+        ficha = self._ficha(obj)
+        return ficha.familia_id if ficha and ficha.familia else None
+
+    def get_familia_nombre(self, obj):                      # NUEVO
+        ficha = self._ficha(obj)
+        return ficha.familia.nombre if ficha and ficha.familia else None
+
     def get_grupo_material(self, obj):
         ficha = self._ficha(obj)
         return ficha.grupo_material.nombre if ficha and ficha.grupo_material else None
@@ -114,7 +145,7 @@ class ProductoMaestroListSerializer(serializers.ModelSerializer):
 
 class ProductoMaestroSerializer(serializers.ModelSerializer):
     """
-    Maestro completo: Producto + Ficha SAP + códigos de barras + empaques.
+    Maestro completo: Producto + Ficha SAP + codigos de barras + empaques.
     """
     categoria_nombre = serializers.ReadOnlyField(source='categoria.nombre')
     almacen_nombre = serializers.ReadOnlyField(source='almacen.nombre')
@@ -143,10 +174,14 @@ class ProductoMaestroSerializer(serializers.ModelSerializer):
         )
 
     def get_imagen_url(self, obj):
-        if not obj.imagen:
+        try:
+            imagen = obj.ficha.imagen
+        except FichaProducto.DoesNotExist:
+            return None
+        if not imagen:
             return None
         request = self.context.get('request')
-        url = obj.imagen.url
+        url = imagen.url
         return request.build_absolute_uri(url) if request else url
 
     def _sync_nested(self, producto, ficha_data, barras_data, empaques_data, ums_data):
