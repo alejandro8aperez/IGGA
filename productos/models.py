@@ -182,6 +182,15 @@ class FichaProducto(models.Model):
     requiere_certificado = models.BooleanField(default=False)
     norma_calidad = models.CharField(max_length=100, blank=True)
     ficha_tecnica_url = models.URLField(blank=True)
+    
+    # ✅ NUEVO CAMPO: Imagen del producto
+    imagen = models.ImageField(
+        upload_to='productos/imagenes/',
+        blank=True,
+        null=True,
+        verbose_name='Imagen del Producto'
+    )
+    
     observaciones = models.TextField(blank=True)
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)
