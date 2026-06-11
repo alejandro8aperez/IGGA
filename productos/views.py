@@ -79,7 +79,7 @@ class UnidadMedidaAlternativaViewSet(viewsets.ModelViewSet):
 class ProductoMaestroViewSet(viewsets.ModelViewSet):
     """
     Maestro de productos estilo SAP MM.
-    CRUD completo con ficha extendida, códigos de barras y empaques.
+    CRUD completo con ficha extendida, codigos de barras y empaques.
     """
     permission_classes = [IsInventarioUser]
 
@@ -133,12 +133,17 @@ class ProductoMaestroViewSet(viewsets.ModelViewSet):
             return ProductoMaestroListSerializer
         return ProductoMaestroSerializer
 
+    # NUEVO: Asegurar que el contexto 'request' se pase al serializer en list
+    def get_serializer(self, *args, **kwargs):
+        kwargs.setdefault('context', self.get_serializer_context())
+        return super().get_serializer(*args, **kwargs)
+
     @action(detail=False, methods=['get'], url_path='por-codigo-barras')
     def por_codigo_barras(self, request):
-        """Buscar producto por código de barras (POS, almacén)."""
+        """Buscar producto por codigo de barras (POS, almacen)."""
         codigo = request.query_params.get('codigo', '').strip()
         if not codigo:
-            return Response({'detail': 'Parámetro codigo requerido'}, status=400)
+            return Response({'detail': 'Parametro codigo requerido'}, status=400)
 
         cb = CodigoBarras.objects.filter(codigo=codigo, activo=True).select_related('producto').first()
         if cb:
@@ -176,7 +181,7 @@ class ProductoMaestroViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='crear-ficha')
     def crear_ficha(self, request, pk=None):
-        """Crea ficha SAP vacía si no existe."""
+        """Crea ficha SAP vacia si no existe."""
         producto = self.get_object()
         ficha, created = FichaProducto.objects.get_or_create(producto=producto)
         return Response(
