@@ -7,7 +7,10 @@ class ClienteSerializer(serializers.ModelSerializer):
     regimen_tributario_display = serializers.CharField(source='get_regimen_tributario_display', read_only=True)
     clasificacion_display = serializers.CharField(source='get_clasificacion_display', read_only=True)
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
-    tipo_cuenta_display = serializers.CharField(source='get_tipo_cuenta_display', read_only=True)
+    tipo_cuenta_display = serializers.SerializerMethodField()
+
+    def get_tipo_cuenta_display(self, obj):
+        return obj.get_tipo_cuenta_display() if obj.tipo_cuenta else None
 
     class Meta:
         model = Cliente
@@ -57,11 +60,14 @@ class CotizacionSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         detalles_data = validated_data.pop('detalles', None)
-        
-        instance.cliente = validated_data.get('cliente', instance.cliente)
-        instance.asunto = validated_data.get('asunto', instance.asunto)
-        instance.estado = validated_data.get('estado', instance.estado)
-        instance.fecha_validez = validated_data.get('fecha_validez', instance.fecha_validez)
+
+        scalar_fields = [
+            'cliente', 'asunto', 'estado', 'fecha_validez',
+            'tiempo_entrega', 'forma_pago', 'garantia',
+            'validez_oferta', 'porcentaje_iva',
+        ]
+        for field in scalar_fields:
+            setattr(instance, field, validated_data.get(field, getattr(instance, field)))
 
         if detalles_data is not None:
             instance.detalles.all().delete()
