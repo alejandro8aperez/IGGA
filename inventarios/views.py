@@ -183,11 +183,18 @@ class LoteViewSet(viewsets.ModelViewSet):
 
 
 class MovimientoInventarioViewSet(viewsets.ModelViewSet):
+    """
+    Los movimientos son registros de auditoría inmutables.
+    Solo se permiten GET (list/retrieve) y POST (create).
+    PUT, PATCH y DELETE están bloqueados: modificarlos rompería
+    la integridad del stock sin revertir stock_actual.
+    """
     queryset = MovimientoInventario.objects.select_related(
         'producto', 'almacen', 'lote'
     ).all().order_by('-fecha')
     serializer_class = MovimientoInventarioSerializer
     permission_classes = [IsInventarioUser]
+    http_method_names = ['get', 'post', 'head', 'options']
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -226,8 +233,9 @@ class AlertaInventarioViewSet(viewsets.ModelViewSet):
         estado = self.request.query_params.get('estado')
         if estado:
             qs = qs.filter(estado=estado)
-        else:
-            # Por defecto solo alertas activas
+        elif self.action == 'list':
+            # En listados, por defecto solo alertas activas.
+            # En detail/resolver/ignorar se necesita acceder a cualquier estado.
             qs = qs.filter(estado='activa')
 
         tipo = self.request.query_params.get('tipo')
@@ -260,17 +268,21 @@ class ConteoFisicoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def aplicar_ajustes(self, request, pk=None):
         """Aplica todos los ajustes del conteo físico"""
+        from django.db import transaction
         conteo = self.get_object()
         ajustes = 0
 
-        for detalle in conteo.detalles.filter(ajustado=False):
-            detalle.calcular_diferencia()
-            if detalle.diferencia and detalle.diferencia != 0:
-                detalle.aplicar_ajuste()
-                ajustes += 1
+        with transaction.atomic():
+            for detalle in conteo.detalles.filter(ajustado=False):
+                detalle.calcular_diferencia()
+                # Persistir la diferencia calculada antes de aplicar el ajuste
+                detalle.save(update_fields=['diferencia'])
+                if detalle.diferencia and detalle.diferencia != 0:
+                    detalle.aplicar_ajuste()
+                    ajustes += 1
 
-        conteo.estado = 'aprobado'
-        conteo.save(update_fields=['estado'])
+            conteo.estado = 'aprobado'
+            conteo.save(update_fields=['estado'])
 
         return Response({
             'status': 'Ajustes aplicados',
