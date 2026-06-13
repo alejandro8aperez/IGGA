@@ -34946,3 +34946,4 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 django.db.utils.OperationalError: no such column: informe_diario_informediario.elaborado_por_id
 ERROR 2026-06-13 13:42:14,631 basehttp 5940 18820 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 240820
+INFO 2026-06-13 14:36:00,662 autoreload 9616 2284 Watching for file changes with StatReloader
