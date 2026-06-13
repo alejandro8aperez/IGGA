@@ -81,6 +81,7 @@ class ProductoMaestroViewSet(viewsets.ModelViewSet):
     Maestro de productos estilo SAP MM.
     CRUD completo con ficha extendida, codigos de barras y empaques.
     """
+    queryset = Producto.objects.all()  # requerido por el router para determinar basename
     permission_classes = [IsInventarioUser]
 
     def get_queryset(self):
