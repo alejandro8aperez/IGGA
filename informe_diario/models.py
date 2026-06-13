@@ -179,6 +179,10 @@ class InformeDiario(models.Model):
         return self.reportes_lluvia.filter(con_lluvia=True).count()
 
     @property
+    def total_actividades(self):
+        return self.actividades.count()
+
+    @property
     def nombre_elaborado(self):
         if self.elaborado_por:
             return f"{self.elaborado_por.primer_nombre} {self.elaborado_por.primer_apellido}".strip()
