@@ -43,6 +43,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
 
 
 class OportunidadViewSet(viewsets.ModelViewSet):
+    queryset = Oportunidad.objects.all()  # requerido por el router para determinar basename
     serializer_class = OportunidadSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['titulo', 'descripcion']
@@ -60,6 +61,7 @@ class OportunidadViewSet(viewsets.ModelViewSet):
 
 
 class CotizacionViewSet(viewsets.ModelViewSet):
+    queryset = Cotizacion.objects.all()  # requerido por el router para determinar basename
     serializer_class = CotizacionSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['numero_cotizacion', 'asunto']
