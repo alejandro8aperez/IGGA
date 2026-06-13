@@ -29,11 +29,9 @@ export default function InformeDashboard({ onNuevoInforme }) {
   }, [informes, obraFiltro]);
 
   const totalInformes = filtrados.length;
-  const totalPersonal = filtrados.reduce((sum, i) => {
-    return sum + (i.recursos || []).filter(r => r.categoria === "PERSONAL DE OBRA").reduce((s, r) => s + (r.cantidad || 0), 0);
-  }, 0);
-  const totalHorasLluvia = filtrados.reduce((sum, i) => sum + (i.horas_lluvia || []).filter(Boolean).length, 0);
-  const totalActividades = filtrados.reduce((sum, i) => sum + (i.actividades || []).length, 0);
+  const totalPersonal = filtrados.reduce((sum, i) => sum + (i.total_personal ?? 0), 0);
+  const totalHorasLluvia = filtrados.reduce((sum, i) => sum + (i.total_horas_lluvia ?? 0), 0);
+  const totalActividades = filtrados.reduce((sum, i) => sum + (i.total_actividades ?? 0), 0);
 
   const chartData = useMemo(() => {
     return Array.from({ length: 6 }, (_, i) => {
@@ -43,7 +41,7 @@ export default function InformeDashboard({ onNuevoInforme }) {
       const label = format(d, "MMM", { locale: es });
       const count = filtrados.filter(inf => inf.fecha?.startsWith(key)).length;
       const lluvia = filtrados.filter(inf => inf.fecha?.startsWith(key))
-        .reduce((sum, inf) => sum + (inf.horas_lluvia || []).filter(Boolean).length, 0);
+        .reduce((sum, inf) => sum + (inf.total_horas_lluvia ?? 0), 0);
       return { name: label, informes: count, horas_lluvia: lluvia };
     });
   }, [filtrados]);
