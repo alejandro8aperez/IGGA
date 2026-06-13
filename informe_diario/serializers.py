@@ -5,18 +5,15 @@ from .models import (
     MaquinariaLibre, PersonalLibre
 )
 
-
 class ObraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Obra
         fields = '__all__'
 
-
 class CategoriaRecursoSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoriaRecurso
         fields = '__all__'
-
 
 class RecursoSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
@@ -25,12 +22,10 @@ class RecursoSerializer(serializers.ModelSerializer):
         model = Recurso
         fields = ['id', 'categoria', 'categoria_nombre', 'nombre', 'unidad', 'activo', 'orden']
 
-
 class CategoriaActividadSerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoriaActividad
         fields = '__all__'
-
 
 class DetalleRecursoSerializer(serializers.ModelSerializer):
     recurso_nombre = serializers.CharField(source='recurso.nombre', read_only=True)
@@ -41,12 +36,10 @@ class DetalleRecursoSerializer(serializers.ModelSerializer):
         fields = ['id', 'recurso', 'recurso_nombre', 'categoria_nombre',
                   'cantidad', 'empresa', 'notas']
 
-
 class ReporteLluviaSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReporteLluvia
         fields = ['id', 'hora', 'con_lluvia']
-
 
 class ActividadSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
@@ -55,12 +48,10 @@ class ActividadSerializer(serializers.ModelSerializer):
         model = Actividad
         fields = ['id', 'categoria', 'categoria_nombre', 'descripcion', 'orden']
 
-
 class ItemObraSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemObra
         fields = ['id', 'item', 'descripcion', 'empresa', 'cantidad', 'orden']
-
 
 class MaquinariaLibreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,7 +80,6 @@ class AnexoFotoSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
-
 # ── Serializer para datos de empleado en firmas ────────────
 class EmpleadoFirmaSerializer(serializers.Serializer):
     """Serializer inline para mostrar datos del empleado en firmas"""
@@ -102,7 +92,6 @@ class EmpleadoFirmaSerializer(serializers.Serializer):
         partes = [obj.primer_nombre, getattr(obj, 'segundo_nombre', ''),
                   obj.primer_apellido, getattr(obj, 'segundo_apellido', '')]
         return ' '.join(p for p in partes if p).strip()
-
 
 class InformeDiarioListSerializer(serializers.ModelSerializer):
     obra_codigo = serializers.CharField(source='obra.codigo', read_only=True)
@@ -134,7 +123,6 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
             except Exception:
                 return None
         return None
-
 
 class InformeDiarioSerializer(serializers.ModelSerializer):
     """Full nested serializer (read + write) for the daily report."""
@@ -171,29 +159,35 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'creado_en', 'actualizado_en',
         ]
         read_only_fields = ['creado_en', 'actualizado_en', 'dia_semana',
-                           'elaborado_por_detalle', 'revisado_por_detalle']
+                            'elaborado_por_detalle', 'revisado_por_detalle']
 
     def get_elaborado_por_detalle(self, obj):
         if obj.elaborado_por:
             emp = obj.elaborado_por
-            nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
+            try:
+                nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
+            except Exception:
+                nombre = str(emp)
             return {
                 'id': emp.id,
                 'nombre_completo': nombre,
-                'cargo_nombre': str(emp.cargo) if emp.cargo else '',
-                'numero_documento': emp.numero_documento,
+                'cargo_nombre': str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else '',
+                'numero_documento': getattr(emp, 'numero_documento', ''),
             }
         return None
 
     def get_revisado_por_detalle(self, obj):
         if obj.revisado_por:
             emp = obj.revisado_por
-            nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
+            try:
+                nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
+            except Exception:
+                nombre = str(emp)
             return {
                 'id': emp.id,
                 'nombre_completo': nombre,
-                'cargo_nombre': str(emp.cargo) if emp.cargo else '',
-                'numero_documento': emp.numero_documento,
+                'cargo_nombre': str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else '',
+                'numero_documento': getattr(emp, 'numero_documento', ''),
             }
         return None
 
