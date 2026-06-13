@@ -6,14 +6,8 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check, Users, Signature } from "lucide-react";
 import { toast } from "sonner";
-<<<<<<< HEAD
-import { informeDiarioService, obraService, recursoService, categoriaService } from "@/services/informeDiarioApi";
-import axiosInstance from "@/config/axiosConfig";
-import { API } from "@/config/api";
-=======
 import { informeDiarioService, obraService, recursoService, categoriaService, proveedorService } from "@/services/informeDiarioApi";
 import empleadoService from "@/services/empleadoService";
->>>>>>> f086551e8dcc91e7a12129706dfc8bc98b42a64f
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -299,100 +293,6 @@ function ObraSelect({ obras, value, onChange }) {
   );
 }
 
-// ─── Selector de Proveedor (Empresa) ──────────────────────────────────────────────
-function ProveedorSelect({ value, onChange, proveedores }) {
-  const [open, setOpen]     = useState(false);
-  const [search, setSearch] = useState("");
-  const ref                 = useRef(null);
-
-  const filtered = (proveedores || []).filter(p =>
-    (p.razon_social || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.nombre_comercial || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.nit || "").toLowerCase().includes(search.toLowerCase())
-  );
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const displayLabel = value || null;
-
-  return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <div
-        onClick={() => setOpen(o => !o)}
-        style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between",
-          cursor: "pointer", userSelect: "none", fontSize: "0.8rem", padding: "0.3rem 0.5rem", height: "2rem",
-          border: open ? "1px solid #667eea" : "1px solid #cbd5e1",
-          boxShadow: open ? "0 0 0 2px rgba(102,126,234,0.2)" : "none" }}
-      >
-        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          color: displayLabel ? "#1e293b" : "#94a3b8" }}>
-          {displayLabel || "Empresa..."}
-        </span>
-        <ChevronDown size={11} style={{ flexShrink: 0, marginLeft: "0.25rem", color: "#94a3b8",
-          transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
-      </div>
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, zIndex: 9999,
-          background: "white", border: "1px solid #e2e8f0", borderRadius: "10px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden", minWidth: 220 }}>
-          {/* Búsqueda */}
-          <div style={{ padding: "0.4rem", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <Search size={13} color="#94a3b8" style={{ flexShrink: 0 }} />
-            <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar proveedor..."
-              style={{ flex: 1, border: "none", outline: "none", fontSize: "0.8rem", color: "#1e293b", background: "transparent" }} />
-            {search && <X size={12} color="#94a3b8" style={{ cursor: "pointer" }} onClick={() => setSearch("")} />}
-          </div>
-          {/* Opción para limpiar */}
-          <div
-            onClick={() => { onChange(""); setOpen(false); setSearch(""); }}
-            style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem", color: "#94a3b8", cursor: "pointer",
-              fontStyle: "italic", borderBottom: "1px solid #f8fafc" }}
-            onMouseOver={e => e.currentTarget.style.background = "#f8fafc"}
-            onMouseOut={e => e.currentTarget.style.background = "transparent"}
-          >
-            — Sin empresa —
-          </div>
-          <div style={{ maxHeight: "200px", overflowY: "auto", padding: "4px" }}>
-            {filtered.length === 0 ? (
-              <div style={{ padding: "0.75rem", textAlign: "center", color: "#94a3b8", fontSize: "0.78rem" }}>Sin resultados</div>
-            ) : filtered.map(p => {
-              const isSel = p.razon_social === value;
-              return (
-                <div key={p.id}
-                  onClick={() => { onChange(p.razon_social); setOpen(false); setSearch(""); }}
-                  style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.65rem",
-                    borderRadius: "5px", cursor: "pointer", background: isSel ? "#f1f5f9" : "transparent" }}
-                  onMouseOver={e => { if (!isSel) e.currentTarget.style.background = "#f8fafc"; }}
-                  onMouseOut={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
-                >
-                  {isSel && <Check size={11} color="#667eea" style={{ flexShrink: 0 }} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: isSel ? 700 : 500, fontSize: "0.8rem", color: "#1e293b",
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {p.razon_social}
-                    </div>
-                    {p.nit && <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>NIT: {p.nit}</div>}
-                  </div>
-                  <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 6px", borderRadius: "20px",
-                    background: p.estado === "activo" ? "#f0fdf4" : "#f8fafc",
-                    color: p.estado === "activo" ? "#16a34a" : "#64748b", flexShrink: 0 }}>
-                    {p.estado || "—"}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Horas de lluvia ──────────────────────────────────────────────────────────
 function HorasLluvia({ horas, onChange }) {
   return (
@@ -571,8 +471,8 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
           <tr>
             <th style={{ ...thStyle, width: "28%" }}>Descripción</th>
             <th style={{ ...thStyle, width: "10%", textAlign: "right" }}>Cantidad</th>
-            <th style={{ ...thStyle, width: "26%" }}>Empresa</th>
-            <th style={{ ...thStyle, width: "28%" }}>Notas</th>
+            <th style={{ ...thStyle, width: "22%" }}>Empresa</th>
+            <th style={{ ...thStyle, width: "32%" }}>Notas</th>
             <th style={{ ...thStyle, width: "8%", textAlign: "center" }}></th>
           </tr>
         </thead>
@@ -588,15 +488,9 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
                 <input type="number" min="0" step="0.5" value={r.cantidad} onChange={e => update(r.recurso_id, "cantidad", parseFloat(e.target.value) || 0)} style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem", textAlign: "right" }} />
               </td>
               <td style={{ padding: "0.35rem 0.4rem" }}>
-<<<<<<< HEAD
-                <ProveedorSelect
-                  value={r.empresa || ""}
-                  onChange={val => update(r.recurso_id, "empresa", val)}
-=======
                 <EmpresaSelect
                   value={r.empresa || ""}
                   onChange={v => update(r.recurso_id, "empresa", v)}
->>>>>>> f086551e8dcc91e7a12129706dfc8bc98b42a64f
                   proveedores={proveedores}
                 />
               </td>
@@ -695,17 +589,6 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const { data: recursos = [],   isLoading: isLoadingRecursos }   = useQuery({ queryKey: ["recursos"],            queryFn: () => recursoService.list() });
   const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
   const { data: proveedores = [] }                                 = useQuery({ queryKey: ["proveedores-informe"], queryFn: () => proveedorService.list({ estado: "activo" }) });
-
-  // Cargar lista de proveedores activos para el dropdown de Empresa
-  const { data: rawProveedores = [] } = useQuery({
-    queryKey: ["proveedores-lista-empresa"],
-    queryFn: async () => {
-      const r = await axiosInstance.get(API.COMPRAS.PROVEEDORES, { params: { estado: 'activo', page_size: 500 } });
-      return Array.isArray(r.data) ? r.data : (r.data?.results || []);
-    },
-    staleTime: 5 * 60 * 1000,  // cache 5 min
-  });
-  const proveedoresList = Array.isArray(rawProveedores) ? rawProveedores : [];
 
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
