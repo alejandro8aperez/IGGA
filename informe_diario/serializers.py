@@ -95,11 +95,13 @@ class EmpleadoFirmaSerializer(serializers.Serializer):
     """Serializer inline para mostrar datos del empleado en firmas"""
     id = serializers.IntegerField()
     nombre_completo = serializers.SerializerMethodField()
-    cargo_nombre = serializers.CharField(source='cargo.nombre', read_only=True)
+    cargo_nombre = serializers.CharField(source='cargo', read_only=True)
     numero_documento = serializers.CharField()
 
     def get_nombre_completo(self, obj):
-        return f"{obj.primer_nombre} {obj.primer_apellido}".strip()
+        partes = [obj.primer_nombre, getattr(obj, 'segundo_nombre', ''),
+                  obj.primer_apellido, getattr(obj, 'segundo_apellido', '')]
+        return ' '.join(p for p in partes if p).strip()
 
 
 class InformeDiarioListSerializer(serializers.ModelSerializer):
@@ -108,6 +110,7 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
     total_personal = serializers.ReadOnlyField()
     total_maquinaria = serializers.ReadOnlyField()
     total_horas_lluvia = serializers.ReadOnlyField()
+    total_actividades = serializers.ReadOnlyField()
     foto_principal = serializers.SerializerMethodField()
     status_label = serializers.CharField(source='get_status_display', read_only=True)
     # Firmas
@@ -119,7 +122,8 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
         fields = ['id', 'obra', 'obra_codigo', 'obra_nombre', 'fecha',
                   'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
-                  'creado_en', 'status', 'status_label', 'foto_principal']
+                  'total_actividades', 'creado_en', 'status', 'status_label',
+                  'foto_principal']
 
     def get_foto_principal(self, obj):
         # Retorna la primera foto del anexo para mostrarla como thumbnail en la card
@@ -171,21 +175,25 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
 
     def get_elaborado_por_detalle(self, obj):
         if obj.elaborado_por:
+            emp = obj.elaborado_por
+            nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
             return {
-                'id': obj.elaborado_por.id,
-                'nombre_completo': f"{obj.elaborado_por.primer_nombre} {obj.elaborado_por.primer_apellido}".strip(),
-                'cargo_nombre': obj.elaborado_por.cargo.nombre if hasattr(obj.elaborado_por.cargo, 'nombre') else str(obj.elaborado_por.cargo),
-                'numero_documento': obj.elaborado_por.numero_documento,
+                'id': emp.id,
+                'nombre_completo': nombre,
+                'cargo_nombre': str(emp.cargo) if emp.cargo else '',
+                'numero_documento': emp.numero_documento,
             }
         return None
 
     def get_revisado_por_detalle(self, obj):
         if obj.revisado_por:
+            emp = obj.revisado_por
+            nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
             return {
-                'id': obj.revisado_por.id,
-                'nombre_completo': f"{obj.revisado_por.primer_nombre} {obj.revisado_por.primer_apellido}".strip(),
-                'cargo_nombre': obj.revisado_por.cargo.nombre if hasattr(obj.revisado_por.cargo, 'nombre') else str(obj.revisado_por.cargo),
-                'numero_documento': obj.revisado_por.numero_documento,
+                'id': emp.id,
+                'nombre_completo': nombre,
+                'cargo_nombre': str(emp.cargo) if emp.cargo else '',
+                'numero_documento': emp.numero_documento,
             }
         return None
 
