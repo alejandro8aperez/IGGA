@@ -101,6 +101,20 @@ class EmpleadoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# ── Empleado Dropdown (Ligero para selects) ────────────────
+class EmpleadoDropdownSerializer(serializers.ModelSerializer):
+    """Serializer ligero para dropdowns de empleados activos"""
+    nombre_completo = serializers.SerializerMethodField()
+    cargo_nombre = serializers.CharField(source='cargo.nombre', read_only=True)
+
+    class Meta:
+        model = Empleado
+        fields = ['id', 'nombre_completo', 'cargo_nombre', 'numero_documento']
+
+    def get_nombre_completo(self, obj):
+        return f"{obj.primer_nombre} {obj.primer_apellido}".strip()
+
+
 # ── Nómina Electrónica ─────────────────────────────────────
 class ConceptoNominaSerializer(serializers.ModelSerializer):
     class Meta:
