@@ -105,12 +105,30 @@ class InformeDiario(models.Model):
     estado_terreno_final = models.TextField(
         blank=True, help_text="Estado al finalizar la jornada (riesgos físicos/locativos)")
 
-    elaborado_por = models.CharField(max_length=200, blank=True)
+    # ── FIRMAS vinculadas a RRHH ──────────────────────────────
+    elaborado_por = models.ForeignKey(
+        'rrhh.Empleado',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='informes_elaborados',
+        verbose_name='Elaborado por'
+    )
+    revisado_por = models.ForeignKey(
+        'rrhh.Empleado',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='informes_revisados',
+        verbose_name='Revisado por'
+    )
+    # Campos de respaldo para compatibilidad (se mantienen por si acaso)
+    elaborado_por_texto = models.CharField(max_length=200, blank=True, verbose_name='Elaborado por (texto)')
     cargo_elaborado = models.CharField(max_length=200, blank=True)
-    revisado_por = models.CharField(max_length=200, blank=True)
+    revisado_por_texto = models.CharField(max_length=200, blank=True, verbose_name='Revisado por (texto)')
     cargo_revisado = models.CharField(max_length=200, blank=True)
+    # ─────────────────────────────────────────────────────────
+
     comision_topografia = models.BooleanField(default=False, help_text="Comisión de Topografía presente")
-    
+
     status = models.CharField(max_length=20, default='borrador', choices=[
         ('borrador', 'Borrador'),
         ('enviado', 'Enviado'),
@@ -159,6 +177,30 @@ class InformeDiario(models.Model):
     @property
     def total_horas_lluvia(self):
         return self.reportes_lluvia.filter(con_lluvia=True).count()
+
+    @property
+    def nombre_elaborado(self):
+        if self.elaborado_por:
+            return f"{self.elaborado_por.primer_nombre} {self.elaborado_por.primer_apellido}".strip()
+        return self.elaborado_por_texto
+
+    @property
+    def nombre_revisado(self):
+        if self.revisado_por:
+            return f"{self.revisado_por.primer_nombre} {self.revisado_por.primer_apellido}".strip()
+        return self.revisado_por_texto
+
+    @property
+    def cargo_elaborado_rrhh(self):
+        if self.elaborado_por and self.elaborado_por.cargo:
+            return self.elaborado_por.cargo.nombre if hasattr(self.elaborado_por.cargo, 'nombre') else str(self.elaborado_por.cargo)
+        return self.cargo_elaborado
+
+    @property
+    def cargo_revisado_rrhh(self):
+        if self.revisado_por and self.revisado_por.cargo:
+            return self.revisado_por.cargo.nombre if hasattr(self.revisado_por.cargo, 'nombre') else str(self.revisado_por.cargo)
+        return self.cargo_revisado
 
 
 class DetalleRecurso(models.Model):
