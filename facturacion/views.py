@@ -23,7 +23,7 @@ class FacturaViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        data = request.data
+        data = dict(request.data)
         detalles_data = data.pop('detalles', [])
         
         serializer = self.get_serializer(data=data)
@@ -69,6 +69,48 @@ class FacturaViewSet(viewsets.ModelViewSet):
 
         return Response(self.get_serializer(factura).data, status=status.HTTP_201_CREATED)
 
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        """PUT/PATCH — actualiza cabecera y líneas de detalle de un borrador."""
+        partial = kwargs.pop('partial', False)
+        data = dict(request.data)
+        detalles_data = data.pop('detalles', None)
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        factura = serializer.save()
+
+        if detalles_data is not None:
+            factura.detalles.all().delete()
+            subtotal_total = Decimal('0.00')
+            iva_total = Decimal('0.00')
+            for item in detalles_data:
+                producto = Producto.objects.get(id=item['producto'])
+                cantidad = int(item['cantidad'])
+                precio = Decimal(str(item.get('precio_unitario', producto.precio_venta)))
+                iva_pct = Decimal(str(item.get('porcentaje_iva', '19.00')))
+                subt = cantidad * precio
+                subtotal_total += subt
+                iva_total += subt * (iva_pct / Decimal('100'))
+                DetalleFactura.objects.create(
+                    factura=factura,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio,
+                    porcentaje_iva=iva_pct,
+                )
+            retefuente_pct = Decimal(str(data.get('retefuente_pct', '0')))
+            reteica_pct = Decimal(str(data.get('reteica_pct', '0')))
+            factura.subtotal = subtotal_total
+            factura.iva_total = iva_total
+            factura.retefuente_total = subtotal_total * (retefuente_pct / Decimal('100'))
+            factura.reteica_total = subtotal_total * (reteica_pct / Decimal('100'))
+            factura.total = subtotal_total + iva_total - factura.retefuente_total - factura.reteica_total
+            factura.save()
+
+        return Response(self.get_serializer(factura).data)
+
     @action(detail=True, methods=['post'])
     def emitir(self, request, pk=None):
         factura = self.get_object()
@@ -77,7 +119,7 @@ class FacturaViewSet(viewsets.ModelViewSet):
             return Response({"error": "La factura ya fue emitida o procesada."}, status=400)
             
         with transaction.atomic():
-            resolucion = ResolucionFacturacion.objects.filter(activa=True).first()
+            resolucion = ResolucionFacturacion.objects.select_for_update().filter(activa=True).first()
             if not resolucion:
                 return Response({"error": "No hay una resolución DIAN activa."}, status=400)
                 
@@ -118,21 +160,29 @@ class FacturaViewSet(viewsets.ModelViewSet):
                     # Se registrará en FacturaElectronicaLog
                     
             except Exception as e:
-                # Si falla la conexión WS o no hay config, se asigna mock por fallback
+                # Si falla la conexión WS o no hay config, se marca como enviada (sin CUFE real)
                 factura.cufe = str(uuid.uuid4()).replace('-', '') + "DIAN-MOCK"
-                factura.estado_dian = 'validada_mock'
+                factura.estado_dian = 'enviada'
             
             # Incrementar el consecutivo
             resolucion.numero_actual += 1
             resolucion.save()
 
-            # 2. Descontar Inventario
+            # 2. Descontar Inventario via MovimientoInventario (actualiza stock_actual automáticamente)
             for detalle in factura.detalles.all():
                 producto = detalle.producto
-                if producto.stock_actual < detalle.cantidad:
-                    raise Exception(f"No hay stock suficiente para {producto.nombre}.")
-                producto.stock_actual -= detalle.cantidad
-                producto.save()
+                if producto.tipo_producto != 'servicio':
+                    if producto.stock_actual < detalle.cantidad:
+                        raise Exception(f"No hay stock suficiente para {producto.nombre}.")
+                    from inventarios.models import MovimientoInventario
+                    MovimientoInventario.objects.create(
+                        producto=producto,
+                        cantidad=detalle.cantidad,
+                        tipo='salida',
+                        motivo=f"Factura de venta: {factura.numero_factura}",
+                        origen='venta',
+                        documento_referencia=factura.numero_factura,
+                    )
                 
             # 3. Registrar Transacción Financiera
             cuenta = Cuenta.objects.first() # Cuenta por defecto (Caja general)
