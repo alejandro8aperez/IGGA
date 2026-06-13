@@ -430,239 +430,193 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Stats Cards */}
+            {/* ── Layout 3 columnas ────────────────────────────────────── */}
             <div style={{
                 position: 'relative',
                 zIndex: 10,
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-                gap: '1rem',
-                marginBottom: '2rem',
-                maxWidth: '1000px',
-                margin: '0 auto 2rem'
+                gridTemplateColumns: '170px 1fr 2px 1fr',
+                gap: '0 1.5rem',
+                maxWidth: '1500px',
+                margin: '0 auto',
+                alignItems: 'start'
             }}>
-                <div style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: '12px',
-                    padding: '0.75rem',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    textAlign: 'center'
-                }}>
-                    <Users size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
-                        {stats.clientes}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
-                        Clientes
-                    </div>
-                </div>
 
-                <div style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: '12px',
-                    padding: '0.75rem',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    textAlign: 'center'
-                }}>
-                    <FileText size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
-                        {stats.cotizaciones}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
-                        Cotizaciones
-                    </div>
-                </div>
-
-                <div style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: '12px',
-                    padding: '0.75rem',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    textAlign: 'center'
-                }}>
-                    <ShoppingCart size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
-                        {stats.pedidos}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
-                        Pedidos
-                    </div>
-                </div>
-
-                <div style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: '12px',
-                    padding: '0.75rem',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    textAlign: 'center'
-                }}>
-                    <Package size={20} style={{ color: 'white', marginBottom: '0.25rem' }} />
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
-                        {stats.proveedores}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
-                        Proveedores
-                    </div>
-                </div>
-            </div>
-
-
-
-            {/* ── Fila 1: Módulos principales ─────────────────────────── */}
-            <div style={{
-                position: 'relative',
-                zIndex: 10,
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                gap: '0.75rem',
-                maxWidth: '1400px',
-                margin: '0 auto'
-            }}>
-                {filteredModules.filter(m => PRIMARY_MODULES.includes(m.name)).map((module) => (
-                    <div
-                        key={module.name}
-                        onClick={() => openModule(module)}
-                        style={{
-                            background: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            borderRadius: '10px',
-                            padding: '0.75rem',
-                            border: '2px solid rgba(255,255,255,0.35)',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s',
-                            transform: 'translateY(0)',
-                            opacity: loading && selectedModule?.name === module.name ? 0.7 : 1
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.22)';
-                            e.currentTarget.style.transform = 'translateY(-5px)';
-                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                    >
-                        <div style={{
-                            width: '28px', height: '28px', background: module.color,
-                            borderRadius: '8px', display: 'flex', alignItems: 'center',
-                            justifyContent: 'center', marginBottom: '0.5rem',
-                            boxShadow: `0 4px 10px ${module.color}33`
-                        }}>
-                            <module.icon size={16} style={{ color: 'white' }} />
-                        </div>
-                        <h3 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'white', margin: '0 0 0.25rem 0' }}>
-                            {module.name}
-                        </h3>
-                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.8)', margin: '0 0 0.5rem 0', lineHeight: '1.3' }}>
-                            {module.description}
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '1rem', fontWeight: '800', color: 'white' }}>
-                                {moduleStats(module).total}
-                            </span>
-                            <span style={{ fontSize: '0.6rem', color: '#86efac', fontWeight: '600' }}>
-                                {moduleStats(module).growth}
-                            </span>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* ── Separador ────────────────────────────────────────────── */}
-            <div style={{ maxWidth: '1400px', margin: '1.5rem auto', borderTop: '1px solid rgba(255,255,255,0.2)' }} />
-
-            {/* ── Fila 2: Resto de módulos ─────────────────────────────── */}
-            <div style={{
-                position: 'relative',
-                zIndex: 10,
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                gap: '0.75rem',
-                maxWidth: '1400px',
-                margin: '0 auto'
-            }}>
-                {filteredModules.filter(m => !PRIMARY_MODULES.includes(m.name)).map((module, index) => (
-                    <div
-                        key={module.name}
-                        onClick={() => openModule(module)}
-                        style={{
+                {/* ── COLUMNA 1: KPIs ──────────────────────────────────── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {[
+                        { icon: Users,        label: 'Clientes',    value: stats.clientes },
+                        { icon: FileText,     label: 'Cotizaciones',value: stats.cotizaciones },
+                        { icon: ShoppingCart, label: 'Pedidos',     value: stats.pedidos },
+                        { icon: Package,      label: 'Proveedores', value: stats.proveedores },
+                    ].map(({ icon: Icon, label, value }) => (
+                        <div key={label} style={{
                             background: 'rgba(255,255,255,0.1)',
                             backdropFilter: 'blur(10px)',
-                            borderRadius: '10px',
-                            padding: '0.75rem',
+                            borderRadius: '12px',
+                            padding: '0.9rem 1rem',
                             border: '1px solid rgba(255,255,255,0.2)',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s',
-                            transform: 'translateY(0)',
-                            opacity: loading && selectedModule?.name === module.name ? 0.7 : 1
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                            e.currentTarget.style.transform = 'translateY(-5px)';
-                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                    >
-                        <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: module.color,
-                            borderRadius: '8px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            marginBottom: '0.5rem',
-                            boxShadow: `0 4px 10px ${module.color}33`
+                            gap: '0.75rem'
                         }}>
-                            <module.icon size={16} style={{ color: 'white' }} />
+                            <Icon size={22} style={{ color: 'white', flexShrink: 0 }} />
+                            <div>
+                                <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'white', lineHeight: 1 }}>
+                                    {value}
+                                </div>
+                                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
+                                    {label}
+                                </div>
+                            </div>
                         </div>
-                        <h3 style={{
-                            fontSize: '0.85rem',
-                            fontWeight: '700',
-                            color: 'white',
-                            margin: '0 0 0.25rem 0'
-                        }}>
-                            {module.name}
-                        </h3>
-                        <p style={{
-                            fontSize: '0.65rem',
-                            color: 'rgba(255,255,255,0.8)',
-                            margin: '0 0 0.5rem 0',
-                            lineHeight: '1.3'
-                        }}>
-                            {module.description}
-                        </p>
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem'
-                        }}>
-                            <span style={{
-                                fontSize: '0.7rem',
-                                color: 'rgba(255,255,255,0.7)'
-                            }}>
-                                {moduleStats(module).total} reg.
-                            </span>
-                            <span style={{
-                                fontSize: '0.65rem',
-                                color: '#10b981',
-                                fontWeight: '600'
-                            }}>
-                                {moduleStats(module).growth}
-                            </span>
-                        </div>
+                    ))}
+                </div>
+
+                {/* ── COLUMNA 2: Módulos principales ───────────────────── */}
+                <div>
+                    <div style={{
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        color: 'rgba(255,255,255,0.5)',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        marginBottom: '0.6rem'
+                    }}>
+                        Módulos principales
                     </div>
-                ))}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                        gap: '0.65rem'
+                    }}>
+                        {filteredModules.filter(m => PRIMARY_MODULES.includes(m.name)).map((module) => (
+                            <div
+                                key={module.name}
+                                onClick={() => openModule(module)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.15)',
+                                    backdropFilter: 'blur(10px)',
+                                    borderRadius: '10px',
+                                    padding: '0.75rem',
+                                    border: '2px solid rgba(255,255,255,0.35)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    opacity: loading && selectedModule?.name === module.name ? 0.7 : 1
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.22)';
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = '0 16px 32px rgba(0,0,0,0.2)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                <div style={{
+                                    width: '28px', height: '28px', background: module.color,
+                                    borderRadius: '8px', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', marginBottom: '0.5rem',
+                                    boxShadow: `0 4px 10px ${module.color}44`
+                                }}>
+                                    <module.icon size={16} style={{ color: 'white' }} />
+                                </div>
+                                <h3 style={{ fontSize: '0.82rem', fontWeight: '700', color: 'white', margin: '0 0 0.2rem 0' }}>
+                                    {module.name}
+                                </h3>
+                                <p style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.75)', margin: '0 0 0.4rem 0', lineHeight: '1.3' }}>
+                                    {module.description}
+                                </p>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: '800', color: 'white' }}>
+                                        {moduleStats(module).total}
+                                    </span>
+                                    <span style={{ fontSize: '0.58rem', color: '#86efac', fontWeight: '600' }}>
+                                        {moduleStats(module).growth}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ── DIVISOR VERTICAL ─────────────────────────────────── */}
+                <div style={{
+                    background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.4) 85%, transparent)',
+                    borderRadius: '2px',
+                    alignSelf: 'stretch'
+                }} />
+
+                {/* ── COLUMNA 3: Resto de módulos ───────────────────────── */}
+                <div>
+                    <div style={{
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        color: 'rgba(255,255,255,0.4)',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        marginBottom: '0.6rem'
+                    }}>
+                        Todos los módulos
+                    </div>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                        gap: '0.65rem'
+                    }}>
+                        {filteredModules.filter(m => !PRIMARY_MODULES.includes(m.name)).map((module) => (
+                            <div
+                                key={module.name}
+                                onClick={() => openModule(module)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    borderRadius: '10px',
+                                    padding: '0.75rem',
+                                    border: '1px solid rgba(255,255,255,0.18)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    opacity: loading && selectedModule?.name === module.name ? 0.7 : 1
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = '0 16px 32px rgba(0,0,0,0.15)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                <div style={{
+                                    width: '26px', height: '26px', background: module.color,
+                                    borderRadius: '7px', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', marginBottom: '0.4rem',
+                                    boxShadow: `0 3px 8px ${module.color}33`
+                                }}>
+                                    <module.icon size={14} style={{ color: 'white' }} />
+                                </div>
+                                <h3 style={{ fontSize: '0.8rem', fontWeight: '700', color: 'white', margin: '0 0 0.2rem 0' }}>
+                                    {module.name}
+                                </h3>
+                                <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.65)', margin: '0 0 0.4rem 0', lineHeight: '1.3' }}>
+                                    {module.description}
+                                </p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                    <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.65)' }}>
+                                        {moduleStats(module).total} reg.
+                                    </span>
+                                    <span style={{ fontSize: '0.6rem', color: '#10b981', fontWeight: '600' }}>
+                                        {moduleStats(module).growth}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* Loading Overlay */}
