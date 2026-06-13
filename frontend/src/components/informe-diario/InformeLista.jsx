@@ -94,10 +94,8 @@ export default function InformeLista({ onNuevo, onEditar }) {
 
           {/* Filas */}
           {filtered.map((inf, idx) => {
-            const personal = (inf.recursos || [])
-              .filter(r => r.categoria === "PERSONAL DE OBRA")
-              .reduce((s, r) => s + (r.cantidad || 0), 0);
-            const lluvia = (inf.horas_lluvia || []).filter(Boolean).length;
+            const personal = inf.total_personal ?? 0;
+            const lluvia = inf.total_horas_lluvia ?? 0;
             const st = STATUS[inf.status || "borrador"];
             const isLast = idx === filtered.length - 1;
 
