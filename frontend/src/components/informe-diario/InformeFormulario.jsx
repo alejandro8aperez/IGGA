@@ -1,8 +1,13 @@
+// ============================================================
+//  InformeFormulario.jsx  –  ERP-8AMPERIOS  (CON FIRMAS RRHH)
+//  Integración: Dropdowns de empleados desde RRHH para firmas
+// ============================================================
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check } from "lucide-react";
+import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check, Users, Signature } from "lucide-react";
 import { toast } from "sonner";
 import { informeDiarioService, obraService, recursoService, categoriaService, proveedorService } from "@/services/informeDiarioApi";
+import empleadoService from "@/services/empleadoService";
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -131,7 +136,90 @@ function normalizarInforme(informe) {
           descripcion:      a.descripcion || "",
         }))
       : ACTIVIDADES_DEFAULT,
+    // ── FIRMAS RRHH ───────────────────────────────────────
+    elaborado_por_id: informe.elaborado_por || null,
+    revisado_por_id:  informe.revisado_por  || null,
+    // Fallback para texto legacy
+    elaborado_por_texto: informe.elaborado_por_texto || informe.elaborado_por_nombre || "",
+    cargo_elaborado: informe.cargo_elaborado || "",
+    revisado_por_texto: informe.revisado_por_texto || informe.revisado_por_nombre || "",
+    cargo_revisado: informe.cargo_revisado || "",
+    // ──────────────────────────────────────────────────────
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE: EmpleadoSelect (Dropdown de RRHH)
+// ═══════════════════════════════════════════════════════════════════════════════
+function EmpleadoSelect({ label, value, onChange, required = false, placeholder = "Seleccione un empleado", error = null, disabled = false }) {
+  const { data: empleados, isLoading, isError } = useQuery({
+    queryKey: ["empleados", "activos"],
+    queryFn: empleadoService.getActivos,
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  });
+
+  const empleadoSeleccionado = empleados?.find(emp => emp.id === value);
+
+  return (
+    <div style={{ marginBottom: "0.75rem" }}>
+      <label style={{ ...label, display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <Users size={13} />
+        {label}
+        {required && <span style={{ color: "#ef4444" }}>*</span>}
+      </label>
+      <div style={{ position: "relative" }}>
+        <select
+          value={value || ""}
+          onChange={e => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
+          required={required}
+          disabled={disabled || isLoading}
+          style={{
+            ...inputStyle,
+            paddingLeft: "2.2rem",
+            minHeight: "2.5rem",
+            appearance: "none",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 0.75rem center",
+            paddingRight: "2rem",
+          }}
+        >
+          <option value="">{placeholder}</option>
+          {isLoading && <option disabled>Cargando empleados...</option>}
+          {isError && <option disabled className="text-danger">Error al cargar empleados</option>}
+          {empleados?.map((emp) => (
+            <option key={emp.id} value={emp.id}>
+              {emp.nombre_completo} — {emp.cargo_nombre || "Sin cargo"}
+            </option>
+          ))}
+        </select>
+        <div style={{ position: "absolute", left: "0.6rem", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8" }}>
+          <Users size={14} />
+        </div>
+      </div>
+
+      {/* Info del empleado seleccionado */}
+      {empleadoSeleccionado && (
+        <div style={{
+          marginTop: "0.4rem",
+          padding: "0.5rem 0.75rem",
+          background: "#f8fafc",
+          border: "1px solid #e2e8f0",
+          borderRadius: "6px",
+          fontSize: "0.78rem",
+        }}>
+          <div style={{ fontWeight: 600, color: "#1e293b" }}>{empleadoSeleccionado.nombre_completo}</div>
+          <div style={{ color: "#64748b" }}>{empleadoSeleccionado.cargo_nombre || "Sin cargo asignado"}</div>
+          {empleadoSeleccionado.numero_documento && (
+            <div style={{ color: "#94a3b8", fontSize: "0.7rem" }}>Doc: {empleadoSeleccionado.numero_documento}</div>
+          )}
+        </div>
+      )}
+
+      {error && <div style={{ color: "#ef4444", fontSize: "0.75rem", marginTop: "0.25rem" }}>{error}</div>}
+    </div>
+  );
 }
 
 // ─── Selector de obra ─────────────────────────────────────────────────────────
@@ -491,7 +579,9 @@ function ActividadesFija({ titulo, subtitulo, color, actividades, onChange }) {
   );
 }
 
-// ─── Formulario principal ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORMULARIO PRINCIPAL
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const queryClient = useQueryClient();
 
@@ -506,7 +596,14 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     obra_id: "", obra_nombre: "", fecha: new Date().toISOString().split("T")[0],
     dia_semana: DIAS[new Date().getDay()], codigo_formato: "F-141-IN",
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
-    elaborado_por: "", cargo_elaborado: "", revisado_por: "", cargo_revisado: "",
+    // ── FIRMAS RRHH (nuevos campos) ──────────────────────
+    elaborado_por_id: null,
+    revisado_por_id: null,
+    elaborado_por_texto: "",
+    cargo_elaborado: "",
+    revisado_por_texto: "",
+    cargo_revisado: "",
+    // ──────────────────────────────────────────────────────
     comision_topografia: false, horas_lluvia: Array(24).fill(false),
     recursos: RECURSOS_DEFAULT, actividades: ACTIVIDADES_DEFAULT, status: "borrador",
   });
@@ -539,6 +636,11 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         ...data,
         obra: data.obra_id ? parseInt(data.obra_id, 10) : null,
 
+        // ── FIRMAS RRHH ───────────────────────────────────
+        elaborado_por_id: data.elaborado_por_id,
+        revisado_por_id: data.revisado_por_id,
+        // ───────────────────────────────────────────────────
+
         detalles: (data.recursos || [])
           .filter(r => !r.es_libre && r.recurso_id && !String(r.recurso_id).startsWith("libre-"))
           .map(r => ({ recurso: parseInt(r.recurso_id, 10), cantidad: parseFloat(r.cantidad) || 0, empresa: r.empresa || "", notas: r.notas || "" })),
@@ -565,6 +667,9 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       delete payload.obra_id;
       delete payload.obra_nombre;
       delete payload.dia_semana;
+      // Limpiar campos internos de firmas
+      delete payload.elaborado_por_texto;
+      delete payload.revisado_por_texto;
 
       return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
     },
@@ -703,40 +808,109 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         </div>
       </div>
 
-      {/* ── Firmas ──────────────────────────────────────────────────────── */}
-      <div style={card}>
-        <div style={cardHead}>Firmas</div>
-        <div style={{ ...cardBody, ...grid2 }}>
-          {/* Firma 1 */}
-          <div>
-            <p style={{ margin: "0 0 0.6rem", fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>Elaborado por</p>
-            <div style={{ marginBottom: "0.5rem" }}>
-              <label style={label}>Nombre</label>
-              <input value={form.elaborado_por} onChange={e => setField("elaborado_por", e.target.value)} placeholder="Nombre completo" style={inputStyle} />
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECCIÓN DE FIRMAS — VINCULADA A RRHH (Empleados)
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div style={{ ...card, border: "1px solid #e2e8f0", boxShadow: "0 4px 20px rgba(102,126,234,0.08)" }}>
+        <div style={{
+          ...cardHead,
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          borderRadius: "12px 12px 0 0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Signature size={16} />
+            Firmas del Informe
+          </span>
+          <span style={{
+            fontSize: "0.65rem",
+            fontWeight: 700,
+            background: "rgba(255,255,255,0.2)",
+            color: "white",
+            borderRadius: 20,
+            padding: "2px 10px",
+          }}>RRHH</span>
+        </div>
+        <div style={cardBody}>
+          <div style={grid2}>
+            {/* ── Elaborado por ── */}
+            <div>
+              <EmpleadoSelect
+                label="Elaborado por"
+                value={form.elaborado_por_id}
+                onChange={(id) => setField("elaborado_por_id", id)}
+                required={true}
+                placeholder="Seleccione el responsable de elaboración"
+              />
+              <div style={{ marginTop: "0.5rem" }}>
+                <label style={{ ...label, fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
+                <input
+                  type="text"
+                  value={form.cargo_elaborado || ""}
+                  onChange={e => setField("cargo_elaborado", e.target.value)}
+                  placeholder="Se autocompleta al seleccionar empleado"
+                  style={{ ...inputStyle, fontSize: "0.8rem", background: "#f8fafc" }}
+                />
+              </div>
             </div>
-            <div style={{ marginBottom: "0.75rem" }}>
-              <label style={label}>Cargo</label>
-              <input value={form.cargo_elaborado} onChange={e => setField("cargo_elaborado", e.target.value)} placeholder="Cargo / Título" style={inputStyle} />
-            </div>
-            <div style={{ height: 56, border: "1px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontStyle: "italic" }}>Espacio para firma</span>
+
+            {/* ── Revisado por ── */}
+            <div>
+              <EmpleadoSelect
+                label="Revisado por"
+                value={form.revisado_por_id}
+                onChange={(id) => setField("revisado_por_id", id)}
+                required={true}
+                placeholder="Seleccione el responsable de revisión"
+              />
+              <div style={{ marginTop: "0.5rem" }}>
+                <label style={{ ...label, fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
+                <input
+                  type="text"
+                  value={form.cargo_revisado || ""}
+                  onChange={e => setField("cargo_revisado", e.target.value)}
+                  placeholder="Se autocompleta al seleccionar empleado"
+                  style={{ ...inputStyle, fontSize: "0.8rem", background: "#f8fafc" }}
+                />
+              </div>
             </div>
           </div>
-          {/* Firma 2 */}
-          <div>
-            <p style={{ margin: "0 0 0.6rem", fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>Revisado por</p>
-            <div style={{ marginBottom: "0.5rem" }}>
-              <label style={label}>Nombre</label>
-              <input value={form.revisado_por} onChange={e => setField("revisado_por", e.target.value)} placeholder="Nombre completo" style={inputStyle} />
+
+          {/* Vista previa de firmas */}
+          {(form.elaborado_por_id || form.revisado_por_id) && (
+            <div style={{
+              marginTop: "1.5rem",
+              padding: "1rem",
+              background: "#f8fafc",
+              border: "1px dashed #cbd5e1",
+              borderRadius: "8px",
+            }}>
+              <p style={{ margin: "0 0 0.75rem", fontSize: "0.78rem", color: "#64748b", fontWeight: 600 }}>
+                Vista previa de firmas en el documento:
+              </p>
+              <div style={grid2}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
+                      {form.elaborado_por_id ? "[Empleado seleccionado]" : "_________________"}
+                    </div>
+                    <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Elaborado por</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
+                      {form.revisado_por_id ? "[Empleado seleccionado]" : "_________________"}
+                    </div>
+                    <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Revisado por</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style={{ marginBottom: "0.75rem" }}>
-              <label style={label}>Cargo</label>
-              <input value={form.cargo_revisado} onChange={e => setField("cargo_revisado", e.target.value)} placeholder="Cargo / Título" style={inputStyle} />
-            </div>
-            <div style={{ height: 56, border: "1px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontStyle: "italic" }}>Espacio para firma</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -746,9 +920,9 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
         <button
           type="button"
           onClick={() => saveMutation.mutate(form)}
-          disabled={!form.obra_id || !form.fecha || saveMutation.isPending}
-          title={!form.obra_id ? "Selecciona una obra primero" : ""}
-          style={{ ...btnPrimary, opacity: (!form.obra_id || !form.fecha || saveMutation.isPending) ? 0.5 : 1, cursor: (!form.obra_id || !form.fecha || saveMutation.isPending) ? "not-allowed" : "pointer" }}
+          disabled={!form.obra_id || !form.fecha || !form.elaborado_por_id || !form.revisado_por_id || saveMutation.isPending}
+          title={!form.obra_id ? "Selecciona una obra primero" : !form.elaborado_por_id ? "Selecciona quien elabora" : !form.revisado_por_id ? "Selecciona quien revisa" : ""}
+          style={{ ...btnPrimary, opacity: (!form.obra_id || !form.fecha || !form.elaborado_por_id || !form.revisado_por_id || saveMutation.isPending) ? 0.5 : 1, cursor: (!form.obra_id || !form.fecha || !form.elaborado_por_id || !form.revisado_por_id || saveMutation.isPending) ? "not-allowed" : "pointer" }}
         >
           {saveMutation.isPending && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
           {informe ? "Guardar cambios" : "Crear informe"}
