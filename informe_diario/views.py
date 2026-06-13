@@ -50,6 +50,10 @@ def _transform_frontend_data(data):
         horas_lluvia [bool x 24]            → reportes_lluvia [{hora, con_lluvia}]
         actividades [{categoria_id, ...}]   → actividades [{categoria, ...}]
         items_obra  [{item, responsable...}]→ items_obra (sin responsable, no existe en el modelo)
+
+    Firmas RRHH:
+        elaborado_por_id (int)              → elaborado_por
+        revisado_por_id (int)               → revisado_por
     """
     t = dict(data)
 
@@ -58,6 +62,21 @@ def _transform_frontend_data(data):
 
     # Status: Asegurar valor plano (evita estado congelado)
     t['status'] = _get_id(t.get('status')) or 'BORRADOR'
+
+    # ── FIRMAS RRHH ─────────────────────────────────────────
+    # Transformar elaborado_por_id → elaborado_por (FK)
+    elaborado_id = t.pop('elaborado_por_id', None)
+    if elaborado_id:
+        t['elaborado_por'] = _get_id(elaborado_id)
+    else:
+        t.pop('elaborado_por', None)
+
+    revisado_id = t.pop('revisado_por_id', None)
+    if revisado_id:
+        t['revisado_por'] = _get_id(revisado_id)
+    else:
+        t.pop('revisado_por', None)
+    # ─────────────────────────────────────────────────────────
 
     # recursos → detalles
     if 'recursos' in t:
@@ -117,7 +136,9 @@ def _transform_frontend_data(data):
     for campo in ('obra_nombre', 'obra_codigo', 'dia_semana',
                   'fotos_urls', 'status_label', 'foto_principal', 'id',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
-                  'creado_en', 'actualizado_en', 'anexos'):
+                  'creado_en', 'actualizado_en', 'anexos',
+                  'elaborado_por_detalle', 'revisado_por_detalle',
+                  'nombre_elaborado', 'nombre_revisado'):
         t.pop(campo, None)
     return t
 
@@ -134,12 +155,12 @@ class ObraViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Selector inteligente: Solo muestra obras vinculadas a proyectos de OPERACIONES
         qs = Obra.objects.filter(proyecto__isnull=False).distinct().order_by('codigo', 'nombre')
-        
+
         if self.action == 'list':
             include_inactive = self.request.query_params.get('include_inactive') == 'true'
             if not include_inactive:
                 qs = qs.filter(activo=True)
-                
+
         return qs
 
 
@@ -175,7 +196,7 @@ class CategoriaActividadViewSet(viewsets.ModelViewSet):
 class InformeDiarioViewSet(viewsets.ModelViewSet):
     queryset = (
         InformeDiario.objects
-        .select_related('obra')
+        .select_related('obra', 'elaborado_por', 'revisado_por')
         .prefetch_related(
             'detalles__recurso__categoria',
             'reportes_lluvia',
@@ -188,7 +209,9 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         .order_by('-fecha')
     )
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields   = ['obra__codigo', 'obra__nombre', 'elaborado_por']
+    search_fields   = ['obra__codigo', 'obra__nombre', 'elaborado_por__primer_nombre', 
+                       'elaborado_por__primer_apellido', 'revisado_por__primer_nombre',
+                       'revisado_por__primer_apellido']
     ordering_fields = ['fecha', 'creado_en', 'status']
 
     def get_serializer_class(self):
@@ -286,7 +309,7 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
         ids = [item.get('id') for item in items if item.get('id')]
         anexos_map = {a.id: a for a in AnexoFoto.objects.filter(id__in=ids)}
         updated = []
-        
+
         for item in items:
             anexo = anexos_map.get(item.get('id'))
             if anexo:

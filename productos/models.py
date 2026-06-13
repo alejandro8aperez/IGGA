@@ -1,5 +1,5 @@
 """
-Módulo PRODUCTOS — Maestro de materiales estilo SAP MM.
+Modulo PRODUCTOS — Maestro de materiales estilo SAP MM.
 Extiende inventarios.Producto sin duplicar el hub de datos transaccional.
 """
 from django.db import models
@@ -44,7 +44,7 @@ class FamiliaProducto(models.Model):
 
 
 class TipoEmpaque(models.Model):
-    """Catálogo de tipos de empaque (caja, bolsa, pallet, etc.)."""
+    """Catalogo de tipos de empaque (caja, bolsa, pallet, etc.)."""
     codigo = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
@@ -72,7 +72,7 @@ class FichaProducto(models.Model):
     ]
 
     CLASE_ABC_CHOICES = [
-        ('A', 'Clase A — Alto valor/rotación'),
+        ('A', 'Clase A — Alto valor/rotacion'),
         ('B', 'Clase B — Medio'),
         ('C', 'Clase C — Bajo'),
     ]
@@ -80,15 +80,15 @@ class FichaProducto(models.Model):
     POLITICA_INVENTARIO_CHOICES = [
         ('lote_por_lote', 'Lote por lote'),
         ('punto_reorden', 'Punto de reorden'),
-        ('planificacion', 'Planificación MRP'),
-        ('sin_planificacion', 'Sin planificación'),
+        ('planificacion', 'Planificacion MRP'),
+        ('sin_planificacion', 'Sin planificacion'),
     ]
 
     producto = models.OneToOneField(
         Producto, on_delete=models.CASCADE, related_name='ficha'
     )
 
-    # ── Clasificación SAP ─────────────────────────────────────────────────────
+    # —— Clasificacion SAP —————————————————————————————————————————————————————
     grupo_material = models.ForeignKey(
         GrupoMaterial, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='productos'
@@ -97,12 +97,12 @@ class FichaProducto(models.Model):
         FamiliaProducto, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='productos'
     )
-    codigo_interno = models.CharField(max_length=50, blank=True, verbose_name="Código interno")
-    codigo_dian = models.CharField(max_length=50, blank=True, verbose_name="Código DIAN / FE")
+    codigo_interno = models.CharField(max_length=50, blank=True, verbose_name="Codigo interno")
+    codigo_dian = models.CharField(max_length=50, blank=True, verbose_name="Codigo DIAN / FE")
     codigo_arancelario = models.CharField(max_length=20, blank=True, verbose_name="Partida arancelaria (HS)")
     codigo_gtin = models.CharField(max_length=14, blank=True, verbose_name="GTIN / EAN principal")
 
-    # ── Empaque y presentación ─────────────────────────────────────────────────
+    # —— Empaque y presentacion ————————————————————————————————————————————————
     tipo_empaque = models.ForeignKey(
         TipoEmpaque, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='productos'
@@ -117,7 +117,7 @@ class FichaProducto(models.Model):
         null=True, blank=True, verbose_name="Unidades por empaque"
     )
 
-    # ── Dimensiones y peso ─────────────────────────────────────────────────────
+    # —— Dimensiones y peso ——————————————————————————————————————————————————
     largo_cm = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     ancho_cm = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     alto_cm = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -125,13 +125,13 @@ class FichaProducto(models.Model):
     peso_bruto_kg = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     peso_neto_kg = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
 
-    # ── Origen y fabricante ────────────────────────────────────────────────────
+    # —— Origen y fabricante ———————————————————————————————————————————————————
     pais_origen = models.CharField(max_length=80, blank=True, default='Colombia')
     fabricante = models.CharField(max_length=200, blank=True)
     proveedor_habitual = models.CharField(max_length=200, blank=True)
 
-    # ── Vista Compras ──────────────────────────────────────────────────────────
-    lead_time_dias = models.PositiveIntegerField(null=True, blank=True, verbose_name="Lead time (días)")
+    # —— Vista Compras —————————————————————————————————————————————————————————
+    lead_time_dias = models.PositiveIntegerField(null=True, blank=True, verbose_name="Lead time (dias)")
     cantidad_minima_compra = models.DecimalField(
         max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="MOQ compra"
     )
@@ -141,7 +141,7 @@ class FichaProducto(models.Model):
     )
     fecha_ultima_compra = models.DateField(null=True, blank=True)
 
-    # ── Vista Ventas ───────────────────────────────────────────────────────────
+    # —— Vista Ventas ——————————————————————————————————————————————————————————
     lista_precios = models.CharField(max_length=50, blank=True, default='General')
     iva_porcentaje = models.DecimalField(
         max_digits=5, decimal_places=2, default=19,
@@ -153,7 +153,7 @@ class FichaProducto(models.Model):
     permite_descuento = models.BooleanField(default=True)
     es_vendible = models.BooleanField(default=True)
 
-    # ── Vista MRP / Planificación ──────────────────────────────────────────────
+    # —— Vista MRP / Planificacion —————————————————————————————————————————————
     politica_inventario = models.CharField(
         max_length=20, choices=POLITICA_INVENTARIO_CHOICES,
         default='punto_reorden'
@@ -167,7 +167,7 @@ class FichaProducto(models.Model):
         max_digits=12, decimal_places=2, null=True, blank=True
     )
 
-    # ── Vista Almacén ──────────────────────────────────────────────────────────
+    # —— Vista Almacen —————————————————————————————————————————————————————————
     gestion_lote = models.BooleanField(default=False)
     gestion_serie = models.BooleanField(default=False)
     temperatura_almacenamiento = models.CharField(max_length=100, blank=True)
@@ -178,10 +178,19 @@ class FichaProducto(models.Model):
         max_length=15, choices=ESTADO_MATERIAL_CHOICES, default='activo'
     )
 
-    # ── Regulatorio / Calidad ────────────────────────────────────────────────────
+    # —— Regulatorio / Calidad —————————————————————————————————————————————————
     requiere_certificado = models.BooleanField(default=False)
     norma_calidad = models.CharField(max_length=100, blank=True)
     ficha_tecnica_url = models.URLField(blank=True)
+
+    # Imagen del producto
+    imagen = models.ImageField(
+        upload_to='productos/imagenes/',
+        blank=True,
+        null=True,
+        verbose_name='Imagen del Producto'
+    )
+
     observaciones = models.TextField(blank=True)
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -196,7 +205,7 @@ class FichaProducto(models.Model):
 
 
 class CodigoBarras(models.Model):
-    """Códigos de barras alternos por producto (EAN-13, UPC, interno, etc.)."""
+    """Codigos de barras alternos por producto (EAN-13, UPC, interno, etc.)."""
     TIPO_CODIGO_CHOICES = [
         ('EAN13', 'EAN-13'),
         ('EAN8', 'EAN-8'),
@@ -204,7 +213,7 @@ class CodigoBarras(models.Model):
         ('CODE128', 'Code 128'),
         ('CODE39', 'Code 39'),
         ('QR', 'QR'),
-        ('INTERNO', 'Código interno'),
+        ('INTERNO', 'Codigo interno'),
         ('GTIN14', 'GTIN-14 (caja)'),
     ]
 
@@ -218,8 +227,8 @@ class CodigoBarras(models.Model):
     activo = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Código de Barras"
-        verbose_name_plural = "Códigos de Barras"
+        verbose_name = "Codigo de Barras"
+        verbose_name_plural = "Codigos de Barras"
         unique_together = [['producto', 'codigo']]
         ordering = ['-es_principal', 'tipo']
 
@@ -235,11 +244,11 @@ class CodigoBarras(models.Model):
 
 
 class UnidadEmpaque(models.Model):
-    """Jerarquía de empaque: unidad → caja → pallet con factor de conversión."""
+    """Jerarquia de empaque: unidad -> caja -> pallet con factor de conversion."""
     NIVEL_CHOICES = [
         ('unidad', 'Unidad base'),
         ('inner', 'Empaque interno'),
-        ('caja', 'Caja / Cartón'),
+        ('caja', 'Caja / Carton'),
         ('bulto', 'Bulto'),
         ('pallet', 'Pallet / Estiba'),
         ('contenedor', 'Contenedor'),
@@ -254,7 +263,7 @@ class UnidadEmpaque(models.Model):
     factor_conversion = models.DecimalField(
         max_digits=12, decimal_places=4,
         validators=[MinValueValidator(0.0001)],
-        help_text="Cuántas unidades base contiene este empaque"
+        help_text="Cuantas unidades base contiene este empaque"
     )
     codigo_barras = models.CharField(max_length=50, blank=True)
     peso_kg = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
@@ -274,7 +283,7 @@ class UnidadEmpaque(models.Model):
 
 
 class UnidadMedidaAlternativa(models.Model):
-    """Unidades de medida alternativas con factor de conversión a la UM base."""
+    """Unidades de medida alternativas con factor de conversion a la UM base."""
     producto = models.ForeignKey(
         Producto, on_delete=models.CASCADE, related_name='unidades_alternativas'
     )

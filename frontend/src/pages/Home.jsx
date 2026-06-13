@@ -25,6 +25,8 @@ const API_PRODUCTOS     = API.INVENTARIOS.PRODUCTOS;
 const API_PROYECTOS     = API.OPERACIONES.PROYECTOS;
 const API_DISEÑOS       = API.KAVE.DESIGNS;
 
+const PRIMARY_MODULES = ['Dashboard', 'CRM', 'Proveedores', 'Informe Diario Proy', 'Informe Semanal', 'Informe Mensual', 'Calidad', 'ISO 9001', 'RRHH'];
+
 const modules = [
     {
         name: 'Dashboard',
@@ -121,6 +123,22 @@ const modules = [
         color: '#6366f1',
         path: '/informe-diario-proy',
         stats: { total: 0, growth: 'Nuevo' }
+    },
+    {
+        name: 'Informe Semanal',
+        description: 'Resumen semanal de obra - Interventoría',
+        icon: FileText,
+        color: '#8b5cf6',
+        path: '/informe-semanal',
+        stats: { total: 0, growth: 'Próximo' }
+    },
+    {
+        name: 'Informe Mensual',
+        description: 'Resumen mensual de obra - Interventoría',
+        icon: FileText,
+        color: '#a855f7',
+        path: '/informe-mensual',
+        stats: { total: 0, growth: 'Próximo' }
     },
     {
         name: 'Mantenimiento',
@@ -494,7 +512,7 @@ export default function Home() {
 
 
 
-            {/* Modules Grid */}
+            {/* ── Fila 1: Módulos principales ─────────────────────────── */}
             <div style={{
                 position: 'relative',
                 zIndex: 10,
@@ -504,7 +522,72 @@ export default function Home() {
                 maxWidth: '1400px',
                 margin: '0 auto'
             }}>
-                {filteredModules.map((module, index) => (
+                {filteredModules.filter(m => PRIMARY_MODULES.includes(m.name)).map((module) => (
+                    <div
+                        key={module.name}
+                        onClick={() => openModule(module)}
+                        style={{
+                            background: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: '10px',
+                            padding: '0.75rem',
+                            border: '2px solid rgba(255,255,255,0.35)',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s',
+                            transform: 'translateY(0)',
+                            opacity: loading && selectedModule?.name === module.name ? 0.7 : 1
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.22)';
+                            e.currentTarget.style.transform = 'translateY(-5px)';
+                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
+                    >
+                        <div style={{
+                            width: '28px', height: '28px', background: module.color,
+                            borderRadius: '8px', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', marginBottom: '0.5rem',
+                            boxShadow: `0 4px 10px ${module.color}33`
+                        }}>
+                            <module.icon size={16} style={{ color: 'white' }} />
+                        </div>
+                        <h3 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'white', margin: '0 0 0.25rem 0' }}>
+                            {module.name}
+                        </h3>
+                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.8)', margin: '0 0 0.5rem 0', lineHeight: '1.3' }}>
+                            {module.description}
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '1rem', fontWeight: '800', color: 'white' }}>
+                                {moduleStats(module).total}
+                            </span>
+                            <span style={{ fontSize: '0.6rem', color: '#86efac', fontWeight: '600' }}>
+                                {moduleStats(module).growth}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ── Separador ────────────────────────────────────────────── */}
+            <div style={{ maxWidth: '1400px', margin: '1.5rem auto', borderTop: '1px solid rgba(255,255,255,0.2)' }} />
+
+            {/* ── Fila 2: Resto de módulos ─────────────────────────────── */}
+            <div style={{
+                position: 'relative',
+                zIndex: 10,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: '0.75rem',
+                maxWidth: '1400px',
+                margin: '0 auto'
+            }}>
+                {filteredModules.filter(m => !PRIMARY_MODULES.includes(m.name)).map((module, index) => (
                     <div
                         key={module.name}
                         onClick={() => openModule(module)}

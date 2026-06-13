@@ -90,6 +90,18 @@ class AnexoFotoSerializer(serializers.ModelSerializer):
             return None
 
 
+# ── Serializer para datos de empleado en firmas ────────────
+class EmpleadoFirmaSerializer(serializers.Serializer):
+    """Serializer inline para mostrar datos del empleado en firmas"""
+    id = serializers.IntegerField()
+    nombre_completo = serializers.SerializerMethodField()
+    cargo_nombre = serializers.CharField(source='cargo.nombre', read_only=True)
+    numero_documento = serializers.CharField()
+
+    def get_nombre_completo(self, obj):
+        return f"{obj.primer_nombre} {obj.primer_apellido}".strip()
+
+
 class InformeDiarioListSerializer(serializers.ModelSerializer):
     obra_codigo = serializers.CharField(source='obra.codigo', read_only=True)
     obra_nombre = serializers.CharField(source='obra.nombre', read_only=True)
@@ -98,13 +110,16 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
     total_horas_lluvia = serializers.ReadOnlyField()
     foto_principal = serializers.SerializerMethodField()
     status_label = serializers.CharField(source='get_status_display', read_only=True)
+    # Firmas
+    elaborado_por_nombre = serializers.CharField(source='nombre_elaborado', read_only=True)
+    revisado_por_nombre = serializers.CharField(source='nombre_revisado', read_only=True)
 
     class Meta:
         model = InformeDiario
         fields = ['id', 'obra', 'obra_codigo', 'obra_nombre', 'fecha',
-                  'dia_semana', 'elaborado_por', 'total_personal',
-                  'total_maquinaria', 'total_horas_lluvia', 'creado_en',
-                  'status', 'status_label', 'foto_principal']
+                  'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
+                  'total_personal', 'total_maquinaria', 'total_horas_lluvia',
+                  'creado_en', 'status', 'status_label', 'foto_principal']
 
     def get_foto_principal(self, obj):
         # Retorna la primera foto del anexo para mostrarla como thumbnail en la card
@@ -129,6 +144,10 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     personal_libre = PersonalLibreSerializer(many=True, required=False)
     anexos = AnexoFotoSerializer(many=True, read_only=True)
 
+    # Firmas - datos de empleado para lectura
+    elaborado_por_detalle = serializers.SerializerMethodField()
+    revisado_por_detalle = serializers.SerializerMethodField()
+
     class Meta:
         model = InformeDiario
         fields = [
@@ -136,14 +155,39 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'numero_paginas', 'codigo_formato',
             'observaciones_generales', 'estado_terreno_inicio',
             'estado_terreno_final',
-            'elaborado_por', 'cargo_elaborado',
-            'revisado_por', 'cargo_revisado',
+            # Firmas - FK para escritura, detalle para lectura
+            'elaborado_por', 'revisado_por',
+            'elaborado_por_detalle', 'revisado_por_detalle',
+            # Campos de respaldo (legacy)
+            'elaborado_por_texto', 'cargo_elaborado',
+            'revisado_por_texto', 'cargo_revisado',
             'comision_topografia', 'status',
             'detalles', 'reportes_lluvia', 'actividades', 'items_obra', 'anexos',
             'maquinaria_libre', 'personal_libre',
             'creado_en', 'actualizado_en',
         ]
-        read_only_fields = ['creado_en', 'actualizado_en', 'dia_semana']
+        read_only_fields = ['creado_en', 'actualizado_en', 'dia_semana',
+                           'elaborado_por_detalle', 'revisado_por_detalle']
+
+    def get_elaborado_por_detalle(self, obj):
+        if obj.elaborado_por:
+            return {
+                'id': obj.elaborado_por.id,
+                'nombre_completo': f"{obj.elaborado_por.primer_nombre} {obj.elaborado_por.primer_apellido}".strip(),
+                'cargo_nombre': obj.elaborado_por.cargo.nombre if hasattr(obj.elaborado_por.cargo, 'nombre') else str(obj.elaborado_por.cargo),
+                'numero_documento': obj.elaborado_por.numero_documento,
+            }
+        return None
+
+    def get_revisado_por_detalle(self, obj):
+        if obj.revisado_por:
+            return {
+                'id': obj.revisado_por.id,
+                'nombre_completo': f"{obj.revisado_por.primer_nombre} {obj.revisado_por.primer_apellido}".strip(),
+                'cargo_nombre': obj.revisado_por.cargo.nombre if hasattr(obj.revisado_por.cargo, 'nombre') else str(obj.revisado_por.cargo),
+                'numero_documento': obj.revisado_por.numero_documento,
+            }
+        return None
 
     def create(self, validated_data):
         detalles = validated_data.pop('detalles', [])

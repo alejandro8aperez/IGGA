@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../config/axiosConfig';
 import { 
     LayoutDashboard, Target, Package, DollarSign, Activity, Users, Briefcase, 
-    RotateCcw, BarChart3, PieChart, ShoppingCart, AlertCircle, MonitorSmartphone
+    RotateCcw, BarChart3, PieChart, ShoppingCart, AlertCircle, MonitorSmartphone,
+    FileText, Wrench, Store
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -625,126 +626,33 @@ export default function Dashboard() {
                         Acciones Rapidas
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.85rem' }}>
-                        <button
-                            onClick={() => navigate('/crm')}
-                            style={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '1rem 0.5rem',
-                                borderRadius: '12px',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)'; }}
-                        >
-                            <Users size={22} />
-                            CRM
-                        </button>
-                        <button
-                            onClick={() => navigate('/ventas')}
-                            style={{
-                                background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '1rem 0.5rem',
-                                borderRadius: '12px',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(72, 187, 120, 0.4)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(72, 187, 120, 0.3)'; }}
-                        >
-                            <ShoppingCart size={22} />
-                            Ventas
-                        </button>
-                        <button
-                            onClick={() => navigate('/pos')}
-                            style={{
-                                background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '1rem 0.5rem',
-                                borderRadius: '12px',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 15px rgba(249, 115, 22, 0.35)',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(249, 115, 22, 0.5)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(249, 115, 22, 0.35)'; }}
-                        >
-                            <MonitorSmartphone size={22} />
-                            POS
-                        </button>
-                        <button
-                            onClick={() => navigate('/inventario')}
-                            style={{
-                                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '1rem 0.5rem',
-                                borderRadius: '12px',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.3)'; }}
-                        >
-                            <Package size={22} />
-                            Inventario
-                        </button>
-                        <button
-                            onClick={() => navigate('/compras')}
-                            style={{
-                                background: 'linear-gradient(135deg, #38b2ac 0%, #319795 100%)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '1rem 0.5rem',
-                                borderRadius: '12px',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 15px rgba(56, 178, 172, 0.3)',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(56, 178, 172, 0.4)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(56, 178, 172, 0.3)'; }}
-                        >
-                            <Briefcase size={22} />
-                            Compras
-                        </button>
+                        {[
+                            { label: 'CRM',            icon: Users,             path: '/crm',                  bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', shadow: 'rgba(102,126,234,0.35)' },
+                            { label: 'Ventas',         icon: ShoppingCart,      path: '/ventas',               bg: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', shadow: 'rgba(72,187,120,0.35)'  },
+                            { label: 'POS',            icon: MonitorSmartphone, path: '/pos',                  bg: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)', shadow: 'rgba(249,115,22,0.35)'  },
+                            { label: 'Inventario',     icon: Package,           path: '/inventario',           bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', shadow: 'rgba(245,158,11,0.35)'  },
+                            { label: 'Compras',        icon: Briefcase,         path: '/compras',              bg: 'linear-gradient(135deg, #38b2ac 0%, #319795 100%)', shadow: 'rgba(56,178,172,0.35)'  },
+                            { label: 'Proveedores',    icon: Store,             path: '/proveedores',          bg: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)', shadow: 'rgba(13,148,136,0.35)'  },
+                            { label: 'Operaciones',    icon: Wrench,            path: '/operaciones',          bg: 'linear-gradient(135deg, #84cc16 0%, #65a30d 100%)', shadow: 'rgba(132,204,22,0.35)'  },
+                            { label: 'Informe Diario', icon: FileText,          path: '/informe-diario-proy',  bg: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', shadow: 'rgba(99,102,241,0.35)'  },
+                        ].map(({ label, icon: Icon, path, bg, shadow }) => (
+                            <button
+                                key={label}
+                                onClick={() => navigate(path)}
+                                style={{
+                                    background: bg, color: 'white', border: 'none',
+                                    padding: '1rem 0.5rem', borderRadius: '12px',
+                                    fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer',
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
+                                    boxShadow: `0 4px 15px ${shadow}`, transition: 'all 0.2s'
+                                }}
+                                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 25px ${shadow}`; }}
+                                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 15px ${shadow}`; }}
+                            >
+                                <Icon size={22} />
+                                {label}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>

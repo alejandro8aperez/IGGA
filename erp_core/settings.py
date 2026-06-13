@@ -292,9 +292,11 @@ if USE_S3:
         'CacheControl': 'max-age=86400',
     }
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
+    # ✅ CONFIGURACIÓN LOCAL: Imágenes se guardan en disco
     MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
