@@ -4,18 +4,19 @@ Todos los ViewSets requeridos por urls.py + transformación del formato frontend
 """
 from datetime import timedelta
 import io
+import logging
 
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.utils import timezone
 from django.http import HttpResponse
 
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
-    InformeDiario, AnexoFoto,
+    InformeDiario, AnexoFoto, DetalleRecurso, Recurso as RecursoModel,
 )
 from .serializers import (
     ObraSerializer,
@@ -26,6 +27,8 @@ from .serializers import (
     InformeDiarioListSerializer,
     AnexoFotoSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -38,7 +41,10 @@ def _get_id(val):
         return val.get('id')
     if str(val).lower() in ("null", "none", "undefined", ""):
         return None
-    return val
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return None
 
 def _transform_frontend_data(data):
     """
@@ -63,7 +69,11 @@ def _transform_frontend_data(data):
     t['obra'] = _get_id(t.pop('obra_id', t.pop('obra', None)))
 
     # Status: Asegurar valor plano (evita estado congelado)
-    t['status'] = _get_id(t.get('status')) or 'borrador'
+    raw_status = t.get('status')
+    if raw_status is None or str(raw_status).lower() in ('null', 'none', 'undefined', ''):
+        t['status'] = 'borrador'
+    else:
+        t['status'] = str(raw_status).lower()
 
     # ── FIRMAS RRHH ─────────────────────────────────────────
     # Transformar elaborado_por_id → elaborado_por (FK)
@@ -206,7 +216,7 @@ class RecursoViewSet(viewsets.ModelViewSet):
     ordering_fields = ['nombre', 'orden']
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = Recurso.objects.select_related('categoria').filter(activo=True)
         cat = self.request.query_params.get('categoria')
         if cat:
             qs = qs.filter(categoria__nombre__icontains=cat)
@@ -223,20 +233,6 @@ class CategoriaActividadViewSet(viewsets.ModelViewSet):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class InformeDiarioViewSet(viewsets.ModelViewSet):
-    queryset = (
-        InformeDiario.objects
-        .select_related('obra', 'elaborado_por', 'revisado_por')
-        .prefetch_related(
-            'detalles__recurso__categoria',
-            'reportes_lluvia',
-            'actividades__categoria',
-            'items_obra',
-            'anexos',
-            'maquinaria_libre',
-            'personal_libre',
-        )
-        .order_by('-fecha')
-    )
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields   = ['obra__codigo', 'obra__nombre', 'elaborado_por__primer_nombre', 
                        'elaborado_por__primer_apellido', 'revisado_por__primer_nombre',
@@ -249,7 +245,20 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         return InformeDiarioSerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = (
+            InformeDiario.objects
+            .select_related('obra', 'elaborado_por', 'revisado_por')
+            .prefetch_related(
+                'detalles__recurso__categoria',
+                'reportes_lluvia',
+                'actividades__categoria',
+                'items_obra',
+                'anexos',
+                'maquinaria_libre',
+                'personal_libre',
+            )
+            .order_by('-fecha')
+        )
         obra   = self.request.query_params.get('obra') or self.request.query_params.get('obra_id')
         estado = self.request.query_params.get('status')
         if obra:
@@ -261,21 +270,45 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
     # ── create / update con transformación ──────────────────────────────────
 
     def create(self, request, *args, **kwargs):
-        data = _transform_frontend_data(request.data)
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        try:
+            data = _transform_frontend_data(request.data)
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as e:
+            logger.error(f"Error en create InformeDiario: {str(e)}", exc_info=True)
+            return Response(
+                {"error": "Error al crear informe", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def update(self, request, *args, **kwargs):
-        partial  = kwargs.pop('partial', False)
-        instance = self.get_object()
-        data     = _transform_frontend_data(request.data)
-        serializer = self.get_serializer(instance, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
+        try:
+            partial  = kwargs.pop('partial', False)
+            instance = self.get_object()
+            data     = _transform_frontend_data(request.data)
+            serializer = self.get_serializer(instance, data=data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error en update InformeDiario: {str(e)}", exc_info=True)
+            return Response(
+                {"error": "Error al actualizar informe", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"Error en list InformeDiario: {str(e)}", exc_info=True)
+            return Response(
+                {"error": "Error al obtener informes", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     # ── Acción: exportar Excel ───────────────────────────────────────────────
 
@@ -467,6 +500,7 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
                     result[key] = row.get('total', 0)
             return Response(result)
         except Exception as e:
+            logger.error(f"Error en status_counts: {str(e)}", exc_info=True)
             return Response(
                 {'borrador': 0, 'enviado': 0, 'aprobado': 0, 'error': str(e)},
                 status=status.HTTP_200_OK,
@@ -483,7 +517,7 @@ class AnexoFotoViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = AnexoFoto.objects.all().order_by('seccion', 'posicion', 'orden')
         informe = self.request.query_params.get('informe')
         obra = self.request.query_params.get('obra')
         if informe:
