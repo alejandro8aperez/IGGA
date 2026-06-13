@@ -41,7 +41,6 @@ urlpatterns = [
     path('api/admin/seed-informe-diario/', seed_informe_diario, name='seed_informe_diario'),
     path('api/operaciones/proyectos-selector/', get_operaciones_proyectos, name='get_operaciones_proyectos'),
     path('api/informe-diario/maestro-recursos/', get_master_recursos, name='get_master_recursos'),
-    path('api/informe-diario/obras/', get_operaciones_proyectos),
     path('api/dashboard/stats/', dashboard_stats, name='dashboard_stats'),
 
     # ═══════════════════════════════════════════════════════════════════════════
