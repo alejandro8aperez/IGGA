@@ -3,6 +3,7 @@ views.py — Informe Diario de Obra
 Todos los ViewSets requeridos por urls.py + transformación del formato frontend → serializer.
 """
 from datetime import timedelta
+import io
 
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -10,6 +11,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from django.db.models import Count
 from django.utils import timezone
+from django.http import HttpResponse
 
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
@@ -61,7 +63,7 @@ def _transform_frontend_data(data):
     t['obra'] = _get_id(t.pop('obra_id', t.pop('obra', None)))
 
     # Status: Asegurar valor plano (evita estado congelado)
-    t['status'] = _get_id(t.get('status')) or 'BORRADOR'
+    t['status'] = _get_id(t.get('status')) or 'borrador'
 
     # ── FIRMAS RRHH ─────────────────────────────────────────
     # Transformar elaborado_por_id → elaborado_por (FK)
@@ -153,8 +155,7 @@ class ObraViewSet(viewsets.ModelViewSet):
     ordering_fields = ['codigo', 'nombre']
 
     def get_queryset(self):
-        # Selector inteligente: Solo muestra obras vinculadas a proyectos de OPERACIONES
-        qs = Obra.objects.filter(proyecto__isnull=False).distinct().order_by('codigo', 'nombre')
+        qs = Obra.objects.all().order_by('codigo', 'nombre')
 
         if self.action == 'list':
             include_inactive = self.request.query_params.get('include_inactive') == 'true'
@@ -162,6 +163,33 @@ class ObraViewSet(viewsets.ModelViewSet):
                 qs = qs.filter(activo=True)
 
         return qs
+
+    def list(self, request, *args, **kwargs):
+        """Si no hay obras, sincroniza automáticamente desde operaciones.Proyecto."""
+        if not Obra.objects.exists():
+            self._sync_from_proyectos()
+        return super().list(request, *args, **kwargs)
+
+    def _sync_from_proyectos(self):
+        """Crea registros en informe_diario.Obra a partir de operaciones.Proyecto en ejecución."""
+        try:
+            from django.apps import apps
+            Proyecto = apps.get_model('operaciones', 'Proyecto')
+            for p in Proyecto.objects.filter(estado='ejecucion'):
+                codigo = f"PROY-{p.id}"
+                nombre = getattr(p, 'nombre', codigo)
+                cliente = ""
+                try:
+                    if p.cliente:
+                        cliente = str(p.cliente)
+                except Exception:
+                    pass
+                Obra.objects.get_or_create(
+                    codigo=codigo,
+                    defaults={'nombre': nombre, 'cliente': cliente, 'activo': True},
+                )
+        except Exception:
+            pass
 
 
 class CategoriaRecursoViewSet(viewsets.ModelViewSet):
@@ -247,6 +275,179 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
+
+    # ── Acción: exportar Excel ───────────────────────────────────────────────
+
+    @action(detail=True, methods=['get'], url_path='exportar-excel')
+    def exportar_excel(self, request, pk=None):
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        except ImportError:
+            return Response({'error': 'openpyxl no está instalado'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        informe = self.get_object()
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Informe Diario'
+
+        header_font = Font(bold=True, color='FFFFFF')
+        header_fill = PatternFill('solid', fgColor='1B3A5C')
+        thin = Border(
+            left=Side(style='thin'), right=Side(style='thin'),
+            top=Side(style='thin'), bottom=Side(style='thin'),
+        )
+
+        ws.column_dimensions['A'].width = 30
+        ws.column_dimensions['B'].width = 20
+        ws.column_dimensions['C'].width = 15
+        ws.column_dimensions['D'].width = 30
+
+        def hrow(row, vals, fill=header_fill, font=header_font):
+            for col, val in enumerate(vals, 1):
+                c = ws.cell(row=row, column=col, value=val)
+                c.fill = fill
+                c.font = font
+                c.border = thin
+                c.alignment = Alignment(horizontal='center', vertical='center')
+
+        def drow(row, vals):
+            for col, val in enumerate(vals, 1):
+                c = ws.cell(row=row, column=col, value=val)
+                c.border = thin
+
+        r = 1
+        ws.merge_cells(f'A{r}:D{r}')
+        c = ws.cell(r, 1, f'INFORME DIARIO DE OBRA — {informe.obra} — {informe.fecha}')
+        c.font = Font(bold=True, size=13, color='FFFFFF')
+        c.fill = header_fill
+        c.alignment = Alignment(horizontal='center')
+        r += 1
+
+        hrow(r, ['Campo', 'Valor', '', ''])
+        r += 1
+        for campo, val in [
+            ('Obra', str(informe.obra)),
+            ('Fecha', str(informe.fecha)),
+            ('Día', informe.dia_semana),
+            ('Estado', informe.get_status_display()),
+            ('Elaborado por', informe.nombre_elaborado),
+            ('Revisado por', informe.nombre_revisado),
+            ('Total personal', str(informe.total_personal)),
+            ('Horas con lluvia', str(informe.total_horas_lluvia)),
+            ('Observaciones', informe.observaciones_generales),
+        ]:
+            ws.merge_cells(f'B{r}:D{r}')
+            drow(r, [campo, val])
+            r += 1
+
+        r += 1
+        hrow(r, ['Recurso', 'Categoría', 'Cantidad', 'Empresa'])
+        r += 1
+        for d in informe.detalles.select_related('recurso__categoria').all():
+            drow(r, [d.recurso.nombre, d.recurso.categoria.nombre, float(d.cantidad), d.empresa])
+            r += 1
+        for m in informe.maquinaria_libre.all():
+            drow(r, [m.descripcion, 'MAQUINARIA LIBRE', float(m.cantidad), m.empresa])
+            r += 1
+        for p in informe.personal_libre.all():
+            drow(r, [p.descripcion, 'PERSONAL LIBRE', float(p.cantidad), p.empresa])
+            r += 1
+
+        r += 1
+        hrow(r, ['Actividad', 'Categoría', '', ''])
+        r += 1
+        for a in informe.actividades.select_related('categoria').all():
+            ws.merge_cells(f'C{r}:D{r}')
+            drow(r, [a.descripcion, a.categoria.nombre])
+            r += 1
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        fname = f'informe_{informe.obra.codigo}_{informe.fecha}.xlsx'
+        resp = HttpResponse(buf.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        resp['Content-Disposition'] = f'attachment; filename="{fname}"'
+        return resp
+
+    # ── Acción: exportar PDF (HTML simple si no hay librería PDF) ─────────────
+
+    @action(detail=True, methods=['get'], url_path='exportar-pdf')
+    def exportar_pdf(self, request, pk=None):
+        informe = self.get_object()
+        detalles = informe.detalles.select_related('recurso__categoria').all()
+        actividades = informe.actividades.select_related('categoria').all()
+        m_libre = informe.maquinaria_libre.all()
+        p_libre = informe.personal_libre.all()
+
+        rows_recursos = ''.join(
+            f'<tr><td>{d.recurso.nombre}</td><td>{d.recurso.categoria.nombre}</td>'
+            f'<td>{d.cantidad}</td><td>{d.empresa}</td></tr>'
+            for d in detalles
+        ) + ''.join(
+            f'<tr><td>{m.descripcion}</td><td>MAQUINARIA LIBRE</td>'
+            f'<td>{m.cantidad}</td><td>{m.empresa}</td></tr>'
+            for m in m_libre
+        ) + ''.join(
+            f'<tr><td>{p.descripcion}</td><td>PERSONAL LIBRE</td>'
+            f'<td>{p.cantidad}</td><td>{p.empresa}</td></tr>'
+            for p in p_libre
+        )
+        rows_act = ''.join(
+            f'<tr><td>{a.categoria.nombre}</td><td>{a.descripcion}</td></tr>'
+            for a in actividades
+        )
+
+        html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Informe {informe.obra.codigo} - {informe.fecha}</title>
+<style>
+  body{{font-family:Arial,sans-serif;font-size:11px;margin:20px}}
+  h1{{font-size:14px;background:#1B3A5C;color:#fff;padding:8px 12px;border-radius:4px}}
+  h2{{font-size:12px;background:#e2e8f0;padding:5px 10px;margin-top:16px}}
+  table{{width:100%;border-collapse:collapse;margin-top:6px}}
+  th{{background:#1B3A5C;color:#fff;padding:4px 8px;text-align:left;font-size:10px}}
+  td{{padding:4px 8px;border:1px solid #cbd5e1;font-size:10px}}
+  tr:nth-child(even){{background:#f8fafc}}
+  .meta td:first-child{{font-weight:bold;width:160px;background:#f1f5f9}}
+  @media print{{body{{margin:0}}}}
+</style>
+</head><body>
+<h1>INFORME DIARIO DE OBRA — Formato {informe.codigo_formato}</h1>
+<h2>Datos Generales</h2>
+<table class="meta">
+  <tr><td>Obra</td><td>{informe.obra}</td><td>Fecha</td><td>{informe.fecha}</td></tr>
+  <tr><td>Día</td><td>{informe.dia_semana}</td><td>Estado</td><td>{informe.get_status_display()}</td></tr>
+  <tr><td>Elaborado por</td><td>{informe.nombre_elaborado}</td><td>Cargo</td><td>{informe.cargo_elaborado_rrhh}</td></tr>
+  <tr><td>Revisado por</td><td>{informe.nombre_revisado}</td><td>Cargo</td><td>{informe.cargo_revisado_rrhh}</td></tr>
+  <tr><td>Total personal</td><td>{informe.total_personal}</td><td>Horas lluvia</td><td>{informe.total_horas_lluvia}</td></tr>
+</table>
+<h2>Observaciones Generales</h2>
+<p>{informe.observaciones_generales or '—'}</p>
+<h2>Recursos</h2>
+<table><tr><th>Recurso</th><th>Categoría</th><th>Cantidad</th><th>Empresa</th></tr>{rows_recursos}</table>
+<h2>Actividades</h2>
+<table><tr><th>Categoría</th><th>Descripción</th></tr>{rows_act}</table>
+</body></html>"""
+
+        resp = HttpResponse(html, content_type='text/html; charset=utf-8')
+        resp['Content-Disposition'] = f'inline; filename="informe_{informe.obra.codigo}_{informe.fecha}.html"'
+        return resp
+
+    # ── Acción: subir anexo de foto ──────────────────────────────────────────
+
+    @action(detail=True, methods=['post'], url_path='subir-anexo',
+            parser_classes=[MultiPartParser, FormParser])
+    def subir_anexo(self, request, pk=None):
+        from .serializers import AnexoFotoSerializer
+        informe = self.get_object()
+        data = request.data.copy()
+        data['informe'] = informe.id
+        serializer = AnexoFotoSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # ── Acción: conteo por estado (para StatsHeader) ─────────────────────────
 
