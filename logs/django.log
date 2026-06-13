@@ -31188,3 +31188,498 @@ INFO 2026-06-10 11:40:23,544 basehttp 8984 9304 "GET /api/informe-diario/obras/ 
 INFO 2026-06-10 12:03:47,686 basehttp 8984 29396 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
 INFO 2026-06-10 12:03:47,689 basehttp 8984 30444 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
 INFO 2026-06-10 12:03:47,701 basehttp 8984 29936 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:31:40,064 autoreload 14824 8616 Watching for file changes with StatReloader
+WARNING 2026-06-10 12:31:53,040 basehttp 14824 24252 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-10 12:31:53,065 basehttp 14824 24252 "GET /api/users/profile/ HTTP/1.1" 404 23
+INFO 2026-06-10 12:32:06,256 basehttp 14824 24252 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-06-10 12:32:06,566 basehttp 14824 27200 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,575 basehttp 14824 20284 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-10 12:32:06,604 basehttp 14824 27200 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,605 basehttp 14824 24252 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:06,618 basehttp 14824 20284 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,634 basehttp 14824 27200 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,646 basehttp 14824 24252 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-10 12:32:06,658 basehttp 14824 20284 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 721
+INFO 2026-06-10 12:32:06,660 basehttp 14824 27200 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-10 12:32:06,674 basehttp 14824 24252 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,687 basehttp 14824 20284 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-10 12:32:06,692 basehttp 14824 27200 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,705 basehttp 14824 24252 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:06,709 basehttp 14824 20284 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,720 basehttp 14824 27200 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:06,725 basehttp 14824 24252 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-10 12:32:06,741 basehttp 14824 27200 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-10 12:32:06,748 basehttp 14824 20284 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 721
+INFO 2026-06-10 12:32:06,759 basehttp 14824 24252 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-10 12:32:06,779 basehttp 14824 20284 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-10 12:32:12,862 basehttp 14824 20284 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:12,870 basehttp 14824 24252 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:32:26,999 basehttp 14824 24252 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:27,023 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:32:34,644 basehttp 14824 20284 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:34,650 basehttp 14824 24252 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:32:34,904 basehttp 14824 20284 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:34,910 basehttp 14824 24252 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 721
+INFO 2026-06-10 12:32:34,922 basehttp 14824 27200 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:34,935 basehttp 14824 20284 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 721
+INFO 2026-06-10 12:32:49,106 basehttp 14824 20284 "OPTIONS /api/operaciones/proyectos/2/ HTTP/1.1" 200 0
+INFO 2026-06-10 12:32:49,144 basehttp 14824 20284 "PUT /api/operaciones/proyectos/2/ HTTP/1.1" 200 214
+INFO 2026-06-10 12:32:49,275 basehttp 14824 27200 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:49,278 basehttp 14824 20284 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 12:32:51,362 basehttp 14824 20284 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 12:32:51,393 basehttp 14824 27200 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:51,402 basehttp 14824 24252 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 12:32:51,415 basehttp 14824 20284 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:53,008 basehttp 14824 20284 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 12:32:53,025 basehttp 14824 24252 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:53,055 basehttp 14824 20284 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 12:32:53,060 basehttp 14824 27200 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 12:32:53,169 basehttp 14824 27200 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 2
+INFO 2026-06-10 12:32:53,174 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:33:00,531 basehttp 14824 27200 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:33:00,535 basehttp 14824 24252 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:33:00,541 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:33:36,208 basehttp 14824 20284 "POST /api/informe-diario/informes/ HTTP/1.1" 201 3251
+INFO 2026-06-10 12:33:36,316 basehttp 14824 24252 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:33:36,327 basehttp 14824 20284 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 324
+INFO 2026-06-10 12:33:44,836 basehttp 14824 24252 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:33:44,837 basehttp 14824 27200 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:33:44,839 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:34:09,397 basehttp 14824 27200 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:34:09,404 basehttp 14824 20284 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 324
+INFO 2026-06-10 12:34:12,412 basehttp 14824 27200 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:34:12,415 basehttp 14824 24252 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:34:12,421 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:34:19,018 basehttp 14824 20284 "OPTIONS /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 0
+INFO 2026-06-10 12:34:19,018 basehttp 14824 24252 "OPTIONS /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 0
+INFO 2026-06-10 12:34:19,040 basehttp 14824 24252 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 2
+INFO 2026-06-10 12:34:19,054 basehttp 14824 20284 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 2
+INFO 2026-06-10 12:34:27,126 basehttp 14824 20284 "OPTIONS /api/informe-diario/anexos/ HTTP/1.1" 200 0
+INFO 2026-06-10 12:34:27,669 basehttp 14824 20284 "POST /api/informe-diario/anexos/ HTTP/1.1" 201 343
+INFO 2026-06-10 12:34:28,020 basehttp 14824 27528 "GET /media/informe_diario/anexos/2026/06/PERROS_GONORREAS.png HTTP/1.1" 200 303849
+INFO 2026-06-10 12:34:33,511 basehttp 14824 20284 "POST /api/informe-diario/anexos/ HTTP/1.1" 201 343
+INFO 2026-06-10 12:34:33,532 basehttp 14824 27528 "GET /media/informe_diario/anexos/2026/06/runners1_yaLGYL4.jpg HTTP/1.1" 200 170169
+INFO 2026-06-10 12:35:05,824 basehttp 14824 27528 "GET /media/informe_diario/anexos/2026/06/PERROS_GONORREAS.png HTTP/1.1" 304 0
+INFO 2026-06-10 12:35:05,832 basehttp 14824 2216 "GET /media/informe_diario/anexos/2026/06/runners1_yaLGYL4.jpg HTTP/1.1" 304 0
+INFO 2026-06-10 12:35:12,870 basehttp 14824 20284 "OPTIONS /api/informe-diario/informes/5/ HTTP/1.1" 200 0
+INFO 2026-06-10 12:35:12,934 basehttp 14824 20284 "GET /api/informe-diario/informes/5/ HTTP/1.1" 200 3938
+INFO 2026-06-10 12:35:27,626 basehttp 14824 24252 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:35:27,635 basehttp 14824 27200 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:35:27,639 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:35:46,766 basehttp 14824 20284 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 12:35:46,781 basehttp 14824 27200 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 12:35:46,796 basehttp 14824 2216 "GET /media/informe_diario/anexos/2026/06/PERROS_GONORREAS.png HTTP/1.1" 304 0
+INFO 2026-06-10 12:35:46,796 basehttp 14824 27528 "GET /media/informe_diario/anexos/2026/06/runners1_yaLGYL4.jpg HTTP/1.1" 304 0
+INFO 2026-06-10 12:35:48,534 basehttp 14824 24252 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:35:48,538 basehttp 14824 20284 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 12:35:48,542 basehttp 14824 27200 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:35:49,609 basehttp 14824 20284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 12:35:49,620 basehttp 14824 27200 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 379
+INFO 2026-06-10 14:15:25,417 basehttp 14824 30192 "OPTIONS /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 0
+INFO 2026-06-10 14:15:25,410 basehttp 14824 34184 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-06-10 14:15:27,924 basehttp 14824 34184 - Broken pipe from ('127.0.0.1', 64880)
+INFO 2026-06-10 14:15:28,126 basehttp 14824 30192 - Broken pipe from ('127.0.0.1', 58218)
+INFO 2026-06-10 14:15:30,773 basehttp 14824 35956 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+INFO 2026-06-10 14:15:30,816 basehttp 14824 35976 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+WARNING 2026-06-10 14:15:30,933 basehttp 14824 35956 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-10 14:15:30,952 basehttp 14824 35976 "GET /api/users/profile/ HTTP/1.1" 404 23
+INFO 2026-06-10 14:27:23,427 basehttp 14824 29160 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-06-10 14:27:24,365 basehttp 14824 29160 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-06-10 14:27:24,988 basehttp 14824 34008 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:27:25,015 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 379
+INFO 2026-06-10 14:27:50,945 basehttp 14824 34008 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:27:50,973 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 379
+INFO 2026-06-10 14:28:05,256 basehttp 14824 34008 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-06-10 14:28:05,265 basehttp 14824 34008 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-06-10 14:28:05,278 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:05,287 basehttp 14824 34008 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:05,296 basehttp 14824 29160 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:10,916 basehttp 14824 34008 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:10,942 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 379
+INFO 2026-06-10 14:28:15,957 basehttp 14824 26396 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:15,959 basehttp 14824 34008 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:15,963 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:25,940 basehttp 14824 26396 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:25,944 basehttp 14824 34008 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:25,948 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:27,301 basehttp 14824 34008 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:27,307 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 379
+INFO 2026-06-10 14:28:33,606 basehttp 14824 34008 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:33,606 basehttp 14824 26396 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:28:33,624 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:59,727 basehttp 14824 29160 "PATCH /api/informe-diario/informes/5/ HTTP/1.1" 200 2222
+INFO 2026-06-10 14:28:59,787 basehttp 14824 26396 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:28:59,796 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 374
+INFO 2026-06-10 14:29:22,944 basehttp 14824 29160 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:29:22,959 basehttp 14824 26396 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:29:23,286 basehttp 14824 32324 "GET /media/informe_diario/anexos/2026/06/PERROS_GONORREAS.png HTTP/1.1" 304 0
+INFO 2026-06-10 14:29:23,286 basehttp 14824 29844 "GET /media/informe_diario/anexos/2026/06/runners1_yaLGYL4.jpg HTTP/1.1" 304 0
+INFO 2026-06-10 14:29:28,233 basehttp 14824 29160 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:29:28,235 basehttp 14824 26396 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:29:28,238 basehttp 14824 34008 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:29:33,395 basehttp 14824 26396 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:29:33,404 basehttp 14824 34008 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 374
+INFO 2026-06-10 14:29:35,750 basehttp 14824 26396 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:29:35,755 basehttp 14824 34008 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:29:35,763 basehttp 14824 29160 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:29:37,773 basehttp 14824 29160 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:29:37,790 basehttp 14824 34008 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:29:39,798 basehttp 14824 34008 "GET /api/informe-diario/informes/5/ HTTP/1.1" 200 2222
+INFO 2026-06-10 14:29:45,764 basehttp 14824 34008 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:29:45,781 basehttp 14824 29160 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:29:47,101 basehttp 14824 34008 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:29:47,103 basehttp 14824 26396 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:29:47,108 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:31:37,776 basehttp 14824 29160 "PATCH /api/informe-diario/informes/5/ HTTP/1.1" 200 2518
+INFO 2026-06-10 14:31:37,843 basehttp 14824 26396 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:31:37,854 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 390
+INFO 2026-06-10 14:31:46,551 basehttp 14824 29160 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:31:46,567 basehttp 14824 26396 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:31:54,991 basehttp 14824 26396 "GET /api/informe-diario/informes/5/ HTTP/1.1" 200 2518
+INFO 2026-06-10 14:32:17,594 basehttp 14824 29160 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:32:17,595 basehttp 14824 34008 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:32:17,611 basehttp 14824 26396 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:32:27,798 basehttp 14824 26396 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:32:27,813 basehttp 14824 29160 "GET /api/informe-diario/anexos/?informe=5 HTTP/1.1" 200 689
+INFO 2026-06-10 14:32:29,614 basehttp 14824 26396 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:32:29,615 basehttp 14824 34008 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:32:29,620 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:32:34,903 basehttp 14824 34008 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:32:34,911 basehttp 14824 29160 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 390
+INFO 2026-06-10 14:32:45,873 basehttp 14824 34008 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:32:45,875 basehttp 14824 26396 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:32:45,877 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 14:33:32,150 basehttp 14824 34008 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:33:32,150 basehttp 14824 26396 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 14:33:32,161 basehttp 14824 29160 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:01:36,775 autoreload 24860 8844 Watching for file changes with StatReloader
+INFO 2026-06-10 16:02:09,580 basehttp 24860 25472 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:11,619 basehttp 24860 25472 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-06-10 16:02:12,174 basehttp 24860 25472 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,175 basehttp 24860 26528 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,185 basehttp 24860 26528 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,185 basehttp 24860 25472 "OPTIONS /api/venta/facturas/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,195 basehttp 24860 26528 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,196 basehttp 24860 25472 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,208 basehttp 24860 26528 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,212 basehttp 24860 25472 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,217 basehttp 24860 26528 "OPTIONS /api/kave/designs/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,222 basehttp 24860 25472 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,228 basehttp 24860 26528 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,239 basehttp 24860 25472 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,240 basehttp 24860 26528 "OPTIONS /api/venta/facturas/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,251 basehttp 24860 26528 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,251 basehttp 24860 25472 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,260 basehttp 24860 26528 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,262 basehttp 24860 25472 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,269 basehttp 24860 26528 "OPTIONS /api/kave/designs/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,320 basehttp 24860 26528 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,350 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:12,353 basehttp 24860 26528 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,385 basehttp 24860 25472 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,399 basehttp 24860 26528 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-10 16:02:12,427 basehttp 24860 25472 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,437 basehttp 24860 26528 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-10 16:02:12,471 basehttp 24860 26528 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-10 16:02:12,480 basehttp 24860 25472 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:02:12,544 basehttp 24860 26528 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-10 16:02:12,547 basehttp 24860 28600 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,572 basehttp 24860 28592 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,575 basehttp 24860 25472 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,577 basehttp 24860 28596 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:02:12,600 basehttp 24860 25332 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:12,611 basehttp 24860 26528 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-10 16:02:12,613 basehttp 24860 28600 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-10 16:02:12,616 basehttp 24860 25472 "OPTIONS /api/inventario/productos/resumen/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:02:12,655 basehttp 24860 28592 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:02:12,666 basehttp 24860 25472 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-10 16:02:12,714 basehttp 24860 25472 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-10 16:02:35,993 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:36,026 basehttp 24860 28592 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:45,111 basehttp 24860 28592 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:45,156 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:48,891 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:48,933 basehttp 24860 28592 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:49,328 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:49,339 basehttp 24860 28592 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:02:49,372 basehttp 24860 28600 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:02:49,388 basehttp 24860 25472 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:03:02,953 basehttp 24860 25472 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:03:02,989 basehttp 24860 28600 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:03:03,182 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:03:03,185 basehttp 24860 28592 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:03:06,036 basehttp 24860 25472 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:03:06,044 basehttp 24860 28592 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:03:06,093 basehttp 24860 28600 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-10 16:03:06,112 basehttp 24860 25472 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-10 16:03:07,160 basehttp 24860 25472 "OPTIONS /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 0
+INFO 2026-06-10 16:03:07,161 basehttp 24860 28600 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:03:07,226 basehttp 24860 25472 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:03:07,288 basehttp 24860 28600 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 390
+INFO 2026-06-10 16:03:19,276 basehttp 24860 25472 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:03:19,277 basehttp 24860 28600 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:03:19,313 basehttp 24860 28592 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:03:19,339 basehttp 24860 28600 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:03:19,340 basehttp 24860 25472 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:04:47,515 basehttp 24860 25472 "OPTIONS /api/informe-diario/informes/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:04:47,999 basehttp 24860 25472 "POST /api/informe-diario/informes/ HTTP/1.1" 201 3342
+INFO 2026-06-10 16:04:48,143 basehttp 24860 28600 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:04:48,178 basehttp 24860 25472 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 713
+INFO 2026-06-10 16:04:54,447 basehttp 24860 28600 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:04:54,447 basehttp 24860 28592 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:04:54,451 basehttp 24860 25472 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:04:55,293 basehttp 24860 28592 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:04:55,314 basehttp 24860 25472 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 713
+INFO 2026-06-10 16:04:58,149 basehttp 24860 28592 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:04:58,154 basehttp 24860 28600 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-10 16:04:58,162 basehttp 24860 25472 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-10 16:04:59,246 basehttp 24860 25472 "OPTIONS /api/informe-diario/anexos/?informe=6 HTTP/1.1" 200 0
+INFO 2026-06-10 16:04:59,247 basehttp 24860 28600 "OPTIONS /api/informe-diario/anexos/?informe=6 HTTP/1.1" 200 0
+INFO 2026-06-10 16:04:59,289 basehttp 24860 28600 "GET /api/informe-diario/anexos/?informe=6 HTTP/1.1" 200 2
+INFO 2026-06-10 16:04:59,320 basehttp 24860 25472 "GET /api/informe-diario/anexos/?informe=6 HTTP/1.1" 200 2
+INFO 2026-06-10 16:05:10,699 basehttp 24860 25472 "OPTIONS /api/informe-diario/anexos/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:05:11,202 basehttp 24860 25472 "POST /api/informe-diario/anexos/ HTTP/1.1" 201 336
+INFO 2026-06-10 16:05:11,549 basehttp 24860 26908 "GET /media/informe_diario/anexos/2026/06/cafe_con_pan.jpg HTTP/1.1" 200 102359
+INFO 2026-06-10 16:05:45,426 basehttp 24860 26908 "GET /media/informe_diario/anexos/2026/06/cafe_con_pan.jpg HTTP/1.1" 304 0
+INFO 2026-06-10 16:05:54,338 basehttp 24860 25472 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+INFO 2026-06-10 16:05:54,340 basehttp 24860 28600 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+WARNING 2026-06-10 16:05:54,369 basehttp 24860 28600 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-10 16:05:54,386 basehttp 24860 25472 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-10 17:24:29,600 basehttp 24860 28240 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-10 17:24:29,636 basehttp 24860 28368 "GET /api/users/profile/ HTTP/1.1" 404 23
+INFO 2026-06-11 10:44:30,579 autoreload 24508 22052 Watching for file changes with StatReloader
+INFO 2026-06-11 10:44:41,506 basehttp 24508 17388 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:41,506 basehttp 24508 9444 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+WARNING 2026-06-11 10:44:41,605 basehttp 24508 9444 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-11 10:44:41,619 basehttp 24508 17388 "GET /api/users/profile/ HTTP/1.1" 404 23
+INFO 2026-06-11 10:44:57,648 basehttp 24508 17388 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,564 basehttp 24508 17388 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-06-11 10:44:58,891 basehttp 24508 17388 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,897 basehttp 24508 9444 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,897 basehttp 24508 30580 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,903 basehttp 24508 17388 "OPTIONS /api/venta/facturas/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,906 basehttp 24508 9444 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,908 basehttp 24508 30580 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,909 basehttp 24508 17388 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,913 basehttp 24508 9444 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,914 basehttp 24508 30580 "OPTIONS /api/kave/designs/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,917 basehttp 24508 17388 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,918 basehttp 24508 9444 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,922 basehttp 24508 30580 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,922 basehttp 24508 17388 "OPTIONS /api/venta/facturas/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,925 basehttp 24508 9444 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,925 basehttp 24508 30580 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,931 basehttp 24508 17388 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,931 basehttp 24508 30580 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,932 basehttp 24508 9444 "OPTIONS /api/kave/designs/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:58,978 basehttp 24508 9444 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:58,979 basehttp 24508 30580 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:58,999 basehttp 24508 17388 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-11 10:44:59,020 basehttp 24508 30580 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-11 10:44:59,022 basehttp 24508 9444 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:59,034 basehttp 24508 17388 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:59,048 basehttp 24508 30580 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-11 10:44:59,066 basehttp 24508 17388 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-11 10:44:59,067 basehttp 24508 9444 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-11 10:44:59,069 basehttp 24508 30580 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:59,081 basehttp 24508 17388 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:59,100 basehttp 24508 9444 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-11 10:44:59,100 basehttp 24508 30580 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-11 10:44:59,112 basehttp 24508 17388 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:59,127 basehttp 24508 30580 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:44:59,130 basehttp 24508 9444 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-11 10:44:59,135 basehttp 24508 17388 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-11 10:44:59,136 basehttp 24508 9444 "OPTIONS /api/inventario/productos/resumen/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:44:59,159 basehttp 24508 30580 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-11 10:44:59,170 basehttp 24508 17388 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-11 10:44:59,189 basehttp 24508 30580 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-11 10:54:48,808 basehttp 24508 18076 "OPTIONS /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 0
+INFO 2026-06-11 10:54:48,822 basehttp 24508 31264 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:54:48,916 basehttp 24508 31264 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:54:48,945 basehttp 24508 18076 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 764
+INFO 2026-06-11 10:55:06,921 basehttp 24508 22104 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:55:06,935 basehttp 24508 28272 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 764
+INFO 2026-06-11 10:55:13,424 basehttp 24508 22104 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:55:13,425 basehttp 24508 28272 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-06-11 10:55:13,446 basehttp 24508 28272 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:55:13,450 basehttp 24508 22104 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:55:13,458 basehttp 24508 28512 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:55:16,369 basehttp 24508 22104 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:55:16,381 basehttp 24508 28512 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 764
+INFO 2026-06-11 10:55:22,603 basehttp 24508 28272 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:55:22,604 basehttp 24508 22104 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:55:22,611 basehttp 24508 28512 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:55:42,079 basehttp 24508 28272 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:55:42,083 basehttp 24508 22104 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:55:42,089 basehttp 24508 28512 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:56:06,238 basehttp 24508 22104 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:56:06,243 basehttp 24508 28272 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:56:06,247 basehttp 24508 28512 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-11 10:57:28,082 basehttp 24508 22104 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:57:28,088 basehttp 24508 28272 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-11 10:57:28,091 basehttp 24508 28512 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:08:19,588 autoreload 1620 6816 Watching for file changes with StatReloader
+INFO 2026-06-13 09:08:31,249 basehttp 1620 13376 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:31,249 basehttp 1620 29780 "OPTIONS /api/users/profile/ HTTP/1.1" 200 0
+WARNING 2026-06-13 09:08:31,335 basehttp 1620 29780 "GET /api/users/profile/ HTTP/1.1" 401 172
+WARNING 2026-06-13 09:08:31,339 basehttp 1620 29780 "GET /api/users/profile/ HTTP/1.1" 401 172
+INFO 2026-06-13 09:08:31,346 basehttp 1620 29780 "OPTIONS /api/token/refresh/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:31,366 basehttp 1620 29780 "POST /api/token/refresh/ HTTP/1.1" 200 489
+WARNING 2026-06-13 09:08:31,383 basehttp 1620 29780 "GET /api/users/profile/ HTTP/1.1" 404 23
+WARNING 2026-06-13 09:08:31,393 basehttp 1620 13376 "GET /api/users/profile/ HTTP/1.1" 404 23
+INFO 2026-06-13 09:08:38,518 basehttp 1620 13376 "OPTIONS /api/token/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,243 basehttp 1620 13376 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-06-13 09:08:39,527 basehttp 1620 13376 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,533 basehttp 1620 29780 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,533 basehttp 1620 27360 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,536 basehttp 1620 13376 "OPTIONS /api/venta/facturas/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,538 basehttp 1620 29780 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,539 basehttp 1620 27360 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,541 basehttp 1620 13376 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,544 basehttp 1620 29780 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,546 basehttp 1620 27360 "OPTIONS /api/kave/designs/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,549 basehttp 1620 13376 "OPTIONS /api/crm/clientes/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,549 basehttp 1620 29780 "OPTIONS /api/crm/cotizaciones/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,552 basehttp 1620 27360 "OPTIONS /api/venta/pedidos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,553 basehttp 1620 29780 "OPTIONS /api/venta/facturas/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,556 basehttp 1620 13376 "OPTIONS /api/compras/proveedores/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,557 basehttp 1620 27360 "OPTIONS /api/compras/ordenes/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,557 basehttp 1620 29780 "OPTIONS /api/inventario/productos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,560 basehttp 1620 13376 "OPTIONS /api/operaciones/proyectos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,563 basehttp 1620 29780 "OPTIONS /api/kave/designs/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,597 basehttp 1620 29780 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,597 basehttp 1620 13376 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,619 basehttp 1620 29780 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,620 basehttp 1620 13376 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:08:39,620 basehttp 1620 27360 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-13 09:08:39,650 basehttp 1620 29780 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,650 basehttp 1620 13376 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-13 09:08:39,661 basehttp 1620 27360 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-13 09:08:39,680 basehttp 1620 13376 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,682 basehttp 1620 29780 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-13 09:08:39,682 basehttp 1620 27360 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,708 basehttp 1620 29780 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:08:39,715 basehttp 1620 13376 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,716 basehttp 1620 27360 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-13 09:08:39,739 basehttp 1620 29780 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:08:39,743 basehttp 1620 13376 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-13 09:08:39,749 basehttp 1620 13376 "OPTIONS /api/inventario/productos/resumen/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:08:39,752 basehttp 1620 27360 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-13 09:08:39,760 basehttp 1620 29780 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-13 09:08:39,770 basehttp 1620 13376 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-13 09:08:39,788 basehttp 1620 29780 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-13 09:14:11,617 basehttp 1620 2284 "OPTIONS /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 0
+INFO 2026-06-13 09:14:11,621 basehttp 1620 27568 "OPTIONS /api/informe-diario/obras/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:14:11,936 basehttp 1620 2284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:14:11,998 basehttp 1620 27568 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 764
+INFO 2026-06-13 09:14:16,651 basehttp 1620 22344 "OPTIONS /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:14:16,652 basehttp 1620 27568 "OPTIONS /api/informe-diario/recursos/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:14:16,685 basehttp 1620 2284 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:14:16,687 basehttp 1620 27568 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:14:16,688 basehttp 1620 22344 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:15:03,685 basehttp 1620 27568 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:15:03,691 basehttp 1620 2284 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:15:03,701 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:00,336 basehttp 1620 27568 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:00,338 basehttp 1620 2284 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:00,341 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:09,188 basehttp 1620 27568 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:09,188 basehttp 1620 2284 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:09,194 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:15,224 basehttp 1620 2284 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:15,224 basehttp 1620 27568 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:15,238 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:37,365 basehttp 1620 27568 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:37,371 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:37,371 basehttp 1620 2284 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 09:16:40,301 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:40,315 basehttp 1620 2284 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 764
+INFO 2026-06-13 09:16:44,767 basehttp 1620 22344 "GET /api/informe-diario/obras/ HTTP/1.1" 200 347
+INFO 2026-06-13 09:16:44,782 basehttp 1620 2284 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 200 764
+INFO 2026-06-13 09:16:45,057 basehttp 1620 2284 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:16:45,074 basehttp 1620 22344 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:38:41,741 basehttp 1620 2864 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:38:41,763 basehttp 1620 2864 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:38:43,545 basehttp 1620 2864 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:38:43,564 basehttp 1620 26900 "GET /api/compras/proveedores/ HTTP/1.1" 200 1451
+INFO 2026-06-13 09:38:44,235 basehttp 1620 26900 "OPTIONS /api/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:38:44,236 basehttp 1620 2864 "OPTIONS /api/dashboard/stats/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:38:44,356 basehttp 1620 2864 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:38:44,383 basehttp 1620 26900 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:40:00,245 autoreload 1620 6816 C:\Postgres\ERP-8AMPERIOS\compras\models.py changed, reloading.
+INFO 2026-06-13 09:40:02,079 autoreload 27604 29116 Watching for file changes with StatReloader
+INFO 2026-06-13 09:40:39,647 basehttp 27604 12524 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:40:39,689 basehttp 27604 12524 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:41:40,370 basehttp 27604 12524 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:41:40,419 basehttp 27604 12524 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:41:40,641 basehttp 27604 12524 "OPTIONS /api//reportes/powerbi/ HTTP/1.1" 200 0
+INFO 2026-06-13 09:41:40,643 basehttp 27604 12524 "OPTIONS /api//reportes/powerbi/ HTTP/1.1" 200 0
+WARNING 2026-06-13 09:41:40,763 basehttp 27604 12524 "GET /api//reportes/powerbi/ HTTP/1.1" 404 12741
+WARNING 2026-06-13 09:41:40,844 basehttp 27604 25072 "GET /api//reportes/powerbi/ HTTP/1.1" 404 12741
+WARNING 2026-06-13 09:41:52,037 basehttp 27604 25072 "GET /api//reportes/powerbi/ HTTP/1.1" 404 12741
+WARNING 2026-06-13 09:41:52,115 basehttp 27604 12524 "GET /api//reportes/powerbi/ HTTP/1.1" 404 12741
+WARNING 2026-06-13 09:42:08,266 basehttp 27604 12524 "GET /api//reportes/powerbi/ HTTP/1.1" 404 12741
+WARNING 2026-06-13 09:42:08,359 basehttp 27604 25072 "GET /api//reportes/powerbi/ HTTP/1.1" 404 12741
+INFO 2026-06-13 09:42:16,383 basehttp 27604 25072 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:42:16,416 basehttp 27604 12524 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:42:16,444 basehttp 27604 25072 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+INFO 2026-06-13 09:42:16,472 basehttp 27604 12524 "GET /api/dashboard/stats/ HTTP/1.1" 200 555
+ERROR 2026-06-13 09:57:19,428 log 27604 6488 Invalid HTTP_HOST header: '192.168.1.4:8000'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\http\request.py", line 202, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.4:8000'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+WARNING 2026-06-13 09:57:19,431 basehttp 27604 6488 "GET / HTTP/1.1" 400 80772
+ERROR 2026-06-13 09:57:34,568 log 27604 28260 Invalid HTTP_HOST header: '192.168.1.4:8000'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\http\request.py", line 202, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.4:8000'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+ERROR 2026-06-13 09:57:34,610 log 27604 26856 Invalid HTTP_HOST header: '192.168.1.4'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\http\request.py", line 202, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.4'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+WARNING 2026-06-13 09:57:34,613 basehttp 27604 26856 "GET /loginMsg.js HTTP/1.1" 400 80855
+ERROR 2026-06-13 09:57:34,937 log 27604 17924 Invalid HTTP_HOST header: '192.168.1.4'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\utils\deprecation.py", line 119, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Postgres\ERP-8AMPERIOS\venv\Lib\site-packages\django\http\request.py", line 202, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.4'. You may need to add '192.168.1.4' to ALLOWED_HOSTS.
+WARNING 2026-06-13 09:57:34,940 basehttp 27604 17924 "GET /cgi/get.cgi?cmd=home_login HTTP/1.1" 400 81277

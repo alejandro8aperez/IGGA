@@ -37,8 +37,42 @@ class Proveedor(models.Model):
         ('en_evaluacion', 'En Evaluación'),
     ]
 
-    # Información básica (campos originales preservados)
+    TIPO_PROVEEDOR_CHOICES = [
+        ('persona_natural', 'Persona Natural'),
+        ('empresa', 'Empresa'),
+        ('empresa_unipersonal', 'Empresa Unipersonal'),
+        ('cooperativa', 'Cooperativa'),
+    ]
+
+    CLASIFICACION_CHOICES = [
+        ('A', 'Clase A - Premium'),
+        ('B', 'Clase B - Estándar'),
+        ('C', 'Clase C - Básico'),
+    ]
+
+    TIPO_CUENTA_CHOICES = [
+        ('corriente', 'Cuenta Corriente'),
+        ('ahorros', 'Cuenta de Ahorros'),
+        ('nomina', 'Cuenta Nómina'),
+    ]
+
+    # ═══════════════════════════════════════════════════════════════
+    # INFORMACIÓN BÁSICA
+    # ═══════════════════════════════════════════════════════════════
+    codigo_proveedor = models.CharField(
+        max_length=50, unique=True, blank=True, null=True,
+        verbose_name="Código Proveedor"
+    )
     razon_social = models.CharField(max_length=200, verbose_name="Razón Social")
+    nombre_comercial = models.CharField(max_length=200, blank=True, verbose_name="Nombre Comercial")
+    logotipo = models.ImageField(
+        upload_to='compras/logotipos/', blank=True, null=True,
+        verbose_name="Logotipo"
+    )
+    tipo_proveedor = models.CharField(
+        max_length=25, choices=TIPO_PROVEEDOR_CHOICES,
+        default='empresa', blank=True, verbose_name="Tipo de Proveedor"
+    )
     nit = models.CharField(max_length=50, unique=True, verbose_name="NIT / Documento")
     
     # ═══════════════════════════════════════════════════════════════
@@ -66,63 +100,104 @@ class Proveedor(models.Model):
     matricula_mercantil = models.CharField(max_length=50, blank=True, null=True, verbose_name="Matrícula Mercantil")
     correo_facturacion_electronica = models.EmailField(blank=True, null=True, verbose_name="Correo para Facturación Electrónica")
     
-    # Contactos
-    contacto_nombre = models.CharField(max_length=100, verbose_name="Nombre del Contacto")
-    contacto_email = models.EmailField(verbose_name="Email del Contacto")
-    contacto_telefono = models.CharField(max_length=20, blank=True, verbose_name="Teléfono")
-    direccion = models.TextField(blank=True, verbose_name="Dirección")
-
-    # Campos nuevos: Clasificación
-    tipo_documento = models.CharField(
-        max_length=5, choices=TIPO_DOCUMENTO_CHOICES,
-        default='NIT', verbose_name="Tipo de documento"
+    # ═══════════════════════════════════════════════════════════════
+    # INFORMACIÓN COMERCIAL
+    # ═══════════════════════════════════════════════════════════════
+    clasificacion = models.CharField(
+        max_length=1, choices=CLASIFICACION_CHOICES,
+        default='B', blank=True, verbose_name="Clasificación"
     )
-    nombre_comercial = models.CharField(
-        max_length=200, blank=True, verbose_name="Nombre comercial"
-    )
+    sector_industria = models.CharField(max_length=200, blank=True, null=True, verbose_name="Sector / Industria")
     categoria = models.CharField(
         max_length=20, choices=CATEGORIA_CHOICES,
         default='materias_primas', verbose_name="Categoría"
     )
+    credito_maximo = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0,
+        verbose_name="Crédito Máximo (COP)"
+    )
+    dias_credito = models.PositiveIntegerField(default=0, verbose_name="Días de Crédito")
+    descuento_general = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        verbose_name="Descuento General (%)"
+    )
+    condicion_pago = models.CharField(
+        max_length=50, blank=True, default="Contado",
+        verbose_name="Condición de Pago",
+        help_text="Ej: Contado, 30 días, 60 días"
+    )
+    lista_precios = models.CharField(max_length=100, blank=True, null=True, verbose_name="Lista de Precios")
+    moneda = models.CharField(max_length=10, default='COP', verbose_name="Moneda")
+    tiempo_entrega_promedio_dias = models.PositiveIntegerField(
+        default=7, verbose_name="Tiempo de Entrega Promedio (días)"
+    )
+
+    # ═══════════════════════════════════════════════════════════════
+    # CONTACTOS
+    # ═══════════════════════════════════════════════════════════════
+    email = models.EmailField(blank=True, null=True, verbose_name="Email Principal")
+    telefono = models.CharField(max_length=20, blank=True, verbose_name="Teléfono Principal")
+    telefono_alterno = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono Alterno")
+    fax = models.CharField(max_length=20, blank=True, null=True, verbose_name="Fax")
+
+    contacto_nombre = models.CharField(max_length=100, blank=True, verbose_name="Nombre del Contacto")
+    contacto_email = models.EmailField(blank=True, null=True, verbose_name="Email del Contacto")
+    contacto_telefono = models.CharField(max_length=20, blank=True, verbose_name="Teléfono Contacto")
+    contacto_telefono_alt = models.CharField(max_length=20, blank=True, verbose_name="Teléfono Alternativo Contacto")
+    cargo_contacto = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cargo Contacto")
+
+    representante_legal = models.CharField(max_length=200, blank=True, null=True, verbose_name="Representante Legal")
+    cedula_representante = models.CharField(max_length=20, blank=True, null=True, verbose_name="Cédula Representante")
+
+    # ═══════════════════════════════════════════════════════════════
+    # DIRECCIONES
+    # ═══════════════════════════════════════════════════════════════
+    direccion = models.TextField(blank=True, verbose_name="Dirección de Facturación")
+    ciudad = models.CharField(max_length=100, blank=True, verbose_name="Ciudad")
+    departamento = models.CharField(max_length=100, blank=True, verbose_name="Departamento")
+    pais = models.CharField(max_length=100, default='Colombia', blank=True, verbose_name="País")
+    codigo_postal = models.CharField(max_length=20, blank=True, null=True, verbose_name="Código Postal")
+
+    direccion_entrega = models.TextField(blank=True, null=True, verbose_name="Dirección de Entrega")
+    ciudad_entrega = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ciudad Entrega")
+    sitio_web = models.URLField(blank=True, verbose_name="Sitio Web")
+
+    # ═══════════════════════════════════════════════════════════════
+    # INFORMACIÓN BANCARIA
+    # ═══════════════════════════════════════════════════════════════
+    banco_nombre = models.CharField(max_length=100, blank=True, null=True, verbose_name="Banco")
+    numero_cuenta = models.CharField(max_length=50, blank=True, null=True, verbose_name="Número de Cuenta")
+    tipo_cuenta = models.CharField(max_length=20, choices=TIPO_CUENTA_CHOICES, blank=True, null=True, verbose_name="Tipo de Cuenta")
+    titular_cuenta = models.CharField(max_length=200, blank=True, null=True, verbose_name="Titular Cuenta")
+    codigo_bancario = models.CharField(max_length=10, blank=True, null=True, verbose_name="Código Bancario")
+
+    # ═══════════════════════════════════════════════════════════════
+    # ESTADO Y EVALUACIÓN
+    # ═══════════════════════════════════════════════════════════════
     estado = models.CharField(
         max_length=15, choices=ESTADO_CHOICES,
         default='activo', verbose_name="Estado"
     )
-
-    # Campos nuevos: Contacto adicional
-    ciudad = models.CharField(max_length=100, blank=True, verbose_name="Ciudad")
-    departamento = models.CharField(max_length=100, blank=True, verbose_name="Departamento")
-    sitio_web = models.URLField(blank=True, verbose_name="Sitio web")
-    contacto_telefono_alt = models.CharField(
-        max_length=20, blank=True, verbose_name="Teléfono alternativo"
-    )
-
-    # Campos nuevos: Condiciones comerciales
-    condicion_pago = models.CharField(
-        max_length=50, blank=True, default="Contado",
-        verbose_name="Condición de pago",
-        help_text="Ej: Contado, 30 días, 60 días"
-    )
-    descuento_general = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0,
-        verbose_name="Descuento general (%)"
-    )
-    moneda = models.CharField(
-        max_length=10, default='COP',
-        verbose_name="Moneda",
-        help_text="COP, USD, EUR"
-    )
-    tiempo_entrega_promedio_dias = models.PositiveIntegerField(
-        default=7, verbose_name="Tiempo de entrega promedio (días)"
-    )
-
-    # Campos nuevos: Evaluación
     calificacion = models.DecimalField(
         max_digits=3, decimal_places=1, null=True, blank=True,
         verbose_name="Calificación (1-5)",
         help_text="Evaluación de desempeño del proveedor"
     )
-    notas = models.TextField(blank=True, verbose_name="Notas internas")
+
+    # ═══════════════════════════════════════════════════════════════
+    # INFORMACIÓN ADICIONAL
+    # ═══════════════════════════════════════════════════════════════
+    tipo_documento = models.CharField(
+        max_length=5, choices=TIPO_DOCUMENTO_CHOICES,
+        default='NIT', verbose_name="Tipo de Documento"
+    )
+    fecha_constitucion = models.DateField(blank=True, null=True, verbose_name="Fecha de Constitución")
+    fecha_ultimo_contacto = models.DateField(blank=True, null=True, verbose_name="Fecha Último Contacto")
+    notas = models.TextField(blank=True, verbose_name="Notas Internas")
+    adjunto_archivos = models.FileField(
+        upload_to='compras/adjuntos/', blank=True, null=True,
+        verbose_name="Adjuntos"
+    )
 
     # Auditoría
     fecha_registro = models.DateTimeField(auto_now_add=True, null=True)
@@ -132,9 +207,29 @@ class Proveedor(models.Model):
         verbose_name = "Proveedor"
         verbose_name_plural = "Proveedores"
         ordering = ['razon_social']
+        indexes = [
+            models.Index(fields=['nit']),
+            models.Index(fields=['codigo_proveedor']),
+            models.Index(fields=['estado']),
+        ]
 
     def __str__(self):
         return f"{self.razon_social} ({self.nit})"
+
+    def save(self, *args, **kwargs):
+        # Normalizar campos únicos vacíos a None
+        if self.codigo_barras == '': self.codigo_barras = None
+        if self.correo_facturacion_electronica == '': self.correo_facturacion_electronica = None
+
+        # Auto-generar código de proveedor si no existe
+        if not self.codigo_proveedor:
+            from django.utils.text import slugify
+            nombre_slug = slugify(self.razon_social)
+            base_code = nombre_slug[:8].upper() if nombre_slug else "PRV"
+            count = Proveedor.objects.filter(codigo_proveedor__startswith=base_code).count()
+            self.codigo_proveedor = f"{base_code}{count + 1:04d}"
+
+        super().save(*args, **kwargs)
 
     @property
     def total_ordenes(self):

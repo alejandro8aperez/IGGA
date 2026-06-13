@@ -1,1103 +1,652 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from '../config/axiosConfig';
-import { Users, AlertCircle, Edit3, Trash2, Plus, X, FileText, Phone, Mail, Building2, Calendar, DollarSign, Palette, Paperclip } from 'lucide-react';
+import {
+  Users, AlertCircle, Edit3, Trash2, Plus, X, FileText,
+  Phone, Mail, Building2, Paperclip, MapPin, CreditCard,
+  Shield, Star, ChevronDown, ChevronUp, ArrowLeft
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../config/api';
 
 const API_URL = API.COMPRAS.PROVEEDORES;
 
+// ── Estilos ──────────────────────────────────────────────────────────────────
+const S = {
+  page:         { minHeight: '100vh', background: 'linear-gradient(135deg,#f0f4ff 0%,#e8edf5 100%)', padding: '2rem', fontFamily: "'Inter','Segoe UI',sans-serif" },
+  card:         { background: 'white', borderRadius: '16px', padding: '2rem', marginBottom: '1.5rem', boxShadow: '0 4px 24px rgba(102,126,234,.10)', border: '1px solid #e8ecf4' },
+  header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  h1:           { fontSize: '2rem', fontWeight: 800, color: '#1a202c', margin: '0 0 .25rem' },
+  sub:          { fontSize: '1rem', color: '#718096', margin: 0 },
+  backBtn:      { background: 'linear-gradient(135deg,#667eea,#764ba2)', color: 'white', border: 'none', padding: '.65rem 1.3rem', borderRadius: '10px', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem' },
+  addBtn:       { background: 'linear-gradient(135deg,#48bb78,#38a169)', color: 'white', border: 'none', padding: '.65rem 1.3rem', borderRadius: '10px', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem', boxShadow: '0 4px 14px rgba(72,187,120,.35)' },
+  table:        { width: '100%', borderCollapse: 'collapse' },
+  th:           { padding: '.85rem 1rem', textAlign: 'left', borderBottom: '2px solid #edf2f7', color: '#4a5568', fontWeight: 700, fontSize: '.82rem', textTransform: 'uppercase', letterSpacing: '.03em', background: '#f8fafc' },
+  td:           { padding: '.9rem 1rem', borderBottom: '1px solid #edf2f7', verticalAlign: 'middle' },
+  // Modal
+  overlay:      { position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000, backdropFilter: 'blur(4px)' },
+  modal:        { background: 'white', borderRadius: '18px', padding: '2rem', width: '95%', maxWidth: '960px', maxHeight: '92vh', overflowY: 'auto', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,.30)' },
+  // Section inside modal
+  section:      { marginTop: '1.5rem', marginBottom: '.5rem' },
+  sectionTitle: { fontSize: '.75rem', fontWeight: 800, color: '#667eea', textTransform: 'uppercase', letterSpacing: '.08em', paddingBottom: '.5rem', borderBottom: '2px solid #e8ecf4', marginBottom: '1rem' },
+  grid2:        { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
+  grid3:        { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' },
+  label:        { display: 'block', marginBottom: '.3rem', fontWeight: 600, color: '#4a5568', fontSize: '.82rem' },
+  input:        { width: '100%', padding: '.6rem .85rem', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '.9rem', transition: 'border-color .2s', outline: 'none', boxSizing: 'border-box' },
+  select:       { width: '100%', padding: '.6rem .85rem', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '.9rem', background: 'white', boxSizing: 'border-box' },
+  textarea:     { width: '100%', padding: '.6rem .85rem', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '.9rem', resize: 'vertical', outline: 'none', boxSizing: 'border-box' },
+  checkRow:     { display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' },
+  checkLabel:   { display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.88rem', color: '#4a5568', cursor: 'pointer' },
+  toggleBtn:    { background: '#f1f5f9', color: '#334155', border: '1px solid #e2e8f0', padding: '.45rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '.82rem', display: 'flex', alignItems: 'center', gap: '.35rem' },
+  saveBtn:      { background: 'linear-gradient(135deg,#667eea,#764ba2)', color: 'white', border: 'none', padding: '.7rem 1.5rem', borderRadius: '10px', fontSize: '.95rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(102,126,234,.35)' },
+  cancelBtn:    { background: '#e2e8f0', color: '#4a5568', border: 'none', padding: '.7rem 1.5rem', borderRadius: '10px', fontSize: '.95rem', fontWeight: 600, cursor: 'pointer' },
+};
+
+const ESTADO_COLOR = { activo: '#48bb78', inactivo: '#a0aec0', bloqueado: '#e53e3e', en_evaluacion: '#ed8936' };
+
+const emptyForm = () => ({
+  razon_social: '', nombre_comercial: '', nit: '', tipo_proveedor: 'empresa',
+  tipo_documento: 'NIT', digito_verificacion: '', codigo_barras: '',
+  responsable_iva: false, gran_contribuyente: false, agente_retenedor: false,
+  regimen_tributario: 'comun', numero_resolucion_dian: '', fecha_resolucion_dian: '',
+  actividad_economica_ciiu: '', responsabilidades_fiscales: '', matricula_mercantil: '',
+  correo_facturacion_electronica: '',
+  clasificacion: 'B', sector_industria: '', categoria: 'servicios',
+  credito_maximo: 0, dias_credito: 0, descuento_general: 0,
+  condicion_pago: 'Contado', lista_precios: '', moneda: 'COP',
+  tiempo_entrega_promedio_dias: 7,
+  email: '', telefono: '', telefono_alterno: '', fax: '',
+  contacto_nombre: '', contacto_email: '', contacto_telefono: '',
+  contacto_telefono_alt: '', cargo_contacto: '',
+  representante_legal: '', cedula_representante: '',
+  direccion: '', ciudad: '', departamento: '', pais: 'Colombia',
+  codigo_postal: '', sitio_web: '',
+  direccion_entrega: '', ciudad_entrega: '',
+  banco_nombre: '', numero_cuenta: '', tipo_cuenta: '', titular_cuenta: '', codigo_bancario: '',
+  estado: 'activo', calificacion: '',
+  fecha_constitucion: '', fecha_ultimo_contacto: '',
+  notas: '', adjunto_archivos: null, logotipo: null,
+});
+
+function fieldVal(prov, key, def = '') {
+  return prov[key] !== undefined && prov[key] !== null ? prov[key] : def;
+}
+
+function FormField({ label, children }) {
+  return (
+    <div>
+      <label style={S.label}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function InputF({ name, value, onChange, type = 'text', placeholder = '', required = false }) {
+  return (
+    <input
+      type={type} name={name} value={value ?? ''} onChange={onChange}
+      placeholder={placeholder} required={required} style={S.input}
+      onFocus={e => e.target.style.borderColor = '#667eea'}
+      onBlur={e => e.target.style.borderColor = '#e2e8f0'}
+    />
+  );
+}
+
+function SelectF({ name, value, onChange, options }) {
+  return (
+    <select name={name} value={value ?? ''} onChange={onChange} style={S.select}>
+      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+
+// ── Componente principal ──────────────────────────────────────────────────────
 function Proveedores() {
-    const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('proveedores');
-    const [proveedores, setProveedores] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const [proveedores, setProveedores] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentProv, setCurrentProv] = useState(null);
+  const [formData, setFormData] = useState(emptyForm());
+  const [showExtra, setShowExtra] = useState(false);
 
-    // Modal states
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentProvider, setCurrentProvider] = useState(null);
+  useEffect(() => { fetchProveedores(); }, []);
 
-    const [formData, setFormData] = useState({
-        razon_social: '',
-        nombre_comercial: '',
-        //cedula: '',
-        nit: '',
-        email: '',
-        telefono: '',
-        direccion: '',
-        notas: '',
-        adjunto_archivos: null,
-        // additional fields
-        tipo_prove: 'empresa',
-        regimen_tributario: 'comun',
-        responsable_iva: false,
-        gran_contribuyente: false,
-        agente_retenedor: false,
-        clasificacion: 'B',
-        sector_industria: '',
-        credito_maximo: 0,
-        dias_credito: 0,
-        descuento_general: 0,
-        condicion_pago: '',
-        lista_precios: '',
-        contacto_nombre: '',
-        cargo_contacto: '',
-        contacto_email: '',
-        contacto_telefono: '',
-        representante_legal: '',
-        cedula_representante: '',
-        banco_razon_social: '',
-        numero_cuenta: '',
-        tipo_cuenta: '',
-        titular_cuenta: '',
-        codigo_bancario: '',
-        fecha_constitucion: '',
-        fecha_ultimo_contacto: '',
-        estado: 'activo',
-        pais: 'Colombia',
-        ciudad: '',
-        departamento: '',
-        codigo_postal: '',
-        direccion_entrega: '',
-        ciudad_entrega: '',
-        numero_resolucion_dian: '',
-        fecha_resolucion_dian: '',
-        tipo_documento: 'NIT',
-        codigo_barras: '',
-        digito_verificacion: '',
-        actividad_economica_ciiu: '',
-        responsabilidades_fiscales: '',
-        matricula_mercantil: '',
-        correo_facturacion_electronica: ''
-    });
-
-    const [showAdditional, setShowAdditional] = useState(false);
-
-    useEffect(() => {
-        fetchProveedores();
-    }, []);
-
-    const fetchProveedores = async () => {
-        try {
-            console.log('CRM: Cargando proveedores desde:', API_URL);
-            const response = await axiosInstance.get(API_URL);
-            console.log('CRM: Proveedors cargados:', response.data);
-            setProveedores(response.data);
-            setLoading(false);
-        } catch (err) {
-            console.error('CRM: Error al cargar proveedores:', err);
-            console.error('CRM: Detalles del error:', {
-                message: err.message,
-                code: err.code,
-                response: err.response?.data,
-                status: err.response?.status
-            });
-            setError(`Error al cargar proveedores del CRM: ${err.message || 'Error de conexión'}`);
-            setLoading(false);
-        }
-    };
-
-    const openModal = (prov = null) => {
-        if (prov) {
-            setCurrentProvider(prov);
-            setFormData({
-                razon_social: prov.razon_social || '',
-                nombre_comercial: prov.nombre_comercial || '',
-                //cedula: prov.nit || '',
-                nit: prov.nit || '',
-                email: prov.email || '',
-                telefono: prov.telefono || '',
-                direccion: prov.direccion || '',
-                notas: prov.notas || '',
-                adjunto_archivos: null,
-                tipo_prove: prov.tipo_prove || 'empresa',
-                regimen_tributario: prov.regimen_tributario || 'comun',
-                responsable_iva: !!prov.responsable_iva,
-                gran_contribuyente: !!prov.gran_contribuyente,
-                agente_retenedor: !!prov.agente_retenedor,
-                clasificacion: prov.clasificacion || 'B',
-                sector_industria: prov.sector_industria || '',
-                credito_maximo: prov.credito_maximo || 0,
-                dias_credito: prov.dias_credito || 0,
-                descuento_general: prov.descuento_general || 0,
-                condicion_pago: prov.condicion_pago || '',
-                lista_precios: prov.lista_precios || '',
-                contacto_nombre: prov.contacto_nombre || '',
-                cargo_contacto: prov.cargo_contacto || '',
-                contacto_email: prov.contacto_email || '',
-                contacto_telefono: prov.contacto_telefono || '',
-                representante_legal: prov.representante_legal || '',
-                cedula_representante: prov.nit_representante || '',
-                banco_razon_social: prov.banco_nombre || '',
-                numero_cuenta: prov.numero_cuenta || '',
-                tipo_cuenta: prov.tipo_cuenta || '',
-                titular_cuenta: prov.titular_cuenta || '',
-                codigo_bancario: prov.codigo_bancario || '',
-                fecha_constitucion: prov.fecha_constitucion || '',
-                fecha_ultimo_contacto: prov.fecha_ultimo_contacto || '',
-                estado: prov.estado || 'activo',
-                pais: prov.pais || 'Colombia',
-                ciudad: prov.ciudad || '',
-                departamento: prov.departamento || '',
-                codigo_postal: prov.codigo_postal || '',
-                direccion_entrega: prov.direccion_entrega || '',
-                ciudad_entrega: prov.ciudad_entrega || '',
-                numero_resolucion_dian: prov.numero_resolucion_dian || '',
-                fecha_resolucion_dian: prov.fecha_resolucion_dian || '',
-                tipo_documento: prov.tipo_documento || 'NIT',
-                codigo_barras: prov.codigo_barras || '',
-                digito_verificacion: prov.digito_verificacion || '',
-                actividad_economica_ciiu: prov.actividad_economica_ciiu || '',
-                responsabilidades_fiscales: prov.responsabilidades_fiscales || '',
-                matricula_mercantil: prov.matricula_mercantil || '',
-                correo_facturacion_electronica: prov.correo_facturacion_electronica || ''
-            });
-            setShowAdditional(true);
-        } else {
-            setCurrentProvider(null);
-            setFormData({
-                razon_social: '',
-                nombre_comercial: '',
-                //cedula: '',
-                nit: '',
-                email: '',
-                telefono: '',
-                direccion: '',
-                notas: '',
-                adjunto_archivos: null,
-                tipo_prove: 'empresa',
-                regimen_tributario: 'comun',
-                responsable_iva: false,
-                gran_contribuyente: false,
-                agente_retenedor: false,
-                clasificacion: 'B',
-                sector_industria: '',
-                credito_maximo: 0,
-                dias_credito: 0,
-                descuento_general: 0,
-                condicion_pago: '',
-                lista_precios: '',
-                contacto_nombre: '',
-                cargo_contacto: '',
-                contacto_email: '',
-                contacto_telefono: '',
-                representante_legal: '',
-                cedula_representante: '',
-                banco_razon_social: '',
-                numero_cuenta: '',
-                tipo_cuenta: '',
-                titular_cuenta: '',
-                codigo_bancario: '',
-                fecha_constitucion: '',
-                fecha_ultimo_contacto: '',
-                estado: 'activo',
-                pais: 'Colombia',
-                ciudad: '',
-                departamento: '',
-                codigo_postal: '',
-                direccion_entrega: '',
-                ciudad_entrega: '',
-                numero_resolucion_dian: '',
-                fecha_resolucion_dian: '',
-                tipo_documento: 'NIT',
-                codigo_barras: '',
-                digito_verificacion: '',
-                actividad_economica_ciiu: '',
-                responsabilidades_fiscales: '',
-                matricula_mercantil: '',
-                correo_facturacion_electronica: ''
-            });
-            setShowAdditional(false);
-        }
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setCurrentProvider(null);
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value, type, files, checked } = e.target;
-        let newValue;
-        if (type === 'file') newValue = files[0];
-        else if (type === 'checkbox') newValue = checked;
-        else newValue = value;
-        setFormData({ 
-            ...formData, 
-            [name]: newValue
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        const data = new FormData();
-        Object.keys(formData).forEach(key => {
-            if (formData[key] !== null) {
-                data.append(key, formData[key]);
-            }
-        });
-
-        try {
-            const config = { headers: { 'Content-Type': 'multipart/form-data' } };
-            if (currentProvider) {
-                // Usamos PATCH para actualizaciones parciales y más seguras
-                // Aseguramos que la URL termine con barra para Django REST Framework
-                const url = API_URL.endsWith('/') ? `${API_URL}${currentProvider.id}/` : `${API_URL}/${currentProvider.id}/`;
-                await axiosInstance.patch(url, data, config);
-            } else {
-                await axiosInstance.post(API_URL, data, config);
-            }
-            closeModal();
-            fetchProveedores();
-        } catch (err) {
-            console.error('[CRM] Error al guardar prove:', err.response?.data || err.message);
-            alert("Error al guardar el prove. Verifique los datos e intente de nuevo.");
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm('¿Eliminar este prove definitivamente?')) {
-            try {
-                await axiosInstance.delete(`${API_URL}${id}/`);
-                fetchProveedores();
-            } catch (err) {
-                alert("Error al eliminar el prove.");
-            }
-        }
-    };
-
-    if (loading) {
-        return (
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '100vh',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        border: '4px solid rgba(255,255,255,0.3)', 
-                        borderTop: '4px solid white', 
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite',
-                        margin: '0 auto 1rem'
-                    }}></div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '500' }}>Cargando CRM...</div>
-                </div>
-            </div>
-        );
+  const fetchProveedores = async () => {
+    try {
+      const r = await axiosInstance.get(API_URL);
+      const data = Array.isArray(r.data) ? r.data : (r.data?.results || []);
+      setProveedores(data);
+    } catch (err) {
+      setError(`Error al cargar proveedores: ${err.message || 'Error de conexión'}`);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return (
-        <div style={{ 
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            padding: '2rem'
-        }}>
-            {/* Header */}
-            <div style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '2rem',
-                marginBottom: '2rem',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)'
-            }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <h1 style={{ 
-                            fontSize: '2.5rem', 
-                            fontWeight: '700', 
-                            color: '#1a202c',
-                            margin: '0 0 0.5rem 0'
-                        }}>
-                            CRM Avanzado
-                        </h1>
-                        <p style={{ 
-                            fontSize: '1.1rem', 
-                            color: '#718096',
-                            margin: 0
-                        }}>
-                            Gestión de Proveedors y Oportunidades
-                        </p>
-                    </div>
-                    <button 
-                        onClick={() => navigate('/')}
-                        style={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: '12px',
-                            fontSize: '1rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'transform 0.2s, box-shadow 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = 'none';
-                        }}
-                    >
-                        <X size={18} />
-                        Volver al Inicio
-                    </button>
-                </div>
-            </div>
+  const openModal = (prov = null) => {
+    if (prov) {
+      setCurrentProv(prov);
+      setFormData({
+        razon_social: fieldVal(prov, 'razon_social'),
+        nombre_comercial: fieldVal(prov, 'nombre_comercial'),
+        nit: fieldVal(prov, 'nit'),
+        tipo_proveedor: fieldVal(prov, 'tipo_proveedor', 'empresa'),
+        tipo_documento: fieldVal(prov, 'tipo_documento', 'NIT'),
+        digito_verificacion: fieldVal(prov, 'digito_verificacion'),
+        codigo_barras: fieldVal(prov, 'codigo_barras'),
+        responsable_iva: !!prov.responsable_iva,
+        gran_contribuyente: !!prov.gran_contribuyente,
+        agente_retenedor: !!prov.agente_retenedor,
+        regimen_tributario: fieldVal(prov, 'regimen_tributario', 'comun'),
+        numero_resolucion_dian: fieldVal(prov, 'numero_resolucion_dian'),
+        fecha_resolucion_dian: fieldVal(prov, 'fecha_resolucion_dian'),
+        actividad_economica_ciiu: fieldVal(prov, 'actividad_economica_ciiu'),
+        responsabilidades_fiscales: fieldVal(prov, 'responsabilidades_fiscales'),
+        matricula_mercantil: fieldVal(prov, 'matricula_mercantil'),
+        correo_facturacion_electronica: fieldVal(prov, 'correo_facturacion_electronica'),
+        clasificacion: fieldVal(prov, 'clasificacion', 'B'),
+        sector_industria: fieldVal(prov, 'sector_industria'),
+        categoria: fieldVal(prov, 'categoria', 'servicios'),
+        credito_maximo: fieldVal(prov, 'credito_maximo', 0),
+        dias_credito: fieldVal(prov, 'dias_credito', 0),
+        descuento_general: fieldVal(prov, 'descuento_general', 0),
+        condicion_pago: fieldVal(prov, 'condicion_pago', 'Contado'),
+        lista_precios: fieldVal(prov, 'lista_precios'),
+        moneda: fieldVal(prov, 'moneda', 'COP'),
+        tiempo_entrega_promedio_dias: fieldVal(prov, 'tiempo_entrega_promedio_dias', 7),
+        email: fieldVal(prov, 'email'),
+        telefono: fieldVal(prov, 'telefono'),
+        telefono_alterno: fieldVal(prov, 'telefono_alterno'),
+        fax: fieldVal(prov, 'fax'),
+        contacto_nombre: fieldVal(prov, 'contacto_nombre'),
+        contacto_email: fieldVal(prov, 'contacto_email'),
+        contacto_telefono: fieldVal(prov, 'contacto_telefono'),
+        contacto_telefono_alt: fieldVal(prov, 'contacto_telefono_alt'),
+        cargo_contacto: fieldVal(prov, 'cargo_contacto'),
+        representante_legal: fieldVal(prov, 'representante_legal'),
+        cedula_representante: fieldVal(prov, 'cedula_representante'),
+        direccion: fieldVal(prov, 'direccion'),
+        ciudad: fieldVal(prov, 'ciudad'),
+        departamento: fieldVal(prov, 'departamento'),
+        pais: fieldVal(prov, 'pais', 'Colombia'),
+        codigo_postal: fieldVal(prov, 'codigo_postal'),
+        sitio_web: fieldVal(prov, 'sitio_web'),
+        direccion_entrega: fieldVal(prov, 'direccion_entrega'),
+        ciudad_entrega: fieldVal(prov, 'ciudad_entrega'),
+        banco_nombre: fieldVal(prov, 'banco_nombre'),
+        numero_cuenta: fieldVal(prov, 'numero_cuenta'),
+        tipo_cuenta: fieldVal(prov, 'tipo_cuenta'),
+        titular_cuenta: fieldVal(prov, 'titular_cuenta'),
+        codigo_bancario: fieldVal(prov, 'codigo_bancario'),
+        estado: fieldVal(prov, 'estado', 'activo'),
+        calificacion: fieldVal(prov, 'calificacion'),
+        fecha_constitucion: fieldVal(prov, 'fecha_constitucion'),
+        fecha_ultimo_contacto: fieldVal(prov, 'fecha_ultimo_contacto'),
+        notas: fieldVal(prov, 'notas'),
+        adjunto_archivos: null,
+        logotipo: null,
+      });
+      setShowExtra(true);
+    } else {
+      setCurrentProv(null);
+      setFormData(emptyForm());
+      setShowExtra(false);
+    }
+    setIsModalOpen(true);
+  };
 
-            {/* Error Display */}
-            {error && (
-                <div style={{ 
-                    background: '#fed7d7',
-                    border: '1px solid #feb2b2',
-                    borderRadius: '12px',
-                    padding: '1rem',
-                    marginBottom: '2rem',
-                    color: '#c53030',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem'
-                }}>
-                    <AlertCircle size={20} />
-                    <div style={{ flex: 1 }}>
-                        <strong>Error:</strong> {error}
-                    </div>
-                    <button 
-                        onClick={() => setError(null)}
-                        style={{
-                            background: '#e53e3e',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Cerrar
-                    </button>
-                </div>
-            )}
+  const closeModal = () => { setIsModalOpen(false); setCurrentProv(null); };
 
-            {/* Tabs */}
-            <div style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '1.5rem',
-                marginBottom: '2rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-            }}>
-                <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '1rem' }}>
-                    <button
-                        onClick={() => setActiveTab('proveedores')}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            color: activeTab === 'proveedores' ? '#667eea' : '#718096',
-                            backgroundColor: activeTab === 'proveedores' ? '#f0f4ff' : 'transparent',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <Users size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                        Proveedores
-                    </button>
-                </div>
+  const handleChange = (e) => {
+    const { name, value, type, files, checked } = e.target;
+    const val = type === 'file' ? files[0] : type === 'checkbox' ? checked : value;
+    setFormData(prev => ({ ...prev, [name]: val }));
+  };
 
-                <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <div style={{
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    padding: '1rem 1.5rem',
-                                    borderRadius: '12px',
-                                    color: 'white',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
-                                }}>
-                                    <Users size={24} />
-                                    <div>
-                                        <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>{proveedores.length}</div>
-                                        <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Proveedors</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '1rem' }}>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData();
+    Object.entries(formData).forEach(([k, v]) => {
+      if (v !== null && v !== undefined) data.append(k, v);
+    });
+    try {
+      if (currentProv) {
+        const url = `${API_URL}${currentProv.id}/`;
+        await axiosInstance.patch(url, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await axiosInstance.post(API_URL, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      closeModal();
+      fetchProveedores();
+    } catch (err) {
+      const errMsg = JSON.stringify(err.response?.data || err.message);
+      alert(`Error al guardar el proveedor:\n${errMsg}`);
+    }
+  };
 
-                                <button 
-                                    onClick={() => openModal()}
-                                    style={{
-                                        background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '0.75rem 1.5rem',
-                                        borderRadius: '12px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        boxShadow: '0 4px 15px rgba(72, 187, 120, 0.3)',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={(e) => {
-                                        e.target.style.transform = 'translateY(-2px)';
-                                        e.target.style.boxShadow = '0 8px 25px rgba(72, 187, 120, 0.4)';
-                                    }}
-                                    onMouseOut={(e) => {
-                                        e.target.style.transform = 'translateY(0)';
-                                        e.target.style.boxShadow = '0 4px 15px rgba(72, 187, 120, 0.3)';
-                                    }}
-                                >
-                                    <Plus size={18} />
-                                    Nuevo Proveedor
-                                </button>
-                            </div>
-                        </div>
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar este proveedor definitivamente?')) return;
+    try {
+      await axiosInstance.delete(`${API_URL}${id}/`);
+      fetchProveedores();
+    } catch { alert('Error al eliminar.'); }
+  };
 
-                        <div style={{ 
-                            background: 'white',
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-                        }}>
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead>
-                                        <tr style={{ background: '#f8fafc' }}>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Compañía / NIT</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Email</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Teléfono</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Notas</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Docs</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e2e8f0', color: '#4a5568', fontWeight: '600' }}>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {proveedores.map((prove, index) => (
-                                            <tr key={prove.id} style={{ 
-                                                borderBottom: '1px solid #e2e8f0',
-                                                backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc'
-                                            }}>
-                                                <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <Building2 size={16} style={{ color: '#667eea' }} />
-                                                        <div>
-                                                            <div>{prove.cedula ? `${prove.cedula} - ` : ''}{prove.nombre}</div>
-                                                            <div style={{ fontSize: '0.75rem', color: '#718096' }}>
-                                                                {prove.nit ? `${prove.nit} - ` : ''}{prove.compania || 'N/A'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1rem' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <Mail size={14} style={{ color: '#718096' }} />
-                                                        {prove.email}
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1rem' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <Phone size={14} style={{ color: '#718096' }} />
-                                                        {prove.telefono || 'N/A'}
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                                    <div style={{ fontSize: '0.875rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                        {prove.notas || 'N/A'}
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '1rem' }}>
-                                                    {prove.adjunto_archivos ? (
-                                                        <a href={prove.adjunto_archivos} target="_blank" rel="noopener noreferrer" style={{ color: '#667eea' }}><Paperclip size={16} /></a>
-                                                    ) : 'N/A'}
-                                                </td>
-                                                <td style={{ padding: '1rem', textAlign: 'center' }}>
-                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                                        <button 
-                                                            onClick={() => openModal(prove)}
-                                                            style={{
-                                                                background: '#667eea',
-                                                                color: 'white',
-                                                                border: 'none',
-                                                                padding: '0.5rem',
-                                                                borderRadius: '8px',
-                                                                cursor: 'pointer',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '0.25rem',
-                                                                transition: 'all 0.2s'
-                                                            }}
-                                                            onMouseOver={(e) => {
-                                                                e.target.style.backgroundColor = '#5a67d8';
-                                                            }}
-                                                            onMouseOut={(e) => {
-                                                                e.target.style.backgroundColor = '#667eea';
-                                                            }}
-                                                            title="Editar"
-                                                        >
-                                                            <Edit3 size={14} />
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleDelete(prove.id)}
-                                                            style={{
-                                                                background: '#e53e3e',
-                                                                color: 'white',
-                                                                border: 'none',
-                                                                padding: '0.5rem',
-                                                                borderRadius: '8px',
-                                                                cursor: 'pointer',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '0.25rem',
-                                                                transition: 'all 0.2s'
-                                                            }}
-                                                            onMouseOver={(e) => {
-                                                                e.target.style.backgroundColor = '#c53030';
-                                                            }}
-                                                            onMouseOut={(e) => {
-                                                                e.target.style.backgroundColor = '#e53e3e';
-                                                            }}
-                                                            title="Eliminar"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg,#667eea,#764ba2)' }}>
+      <div style={{ textAlign: 'center', color: 'white' }}>
+        <div style={{ width: 56, height: 56, border: '4px solid rgba(255,255,255,.3)', borderTop: '4px solid white', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
+        <div style={{ fontSize: '1.2rem', fontWeight: 500 }}>Cargando Proveedores...</div>
+      </div>
+      <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
-                                {proveedores.length === 0 && !error && (
-                                    <div style={{ 
-                                        padding: '4rem', 
-                                        textAlign: 'center', 
-                                        color: '#718096',
-                                        background: '#f8fafc'
-                                    }}>
-                                        <Users size={48} style={{ margin: '0 auto 1rem', color: '#cbd5e0' }} />
-                                        <div style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-                                            No hay proveedores registrados
-                                        </div>
-                                        <div style={{ marginBottom: '1.5rem' }}>
-                                            Empieza añadiendo tu primer prove para comenzar a gestionar tus relaciones.
-                                        </div>
-                                        <button 
-                                            onClick={() => openModal()}
-                                            style={{
-                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '0.75rem 1.5rem',
-                                                borderRadius: '12px',
-                                                fontSize: '1rem',
-                                                fontWeight: '600',
-                                                cursor: 'pointer',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem'
-                                            }}
-                                        >
-                                            <Plus size={18} />
-                                            Crear Primer Proveedor
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-            </div>
+  return (
+    <div style={S.page}>
+      <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}} input:focus,select:focus,textarea:focus{border-color:#667eea!important;box-shadow:0 0 0 3px rgba(102,126,234,.15)}`}</style>
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 10000,
-                    backdropFilter: 'blur(4px)'
-                }} onClick={closeModal}>
-                    <div 
-                        style={{
-                            background: 'white',
-                            borderRadius: '16px',
-                            padding: '2rem',
-                            width: '90%',
-                            maxWidth: '900px',
-                            maxHeight: '90vh',
-                            overflowY: 'auto',
-                            position: 'relative',
-                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-                        }} 
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ 
-                                fontSize: '1.5rem', 
-                                fontWeight: '700', 
-                                color: '#2d3748',
-                                margin: 0
-                            }}>
-                                {currentProvider ? 'Editar Proveedor' : 'Nuevo Proveedor'}
-                            </h2>
-                            <button 
-                                onClick={closeModal}
-                                style={{
-                                    background: '#e2e8f0',
-                                    color: '#4a5568',
-                                    border: 'none',
-                                    padding: '0.5rem',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.25rem',
-                                    transition: 'all 0.2s'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.target.style.backgroundColor = '#cbd5e0';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.target.style.backgroundColor = '#e2e8f0';
-                                }}
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Razón Social *</label>
-                                    <input
-                                        type="text"
-                                        name="razon_social"
-                                        value={formData.razon_social}
-                                        onChange={handleInputChange}
-                                        required
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Cédula</label>
-                                    <input
-                                        type="text"
-                                        name="cedula"
-                                        value={formData.nit}
-                                        onChange={handleInputChange}
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Nombre Comercial</label>
-                                    <input
-                                        type="text"
-                                        name="nombre_comercial"
-                                        value={formData.nombre_comercial}
-                                        onChange={handleInputChange}
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>NIT</label>
-                                    <input
-                                        type="text"
-                                        name="nit"
-                                        value={formData.nit}
-                                        onChange={handleInputChange}
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Email *</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        required
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Teléfono</label>
-                                    <input
-                                        type="tel"
-                                        name="telefono"
-                                        value={formData.telefono}
-                                        onChange={handleInputChange}
-                                        style={{ 
-                                            width: '100%', 
-                                            padding: '0.75rem', 
-                                            border: '2px solid #e2e8f0', 
-                                            borderRadius: '8px',
-                                            fontSize: '1rem',
-                                            transition: 'border-color 0.2s'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div style={{ marginTop: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Dirección</label>
-                                <textarea
-                                    name="direccion"
-                                    value={formData.direccion}
-                                    onChange={handleInputChange}
-                                    rows={3}
-                                    style={{ 
-                                        width: '100%', 
-                                        padding: '0.75rem', 
-                                        border: '2px solid #e2e8f0', 
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        resize: 'vertical',
-                                        transition: 'border-color 0.2s'
-                                    }}
-                                    onFocus={(e) => {
-                                        e.target.style.borderColor = '#667eea';
-                                    }}
-                                    onBlur={(e) => {
-                                        e.target.style.borderColor = '#e2e8f0';
-                                    }}
-                                />
-                            </div>
-                            <div style={{ marginTop: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>NOTAS</label>
-                                <textarea
-                                    name="notas"
-                                    value={formData.notas}
-                                    onChange={handleInputChange}
-                                    rows={3}
-                                    style={{ 
-                                        width: '100%', 
-                                        padding: '0.75rem', 
-                                        border: '2px solid #e2e8f0', 
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        resize: 'vertical',
-                                        transition: 'border-color 0.2s'
-                                    }}
-                                    onFocus={(e) => {
-                                        e.target.style.borderColor = '#667eea';
-                                    }}
-                                    onBlur={(e) => {
-                                        e.target.style.borderColor = '#e2e8f0';
-                                    }}
-                                />
-                            </div>
-                            <div style={{ marginTop: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>ADJUNTO ARCHIVOS</label>
-                                <input
-                                    type="file"
-                                    name="adjunto_archivos"
-                                    onChange={handleInputChange}
-                                    style={{ width: '100%', padding: '0.5rem 0' }}
-                                />
-                            </div>
-                            <div style={{ marginTop: '1rem' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowAdditional(!showAdditional)}
-                                    style={{
-                                        background: '#f1f5f9',
-                                        color: '#334155',
-                                        border: '1px solid #e2e8f0',
-                                        padding: '0.5rem 1rem',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600'
-                                    }}
-                                >
-                                    {showAdditional ? 'Ocultar Datos Adicionales' : 'Mostrar Datos Adicionales'}
-                                </button>
-                            </div>
-
-                            {showAdditional && (
-                                <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Tipo de Proveedor</label>
-                                        <select name="tipo_prove" value={formData.tipo_prove} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
-                                            <option value="persona_natural">Persona Natural</option>
-                                            <option value="empresa">Empresa</option>
-                                            <option value="empresa_unipersonal">Empresa Unipersonal</option>
-                                            <option value="cooperativa">Cooperativa</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Estado</label>
-                                        <select name="estado" value={formData.estado} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
-                                            <option value="activo">Activo</option>
-                                            <option value="inactivo">Inactivo</option>
-                                            <option value="suspendido">Suspendido</option>
-                                            <option value="bloqueado">Bloqueado</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Tipo de Documento</label>
-                                        <select name="tipo_documento" value={formData.tipo_documento} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
-                                            <option value="NIT">NIT</option>
-                                            <option value="CC">Cédula de Ciudadanía</option>
-                                            <option value="CE">Cédula de Extranjería</option>
-                                            <option value="PAS">Pasaporte</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Dígito Verificación</label>
-                                        <input type="text" name="digito_verificacion" value={formData.digito_verificacion} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Código de Barras</label>
-                                        <input type="text" name="codigo_barras" value={formData.codigo_barras} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Actividad Económica (CIIU)</label>
-                                        <input type="text" name="actividad_economica_ciiu" value={formData.actividad_economica_ciiu} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Responsabilidades Fiscales</label>
-                                        <input type="text" name="responsabilidades_fiscales" value={formData.responsabilidades_fiscales} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Matrícula Mercantil</label>
-                                        <input type="text" name="matricula_mercantil" value={formData.matricula_mercantil} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Correo Facturación Electrónica</label>
-                                        <input type="email" name="correo_facturacion_electronica" value={formData.correo_facturacion_electronica} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Régimen Tributario</label>
-                                        <select name="regimen_tributario" value={formData.regimen_tributario} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
-                                            <option value="comun">Régimen Común</option>
-                                            <option value="simplificado">Régimen Simplificado</option>
-                                            <option value="especial">Régimen Especial</option>
-                                        </select>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <input type="checkbox" name="responsable_iva" checked={formData.responsable_iva} onChange={handleInputChange} />
-                                            Responsable IVA
-                                        </label>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <input type="checkbox" name="gran_contribuyente" checked={formData.gran_contribuyente} onChange={handleInputChange} />
-                                            Gran contribuyente
-                                        </label>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <input type="checkbox" name="agente_retenedor" checked={formData.agente_retenedor} onChange={handleInputChange} />
-                                            Agente retenedor
-                                        </label>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Clasificación</label>
-                                        <select name="clasificacion" value={formData.clasificacion} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
-                                            <option value="A">A - Premium</option>
-                                            <option value="B">B - Estándar</option>
-                                            <option value="C">C - Básico</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Crédito Máximo (COP)</label>
-                                        <input type="number" name="credito_maximo" value={formData.credito_maximo} onChange={handleInputChange} step="0.01" style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Días de Crédito</label>
-                                        <input type="number" name="dias_credito" value={formData.dias_credito} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Descuento General (%)</label>
-                                        <input type="number" name="descuento_general" value={formData.descuento_general} onChange={handleInputChange} step="0.01" style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Contacto Principal</label>
-                                        <input type="text" name="contacto_nombre" value={formData.contacto_nombre} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Cargo Contacto</label>
-                                        <input type="text" name="cargo_contacto" value={formData.cargo_contacto} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Representante Legal</label>
-                                        <input type="text" name="representante_legal" value={formData.representante_legal} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Banco</label>
-                                        <input type="text" name="banco_nombre" value={formData.banco_nombre} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Número de Cuenta</label>
-                                        <input type="text" name="numero_cuenta" value={formData.numero_cuenta} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Tipo de Cuenta</label>
-                                        <select name="tipo_cuenta" value={formData.tipo_cuenta} onChange={handleInputChange} style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '8px' }}>
-                                            <option value="">--</option>
-                                            <option value="corriente">Cuenta Corriente</option>
-                                            <option value="ahorros">Cuenta de Ahorros</option>
-                                            <option value="nomina">Cuenta Nómina</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Fecha Constitución</label>
-                                        <input type="date" name="fecha_constitucion" value={formData.fecha_constitucion || ''} onChange={handleInputChange} style={{ width: '100%', padding: '0.5rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#4a5568' }}>Último Contacto</label>
-                                        <input type="date" name="fecha_ultimo_contacto" value={formData.fecha_ultimo_contacto || ''} onChange={handleInputChange} style={{ width: '100%', padding: '0.5rem', border: '2px solid #e2e8f0', borderRadius: '8px' }} />
-                                    </div>
-                                </div>
-                            )}
-
-                            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                                <button 
-                                    type="button" 
-                                    onClick={closeModal}
-                                    style={{
-                                        background: '#e2e8f0',
-                                        color: '#4a5568',
-                                        border: 'none',
-                                        padding: '0.75rem 1.5rem',
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={(e) => {
-                                        e.target.style.backgroundColor = '#cbd5e0';
-                                    }}
-                                    onMouseOut={(e) => {
-                                        e.target.style.backgroundColor = '#e2e8f0';
-                                    }}
-                                >
-                                    Cancelar
-                                </button>
-                                <button 
-                                    type="submit" 
-                                    style={{
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '0.75rem 1.5rem',
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={(e) => {
-                                        e.target.style.transform = 'translateY(-2px)';
-                                        e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
-                                    }}
-                                    onMouseOut={(e) => {
-                                        e.target.style.transform = 'translateY(0)';
-                                        e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
-                                    }}
-                                >
-                                    {currentProvider ? 'Actualizar' : 'Guardar'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+      {/* ── Header ── */}
+      <div style={{ ...S.card, ...S.header }}>
+        <div>
+          <h1 style={S.h1}>🏭 Proveedores</h1>
+          <p style={S.sub}>Gestión completa de proveedores y condiciones comerciales</p>
         </div>
-    );
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button onClick={() => openModal()} style={S.addBtn}><Plus size={16} />Nuevo Proveedor</button>
+          <button onClick={() => navigate('/')} style={S.backBtn}><ArrowLeft size={16} />Inicio</button>
+        </div>
+      </div>
+
+      {/* ── Error ── */}
+      {error && (
+        <div style={{ background: '#fed7d7', border: '1px solid #feb2b2', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', color: '#c53030', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <AlertCircle size={20} />
+          <div style={{ flex: 1 }}><strong>Error:</strong> {error}</div>
+          <button onClick={() => setError(null)} style={{ background: '#e53e3e', color: 'white', border: 'none', padding: '.4rem .9rem', borderRadius: '6px', cursor: 'pointer' }}>Cerrar</button>
+        </div>
+      )}
+
+      {/* ── Stats bar ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {[
+          { label: 'Total', value: proveedores.length, color: '#667eea' },
+          { label: 'Activos', value: proveedores.filter(p => p.estado === 'activo').length, color: '#48bb78' },
+          { label: 'Inactivos', value: proveedores.filter(p => p.estado === 'inactivo').length, color: '#a0aec0' },
+          { label: 'Bloqueados', value: proveedores.filter(p => p.estado === 'bloqueado').length, color: '#e53e3e' },
+        ].map(stat => (
+          <div key={stat.label} style={{ background: 'white', borderRadius: '12px', padding: '1.2rem', boxShadow: '0 4px 16px rgba(102,126,234,.1)', display: 'flex', alignItems: 'center', gap: '1rem', border: `2px solid ${stat.color}18` }}>
+            <div style={{ background: `${stat.color}18`, borderRadius: '10px', padding: '.6rem .9rem', fontWeight: 800, fontSize: '1.4rem', color: stat.color }}>{stat.value}</div>
+            <div style={{ fontWeight: 600, color: '#4a5568', fontSize: '.9rem' }}>{stat.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Table ── */}
+      <div style={S.card}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={S.table}>
+            <thead>
+              <tr>
+                <th style={S.th}>Código</th>
+                <th style={S.th}>Razón Social / NIT</th>
+                <th style={S.th}>Contacto</th>
+                <th style={S.th}>Ciudad</th>
+                <th style={S.th}>Categoría</th>
+                <th style={S.th}>Estado</th>
+                <th style={{ ...S.th, textAlign: 'center' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {proveedores.map((prov, idx) => (
+                <tr key={prov.id} style={{ background: idx % 2 === 0 ? 'white' : '#f8fafc' }}
+                  onMouseOver={e => e.currentTarget.style.background = '#f0f4ff'}
+                  onMouseOut={e => e.currentTarget.style.background = idx % 2 === 0 ? 'white' : '#f8fafc'}
+                >
+                  <td style={S.td}>
+                    <span style={{ fontSize: '.75rem', fontWeight: 700, background: '#667eea18', color: '#667eea', borderRadius: 6, padding: '2px 8px' }}>
+                      {prov.codigo_proveedor || '—'}
+                    </span>
+                  </td>
+                  <td style={S.td}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                      <Building2 size={16} style={{ color: '#667eea', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontWeight: 700, color: '#2d3748' }}>{prov.razon_social}</div>
+                        <div style={{ fontSize: '.75rem', color: '#718096' }}>{prov.nit}</div>
+                        {prov.nombre_comercial && <div style={{ fontSize: '.72rem', color: '#a0aec0' }}>{prov.nombre_comercial}</div>}
+                      </div>
+                    </div>
+                  </td>
+                  <td style={S.td}>
+                    {(prov.email || prov.contacto_email) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginBottom: '.2rem' }}>
+                        <Mail size={13} style={{ color: '#718096' }} />
+                        <span style={{ fontSize: '.82rem' }}>{prov.email || prov.contacto_email}</span>
+                      </div>
+                    )}
+                    {(prov.telefono || prov.contacto_telefono) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                        <Phone size={13} style={{ color: '#718096' }} />
+                        <span style={{ fontSize: '.82rem' }}>{prov.telefono || prov.contacto_telefono}</span>
+                      </div>
+                    )}
+                  </td>
+                  <td style={S.td}>
+                    {prov.ciudad && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.82rem', color: '#4a5568' }}>
+                        <MapPin size={13} style={{ color: '#718096' }} />
+                        {prov.ciudad}{prov.departamento ? `, ${prov.departamento}` : ''}
+                      </div>
+                    )}
+                  </td>
+                  <td style={S.td}>
+                    <span style={{ fontSize: '.72rem', fontWeight: 700, background: '#f0f4ff', color: '#667eea', borderRadius: 6, padding: '2px 9px' }}>
+                      {prov.categoria_display || prov.categoria || '—'}
+                    </span>
+                  </td>
+                  <td style={S.td}>
+                    <span style={{ fontSize: '.75rem', fontWeight: 700, background: `${ESTADO_COLOR[prov.estado] || '#a0aec0'}18`, color: ESTADO_COLOR[prov.estado] || '#a0aec0', borderRadius: 20, padding: '3px 10px' }}>
+                      {prov.estado_display || prov.estado}
+                    </span>
+                  </td>
+                  <td style={{ ...S.td, textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '.4rem', justifyContent: 'center' }}>
+                      <button onClick={() => openModal(prov)} title="Editar"
+                        style={{ background: '#667eea', color: 'white', border: 'none', padding: '.4rem .6rem', borderRadius: '7px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        onMouseOver={e => e.currentTarget.style.background = '#5a67d8'}
+                        onMouseOut={e => e.currentTarget.style.background = '#667eea'}
+                      ><Edit3 size={14} /></button>
+                      <button onClick={() => handleDelete(prov.id)} title="Eliminar"
+                        style={{ background: '#e53e3e', color: 'white', border: 'none', padding: '.4rem .6rem', borderRadius: '7px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        onMouseOver={e => e.currentTarget.style.background = '#c53030'}
+                        onMouseOut={e => e.currentTarget.style.background = '#e53e3e'}
+                      ><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {proveedores.length === 0 && !error && (
+            <div style={{ padding: '4rem', textAlign: 'center', color: '#718096' }}>
+              <Users size={48} style={{ margin: '0 auto 1rem', color: '#cbd5e0' }} />
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '.5rem' }}>Sin proveedores registrados</div>
+              <button onClick={() => openModal()} style={{ ...S.addBtn, margin: '0 auto' }}><Plus size={16} />Crear Primer Proveedor</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Modal ── */}
+      {isModalOpen && (
+        <div style={S.overlay} onClick={closeModal}>
+          <div style={S.modal} onClick={e => e.stopPropagation()}>
+            {/* Modal header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '2px solid #f1f5f9' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#2d3748' }}>
+                  {currentProv ? `✏️ Editar: ${currentProv.razon_social}` : '➕ Nuevo Proveedor'}
+                </h2>
+                {currentProv?.codigo_proveedor && (
+                  <span style={{ fontSize: '.78rem', fontWeight: 700, background: '#667eea18', color: '#667eea', borderRadius: 6, padding: '2px 9px' }}>
+                    {currentProv.codigo_proveedor}
+                  </span>
+                )}
+              </div>
+              <button onClick={closeModal} style={{ background: '#e2e8f0', color: '#4a5568', border: 'none', padding: '.45rem .6rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              {/* ── INFORMACIÓN BÁSICA ── */}
+              <div style={S.section}><div style={S.sectionTitle}>🏢 Información Básica</div></div>
+              <div style={S.grid3}>
+                <FormField label="Razón Social *">
+                  <InputF name="razon_social" value={formData.razon_social} onChange={handleChange} required placeholder="Nombre o razón social" />
+                </FormField>
+                <FormField label="Nombre Comercial">
+                  <InputF name="nombre_comercial" value={formData.nombre_comercial} onChange={handleChange} placeholder="Nombre comercial" />
+                </FormField>
+                <FormField label="Tipo de Proveedor">
+                  <SelectF name="tipo_proveedor" value={formData.tipo_proveedor} onChange={handleChange}
+                    options={[{ value: 'empresa', label: 'Empresa' }, { value: 'persona_natural', label: 'Persona Natural' }, { value: 'empresa_unipersonal', label: 'Empresa Unipersonal' }, { value: 'cooperativa', label: 'Cooperativa' }]} />
+                </FormField>
+                <FormField label="Tipo de Documento">
+                  <SelectF name="tipo_documento" value={formData.tipo_documento} onChange={handleChange}
+                    options={[{ value: 'NIT', label: 'NIT' }, { value: 'CC', label: 'Cédula de Ciudadanía' }, { value: 'CE', label: 'Cédula de Extranjería' }, { value: 'PAS', label: 'Pasaporte' }]} />
+                </FormField>
+                <FormField label="NIT / Documento *">
+                  <InputF name="nit" value={formData.nit} onChange={handleChange} required placeholder="900.123.456" />
+                </FormField>
+                <FormField label="Dígito Verificación">
+                  <InputF name="digito_verificacion" value={formData.digito_verificacion} onChange={handleChange} placeholder="0" />
+                </FormField>
+                <FormField label="Estado">
+                  <SelectF name="estado" value={formData.estado} onChange={handleChange}
+                    options={[{ value: 'activo', label: 'Activo' }, { value: 'inactivo', label: 'Inactivo' }, { value: 'bloqueado', label: 'Bloqueado' }, { value: 'en_evaluacion', label: 'En Evaluación' }]} />
+                </FormField>
+                <FormField label="Clasificación">
+                  <SelectF name="clasificacion" value={formData.clasificacion} onChange={handleChange}
+                    options={[{ value: 'A', label: 'A — Premium' }, { value: 'B', label: 'B — Estándar' }, { value: 'C', label: 'C — Básico' }]} />
+                </FormField>
+                <FormField label="Categoría">
+                  <SelectF name="categoria" value={formData.categoria} onChange={handleChange}
+                    options={[
+                      { value: 'materias_primas', label: 'Materias Primas' }, { value: 'insumos', label: 'Insumos/Consumibles' },
+                      { value: 'maquinaria', label: 'Maquinaria y Equipos' }, { value: 'servicios', label: 'Servicios' },
+                      { value: 'empaques', label: 'Empaques' }, { value: 'transporte', label: 'Transporte/Logística' },
+                      { value: 'tecnologia', label: 'Tecnología' }, { value: 'otro', label: 'Otro' },
+                    ]} />
+                </FormField>
+              </div>
+
+              {/* ── TRIBUTACIÓN DIAN ── */}
+              <div style={S.section}><div style={S.sectionTitle}><Shield size={12} style={{ display: 'inline', marginRight: 4 }} />Tributación DIAN</div></div>
+              <div style={S.grid3}>
+                <FormField label="Régimen Tributario">
+                  <SelectF name="regimen_tributario" value={formData.regimen_tributario} onChange={handleChange}
+                    options={[{ value: 'comun', label: 'Régimen Común' }, { value: 'simplificado', label: 'Régimen Simplificado' }, { value: 'especial', label: 'Régimen Especial' }]} />
+                </FormField>
+                <FormField label="Código de Barras">
+                  <InputF name="codigo_barras" value={formData.codigo_barras} onChange={handleChange} placeholder="Código de barras" />
+                </FormField>
+                <FormField label="Actividad Económica (CIIU)">
+                  <InputF name="actividad_economica_ciiu" value={formData.actividad_economica_ciiu} onChange={handleChange} placeholder="4321" />
+                </FormField>
+                <FormField label="Resolución DIAN">
+                  <InputF name="numero_resolucion_dian" value={formData.numero_resolucion_dian} onChange={handleChange} />
+                </FormField>
+                <FormField label="Fecha Resolución DIAN">
+                  <InputF name="fecha_resolucion_dian" value={formData.fecha_resolucion_dian} onChange={handleChange} type="date" />
+                </FormField>
+                <FormField label="Responsabilidades Fiscales">
+                  <InputF name="responsabilidades_fiscales" value={formData.responsabilidades_fiscales} onChange={handleChange} placeholder="O-13, O-15..." />
+                </FormField>
+                <FormField label="Matrícula Mercantil">
+                  <InputF name="matricula_mercantil" value={formData.matricula_mercantil} onChange={handleChange} />
+                </FormField>
+                <FormField label="Correo Facturación Electrónica">
+                  <InputF name="correo_facturacion_electronica" value={formData.correo_facturacion_electronica} onChange={handleChange} type="email" />
+                </FormField>
+              </div>
+              <div style={S.checkRow}>
+                {[['responsable_iva', 'Responsable de IVA'], ['gran_contribuyente', 'Gran Contribuyente'], ['agente_retenedor', 'Agente Retenedor']].map(([f, lbl]) => (
+                  <label key={f} style={S.checkLabel}>
+                    <input type="checkbox" name={f} checked={!!formData[f]} onChange={handleChange} style={{ width: '1rem', height: '1rem' }} />
+                    {lbl}
+                  </label>
+                ))}
+              </div>
+
+              {/* ── CONTACTO PRINCIPAL ── */}
+              <div style={S.section}><div style={S.sectionTitle}><Mail size={12} style={{ display: 'inline', marginRight: 4 }} />Contacto Principal</div></div>
+              <div style={S.grid3}>
+                <FormField label="Email Principal">
+                  <InputF name="email" value={formData.email} onChange={handleChange} type="email" placeholder="empresa@dominio.com" />
+                </FormField>
+                <FormField label="Teléfono Principal">
+                  <InputF name="telefono" value={formData.telefono} onChange={handleChange} type="tel" placeholder="+57 600 1234567" />
+                </FormField>
+                <FormField label="Teléfono Alterno">
+                  <InputF name="telefono_alterno" value={formData.telefono_alterno} onChange={handleChange} type="tel" />
+                </FormField>
+                <FormField label="Fax">
+                  <InputF name="fax" value={formData.fax} onChange={handleChange} type="tel" />
+                </FormField>
+                <FormField label="Nombre del Contacto">
+                  <InputF name="contacto_nombre" value={formData.contacto_nombre} onChange={handleChange} placeholder="Nombre completo" />
+                </FormField>
+                <FormField label="Cargo del Contacto">
+                  <InputF name="cargo_contacto" value={formData.cargo_contacto} onChange={handleChange} placeholder="Gerente, Director..." />
+                </FormField>
+                <FormField label="Email del Contacto">
+                  <InputF name="contacto_email" value={formData.contacto_email} onChange={handleChange} type="email" />
+                </FormField>
+                <FormField label="Teléfono Contacto">
+                  <InputF name="contacto_telefono" value={formData.contacto_telefono} onChange={handleChange} type="tel" />
+                </FormField>
+                <FormField label="Tel. Alternativo Contacto">
+                  <InputF name="contacto_telefono_alt" value={formData.contacto_telefono_alt} onChange={handleChange} type="tel" />
+                </FormField>
+                <FormField label="Representante Legal">
+                  <InputF name="representante_legal" value={formData.representante_legal} onChange={handleChange} />
+                </FormField>
+                <FormField label="Cédula Representante">
+                  <InputF name="cedula_representante" value={formData.cedula_representante} onChange={handleChange} />
+                </FormField>
+              </div>
+
+              {/* ── DIRECCIÓN ── */}
+              <div style={S.section}><div style={S.sectionTitle}><MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />Dirección</div></div>
+              <div style={{ ...S.grid2, marginBottom: '1rem' }}>
+                <FormField label="Dirección de Facturación">
+                  <textarea name="direccion" value={formData.direccion} onChange={handleChange} rows={2} style={S.textarea} placeholder="Calle, carrera, #..." />
+                </FormField>
+                <FormField label="Dirección de Entrega">
+                  <textarea name="direccion_entrega" value={formData.direccion_entrega} onChange={handleChange} rows={2} style={S.textarea} placeholder="Si difiere de facturación..." />
+                </FormField>
+              </div>
+              <div style={S.grid3}>
+                <FormField label="Ciudad">
+                  <InputF name="ciudad" value={formData.ciudad} onChange={handleChange} placeholder="Bogotá, Medellín..." />
+                </FormField>
+                <FormField label="Departamento">
+                  <InputF name="departamento" value={formData.departamento} onChange={handleChange} />
+                </FormField>
+                <FormField label="País">
+                  <InputF name="pais" value={formData.pais} onChange={handleChange} />
+                </FormField>
+                <FormField label="Código Postal">
+                  <InputF name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} />
+                </FormField>
+                <FormField label="Ciudad de Entrega">
+                  <InputF name="ciudad_entrega" value={formData.ciudad_entrega} onChange={handleChange} />
+                </FormField>
+                <FormField label="Sitio Web">
+                  <InputF name="sitio_web" value={formData.sitio_web} onChange={handleChange} placeholder="https://www.empresa.com" />
+                </FormField>
+              </div>
+
+              {/* ── Toggle datos adicionales ── */}
+              <button type="button" onClick={() => setShowExtra(v => !v)} style={{ ...S.toggleBtn, margin: '1rem 0' }}>
+                {showExtra ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                {showExtra ? 'Ocultar' : 'Mostrar'} datos comerciales, bancarios y adicionales
+              </button>
+
+              {showExtra && (<>
+                {/* ── CONDICIONES COMERCIALES ── */}
+                <div style={S.section}><div style={S.sectionTitle}><Star size={12} style={{ display: 'inline', marginRight: 4 }} />Condiciones Comerciales</div></div>
+                <div style={S.grid3}>
+                  <FormField label="Condición de Pago">
+                    <InputF name="condicion_pago" value={formData.condicion_pago} onChange={handleChange} placeholder="Contado, 30 días..." />
+                  </FormField>
+                  <FormField label="Crédito Máximo (COP)">
+                    <InputF name="credito_maximo" value={formData.credito_maximo} onChange={handleChange} type="number" />
+                  </FormField>
+                  <FormField label="Días de Crédito">
+                    <InputF name="dias_credito" value={formData.dias_credito} onChange={handleChange} type="number" />
+                  </FormField>
+                  <FormField label="Descuento General (%)">
+                    <InputF name="descuento_general" value={formData.descuento_general} onChange={handleChange} type="number" />
+                  </FormField>
+                  <FormField label="Lista de Precios">
+                    <InputF name="lista_precios" value={formData.lista_precios} onChange={handleChange} placeholder="Lista A, Lista B..." />
+                  </FormField>
+                  <FormField label="Moneda">
+                    <SelectF name="moneda" value={formData.moneda} onChange={handleChange}
+                      options={[{ value: 'COP', label: 'COP — Peso Colombiano' }, { value: 'USD', label: 'USD — Dólar' }, { value: 'EUR', label: 'EUR — Euro' }]} />
+                  </FormField>
+                  <FormField label="Tiempo Entrega Prom. (días)">
+                    <InputF name="tiempo_entrega_promedio_dias" value={formData.tiempo_entrega_promedio_dias} onChange={handleChange} type="number" />
+                  </FormField>
+                  <FormField label="Sector / Industria">
+                    <InputF name="sector_industria" value={formData.sector_industria} onChange={handleChange} placeholder="Construcción, Eléctrico..." />
+                  </FormField>
+                  <FormField label="Calificación (1–5)">
+                    <InputF name="calificacion" value={formData.calificacion} onChange={handleChange} type="number" placeholder="4.5" />
+                  </FormField>
+                </div>
+
+                {/* ── INFORMACIÓN BANCARIA ── */}
+                <div style={S.section}><div style={S.sectionTitle}><CreditCard size={12} style={{ display: 'inline', marginRight: 4 }} />Información Bancaria</div></div>
+                <div style={S.grid3}>
+                  <FormField label="Banco">
+                    <InputF name="banco_nombre" value={formData.banco_nombre} onChange={handleChange} placeholder="Bancolombia, Davivienda..." />
+                  </FormField>
+                  <FormField label="Número de Cuenta">
+                    <InputF name="numero_cuenta" value={formData.numero_cuenta} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Tipo de Cuenta">
+                    <SelectF name="tipo_cuenta" value={formData.tipo_cuenta} onChange={handleChange}
+                      options={[{ value: '', label: '— Seleccionar —' }, { value: 'corriente', label: 'Cuenta Corriente' }, { value: 'ahorros', label: 'Cuenta de Ahorros' }, { value: 'nomina', label: 'Cuenta Nómina' }]} />
+                  </FormField>
+                  <FormField label="Titular de la Cuenta">
+                    <InputF name="titular_cuenta" value={formData.titular_cuenta} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Código Bancario">
+                    <InputF name="codigo_bancario" value={formData.codigo_bancario} onChange={handleChange} />
+                  </FormField>
+                </div>
+
+                {/* ── ADICIONAL ── */}
+                <div style={S.section}><div style={S.sectionTitle}><FileText size={12} style={{ display: 'inline', marginRight: 4 }} />Información Adicional</div></div>
+                <div style={S.grid2}>
+                  <FormField label="Fecha de Constitución">
+                    <InputF name="fecha_constitucion" value={formData.fecha_constitucion} onChange={handleChange} type="date" />
+                  </FormField>
+                  <FormField label="Fecha Último Contacto">
+                    <InputF name="fecha_ultimo_contacto" value={formData.fecha_ultimo_contacto} onChange={handleChange} type="date" />
+                  </FormField>
+                </div>
+                <FormField label="Notas Internas">
+                  <textarea name="notas" value={formData.notas} onChange={handleChange} rows={3} style={S.textarea} placeholder="Observaciones, condiciones especiales..." />
+                </FormField>
+                <div style={{ ...S.grid2, marginTop: '1rem' }}>
+                  <FormField label="Logotipo">
+                    <input type="file" name="logotipo" accept="image/*" onChange={handleChange} style={{ width: '100%', padding: '.4rem 0' }} />
+                  </FormField>
+                  <FormField label="Adjunto (contrato, RUT, etc.)">
+                    <input type="file" name="adjunto_archivos" onChange={handleChange} style={{ width: '100%', padding: '.4rem 0' }} />
+                  </FormField>
+                </div>
+              </>)}
+
+              {/* ── Footer ── */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '.75rem', marginTop: '2rem', paddingTop: '1.25rem', borderTop: '2px solid #f1f5f9' }}>
+                <button type="button" onClick={closeModal} style={S.cancelBtn}>Cancelar</button>
+                <button type="submit" style={S.saveBtn}>
+                  {currentProv ? '💾 Actualizar Proveedor' : '✅ Guardar Proveedor'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Proveedores;
