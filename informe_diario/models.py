@@ -10,7 +10,6 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-
 # ---------------------------------------------------------------------------
 # Catálogos maestros (configurables desde la app)
 # ---------------------------------------------------------------------------
@@ -33,7 +32,6 @@ class Obra(models.Model):
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
 
-
 class CategoriaRecurso(models.Model):
     """Top-level grouping for resources. Examples seeded:
     'MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS', 'PERSONAL DE OBRA'."""
@@ -48,12 +46,11 @@ class CategoriaRecurso(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class Recurso(models.Model):
     """Configurable master list: a piece of equipment or a personnel role.
     e.g. 'CAMIONETAS (Siemens)', 'Coordinadora SST'."""
     categoria = models.ForeignKey(CategoriaRecurso, on_delete=models.PROTECT,
-                                  related_name='recursos')
+                                    related_name='recursos')
     nombre = models.CharField(max_length=200)
     unidad = models.CharField(max_length=20, default='unidad',
                               help_text="Ej: unidad, persona, hora")
@@ -68,7 +65,6 @@ class Recurso(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.categoria.nombre})"
-
 
 class CategoriaActividad(models.Model):
     """Activity buckets in the daily report. Examples:
@@ -85,7 +81,6 @@ class CategoriaActividad(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 # ---------------------------------------------------------------------------
 # Informe Diario
@@ -138,7 +133,7 @@ class InformeDiario(models.Model):
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
     creado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
-                                   blank=True, on_delete=models.SET_NULL)
+                                     blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         ordering = ['-fecha']
@@ -158,54 +153,77 @@ class InformeDiario(models.Model):
 
     @property
     def total_personal(self):
-        total_cat = sum(
-            d.cantidad for d in self.detalles.all()
-            if d.recurso and d.recurso.categoria and d.recurso.categoria.nombre.upper().startswith('PERSONAL')
-        )
-        total_libre = sum(p.cantidad for p in self.personal_libre.all())
-        return total_cat + total_libre
+        try:
+            total_cat = sum(
+                d.cantidad for d in self.detalles.all()
+                if d.recurso and d.recurso.categoria and d.recurso.categoria.nombre.upper().startswith('PERSONAL')
+            )
+            total_libre = sum(p.cantidad for p in self.personal_libre.all())
+            return total_cat + total_libre
+        except Exception:
+            return 0
 
     @property
     def total_maquinaria(self):
-        total_cat = sum(
-            d.cantidad for d in self.detalles.all()
-            if d.recurso and d.recurso.categoria and not d.recurso.categoria.nombre.upper().startswith('PERSONAL')
-        )
-        total_libre = sum(m.cantidad for m in self.maquinaria_libre.all())
-        return total_cat + total_libre
+        try:
+            total_cat = sum(
+                d.cantidad for d in self.detalles.all()
+                if d.recurso and d.recurso.categoria and not d.recurso.categoria.nombre.upper().startswith('PERSONAL')
+            )
+            total_libre = sum(m.cantidad for m in self.maquinaria_libre.all())
+            return total_cat + total_libre
+        except Exception:
+            return 0
 
     @property
     def total_horas_lluvia(self):
-        return self.reportes_lluvia.filter(con_lluvia=True).count()
+        try:
+            return self.reportes_lluvia.filter(con_lluvia=True).count()
+        except Exception:
+            return 0
 
     @property
     def total_actividades(self):
-        return self.actividades.count()
+        try:
+            return self.actividades.count()
+        except Exception:
+            return 0
 
     @property
     def nombre_elaborado(self):
-        if self.elaborado_por:
-            return f"{self.elaborado_por.primer_nombre} {self.elaborado_por.primer_apellido}".strip()
-        return self.elaborado_por_texto
+        try:
+            if self.elaborado_por:
+                return f"{self.elaborado_por.primer_nombre} {self.elaborado_por.primer_apellido}".strip()
+            return self.elaborado_por_texto
+        except Exception:
+            return self.elaborado_por_texto or ''
 
     @property
     def nombre_revisado(self):
-        if self.revisado_por:
-            return f"{self.revisado_por.primer_nombre} {self.revisado_por.primer_apellido}".strip()
-        return self.revisado_por_texto
+        try:
+            if self.revisado_por:
+                return f"{self.revisado_por.primer_nombre} {self.revisado_por.primer_apellido}".strip()
+            return self.revisado_por_texto
+        except Exception:
+            return self.revisado_por_texto or ''
 
     @property
     def cargo_elaborado_rrhh(self):
-        if self.elaborado_por and self.elaborado_por.cargo:
-            return self.elaborado_por.cargo.nombre if hasattr(self.elaborado_por.cargo, 'nombre') else str(self.elaborado_por.cargo)
-        return self.cargo_elaborado
+        try:
+            if self.elaborado_por and self.elaborado_por.cargo:
+                return self.elaborado_por.cargo.nombre if hasattr(self.elaborado_por.cargo, 'nombre') else str(self.elaborado_por.cargo)
+            return self.cargo_elaborado
+        except Exception:
+            return self.cargo_elaborado or ''
 
     @property
     def cargo_revisado_rrhh(self):
-        if self.revisado_por and self.revisado_por.cargo:
-            return self.revisado_por.cargo.nombre if hasattr(self.revisado_por.cargo, 'nombre') else str(self.revisado_por.cargo)
-        return self.cargo_revisado
-
+        try:
+            if self.revisado_por and self.revisado_por.cargo:
+                return self.revisado_por.cargo.nombre if hasattr(self.revisado_por.cargo, 'nombre') else str(self.revisado_por.cargo)
+            return self.cargo_revisado
+        except Exception:
+            return self.cargo_revisado or ''
 
 class DetalleRecurso(models.Model):
     """Quantity of a given resource (maquinaria or personnel) for a report."""
@@ -220,7 +238,6 @@ class DetalleRecurso(models.Model):
         unique_together = [('informe', 'recurso')]
         ordering = ['recurso__categoria__orden', 'recurso__orden']
 
-
 class MaquinariaLibre(models.Model):
     """Filas de maquinaria agregadas manualmente (no catálogo)."""
     informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE, related_name='maquinaria_libre')
@@ -230,7 +247,6 @@ class MaquinariaLibre(models.Model):
     notas = models.TextField(blank=True, null=True, verbose_name="Notas")
     orden = models.IntegerField(default=0)
 
-
 class PersonalLibre(models.Model):
     """Filas de personal agregadas manualmente (no catálogo)."""
     informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE, related_name='personal_libre')
@@ -239,7 +255,6 @@ class PersonalLibre(models.Model):
     empresa = models.CharField(max_length=200, blank=True)
     notas = models.TextField(blank=True, null=True, verbose_name="Notas")
     orden = models.IntegerField(default=0)
-
 
 class ReporteLluvia(models.Model):
     """One row per hourly slot (0-23) flagging if it rained."""
@@ -252,7 +267,6 @@ class ReporteLluvia(models.Model):
         unique_together = [('informe', 'hora')]
         ordering = ['hora']
 
-
 class Actividad(models.Model):
     """Free-text activity items under a category, for a given report."""
     informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE,
@@ -263,7 +277,6 @@ class Actividad(models.Model):
 
     class Meta:
         ordering = ['categoria__orden', 'orden', 'id']
-
 
 class ItemObra(models.Model):
     """Free-text work item line for a given report (table in F-141-IN)."""
@@ -284,7 +297,6 @@ class ItemObra(models.Model):
     def __str__(self):
         return f"{self.informe} - Item {self.item}"
 
-
 class AnexoFoto(models.Model):
     """Photo annex stored in Cloudinary (or local in dev)."""
     informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE,
@@ -300,7 +312,7 @@ class AnexoFoto(models.Model):
     )
     orden = models.IntegerField(default=0)
     posicion = models.PositiveSmallIntegerField(
-        default=0, 
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(24)],
         help_text="Posición en la cuadrícula 4x6 (1-24). 0 si no está asignada."
     )
