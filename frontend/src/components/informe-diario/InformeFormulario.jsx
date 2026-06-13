@@ -163,7 +163,7 @@ function EmpleadoSelect({ label, value, onChange, required = false, placeholder 
 
   return (
     <div style={{ marginBottom: "0.75rem" }}>
-      <label style={{ ...label, display: "flex", alignItems: "center", gap: "0.35rem" }}>
+      <label style={{  display: "flex", alignItems: "center", gap: "0.35rem" }}>
         <Users size={13} />
         {label}
         {required && <span style={{ color: "#ef4444" }}>*</span>}
@@ -846,7 +846,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
                 placeholder="Seleccione el responsable de elaboración"
               />
               <div style={{ marginTop: "0.5rem" }}>
-                <label style={{ ...label, fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
+                <label style={{  fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
                 <input
                   type="text"
                   value={form.cargo_elaborado || ""}
@@ -867,7 +867,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
                 placeholder="Seleccione el responsable de revisión"
               />
               <div style={{ marginTop: "0.5rem" }}>
-                <label style={{ ...label, fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
+                <label style={{  fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
                 <input
                   type="text"
                   value={form.cargo_revisado || ""}
@@ -931,3 +931,4 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     </div>
   );
 }
+
