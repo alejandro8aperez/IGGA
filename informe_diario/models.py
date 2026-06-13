@@ -160,7 +160,7 @@ class InformeDiario(models.Model):
     def total_personal(self):
         total_cat = sum(
             d.cantidad for d in self.detalles.all()
-            if d.recurso.categoria.nombre.upper().startswith('PERSONAL')
+            if d.recurso and d.recurso.categoria and d.recurso.categoria.nombre.upper().startswith('PERSONAL')
         )
         total_libre = sum(p.cantidad for p in self.personal_libre.all())
         return total_cat + total_libre
@@ -169,7 +169,7 @@ class InformeDiario(models.Model):
     def total_maquinaria(self):
         total_cat = sum(
             d.cantidad for d in self.detalles.all()
-            if not d.recurso.categoria.nombre.upper().startswith('PERSONAL')
+            if d.recurso and d.recurso.categoria and not d.recurso.categoria.nombre.upper().startswith('PERSONAL')
         )
         total_libre = sum(m.cantidad for m in self.maquinaria_libre.all())
         return total_cat + total_libre
