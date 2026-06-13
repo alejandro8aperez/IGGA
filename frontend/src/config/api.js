@@ -51,12 +51,23 @@ export const API = {
   INVENTARIO: {
     PRODUCTOS:   'inventario/productos/',
     MOVIMIENTOS: 'inventario/movimientos/',
+    CATEGORIAS:  'inventario/categorias/',
+    ALMACENES:   'inventario/almacenes/',
+    LOTES:       'inventario/lotes/',
+    ALERTAS:     'inventario/alertas/',
+    CONTEOS:     'inventario/conteos/',
     RESUMEN:     'inventario/productos/resumen/',
   },
   // alias para no romper módulos que ya usan INVENTARIOS
   INVENTARIOS: {
     PRODUCTOS:   'inventario/productos/',
     MOVIMIENTOS: 'inventario/movimientos/',
+    CATEGORIAS:  'inventario/categorias/',
+    ALMACENES:   'inventario/almacenes/',
+    LOTES:       'inventario/lotes/',
+    ALERTAS:     'inventario/alertas/',
+    CONTEOS:     'inventario/conteos/',
+    RESUMEN:     'inventario/productos/resumen/',
   },
 
   // ---------------------------------------------------------------------------
