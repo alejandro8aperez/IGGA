@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.http import HttpResponse
@@ -15,6 +15,16 @@ from datetime import datetime
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all().order_by('-fecha_registro')
     serializer_class = ClienteSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['nombre', 'nit', 'cedula', 'email', 'codigo_cliente', 'compania']
+    ordering_fields = ['nombre', 'fecha_registro', 'estado', 'clasificacion']
+
+    def get_queryset(self):
+        qs = Cliente.objects.all().order_by('-fecha_registro')
+        estado = self.request.query_params.get('estado')
+        if estado:
+            qs = qs.filter(estado=estado)
+        return qs
 
     def destroy(self, request, *args, **kwargs):
         cliente = self.get_object()
@@ -33,13 +43,37 @@ class ClienteViewSet(viewsets.ModelViewSet):
 
 
 class OportunidadViewSet(viewsets.ModelViewSet):
-    queryset = Oportunidad.objects.all().order_by('-fecha_creacion')
     serializer_class = OportunidadSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['titulo', 'descripcion']
+    ordering_fields = ['titulo', 'estado', 'fecha_creacion', 'valor_estimado']
+
+    def get_queryset(self):
+        qs = Oportunidad.objects.all().order_by('-fecha_creacion')
+        cliente_id = self.request.query_params.get('cliente')
+        if cliente_id:
+            qs = qs.filter(cliente_id=cliente_id)
+        estado = self.request.query_params.get('estado')
+        if estado:
+            qs = qs.filter(estado=estado)
+        return qs
 
 
 class CotizacionViewSet(viewsets.ModelViewSet):
-    queryset = Cotizacion.objects.all().order_by('-fecha_creacion')
     serializer_class = CotizacionSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['numero_cotizacion', 'asunto']
+    ordering_fields = ['numero_cotizacion', 'estado', 'fecha_creacion', 'gran_total']
+
+    def get_queryset(self):
+        qs = Cotizacion.objects.all().order_by('-fecha_creacion')
+        cliente_id = self.request.query_params.get('cliente')
+        if cliente_id:
+            qs = qs.filter(cliente_id=cliente_id)
+        estado = self.request.query_params.get('estado')
+        if estado:
+            qs = qs.filter(estado=estado)
+        return qs
 
     @action(detail=True, methods=['get'])
     def excel(self, request, pk=None):
