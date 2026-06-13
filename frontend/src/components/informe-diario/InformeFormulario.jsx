@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check } from "lucide-react";
 import { toast } from "sonner";
-import { informeDiarioService, obraService, recursoService, categoriaService } from "@/services/informeDiarioApi";
+import { informeDiarioService, obraService, recursoService, categoriaService, proveedorService } from "@/services/informeDiarioApi";
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -261,8 +261,112 @@ function SimpleSelect({ value, onChange, options, placeholder }) {
   );
 }
 
+// ─── Selector de empresa (proveedor) ─────────────────────────────────────────
+function EmpresaSelect({ value, onChange, proveedores }) {
+  const [open, setOpen]     = useState(false);
+  const [search, setSearch] = useState("");
+  const ref                 = useRef(null);
+
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  const filtered = proveedores.filter(p =>
+    (p.razon_social || "").toLowerCase().includes(search.toLowerCase()) ||
+    (p.nombre_comercial || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSelect = (nombre) => {
+    onChange(nombre);
+    setOpen(false);
+    setSearch("");
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange("");
+    setSearch("");
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          cursor: "pointer", userSelect: "none",
+          border: open ? "1px solid #667eea" : "1px solid #cbd5e1",
+        }}
+      >
+        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: value ? "#1e293b" : "#94a3b8" }}>
+          {value || "Empresa..."}
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "2px", flexShrink: 0 }}>
+          {value && (
+            <span onClick={handleClear} style={{ color: "#94a3b8", cursor: "pointer", lineHeight: 1, padding: "0 2px" }}>
+              <X size={11} />
+            </span>
+          )}
+          <ChevronDown size={11} color="#94a3b8" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+        </div>
+      </div>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0, zIndex: 9999,
+          background: "white", border: "1px solid #e2e8f0", borderRadius: "8px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.14)", minWidth: "200px", overflow: "hidden",
+        }}>
+          <div style={{ padding: "0.4rem 0.5rem", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <Search size={12} color="#94a3b8" style={{ flexShrink: 0 }} />
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar proveedor..."
+              style={{ flex: 1, border: "none", outline: "none", fontSize: "0.78rem", color: "#1e293b", background: "transparent" }}
+            />
+          </div>
+          {/* Opción para texto libre */}
+          {search && !filtered.some(p => p.razon_social.toLowerCase() === search.toLowerCase()) && (
+            <div
+              onClick={() => handleSelect(search)}
+              style={{ padding: "0.35rem 0.65rem", fontSize: "0.78rem", color: "#667eea", cursor: "pointer", borderBottom: "1px solid #f1f5f9", fontStyle: "italic" }}
+              onMouseOver={e => e.currentTarget.style.background = "#f8fafc"}
+              onMouseOut={e => e.currentTarget.style.background = "transparent"}
+            >
+              Usar &quot;{search}&quot;
+            </div>
+          )}
+          <div style={{ maxHeight: "160px", overflowY: "auto", padding: "3px" }}>
+            {filtered.length === 0 && !search ? (
+              <div style={{ padding: "0.75rem", textAlign: "center", color: "#94a3b8", fontSize: "0.75rem" }}>Sin proveedores</div>
+            ) : filtered.map(p => (
+              <div
+                key={p.id}
+                onClick={() => handleSelect(p.razon_social)}
+                style={{ padding: "0.35rem 0.65rem", borderRadius: "4px", fontSize: "0.78rem", cursor: "pointer", color: "#334155", background: value === p.razon_social ? "#f1f5f9" : "transparent" }}
+                onMouseOver={e => e.currentTarget.style.background = "#f8fafc"}
+                onMouseOut={e => e.currentTarget.style.background = value === p.razon_social ? "#f1f5f9" : "transparent"}
+              >
+                <div style={{ fontWeight: 500 }}>{p.razon_social}</div>
+                {p.nombre_comercial && p.nombre_comercial !== p.razon_social && (
+                  <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{p.nombre_comercial}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Tabla de recursos (Maquinaria o Personal) ────────────────────────────────
-function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onChange }) {
+function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onChange, proveedores }) {
   const filas = recursos.filter(r => r.categoria === catKey);
 
   const update = (recursoId, field, value) =>
@@ -296,7 +400,11 @@ function TablaRecursos({ titulo, accentColor, recursos, allRecursos, catKey, onC
                 <input type="number" min="0" step="0.5" value={r.cantidad} onChange={e => update(r.recurso_id, "cantidad", parseFloat(e.target.value) || 0)} style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem", textAlign: "right" }} />
               </td>
               <td style={{ padding: "0.35rem 0.4rem" }}>
-                <input value={r.empresa || ""} onChange={e => update(r.recurso_id, "empresa", e.target.value)} placeholder="Empresa..." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
+                <EmpresaSelect
+                  value={r.empresa || ""}
+                  onChange={v => update(r.recurso_id, "empresa", v)}
+                  proveedores={proveedores}
+                />
               </td>
               <td style={{ padding: "0.35rem 0.4rem" }}>
                 <input value={r.notas || ""} onChange={e => update(r.recurso_id, "notas", e.target.value)} placeholder="Notas..." style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.3rem 0.5rem" }} />
@@ -390,6 +498,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
   const { data: rawObras = [],   isLoading: isLoadingObras }     = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
   const { data: recursos = [],   isLoading: isLoadingRecursos }   = useQuery({ queryKey: ["recursos"],            queryFn: () => recursoService.list() });
   const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({ queryKey: ["categorias-actividad"], queryFn: () => categoriaService.list() });
+  const { data: proveedores = [] }                                 = useQuery({ queryKey: ["proveedores-informe"], queryFn: () => proveedorService.list({ estado: "activo" }) });
 
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
@@ -540,6 +649,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
             allRecursos={recursos}
             catKey="MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS"
             onChange={v => setField("recursos", v)}
+            proveedores={proveedores}
           />
         </div>
       </div>
@@ -555,6 +665,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
             allRecursos={recursos}
             catKey="PERSONAL DE OBRA"
             onChange={v => setField("recursos", v)}
+            proveedores={proveedores}
           />
         </div>
       </div>
