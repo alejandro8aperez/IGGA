@@ -20,7 +20,8 @@ class Factura(models.Model):
         ('borrador', 'Borrador'),
         ('enviada', 'Enviada DIAN'),
         ('validada', 'Validada DIAN'),
-        ('rechazada', 'Rechazada DIAN')
+        ('rechazada', 'Rechazada DIAN'),
+        ('error_emision', 'Error de Emisión'),
     )
     
     numero_factura = models.CharField(max_length=20, unique=True, blank=True, null=True)
@@ -54,20 +55,10 @@ class DetalleFactura(models.Model):
     porcentaje_iva = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
-        
-        # Al crear un nuevo detalle, descontar del inventario
-        if is_new and self.producto.tipo_producto != 'servicio':
-            MovimientoInventario.objects.create(
-                producto=self.producto,
-                cantidad=self.cantidad,
-                tipo='salida',
-                motivo=f"Facturación: {self.factura.numero_factura or 'POS'}",
-                origen='venta',
-                documento_referencia=self.factura.numero_factura or f"FAC-{self.factura.id}"
-            )
+        # El descuento de inventario ocurre SOLO al emitir la factura,
+        # no al crear el borrador. Ver FacturaViewSet.emitir().
 
     def __str__(self):
         return f"{self.factura} - {self.producto.nombre}"
