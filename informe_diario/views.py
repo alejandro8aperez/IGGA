@@ -149,6 +149,7 @@ def _transform_frontend_data(data):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ObraViewSet(viewsets.ModelViewSet):
+    queryset = Obra.objects.all()  # requerido por el router para determinar basename
     serializer_class = ObraSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields  = ['codigo', 'nombre', 'cliente']
