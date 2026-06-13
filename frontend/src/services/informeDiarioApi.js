@@ -1,6 +1,13 @@
 import axiosInstance from '../config/axiosConfig';
 import { API as ENDPOINTS } from '@/config/api';
 
+export const proveedorService = {
+  list: (params) => axiosInstance.get(ENDPOINTS.COMPRAS.PROVEEDORES, { params }).then(r => {
+    const data = r.data;
+    return Array.isArray(data) ? data : (data?.results || []);
+  }),
+};
+
 const toArray = (data) => {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.results)) return data.results;
