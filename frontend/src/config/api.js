@@ -124,8 +124,8 @@ export const API = {
   // FACTURACIÓN
   // ---------------------------------------------------------------------------
   FACTURACION: {
-    FACTURAS:  'facturacion/facturas/',
-    PRODUCTOS: 'facturacion/productos/',
+    FACTURAS:     'facturacion/facturas/',
+    RESOLUCIONES: 'facturacion/resoluciones/',
   },
 
   // ---------------------------------------------------------------------------
