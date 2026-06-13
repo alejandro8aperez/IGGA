@@ -28,6 +28,7 @@ class ProyectoViewSet(viewsets.ModelViewSet):
 
 
 class TareaViewSet(viewsets.ModelViewSet):
+    queryset = Tarea.objects.all()  # requerido por el router para determinar basename
     serializer_class = TareaSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['titulo', 'descripcion']
