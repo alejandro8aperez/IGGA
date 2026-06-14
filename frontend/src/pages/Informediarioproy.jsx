@@ -346,7 +346,6 @@ function InformeDiarioContent() {
               informeId={editingInforme?.id}
               obraId={editingInforme?.obra}
               informe={editingInforme}
-              onFotosChange={setFotosActuales}
               onAutoSave={async () => {
                 if (formRef.current) {
                   const result = await formRef.current.saveDraft();
@@ -361,6 +360,7 @@ function InformeDiarioContent() {
           </div>
         </div>
       )}
+
 
     </div>
   );
