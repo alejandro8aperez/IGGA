@@ -68,7 +68,7 @@ def _transform_frontend_data(data):
     """
     t = dict(data)
 
-g    # Proyecto: Extraer ID (Búsqueda exhaustiva para compatibilidad total)
+    # Proyecto: Extraer ID (Búsqueda exhaustiva para compatibilidad total)
     proyecto_id = t.pop('proyecto_id', None) or t.pop('proyecto', None) or \
                   t.pop('obra_id', None) or t.pop('obra', None)
     
@@ -177,21 +177,22 @@ class ObraViewSet(viewsets.ReadOnlyModelViewSet):
             from django.apps import apps
             Proyecto = apps.get_model('operaciones', 'Proyecto')
 
-            # 1. Intentar filtrar por proyectos en ejecución (búsqueda flexible)
-            qs_ejecucion = Proyecto.objects.filter(
-                Q(estado__icontains='ejecucion') | Q(status__icontains='ejecucion')
-            )
-            
-            if qs_ejecucion.exists():
-                return qs_ejecucion.order_by('codigo')
+            # 1. Intentar obtener proyectos prioritarios (En ejecución o Activos)
+            try:
+                # Usamos una sola consulta flexible para evitar hits innecesarios a la DB
+                qs = Proyecto.objects.filter(
+                    Q(estado__icontains='ejecucion') | 
+                    Q(status__icontains='ejecucion') |
+                    Q(estado__icontains='activo') |
+                    Q(status__icontains='activo')
+                )
+                if qs.exists():
+                    return qs.order_by('codigo')
+            except Exception:
+                pass
 
-            # 2. Si no hay en ejecución, intentar proyectos activos (si existe el campo)
-            if hasattr(Proyecto, 'activo'):
-                qs_activos = Proyecto.objects.filter(activo=True)
-                if qs_activos.exists():
-                    return qs_activos.order_by('codigo')
-
-            # 3. Fallback: Todos los proyectos para asegurar que el dropdown no esté vacío
+            # 2. Fallback final: Si lo anterior falla o está vacío, devolver TODOS los proyectos
+            # Esto asegura que el botón OBRA* no esté vacío si hay CUALQUIER dato en Operaciones.
             return Proyecto.objects.all().order_by('codigo')
         except Exception as e:
             logger.error(f"CRITICAL: Error en ObraViewSet (Proxy) accediendo a Operaciones: {str(e)}")

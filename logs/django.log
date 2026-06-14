@@ -38392,3 +38392,72 @@ INFO 2026-06-13 20:01:13,074 autoreload 6560 28068 C:\Postgres\ERP-8AMPERIOS\inf
 INFO 2026-06-13 20:01:24,387 autoreload 17164 31380 Watching for file changes with StatReloader
 INFO 2026-06-13 20:04:11,866 autoreload 17164 31380 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
 INFO 2026-06-13 20:04:20,672 autoreload 28456 32212 Watching for file changes with StatReloader
+INFO 2026-06-13 20:18:23,330 autoreload 31080 11860 Watching for file changes with StatReloader
+INFO 2026-06-13 20:22:14,628 autoreload 31080 11860 C:\Postgres\ERP-8AMPERIOS\informe_diario\views.py changed, reloading.
+INFO 2026-06-13 20:22:18,070 autoreload 17784 13536 Watching for file changes with StatReloader
+INFO 2026-06-13 20:23:55,505 autoreload 23220 30064 Watching for file changes with StatReloader
+WARNING 2026-06-13 20:24:08,288 basehttp 23220 32160 "GET /api/usuarios/usuarios/me/ HTTP/1.1" 401 172
+WARNING 2026-06-13 20:24:08,294 basehttp 23220 32160 "GET /api/usuarios/usuarios/me/ HTTP/1.1" 401 172
+INFO 2026-06-13 20:24:08,395 basehttp 23220 32160 "POST /api/token/refresh/ HTTP/1.1" 200 489
+INFO 2026-06-13 20:24:08,476 basehttp 23220 32160 "GET /api/usuarios/usuarios/me/ HTTP/1.1" 200 470
+INFO 2026-06-13 20:24:08,496 basehttp 23220 32572 "GET /api/usuarios/usuarios/me/ HTTP/1.1" 200 470
+INFO 2026-06-13 20:24:18,743 basehttp 23220 32572 "POST /api/token/ HTTP/1.1" 200 489
+INFO 2026-06-13 20:24:19,107 basehttp 23220 32160 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,107 basehttp 23220 32488 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,125 basehttp 23220 32572 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-13 20:24:19,131 basehttp 23220 32160 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,152 basehttp 23220 32488 "GET /api/compras/proveedores/ HTTP/1.1" 200 1424
+INFO 2026-06-13 20:24:19,156 basehttp 23220 32572 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,156 basehttp 23220 32160 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-13 20:24:19,188 basehttp 23220 32160 "GET /api/crm/cotizaciones/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,193 basehttp 23220 32572 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-13 20:24:19,198 basehttp 23220 32488 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-13 20:24:19,206 basehttp 23220 32160 "GET /api/venta/facturas/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,225 basehttp 23220 32572 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-13 20:24:19,228 basehttp 23220 32488 "GET /api/venta/pedidos/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,242 basehttp 23220 32160 "GET /api/compras/proveedores/ HTTP/1.1" 200 1424
+INFO 2026-06-13 20:24:19,254 basehttp 23220 32572 "GET /api/compras/ordenes/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:19,254 basehttp 23220 32488 "GET /api/inventario/productos/ HTTP/1.1" 200 364
+INFO 2026-06-13 20:24:19,266 basehttp 23220 32160 "GET /api/kave/designs/ HTTP/1.1" 200 51
+INFO 2026-06-13 20:24:19,281 basehttp 23220 32572 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-13 20:24:19,296 basehttp 23220 32488 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-13 20:24:19,319 basehttp 23220 32572 "GET /api/inventario/productos/resumen/ HTTP/1.1" 200 185
+INFO 2026-06-13 20:24:24,371 basehttp 23220 32572 "GET /api/informe-diario/obras/ HTTP/1.1" 200 2
+ERROR 2026-06-13 20:24:24,383 log 23220 32488 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:24:24,384 basehttp 23220 32488 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 500 105
+ERROR 2026-06-13 20:24:25,411 log 23220 32488 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:24:25,412 basehttp 23220 32488 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 105
+ERROR 2026-06-13 20:24:27,439 log 23220 32488 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:24:27,440 basehttp 23220 32488 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 105
+ERROR 2026-06-13 20:24:31,472 log 23220 32488 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:24:31,473 basehttp 23220 32488 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 105
+INFO 2026-06-13 20:24:34,580 basehttp 23220 32160 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:34,581 basehttp 23220 32488 "GET /api/informe-diario/obras/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:34,582 basehttp 23220 32572 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:24:34,593 basehttp 23220 33800 "GET /api/compras/proveedores/?estado=activo HTTP/1.1" 200 1424
+INFO 2026-06-13 20:24:34,682 basehttp 23220 33800 "GET /api/rrhh/empleados/activos/ HTTP/1.1" 200 186
+INFO 2026-06-13 20:25:53,619 basehttp 23220 32160 "GET /api/informe-diario/categorias-actividades/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:25:53,620 basehttp 23220 32572 "GET /api/informe-diario/recursos/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:25:53,620 basehttp 23220 32488 "GET /api/informe-diario/obras/ HTTP/1.1" 200 2
+INFO 2026-06-13 20:25:53,632 basehttp 23220 33800 "GET /api/compras/proveedores/?estado=activo HTTP/1.1" 200 1424
+INFO 2026-06-13 20:25:58,168 basehttp 23220 32488 "GET /api/informe-diario/obras/ HTTP/1.1" 200 2
+ERROR 2026-06-13 20:25:58,175 log 23220 33800 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:25:58,177 basehttp 23220 33800 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 500 105
+ERROR 2026-06-13 20:25:59,545 log 23220 33800 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:25:59,545 basehttp 23220 33800 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 105
+ERROR 2026-06-13 20:26:01,583 log 23220 33800 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:26:01,584 basehttp 23220 33800 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 105
+ERROR 2026-06-13 20:26:05,605 log 23220 33800 Internal Server Error: /api/informe-diario/informes/
+ERROR 2026-06-13 20:26:05,607 basehttp 23220 33800 "GET /api/informe-diario/informes/?ordering=-fecha&limit=200 HTTP/1.1" 500 105
+ERROR 2026-06-13 20:26:07,762 log 23220 33800 Internal Server Error: /api/informe-diario/informes/
+INFO 2026-06-13 20:26:07,765 basehttp 23220 32488 "GET /api/informe-diario/obras/ HTTP/1.1" 200 2
+ERROR 2026-06-13 20:26:07,766 basehttp 23220 33800 "GET /api/informe-diario/informes/?ordering=-fecha HTTP/1.1" 500 105
+INFO 2026-06-13 20:26:08,455 basehttp 23220 32488 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-13 20:26:08,461 basehttp 23220 33800 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-13 20:26:08,478 basehttp 23220 32572 "GET /api/crm/clientes/ HTTP/1.1" 200 8041
+INFO 2026-06-13 20:26:08,490 basehttp 23220 32488 "GET /api/operaciones/proyectos/ HTTP/1.1" 200 717
+INFO 2026-06-14 11:25:54,834 autoreload 36880 17856 Watching for file changes with StatReloader
+INFO 2026-06-14 11:26:05,833 basehttp 36880 38640 "OPTIONS /api/usuarios/usuarios/me/ HTTP/1.1" 200 0
+INFO 2026-06-14 11:26:05,835 basehttp 36880 6084 "OPTIONS /api/usuarios/usuarios/me/ HTTP/1.1" 200 0
+INFO 2026-06-14 11:26:05,957 basehttp 36880 6084 "GET /api/usuarios/usuarios/me/ HTTP/1.1" 200 470
+INFO 2026-06-14 11:26:05,975 basehttp 36880 38640 "GET /api/usuarios/usuarios/me/ HTTP/1.1" 200 470
