@@ -89,7 +89,7 @@ export const API = {
   // ---------------------------------------------------------------------------
   INFORME_DIARIO: {
     INFORMES:               'informe-diario/informes/',
-    OBRAS:                  'informe-diario/obras/',
+    OBRAS:                  'operaciones/proyectos/',   // ← FIX: vinculado a Operaciones
     RECURSOS:               'informe-diario/recursos/',
     CATEGORIAS_RECURSOS:    'informe-diario/categorias-recursos/',
     CATEGORIAS_ACTIVIDADES: 'informe-diario/categorias-actividades/',
