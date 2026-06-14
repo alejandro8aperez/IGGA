@@ -9,7 +9,7 @@ import { useState, useRef, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
-  Image as ImageIcon, ArrowLeft,
+  Image as ImageIcon, ArrowLeft, X,
   BarChart2, FileSpreadsheet, Printer, FileText, Grid3x3,
 } from "lucide-react";
 
@@ -62,6 +62,7 @@ function InformeDiarioContent() {
 
   // Fotos levantadas aquí para que los botones del top bar puedan acceder
   const [fotosActuales, setFotosActuales] = useState({});
+  const [showMatrizModal, setShowMatrizModal] = useState(false);
 
   const formRef = useRef(null);
 
@@ -218,9 +219,9 @@ function InformeDiarioContent() {
           </button>
 
           <button
-            onClick={() => handleImprimirFotosImprimir('4x12')}
+            onClick={() => setShowMatrizModal(true)}
             disabled={!hasInforme}
-            title={hasInforme ? "Imprimir matriz compacta 4x12" : "Selecciona un informe primero"}
+            title={hasInforme ? "Abrir matriz de fotos 4x6" : "Selecciona un informe primero"}
             style={actionBtn(!hasInforme)}
           >
             <Grid3x3 size={15} />
@@ -319,6 +320,48 @@ function InformeDiarioContent() {
 
         </div>
       </div>
+
+      {/* ── Modal MATRIZ 4x12 ──────────────────────────────────────────── */}
+      {showMatrizModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "2rem",
+        }} onClick={() => setShowMatrizModal(false)}>
+          <div style={{
+            background: "#0f172a", borderRadius: 16, maxWidth: 900, width: "100%",
+            maxHeight: "90vh", overflow: "auto", padding: "1.5rem",
+            border: "1px solid #1e293b", position: "relative",
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <Grid3x3 size={16} style={{ marginRight: "0.5rem", verticalAlign: "middle" }} />
+                Matriz Fotográfica 4×6
+              </h3>
+              <button onClick={() => setShowMatrizModal(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: "0.25rem" }}>
+                <X size={20} />
+              </button>
+            </div>
+            <HojaFotosInforme
+              informeId={editingInforme?.id}
+              obraId={editingInforme?.obra}
+              informe={editingInforme}
+              onFotosChange={setFotosActuales}
+              onAutoSave={async () => {
+                if (formRef.current) {
+                  const result = await formRef.current.saveDraft();
+                  if (result?.id) {
+                    setEditingInforme(prev => ({ ...prev, ...result }));
+                    return result.id;
+                  }
+                }
+                return null;
+              }}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

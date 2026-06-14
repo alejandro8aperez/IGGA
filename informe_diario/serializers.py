@@ -104,6 +104,7 @@ class EmpleadoFirmaSerializer(serializers.Serializer):
 class InformeDiarioListSerializer(serializers.ModelSerializer):
     proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
     proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
+    cliente_nombre = serializers.CharField(source='proyecto.cliente.nombre', read_only=True, default='')
     total_personal = serializers.ReadOnlyField()
     total_maquinaria = serializers.ReadOnlyField()
     total_horas_lluvia = serializers.ReadOnlyField()
@@ -116,7 +117,7 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InformeDiario
-        fields = ['id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'fecha',
+        fields = ['id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'cliente_nombre', 'fecha',
                   'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'total_actividades', 'creado_en', 'status', 'status_label',
@@ -136,6 +137,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     """Full nested serializer (read + write) for the daily report."""
     proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
     proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
+    cliente_nombre = serializers.CharField(source='proyecto.cliente.nombre', read_only=True, default='')
     status_label = serializers.CharField(source='get_status_display', read_only=True)
     detalles = DetalleRecursoSerializer(many=True, required=False)
     reportes_lluvia = ReporteLluviaSerializer(many=True, required=False)
@@ -152,7 +154,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = InformeDiario
         fields = [
-            'id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'fecha', 'dia_semana',
+            'id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'cliente_nombre', 'fecha', 'dia_semana',
             'numero_paginas', 'codigo_formato',
             'observaciones_generales', 'estado_terreno_inicio',
             'estado_terreno_final',
