@@ -39,7 +39,7 @@ def generar_excel(informe) -> bytes:
     ws['A3'] = 'OBRA:'
     ws['B3'] = informe.proyecto.nombre if informe.proyecto else '—'
     ws['A4'] = 'FECHA:'
-    ws['B4'] = informe.fecha.strftime('%d/%m/%Y')
+    ws['B4'] = informe.fecha.strftime('%d/%m/%Y') if informe.fecha else '—'
     ws['A5'] = 'DÍA:'
     ws['B5'] = informe.dia_semana
     for cell in ('A3', 'A4', 'A5'):
@@ -193,7 +193,7 @@ def generar_pdf(informe) -> bytes:
     flow.append(Paragraph('CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA / INTERVENTORÍA', h1))
 
     info = [
-        ['OBRA:', (informe.proyecto.nombre if informe.proyecto else '—'), 'FECHA:', informe.fecha.strftime('%d/%m/%Y'),
+        ['OBRA:', (informe.proyecto.nombre if informe.proyecto else '—'), 'FECHA:', (informe.fecha.strftime('%d/%m/%Y') if informe.fecha else '—'),
          'DÍA:', informe.dia_semana or '—'],
     ]
     t = Table(info, colWidths=[2 * cm, 10 * cm, 2 * cm, 3 * cm, 1.5 * cm, 3 * cm])
