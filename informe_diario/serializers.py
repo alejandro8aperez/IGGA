@@ -1,14 +1,16 @@
 from rest_framework import serializers
 from .models import (
-    Obra, CategoriaRecurso, Recurso, CategoriaActividad,
+    CategoriaRecurso, Recurso, CategoriaActividad,
     InformeDiario, DetalleRecurso, ReporteLluvia, Actividad, AnexoFoto, ItemObra,
     MaquinariaLibre, PersonalLibre
 )
 
-class ObraSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Obra
-        fields = '__all__'
+class ProyectoProxySerializer(serializers.Serializer):
+    """Serializer minimalista para el proxy de proyectos (Obras)"""
+    id = serializers.IntegerField(read_only=True)
+    codigo = serializers.CharField(read_only=True)
+    nombre = serializers.CharField(read_only=True)
+    estado = serializers.CharField(read_only=True)
 
 class CategoriaRecursoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -94,8 +96,8 @@ class EmpleadoFirmaSerializer(serializers.Serializer):
         return ' '.join(p for p in partes if p).strip()
 
 class InformeDiarioListSerializer(serializers.ModelSerializer):
-    obra_codigo = serializers.CharField(source='obra.codigo', read_only=True)
-    obra_nombre = serializers.CharField(source='obra.nombre', read_only=True)
+    proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
+    proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
     total_personal = serializers.ReadOnlyField()
     total_maquinaria = serializers.ReadOnlyField()
     total_horas_lluvia = serializers.ReadOnlyField()
@@ -108,7 +110,7 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InformeDiario
-        fields = ['id', 'obra', 'obra_nombre', 'fecha',
+        fields = ['id', 'proyecto', 'proyecto_nombre', 'fecha',
                   'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'total_actividades', 'creado_en', 'status', 'status_label',
@@ -126,8 +128,8 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
 class InformeDiarioSerializer(serializers.ModelSerializer):
     """Full nested serializer (read + write) for the daily report."""
-    obra_codigo = serializers.CharField(source='obra.codigo', read_only=True)
-    obra_nombre = serializers.CharField(source='obra.nombre', read_only=True)
+    proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
+    proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
     detalles = DetalleRecursoSerializer(many=True, required=False)
     reportes_lluvia = ReporteLluviaSerializer(many=True, required=False)
     actividades = ActividadSerializer(many=True, required=False)
@@ -143,7 +145,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = InformeDiario
         fields = [
-            'id', 'obra', 'obra_nombre', 'fecha', 'dia_semana',
+            'id', 'proyecto', 'proyecto_nombre', 'fecha', 'dia_semana',
             'numero_paginas', 'codigo_formato',
             'observaciones_generales', 'estado_terreno_inicio',
             'estado_terreno_final',

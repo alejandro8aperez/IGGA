@@ -37,7 +37,7 @@ def generar_excel(informe) -> bytes:
     ws['A1'].alignment = center
 
     ws['A3'] = 'OBRA:'
-    ws['B3'] = informe.obra.nombre
+    ws['B3'] = informe.proyecto.nombre
     ws['A4'] = 'FECHA:'
     ws['B4'] = informe.fecha.strftime('%d/%m/%Y')
     ws['A5'] = 'DÍA:'
@@ -193,7 +193,7 @@ def generar_pdf(informe) -> bytes:
     flow.append(Paragraph('CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA / INTERVENTORÍA', h1))
 
     info = [
-        ['OBRA:', informe.obra.nombre, 'FECHA:', informe.fecha.strftime('%d/%m/%Y'),
+        ['OBRA:', informe.proyecto.nombre, 'FECHA:', informe.fecha.strftime('%d/%m/%Y'),
          'DÍA:', informe.dia_semana],
     ]
     t = Table(info, colWidths=[2 * cm, 10 * cm, 2 * cm, 3 * cm, 1.5 * cm, 3 * cm])
@@ -330,7 +330,7 @@ def generar_pdf(informe) -> bytes:
         for a in anexos:
             try:
                 from reportlab.platypus import Image as RLImage
-                img_path = a.imagen.url if hasattr(a.imagen, 'url') else None
+                img_path = a.imagen.url if a.imagen else None
                 if img_path and img_path.startswith('http'):
                     flow.append(Paragraph(f"<b>Sección:</b> {a.get_seccion_display()}", body))
                     flow.append(Paragraph(f"<b>Descripción:</b> {a.descripcion}", body))
