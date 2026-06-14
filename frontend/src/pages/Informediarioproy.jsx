@@ -122,8 +122,16 @@ function InformeDiarioContent() {
 
   const handleExportarPDF = async () => {
     if (!hasInforme) return;
-    const url = informeDiarioService.pdfUrl(editingInforme.id);
-    window.open(url, '_blank');
+    const toastId = toast.loading("Generando PDF...");
+    try {
+      const blob = await informeDiarioService.downloadPdf(editingInforme.id);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      toast.success("PDF listo ✓", { id: toastId });
+    } catch (error) {
+      toast.error("Error al generar PDF", { id: toastId });
+    }
   };
 
   const handleImprimirFotosImprimir = (layout = '4x6') => {

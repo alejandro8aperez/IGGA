@@ -315,7 +315,8 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
     def exportar_excel(self, request, pk=None):
         informe = self.get_object()
         content = generar_excel(informe)
-        fname = f'informe_{informe.proyecto.codigo}_{informe.fecha}.xlsx'
+        cod = informe.proyecto.codigo if informe.proyecto else 'sin-obra'
+        fname = f'informe_{cod}_{informe.fecha}.xlsx'
         resp = HttpResponse(content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         resp['Content-Disposition'] = f'attachment; filename="{fname}"'
         return resp
@@ -327,7 +328,8 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         informe = self.get_object()
         content = generar_pdf(informe)
         resp = HttpResponse(content, content_type='application/pdf')
-        resp['Content-Disposition'] = f'attachment; filename="informe_{informe.proyecto.codigo}_{informe.fecha}.pdf"'
+        cod = informe.proyecto.codigo if informe.proyecto else 'sin-obra'
+        resp['Content-Disposition'] = f'attachment; filename="informe_{cod}_{informe.fecha}.pdf"'
         return resp
 
     # ── Acción: subir anexo de foto ──────────────────────────────────────────
