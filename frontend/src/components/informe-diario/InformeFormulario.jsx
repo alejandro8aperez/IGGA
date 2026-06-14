@@ -4,10 +4,12 @@
 // ============================================================
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check, Users, Signature } from "lucide-react";
+import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check, Users, Signature, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { informeDiarioService, obraService, recursoService, categoriaService, proveedorService } from "@/services/informeDiarioApi";
 import empleadoService from "@/services/empleadoService";
+import API from "@/config/api";
+import axiosInstance from "@/config/axiosConfig";
 
 const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -282,6 +284,78 @@ function ObraSelect({ obras, value, onChange }) {
                   <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 7px", borderRadius: "20px", background: o.estado === "ejecucion" ? "#f0fdf4" : "#f8fafc", color: o.estado === "ejecucion" ? "#16a34a" : "#64748b", textTransform: "capitalize", flexShrink: 0 }}>
                     {o.estado || "—"}
                   </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Selector de cliente (CRM) ─────────────────────────────────────────────────
+function ClienteSelect({ value, onChange }) {
+  const [open, setOpen]     = useState(false);
+  const [search, setSearch] = useState("");
+  const ref                 = useRef(null);
+  const { data: rawClientes = [], isLoading } = useQuery({
+    queryKey: ["clientes-crm"],
+    queryFn: () => axiosInstance.get(API.CRM.CLIENTES).then(r => r.data?.results || r.data || []),
+  });
+  const clientes = Array.isArray(rawClientes) ? rawClientes : [];
+
+  const selected     = clientes.find(c => String(c.id) === String(value));
+  const displayLabel = selected ? selected.nombre : "Seleccionar cliente de CRM";
+  const filtered = clientes.filter(c =>
+    (c.nombre || "").toLowerCase().includes(search.toLowerCase()) ||
+    (c.nit || "").toLowerCase().includes(search.toLowerCase()) ||
+    (c.codigo_cliente || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        onClick={() => !isLoading && setOpen(o => !o)}
+        style={{ ...inputStyle, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: isLoading ? "not-allowed" : "pointer", userSelect: "none", border: open ? "1px solid #667eea" : "1px solid #cbd5e1", boxShadow: open ? "0 0 0 2px rgba(102,126,234,0.2)" : "none" }}
+      >
+        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected ? "#1e293b" : "#94a3b8" }}>
+          {isLoading ? "Cargando clientes..." : displayLabel}
+        </span>
+        <ChevronDown size={15} style={{ flexShrink: 0, marginLeft: "0.5rem", color: "#94a3b8", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+      </div>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999, background: "white", border: "1px solid #e2e8f0", borderRadius: "10px", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden" }}>
+          <div style={{ padding: "0.5rem", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Search size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente..."
+              style={{ flex: 1, border: "none", outline: "none", fontSize: "0.875rem", color: "#1e293b", background: "transparent" }} />
+            {search && <X size={13} color="#94a3b8" style={{ cursor: "pointer" }} onClick={() => setSearch("")} />}
+          </div>
+          <div style={{ maxHeight: "220px", overflowY: "auto", padding: "4px" }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "1rem", textAlign: "center", color: "#94a3b8", fontSize: "0.8rem" }}>Sin resultados</div>
+            ) : filtered.map(c => {
+              const isSel = String(c.id) === String(value);
+              return (
+                <div key={c.id} onClick={() => { onChange(String(c.id), c.nombre); setOpen(false); setSearch(""); }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "6px", cursor: "pointer", background: isSel ? "#f1f5f9" : "transparent" }}
+                  onMouseOver={e => { if (!isSel) e.currentTarget.style.background = "#f8fafc"; }}
+                  onMouseOut={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {isSel && <Check size={13} color="#667eea" style={{ flexShrink: 0 }} />}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: isSel ? 700 : 500, fontSize: "0.875rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {c.nombre}
+                    </div>
+                    {(c.nit || c.codigo_cliente) && <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{c.codigo_cliente ? `#${c.codigo_cliente}` : ""}{c.codigo_cliente && c.nit ? " · " : ""}{c.nit ? `NIT: ${c.nit}` : ""}</div>}
+                  </div>
                 </div>
               );
             })}
@@ -592,7 +666,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
   const [form, setForm] = useState(normalizarInforme(informe) || {
-    obra_id: "", obra_nombre: "", cliente_nombre: "", fecha: new Date().toISOString().split("T")[0],
+    obra_id: "", obra_nombre: "", cliente_nombre: "", cliente_seleccionado_id: "", cliente_seleccionado_nombre: "", fecha: new Date().toISOString().split("T")[0],
     dia_semana: DIAS[new Date().getDay()], codigo_formato: "F-141-IN",
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
     // ── FIRMAS RRHH (nuevos campos) ──────────────────────
@@ -613,6 +687,14 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
     const obra = obras.find(o => String(o.id) === obraId);
     setForm(prev => ({ ...prev, obra_id: obraId, obra_nombre: obra?.nombre || "", cliente_nombre: obra?.cliente_nombre || "" }));
   };
+
+  const handleClienteChange = (clienteId, clienteNombre) => {
+    setForm(prev => ({ ...prev, cliente_seleccionado_id: clienteId, cliente_seleccionado_nombre: clienteNombre || "" }));
+  };
+
+  const obrasFiltradas = form.cliente_seleccionado_id
+    ? obras.filter(o => String(o.cliente) === String(form.cliente_seleccionado_id))
+    : obras;
 
   const handleFechaChange = (fecha) => {
     const d = new Date(fecha + "T12:00:00");
@@ -665,6 +747,8 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
       delete payload.recursos;
       delete payload.obra_id;
       delete payload.obra_nombre;
+      delete payload.cliente_seleccionado_id;
+      delete payload.cliente_seleccionado_nombre;
       delete payload.dia_semana;
       // Limpiar campos internos de firmas
       delete payload.elaborado_por_texto;
@@ -722,11 +806,19 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
       {/* ── Datos generales ─────────────────────────────────────────────── */}
       <div style={card}>
         <div style={cardHead}>Datos generales</div>
-        <div style={{ ...cardBody, ...grid3 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div>
+            <label style={label}>Cliente <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: "0.7rem" }}>(desde CRM)</span></label>
+            <ClienteSelect value={form.cliente_seleccionado_id} onChange={handleClienteChange} />
+            {form.cliente_seleccionado_nombre && form.cliente_nombre && form.cliente_seleccionado_nombre !== form.cliente_nombre &&
+              <div style={{ fontSize: "0.7rem", color: "#f59e0b", marginTop: "0.25rem" }}>
+                Obra seleccionada pertenece a otro cliente
+              </div>}
+          </div>
+          <div style={{ ...grid3 }}>
           <div>
             <label style={label}>Obra * <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: "0.7rem" }}>(desde OPERACIONES)</span></label>
-            <ObraSelect obras={obras} value={form.obra_id} onChange={handleObraChange} />
-            {form.cliente_nombre && <div style={{ fontSize: "0.7rem", color: "#64748b", marginTop: "0.25rem" }}>Cliente: {form.cliente_nombre}</div>}
+            <ObraSelect obras={obrasFiltradas} value={form.obra_id} onChange={handleObraChange} />
           </div>
           <div>
             <label style={label}>Fecha *</label>
