@@ -108,7 +108,7 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InformeDiario
-        fields = ['id', 'obra', 'obra_codigo', 'obra_nombre', 'fecha',
+        fields = ['id', 'obra', 'obra_nombre', 'fecha',
                   'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'total_actividades', 'creado_en', 'status', 'status_label',
@@ -143,7 +143,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = InformeDiario
         fields = [
-            'id', 'obra', 'obra_codigo', 'obra_nombre', 'fecha', 'dia_semana',
+            'id', 'obra', 'obra_nombre', 'fecha', 'dia_semana',
             'numero_paginas', 'codigo_formato',
             'observaciones_generales', 'estado_terreno_inicio',
             'estado_terreno_final',

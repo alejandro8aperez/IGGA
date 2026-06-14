@@ -14,24 +14,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # Catálogos maestros (configurables desde la app)
 # ---------------------------------------------------------------------------
 
-class Obra(models.Model):
-    """Site/Project (Obra). If integrated with ERP, can mirror or link to
-    proyectos.ProyectoPS via codigo_ps."""
-    codigo = models.CharField(max_length=50, unique=True)
-    nombre = models.CharField(max_length=200)
-    ubicacion = models.CharField(max_length=255, blank=True)
-    cliente = models.CharField(max_length=200, blank=True)
-    activo = models.BooleanField(default=True)
-    creado_en = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['nombre']
-        verbose_name = 'Obra'
-        verbose_name_plural = 'Obras'
-
-    def __str__(self):
-        return f"{self.codigo} - {self.nombre}"
-
 class CategoriaRecurso(models.Model):
     """Top-level grouping for resources. Examples seeded:
     'MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS', 'PERSONAL DE OBRA'."""
@@ -87,8 +69,8 @@ class CategoriaActividad(models.Model):
 # ---------------------------------------------------------------------------
 
 class InformeDiario(models.Model):
-    obra = models.ForeignKey(Obra, on_delete=models.PROTECT,
-                             related_name='informes')
+    proyecto = models.ForeignKey('operaciones.Proyecto', on_delete=models.PROTECT,
+                                 related_name='informes_diarios', verbose_name='Proyecto/Obra')
     fecha = models.DateField()
     dia_semana = models.CharField(max_length=20, blank=True)
     numero_paginas = models.IntegerField(default=1)
@@ -137,7 +119,7 @@ class InformeDiario(models.Model):
 
     class Meta:
         ordering = ['-fecha']
-        unique_together = [('obra', 'fecha')]
+        unique_together = [('proyecto', 'fecha')]
         verbose_name = 'Informe Diario'
         verbose_name_plural = 'Informes Diarios'
 
@@ -149,7 +131,7 @@ class InformeDiario(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.obra.codigo} - {self.fecha}"
+        return f"{self.proyecto.codigo} - {self.fecha}"
 
     @property
     def total_personal(self):

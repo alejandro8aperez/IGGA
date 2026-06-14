@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from django.db.models import Count, Prefetch
 from django.utils import timezone
 from django.http import HttpResponse
+from rest_framework.exceptions import ValidationError
 
 from .models import (
     Obra, CategoriaRecurso, Recurso, CategoriaActividad,
@@ -277,6 +278,8 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except ValidationError:
+            raise
         except Exception as e:
             logger.error(f"Error en create InformeDiario: {str(e)}", exc_info=True)
             return Response(
@@ -293,6 +296,8 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(serializer.data)
+        except ValidationError:
+            raise
         except Exception as e:
             logger.error(f"Error en update InformeDiario: {str(e)}", exc_info=True)
             return Response(

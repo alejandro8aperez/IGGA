@@ -95,16 +95,40 @@ function InformeDiarioContent() {
     setActiveTab("formulario");
   };
 
-  const handleExportarExcel = () => {
+  const handleExportarExcel = async () => {
     if (!hasInforme) return;
-    const url = informeDiarioService.excelUrl(editingInforme.id);
-    window.open(url, "_blank");
+    const toastId = toast.loading("Generando Excel...");
+    try {
+      const blob = await informeDiarioService.downloadExcel(editingInforme.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Informe_Diario_${editingInforme.id}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      toast.success("Excel exportado correctamente", { id: toastId });
+    } catch (error) {
+      toast.error("Error al exportar Excel", { id: toastId });
+    }
   };
 
-  const handleImprimirFotosPDF = () => {
+  const handleImprimirFotosPDF = async () => {
     if (!hasInforme) return;
-    const url = informeDiarioService.pdfUrl(editingInforme.id);
-    window.open(url, "_blank");
+    const toastId = toast.loading("Generando PDF...");
+    try {
+      const blob = await informeDiarioService.downloadPdf(editingInforme.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Informe_Diario_Fotos_${editingInforme.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      toast.success("PDF generado correctamente", { id: toastId });
+    } catch (error) {
+      toast.error("Error al generar PDF", { id: toastId });
+    }
   };
 
   const handleImprimirFotosImprimir = () => {

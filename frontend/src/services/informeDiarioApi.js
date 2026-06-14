@@ -52,6 +52,9 @@ export const informeDiarioService = {
   pdfUrl:   (id) => `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/exportar-pdf/`,
   excelUrl: (id) => `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/exportar-excel/`,
 
+  downloadPdf: (id) => axiosInstance.get(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/exportar-pdf/`, { responseType: 'blob' }).then(r => r.data),
+  downloadExcel: (id) => axiosInstance.get(`${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/exportar-excel/`, { responseType: 'blob' }).then(r => r.data),
+
   subirAnexo: (id, formData) =>
     axiosInstance.post(
       `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/subir-anexo/`,
