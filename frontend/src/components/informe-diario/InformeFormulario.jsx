@@ -2,7 +2,7 @@
 //  InformeFormulario.jsx  –  ERP-8AMPERIOS  (CON FIRMAS RRHH)
 //  Integración: Dropdowns de empleados desde RRHH para firmas
 // ============================================================
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, X, CloudRain, Search, ChevronDown, Check, Users, Signature } from "lucide-react";
 import { toast } from "sonner";
@@ -582,7 +582,7 @@ function ActividadesFija({ titulo, subtitulo, color, actividades, onChange }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // FORMULARIO PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════════════════
-export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
+const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) => {
   const queryClient = useQueryClient();
 
   const { data: rawObras = [],   isLoading: isLoadingObras }     = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
@@ -685,13 +685,21 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
     },
   });
 
+  useImperativeHandle(ref, () => ({
+    save: () => saveMutation.mutateAsync(form),
+    saveSync: () => saveMutation.mutate(form),
+    getId: () => informe?.id,
+  }), [form, saveMutation, informe?.id]);
+
   if (isLoadingObras || isLoadingRecursos || isLoadingCategorias) {
     return (
       <div style={{ textAlign: "center", padding: "3rem" }}>
         <Loader2 size={28} color="#667eea" style={{ animation: "spin 1s linear infinite" }} />
-      </div>
-    );
-  }
+    </div>
+  );
+});
+
+export default InformeFormulario;
 
   return (
     <div>
@@ -930,5 +938,7 @@ export default function InformeFormulario({ informe, onGuardado, onCancelar }) {
       </div>
     </div>
   );
-}
+});
+
+export default InformeFormulario;
 

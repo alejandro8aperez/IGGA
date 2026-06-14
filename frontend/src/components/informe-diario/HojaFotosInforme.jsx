@@ -251,7 +251,7 @@ export function imprimirFotos(fotos, informe) {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange }) => {
+const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSave }) => {
   const [fotos, setFotos]     = useState({});
   const [loading, setLoading] = useState({});
   const [hovered, setHovered] = useState(null);
@@ -283,11 +283,16 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange }) => {
 
   const handleUpload = async (posicion, file) => {
     if (!file) return;
-    if (!informeId) { toast.error('Debe guardar el informe antes de subir fotografías.'); return; }
+    let id = informeId;
+    if (!id) {
+      if (!onAutoSave) { toast.error('Debe guardar el informe antes de subir fotografías.'); return; }
+      id = await onAutoSave();
+      if (!id) { toast.error('No se pudo guardar el informe automáticamente.'); return; }
+    }
     setLoading(prev => ({ ...prev, [posicion]: true }));
     const formData = new FormData();
     formData.append('imagen',   file);
-    formData.append('informe',  informeId);
+    formData.append('informe',  id);
     formData.append('posicion', posicion);
     formData.append('seccion',  'actividades');
     try {

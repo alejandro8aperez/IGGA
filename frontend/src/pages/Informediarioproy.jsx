@@ -5,7 +5,7 @@
 //  Fix v4: Tab "FORM" con sublabel de proyecto
 //  Fix v3: HojaFotosInforme en tab Fotos
 // ============================================================
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
@@ -75,7 +75,29 @@ function InformeDiarioContent() {
   // Fotos levantadas aquí para que los botones del top bar puedan acceder
   const [fotosActuales, setFotosActuales] = useState({});
 
+  const formRef = useRef(null);
+
   const hasInforme = !!editingInforme?.id;
+
+  const handleTabChange = useCallback(async (tabId) => {
+    if (tabId === activeTab) return;
+
+    // Auto-guardar al salir del formulario si hay un informe en edición o creación
+    if (activeTab === "formulario" && formRef.current) {
+      const hasId = formRef.current.getId();
+      if (!hasId || editingInforme) {
+        try {
+          const result = await formRef.current.save();
+          if (result?.id) {
+            setEditingInforme(prev => ({ ...prev, ...result }));
+          }
+        } catch {
+          // Si falla el auto-save, igual permitimos cambiar de tab
+        }
+      }
+    }
+    setActiveTab(tabId);
+  }, [activeTab, editingInforme]);
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const formSublabel = editingInforme
@@ -236,7 +258,7 @@ function InformeDiarioContent() {
             <TabChip
               key={t.id}
               active={activeTab === t.id}
-              onClick={() => setActiveTab(t.id)}
+              onClick={() => handleTabChange(t.id)}
               label={t.label}
               sublabel={t.sublabel}
               icon={t.icon}
@@ -267,13 +289,23 @@ function InformeDiarioContent() {
             </div>
           )}
 
-          {/* Fotos — pasa onFotosChange para levantar el estado */}
+          {/* Fotos — pasa onFotosChange y onAutoSave */}
           {activeTab === "fotos" && (
             <HojaFotosInforme
               informeId={editingInforme?.id}
               obraId={editingInforme?.obra}
               informe={editingInforme}
               onFotosChange={setFotosActuales}
+              onAutoSave={async () => {
+                if (formRef.current) {
+                  const result = await formRef.current.save();
+                  if (result?.id) {
+                    setEditingInforme(prev => ({ ...prev, ...result }));
+                    return result.id;
+                  }
+                }
+                return null;
+              }}
             />
           )}
 
@@ -285,8 +317,12 @@ function InformeDiarioContent() {
           {/* Formulario — siempre montado para conservar estado */}
           <div style={{ display: activeTab === "formulario" ? "block" : "none" }}>
             <InformeFormulario
+              ref={formRef}
               informe={editingInforme}
-              onGuardado={() => setActiveTab("dashboard")}
+              onGuardado={() => {
+                setEditingInforme(null);
+                setActiveTab("dashboard");
+              }}
               onCancelar={() => setActiveTab("dashboard")}
             />
           </div>
