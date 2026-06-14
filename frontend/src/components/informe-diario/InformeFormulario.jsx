@@ -592,7 +592,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
   const [form, setForm] = useState(normalizarInforme(informe) || {
-    obra_id: "", obra_nombre: "", fecha: new Date().toISOString().split("T")[0],
+    obra_id: "", obra_nombre: "", cliente_nombre: "", fecha: new Date().toISOString().split("T")[0],
     dia_semana: DIAS[new Date().getDay()], codigo_formato: "F-141-IN",
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
     // ── FIRMAS RRHH (nuevos campos) ──────────────────────
@@ -611,7 +611,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
 
   const handleObraChange = (obraId) => {
     const obra = obras.find(o => String(o.id) === obraId);
-    setForm(prev => ({ ...prev, obra_id: obraId, obra_nombre: obra?.nombre || "" }));
+    setForm(prev => ({ ...prev, obra_id: obraId, obra_nombre: obra?.nombre || "", cliente_nombre: obra?.cliente_nombre || "" }));
   };
 
   const handleFechaChange = (fecha) => {
@@ -726,6 +726,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
           <div>
             <label style={label}>Obra * <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: "0.7rem" }}>(desde OPERACIONES)</span></label>
             <ObraSelect obras={obras} value={form.obra_id} onChange={handleObraChange} />
+            {form.cliente_nombre && <div style={{ fontSize: "0.7rem", color: "#64748b", marginTop: "0.25rem" }}>Cliente: {form.cliente_nombre}</div>}
           </div>
           <div>
             <label style={label}>Fecha *</label>
