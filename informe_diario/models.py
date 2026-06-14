@@ -298,8 +298,8 @@ class AnexoFoto(models.Model):
     orden = models.IntegerField(default=0)
     posicion = models.PositiveSmallIntegerField(
         default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(24)],
-        help_text="Posición en la cuadrícula 4x6 (1-24). 0 si no está asignada."
+        validators=[MinValueValidator(0), MaxValueValidator(48)],
+        help_text="Posición en la cuadrícula 4x6 (1-48). 0 si no está asignada."
     )
     creado_en = models.DateTimeField(auto_now_add=True)
 
