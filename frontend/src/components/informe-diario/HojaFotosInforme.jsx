@@ -276,7 +276,7 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSave }) => {
+const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSave, startSlot = 1 }) => {
   const [fotos, setFotos]     = useState({});
   const [loading, setLoading] = useState({});
   const [hovered, setHovered] = useState(null);
@@ -350,7 +350,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
   };
 
   const fotasLlenas = Object.keys(fotos).length;
-  const slots = Array.from({ length: 24 }, (_, i) => i + 1);
+  const slots = Array.from({ length: 24 }, (_, i) => startSlot + i);
 
   return (
     <div style={S.wrapper}>

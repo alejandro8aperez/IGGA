@@ -346,6 +346,7 @@ function InformeDiarioContent() {
               informeId={editingInforme?.id}
               obraId={editingInforme?.obra}
               informe={editingInforme}
+              startSlot={25}
               onAutoSave={async () => {
                 if (formRef.current) {
                   const result = await formRef.current.saveDraft();
