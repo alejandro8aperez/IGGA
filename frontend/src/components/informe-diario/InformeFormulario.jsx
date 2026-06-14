@@ -19,7 +19,6 @@ const label     = { display: "block", fontSize: "0.75rem", fontWeight: 600, colo
 const inputStyle = { width: "100%", padding: "0.5rem 0.75rem", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "0.875rem", background: "white", outline: "none", boxSizing: "border-box" };
 const grid3     = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" };
 const grid2     = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" };
-const btnPrimary = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "none", background: "#667eea", color: "white", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" };
 const btnOutline = { padding: "0.5rem 1.25rem", borderRadius: "8px", border: "1px solid #cbd5e1", background: "white", color: "#475569", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" };
 const btnGhost   = { background: "none", border: "none", cursor: "pointer", padding: "0.2rem", color: "#ef4444", display: "flex", alignItems: "center" };
 
@@ -582,7 +581,7 @@ function ActividadesFija({ titulo, subtitulo, color, actividades, onChange }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // FORMULARIO PRINCIPAL
 // ═══════════════════════════════════════════════════════════════════════════════
-const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) => {
+const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
   const queryClient = useQueryClient();
 
   const { data: rawObras = [],   isLoading: isLoadingObras }     = useQuery({ queryKey: ["obras"],               queryFn: () => obraService.list() });
@@ -675,13 +674,6 @@ const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["informes-diarios"] });
-      toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓");
-      onGuardado();
-    },
-    onError: (error) => {
-      const data = error?.response?.data;
-      const msg = data?.detail || data?.non_field_errors?.[0] || (typeof data === "object" ? JSON.stringify(data) : null) || "Error al guardar";
-      toast.error(msg);
     },
   });
 
@@ -696,11 +688,24 @@ const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) 
     return p;
   }, [form]);
 
+  const handleManualSave = useCallback(async () => {
+    try {
+      await saveMutation.mutateAsync({ ...form });
+      toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓");
+      onGuardado();
+    } catch (err) {
+      const data = err?.response?.data;
+      const msg = data?.detail || data?.non_field_errors?.[0] || (typeof data === "object" ? JSON.stringify(data) : null) || "Error al guardar";
+      toast.error(msg);
+    }
+  }, [form, saveMutation, informe, onGuardado]);
+
   useImperativeHandle(ref, () => ({
     save: () => saveMutation.mutateAsync({ ...form }),
     saveDraft: () => saveMutation.mutateAsync(getDraftPayload()),
+    manualSave: handleManualSave,
     getId: () => informe?.id,
-  }), [form, saveMutation, informe?.id, getDraftPayload]);
+  }), [form, saveMutation, informe?.id, getDraftPayload, handleManualSave]);
 
   if (isLoadingObras || isLoadingRecursos || isLoadingCategorias) {
     return (
@@ -931,20 +936,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) 
         </div>
       </div>
 
-      {/* ── Botones guardar ──────────────────────────────────────────────── */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", paddingBottom: "2rem" }}>
-        <button type="button" onClick={onCancelar} disabled={saveMutation.isPending} style={btnOutline}>Cancelar</button>
-        <button
-          type="button"
-          onClick={() => saveMutation.mutate(form)}
-          disabled={!form.obra_id || !form.fecha || !form.elaborado_por_id || !form.revisado_por_id || saveMutation.isPending}
-          title={!form.obra_id ? "Selecciona una obra primero" : !form.elaborado_por_id ? "Selecciona quien elabora" : !form.revisado_por_id ? "Selecciona quien revisa" : ""}
-          style={{ ...btnPrimary, opacity: (!form.obra_id || !form.fecha || !form.elaborado_por_id || !form.revisado_por_id || saveMutation.isPending) ? 0.5 : 1, cursor: (!form.obra_id || !form.fecha || !form.elaborado_por_id || !form.revisado_por_id || saveMutation.isPending) ? "not-allowed" : "pointer" }}
-        >
-          {saveMutation.isPending && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
-          {informe ? "Guardar cambios" : "Crear informe"}
-        </button>
-      </div>
+      {/* Botones eliminados — el módulo es auto-save */}
     </div>
   );
 });

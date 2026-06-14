@@ -19,7 +19,6 @@ import InformeFormulario from "@/components/informe-diario/InformeFormulario";
 import HojaFotosInforme, { imprimirFotos } from "@/components/informe-diario/HojaFotosInforme";
 import ReportesInforme   from "@/components/informe-diario/ReportesInforme";
 
-import axiosInstance from "@/config/axiosConfig";
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { informeDiarioService } from "@/services/informeDiarioApi";
@@ -55,17 +54,6 @@ const actionBtn = (disabled = false) => ({
   boxShadow:      disabled ? "none" : "0 2px 8px rgba(27,58,92,0.25)",
 });
 
-function normalizeArray(data) {
-  if (Array.isArray(data)) return data;
-  if (data?.results && Array.isArray(data.results)) return data.results;
-  if (data?.data && Array.isArray(data.data)) return data.data;
-  if (data && typeof data === "object" && !Array.isArray(data)) {
-    const keys = Object.keys(data);
-    if (keys.length > 0 && keys.every(k => !isNaN(Number(k)))) return keys.map(k => data[k]);
-  }
-  return [];
-}
-
 // ── Contenido principal ───────────────────────────────────────────────────────
 function InformeDiarioContent() {
   const navigate = useNavigate();
@@ -94,7 +82,7 @@ function InformeDiarioContent() {
       }
     }
     setActiveTab(tabId);
-  }, [activeTab, editingInforme]);
+  }, [activeTab]);
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const formSublabel = editingInforme
@@ -320,7 +308,6 @@ function InformeDiarioContent() {
                 setEditingInforme(null);
                 setActiveTab("dashboard");
               }}
-              onCancelar={() => setActiveTab("dashboard")}
             />
           </div>
 
