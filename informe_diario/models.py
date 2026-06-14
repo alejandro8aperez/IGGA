@@ -124,7 +124,7 @@ class InformeDiario(models.Model):
         verbose_name_plural = 'Informes Diarios'
 
     def save(self, *args, **kwargs):
-        if self.fecha and not self.dia_semana:
+        if self.fecha:
             dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves',
                     'Viernes', 'Sábado', 'Domingo']
             self.dia_semana = dias[self.fecha.weekday()]

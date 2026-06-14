@@ -10,7 +10,13 @@ class ProyectoProxySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     codigo = serializers.CharField(read_only=True)
     nombre = serializers.CharField(read_only=True)
-    estado = serializers.CharField(read_only=True)
+    estado = serializers.SerializerMethodField()
+
+    def get_estado(self, obj):
+        # Soporta tanto 'estado' como 'status' dependiendo de cómo esté definido en operaciones.Proyecto
+        if hasattr(obj, 'estado'):
+            return obj.estado
+        return getattr(obj, 'status', 'N/A')
 
 class CategoriaRecursoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -110,7 +116,7 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InformeDiario
-        fields = ['id', 'proyecto', 'proyecto_nombre', 'fecha',
+        fields = ['id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'fecha',
                   'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'total_actividades', 'creado_en', 'status', 'status_label',
@@ -130,6 +136,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     """Full nested serializer (read + write) for the daily report."""
     proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
     proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
     detalles = DetalleRecursoSerializer(many=True, required=False)
     reportes_lluvia = ReporteLluviaSerializer(many=True, required=False)
     actividades = ActividadSerializer(many=True, required=False)
@@ -145,7 +152,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = InformeDiario
         fields = [
-            'id', 'proyecto', 'proyecto_nombre', 'fecha', 'dia_semana',
+            'id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'fecha', 'dia_semana',
             'numero_paginas', 'codigo_formato',
             'observaciones_generales', 'estado_terreno_inicio',
             'estado_terreno_final',
@@ -154,7 +161,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'elaborado_por_detalle', 'revisado_por_detalle',
             # Campos de respaldo (legacy)
             'elaborado_por_texto', 'cargo_elaborado',
-            'revisado_por_texto', 'cargo_revisado',
+            'revisado_por_texto', 'cargo_revisado', 'status_label',
             'comision_topografia', 'status',
             'detalles', 'reportes_lluvia', 'actividades', 'items_obra', 'anexos',
             'maquinaria_libre', 'personal_libre',

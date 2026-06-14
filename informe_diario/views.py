@@ -10,7 +10,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from django.utils import timezone
 from django.http import HttpResponse
 from rest_framework.exceptions import ValidationError
@@ -68,8 +68,10 @@ def _transform_frontend_data(data):
     """
     t = dict(data)
 
-    # Proyecto: Extraer ID (Soporta nombre antiguo 'obra_id' para compatibilidad con el frontend)
-    proyecto_id = t.pop('proyecto_id', t.pop('proyecto', t.pop('obra_id', t.pop('obra', None))))
+g    # Proyecto: Extraer ID (Búsqueda exhaustiva para compatibilidad total)
+    proyecto_id = t.pop('proyecto_id', None) or t.pop('proyecto', None) or \
+                  t.pop('obra_id', None) or t.pop('obra', None)
+    
     t['proyecto'] = _get_id(proyecto_id)
 
     # Status: Asegurar valor plano (evita estado congelado)
@@ -167,14 +169,32 @@ class ObraViewSet(viewsets.ReadOnlyModelViewSet):
     Proxy ViewSet: Redirige las peticiones de 'Obras' directamente a 'Proyectos' de Operaciones.
     Esto permite que el frontend siga funcionando mientras se actualizan las URLs.
     """
+    pagination_class = None
     serializer_class = ProyectoProxySerializer
 
     def get_queryset(self):
         try:
             from django.apps import apps
             Proyecto = apps.get_model('operaciones', 'Proyecto')
-            return Proyecto.objects.filter(estado='ejecucion').order_by('codigo')
-        except Exception:
+
+            # 1. Intentar filtrar por proyectos en ejecución (búsqueda flexible)
+            qs_ejecucion = Proyecto.objects.filter(
+                Q(estado__icontains='ejecucion') | Q(status__icontains='ejecucion')
+            )
+            
+            if qs_ejecucion.exists():
+                return qs_ejecucion.order_by('codigo')
+
+            # 2. Si no hay en ejecución, intentar proyectos activos (si existe el campo)
+            if hasattr(Proyecto, 'activo'):
+                qs_activos = Proyecto.objects.filter(activo=True)
+                if qs_activos.exists():
+                    return qs_activos.order_by('codigo')
+
+            # 3. Fallback: Todos los proyectos para asegurar que el dropdown no esté vacío
+            return Proyecto.objects.all().order_by('codigo')
+        except Exception as e:
+            logger.error(f"CRITICAL: Error en ObraViewSet (Proxy) accediendo a Operaciones: {str(e)}")
             return []
 
 class CategoriaRecursoViewSet(viewsets.ModelViewSet):
