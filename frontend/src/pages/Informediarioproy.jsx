@@ -282,14 +282,14 @@ function InformeDiarioContent() {
             <ReportesInforme informeId={editingInforme?.id} informe={editingInforme} />
           )}
 
-          {/* Formulario */}
-          {activeTab === "formulario" && (
+          {/* Formulario — siempre montado para conservar estado */}
+          <div style={{ display: activeTab === "formulario" ? "block" : "none" }}>
             <InformeFormulario
               informe={editingInforme}
               onGuardado={() => setActiveTab("dashboard")}
               onCancelar={() => setActiveTab("dashboard")}
             />
-          )}
+          </div>
 
         </div>
       </div>
