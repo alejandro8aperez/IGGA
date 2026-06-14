@@ -847,6 +847,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
               Comisión de Topografía
             </label>
           </div>
+          </div>
         </div>
       </div>
 

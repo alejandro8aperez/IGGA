@@ -120,22 +120,10 @@ function InformeDiarioContent() {
     }
   };
 
-  const handleImprimirFotosPDF = async () => {
+  const handleExportarPDF = async () => {
     if (!hasInforme) return;
-    const toastId = toast.loading("Generando PDF...");
-    try {
-      const blob = await informeDiarioService.downloadPdf(editingInforme.id);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Informe_Diario_Fotos_${editingInforme.id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      toast.success("PDF generado correctamente", { id: toastId });
-    } catch (error) {
-      toast.error("Error al generar PDF", { id: toastId });
-    }
+    const url = informeDiarioService.pdfUrl(editingInforme.id);
+    window.open(url, '_blank');
   };
 
   const handleImprimirFotosImprimir = (layout = '4x6') => {
@@ -232,13 +220,13 @@ function InformeDiarioContent() {
           </button>
 
           <button
-            onClick={handleImprimirFotosPDF}
+            onClick={handleExportarPDF}
             disabled={!hasInforme}
-            title={hasInforme ? "Exportar informe a PDF" : "Selecciona un informe primero"}
+            title={hasInforme ? "Exportar informe completo a PDF" : "Selecciona un informe primero"}
             style={actionBtn(!hasInforme)}
           >
             <FileText size={15} />
-            FOTOS PDF
+            EXPORTA PDF
           </button>
 
         </div>

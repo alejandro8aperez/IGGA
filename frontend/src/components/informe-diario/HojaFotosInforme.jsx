@@ -172,13 +172,19 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
   const obra  = informe?.obra_nombre || 'Informe Diario';
   const cod   = 'F-141-IN';
 
+  function chunkFotos(arr, size) {
+    const result = [];
+    for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+    return result;
+  }
+
   const fotosHTML = fotosLlenas.map(([num, f]) => {
     const src  = getImageUrl(f.imagen_url || f.imagen);
     const desc = f.descripcion || '';
     const sec  = f.seccion_display || '';
     return `
       <div class="foto-card${es4x12 ? ' compact' : ''}">
-        <img src="${src}" alt="Foto ${num}" />
+        <img loading="lazy" src="${src}" alt="Foto ${num}" />
         <div class="foto-info${es4x12 ? ' compact' : ''}">
           <span class="foto-num">${String(num).padStart(2, '0')}</span>
           ${sec  ? `<span class="foto-sec">${sec}</span>`  : ''}
@@ -186,7 +192,36 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
         </div>
       </div>
     `;
-  }).join('');
+  });
+
+  const fotosPorPagina = es4x12 ? 48 : 24;
+  const paginas = chunkFotos(fotosHTML, fotosPorPagina);
+
+  const paginaHTML = paginas.map((fotosPagina, idx) => `
+    <div class="page">
+      <div class="header">
+        <div class="header-logo">IGGA<span>INTERVENTORÍA</span></div>
+        <div class="header-info">
+          <div class="header-title">Registro Fotográfico de Obra</div>
+          <div class="header-meta">
+            <div><strong>OBRA:</strong> ${obra}</div>
+            <div><strong>FECHA:</strong> ${fecha}</div>
+          </div>
+        </div>
+        <div class="header-cod">
+          <div>${cod}</div>
+          <div>F. Emisión: 27/08/2009</div>
+          <div>Mod: 00</div>
+        </div>
+      </div>
+      <div class="count-bar">Pág. ${idx + 1} de ${paginas.length} — ${fotosPagina.length} fotografía${fotosPagina.length !== 1 ? 's' : ''}</div>
+      <div class="fotos-grid">${fotosPagina.join('')}</div>
+      <div class="footer${es4x12 ? ' compact' : ''}">
+        <span>Generado: ${new Date().toLocaleString('es-CO')}</span>
+        <span>${cod} — ${obra} — ${fecha} — Matriz ${layout}</span>
+      </div>
+    </div>
+  `).join('');
 
   const html = `<!DOCTYPE html>
 <html lang="es">
@@ -196,55 +231,37 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; font-size: 10px; color: #1e293b; background: #fff; }
-    .header { display: flex; align-items: stretch; border: 2px solid #1B3A5C; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
-    .header-logo { background: #1B3A5C; color: #fff; font-size: 22px; font-weight: 900; letter-spacing: 0.08em; padding: 10px 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; }
-    .header-logo span { font-size: 8px; font-weight: 400; letter-spacing: 0.1em; margin-top: 2px; opacity: 0.8; }
-    .header-info { flex: 1; padding: 8px 14px; display: flex; flex-direction: column; justify-content: center; gap: 3px; border-left: 3px solid #1B3A5C; }
-    .header-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1B3A5C; }
-    .header-meta { display: flex; gap: 20px; font-size: 9px; color: #475569; }
+    .page { page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    .header { display: flex; align-items: stretch; border: 2px solid #1B3A5C; border-radius: ${es4x12 ? '4' : '6'}px; overflow: hidden; margin-bottom: ${es4x12 ? '6' : '14'}px; }
+    .header-logo { background: #1B3A5C; color: #fff; font-size: ${es4x12 ? '14' : '22'}px; font-weight: 900; letter-spacing: 0.08em; padding: ${es4x12 ? '4 10' : '10 18'}px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: ${es4x12 ? '50' : '80'}px; }
+    .header-logo span { font-size: ${es4x12 ? '5' : '8'}px; font-weight: 400; letter-spacing: 0.1em; margin-top: 1px; opacity: 0.8; }
+    .header-info { flex: 1; padding: ${es4x12 ? '4 8' : '8 14'}px; display: flex; flex-direction: column; justify-content: center; gap: ${es4x12 ? '1' : '3'}px; border-left: 3px solid #1B3A5C; }
+    .header-title { font-size: ${es4x12 ? '8' : '11'}px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1B3A5C; }
+    .header-meta { display: flex; gap: ${es4x12 ? '8' : '20'}px; font-size: ${es4x12 ? '6' : '9'}px; color: #475569; }
     .header-meta strong { color: #1e293b; }
-    .header-cod { margin-left: auto; font-size: 8px; font-family: monospace; color: #94a3b8; text-align: right; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
-    .count-bar { font-size: 8px; color: #64748b; margin-bottom: 10px; text-align: right; text-transform: uppercase; letter-spacing: 0.06em; }
-    .fotos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: ${es4x12 ? '4px' : '8px'}; }
-    .foto-card { border: 1px solid #e2e8f0; border-radius: 5px; overflow: hidden; break-inside: avoid; }
-    .foto-card.compact { border-radius: 3px; }
+    .header-cod { margin-left: auto; font-size: ${es4x12 ? '5' : '8'}px; font-family: monospace; color: #94a3b8; text-align: right; padding: ${es4x12 ? '4 8' : '8 12'}px; display: flex; flex-direction: column; justify-content: center; gap: ${es4x12 ? '1' : '2'}px; }
+    .count-bar { font-size: ${es4x12 ? '6' : '8'}px; color: #64748b; margin-bottom: ${es4x12 ? '4' : '10'}px; text-align: right; text-transform: uppercase; letter-spacing: 0.06em; }
+    .fotos-grid { display: grid; grid-template-columns: repeat(${es4x12 ? '4' : '4'}, 1fr); gap: ${es4x12 ? '3px' : '8px'}; }
+    .foto-card { border: 1px solid #e2e8f0; border-radius: ${es4x12 ? '2' : '5'}px; overflow: hidden; break-inside: avoid; }
+    .foto-card.compact { border-radius: 2px; }
     .foto-card img { width: 100%; aspect-ratio: ${es4x12 ? '4 / 3' : '1 / 1'}; object-fit: cover; display: block; }
     .foto-card.compact img { aspect-ratio: 4 / 3; }
     .foto-info { padding: 4px 5px; background: #f8fafc; display: flex; flex-direction: column; gap: 1px; }
-    .foto-info.compact { padding: 2px 4px; gap: 0; }
-    .foto-num { font-family: monospace; font-size: 8px; font-weight: 700; color: #1B3A5C; }
-    .foto-info.compact .foto-num { font-size: 6px; }
-    .foto-sec { font-size: 7px; font-weight: 700; text-transform: uppercase; color: #7c3aed; letter-spacing: 0.04em; }
-    .foto-info.compact .foto-sec { font-size: 5px; }
-    .foto-desc { font-size: 8px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .foto-info.compact .foto-desc { font-size: 6px; }
-    .footer { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; }
-    .footer.compact { margin-top: 8px; padding-top: 4px; font-size: 6px; }
-    @media print { @page { size: A4 landscape; margin: ${es4x12 ? '8mm' : '12mm'}; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    .foto-info.compact { padding: 1px 3px; gap: 0; }
+    .foto-num { font-family: monospace; font-size: ${es4x12 ? '5' : '8'}px; font-weight: 700; color: #1B3A5C; }
+    .foto-info.compact .foto-num { font-size: 5px; }
+    .foto-sec { font-size: ${es4x12 ? '5' : '7'}px; font-weight: 700; text-transform: uppercase; color: #7c3aed; letter-spacing: 0.04em; }
+    .foto-info.compact .foto-sec { font-size: 4px; }
+    .foto-desc { font-size: ${es4x12 ? '5' : '8'}px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .foto-info.compact .foto-desc { font-size: 5px; }
+    .footer { margin-top: ${es4x12 ? '6' : '16'}px; border-top: 1px solid #e2e8f0; padding-top: ${es4x12 ? '3' : '8'}px; display: flex; justify-content: space-between; font-size: ${es4x12 ? '5' : '8'}px; color: #94a3b8; }
+    .footer.compact { margin-top: 4px; padding-top: 2px; font-size: 5px; }
+    @media print { @page { size: A4 landscape; margin: ${es4x12 ? '5mm' : '12mm'}; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="header-logo">IGGA<span>INTERVENTORÍA</span></div>
-    <div class="header-info">
-      <div class="header-title">Registro Fotográfico de Obra</div>
-      <div class="header-meta">
-        <div><strong>OBRA:</strong> ${obra}</div>
-        <div><strong>FECHA:</strong> ${fecha}</div>
-      </div>
-    </div>
-    <div class="header-cod">
-      <div>${cod}</div>
-      <div>F. Emisión: 27/08/2009</div>
-      <div>Mod: 00</div>
-    </div>
-  </div>
-  <div class="count-bar">${fotosLlenas.length} fotografía${fotosLlenas.length !== 1 ? 's' : ''} registrada${fotosLlenas.length !== 1 ? 's' : ''}</div>
-  <div class="fotos-grid">${fotosHTML}</div>
-  <div class="footer${es4x12 ? ' compact' : ''}">
-    <span>Generado: ${new Date().toLocaleString('es-CO')}</span>
-    <span>${cod} — ${obra} — ${fecha} — Matriz ${layout}</span>
-  </div>
+  ${paginaHTML}
   <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<\/script>
 </body>
 </html>`;
