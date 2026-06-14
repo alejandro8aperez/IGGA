@@ -157,7 +157,7 @@ export function getImageUrl(src) {
 }
 
 // ── Función de impresión — exportada para usarla desde el top bar ──────────
-export function imprimirFotos(fotos, informe) {
+export function imprimirFotos(fotos, informe, layout = '4x6') {
   const fotosLlenas = Object.entries(fotos)
     .sort(([a], [b]) => Number(a) - Number(b))
     .filter(([, f]) => f?.imagen_url || f?.imagen);
@@ -167,6 +167,7 @@ export function imprimirFotos(fotos, informe) {
     return;
   }
 
+  const es4x12 = layout === '4x12';
   const fecha = informe?.fecha       || new Date().toLocaleDateString('es-CO');
   const obra  = informe?.obra_nombre || 'Informe Diario';
   const cod   = 'F-141-IN';
@@ -176,9 +177,9 @@ export function imprimirFotos(fotos, informe) {
     const desc = f.descripcion || '';
     const sec  = f.seccion_display || '';
     return `
-      <div class="foto-card">
+      <div class="foto-card${es4x12 ? ' compact' : ''}">
         <img src="${src}" alt="Foto ${num}" />
-        <div class="foto-info">
+        <div class="foto-info${es4x12 ? ' compact' : ''}">
           <span class="foto-num">${String(num).padStart(2, '0')}</span>
           ${sec  ? `<span class="foto-sec">${sec}</span>`  : ''}
           ${desc ? `<span class="foto-desc">${desc}</span>` : ''}
@@ -204,15 +205,22 @@ export function imprimirFotos(fotos, informe) {
     .header-meta strong { color: #1e293b; }
     .header-cod { margin-left: auto; font-size: 8px; font-family: monospace; color: #94a3b8; text-align: right; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
     .count-bar { font-size: 8px; color: #64748b; margin-bottom: 10px; text-align: right; text-transform: uppercase; letter-spacing: 0.06em; }
-    .fotos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .fotos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: ${es4x12 ? '4px' : '8px'}; }
     .foto-card { border: 1px solid #e2e8f0; border-radius: 5px; overflow: hidden; break-inside: avoid; }
-    .foto-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+    .foto-card.compact { border-radius: 3px; }
+    .foto-card img { width: 100%; aspect-ratio: ${es4x12 ? '4 / 3' : '1 / 1'}; object-fit: cover; display: block; }
+    .foto-card.compact img { aspect-ratio: 4 / 3; }
     .foto-info { padding: 4px 5px; background: #f8fafc; display: flex; flex-direction: column; gap: 1px; }
+    .foto-info.compact { padding: 2px 4px; gap: 0; }
     .foto-num { font-family: monospace; font-size: 8px; font-weight: 700; color: #1B3A5C; }
+    .foto-info.compact .foto-num { font-size: 6px; }
     .foto-sec { font-size: 7px; font-weight: 700; text-transform: uppercase; color: #7c3aed; letter-spacing: 0.04em; }
+    .foto-info.compact .foto-sec { font-size: 5px; }
     .foto-desc { font-size: 8px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .foto-info.compact .foto-desc { font-size: 6px; }
     .footer { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; }
-    @media print { @page { size: A4 landscape; margin: 12mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    .footer.compact { margin-top: 8px; padding-top: 4px; font-size: 6px; }
+    @media print { @page { size: A4 landscape; margin: ${es4x12 ? '8mm' : '12mm'}; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
@@ -233,9 +241,9 @@ export function imprimirFotos(fotos, informe) {
   </div>
   <div class="count-bar">${fotosLlenas.length} fotografía${fotosLlenas.length !== 1 ? 's' : ''} registrada${fotosLlenas.length !== 1 ? 's' : ''}</div>
   <div class="fotos-grid">${fotosHTML}</div>
-  <div class="footer">
+  <div class="footer${es4x12 ? ' compact' : ''}">
     <span>Generado: ${new Date().toLocaleString('es-CO')}</span>
-    <span>${cod} — ${obra} — ${fecha}</span>
+    <span>${cod} — ${obra} — ${fecha} — Matriz ${layout}</span>
   </div>
   <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<\/script>
 </body>

@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
   Image as ImageIcon, ArrowLeft,
-  BarChart2, FileSpreadsheet, Printer, FileText,
+  BarChart2, FileSpreadsheet, Printer, FileText, Grid3x3,
 } from "lucide-react";
 
 import InformeDashboard  from "@/components/informe-diario/InformeDashboard";
@@ -138,9 +138,9 @@ function InformeDiarioContent() {
     }
   };
 
-  const handleImprimirFotosImprimir = () => {
+  const handleImprimirFotosImprimir = (layout = '4x6') => {
     if (!hasInforme) return;
-    imprimirFotos(fotosActuales, editingInforme);
+    imprimirFotos(fotosActuales, editingInforme, layout);
   };
 
   return (
@@ -212,13 +212,23 @@ function InformeDiarioContent() {
           </button>
 
           <button
-            onClick={handleImprimirFotosImprimir}
+            onClick={() => handleImprimirFotosImprimir('4x6')}
             disabled={!hasInforme}
-            title={hasInforme ? "Imprimir registro fotográfico" : "Selecciona un informe primero"}
+            title={hasInforme ? "Imprimir registro fotográfico 4x6" : "Selecciona un informe primero"}
             style={actionBtn(!hasInforme)}
           >
             <Printer size={15} />
             FOTOS IMPRIMIR
+          </button>
+
+          <button
+            onClick={() => handleImprimirFotosImprimir('4x12')}
+            disabled={!hasInforme}
+            title={hasInforme ? "Imprimir matriz compacta 4x12" : "Selecciona un informe primero"}
+            style={actionBtn(!hasInforme)}
+          >
+            <Grid3x3 size={15} />
+            MATRIZ 4x12
           </button>
 
           <button
