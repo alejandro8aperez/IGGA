@@ -70,7 +70,8 @@ class CategoriaActividad(models.Model):
 
 class InformeDiario(models.Model):
     proyecto = models.ForeignKey('operaciones.Proyecto', on_delete=models.PROTECT,
-                                 related_name='informes_diarios', verbose_name='Proyecto/Obra')
+                                 related_name='informes_diarios', verbose_name='Proyecto/Obra',
+                                 null=True, blank=True)
     fecha = models.DateField()
     dia_semana = models.CharField(max_length=20, blank=True)
     numero_paginas = models.IntegerField(default=1)
@@ -120,6 +121,7 @@ class InformeDiario(models.Model):
     class Meta:
         ordering = ['-fecha']
         unique_together = [('proyecto', 'fecha')]
+        # Nota: proyecto puede ser NULL para drafts, el unique_together solo aplica cuando ambos son NOT NULL
         verbose_name = 'Informe Diario'
         verbose_name_plural = 'Informes Diarios'
 
@@ -282,7 +284,8 @@ class ItemObra(models.Model):
 class AnexoFoto(models.Model):
     """Photo annex stored in Cloudinary (or local in dev)."""
     informe = models.ForeignKey(InformeDiario, on_delete=models.CASCADE,
-                                related_name='anexos')
+                                 related_name='anexos',
+                                 null=True, blank=True)
     descripcion = models.CharField(max_length=500, blank=True)
     imagen = models.ImageField(upload_to='informe_diario/anexos/%Y/%m/')
     seccion = models.CharField(

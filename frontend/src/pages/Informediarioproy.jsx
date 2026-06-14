@@ -6,7 +6,7 @@
 //  Fix v3: HojaFotosInforme en tab Fotos
 // ============================================================
 import { useState, useRef, useCallback } from "react";
-import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
   Image as ImageIcon, ArrowLeft,
@@ -82,18 +82,15 @@ function InformeDiarioContent() {
   const handleTabChange = useCallback(async (tabId) => {
     if (tabId === activeTab) return;
 
-    // Auto-guardar al salir del formulario si hay un informe en edición o creación
+    // Auto-guardar al salir del formulario (usa saveDraft para crear borrador aunque falten campos)
     if (activeTab === "formulario" && formRef.current) {
-      const hasId = formRef.current.getId();
-      if (!hasId || editingInforme) {
-        try {
-          const result = await formRef.current.save();
-          if (result?.id) {
-            setEditingInforme(prev => ({ ...prev, ...result }));
-          }
-        } catch {
-          // Si falla el auto-save, igual permitimos cambiar de tab
+      try {
+        const result = await formRef.current.saveDraft();
+        if (result?.id) {
+          setEditingInforme(prev => ({ ...prev, ...result }));
         }
+      } catch {
+        // Si falla el auto-save, igual permitimos cambiar de tab
       }
     }
     setActiveTab(tabId);
@@ -298,7 +295,7 @@ function InformeDiarioContent() {
               onFotosChange={setFotosActuales}
               onAutoSave={async () => {
                 if (formRef.current) {
-                  const result = await formRef.current.save();
+                  const result = await formRef.current.saveDraft();
                   if (result?.id) {
                     setEditingInforme(prev => ({ ...prev, ...result }));
                     return result.id;

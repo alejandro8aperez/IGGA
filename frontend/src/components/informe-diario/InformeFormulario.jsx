@@ -685,11 +685,22 @@ const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) 
     },
   });
 
+  const getDraftPayload = useCallback(() => {
+    const p = { ...form };
+    if (!p.fecha) p.fecha = new Date().toISOString().split("T")[0];
+    if (!p.dia_semana) {
+      const d = new Date(p.fecha + "T12:00:00");
+      p.dia_semana = DIAS[d.getDay()];
+    }
+    if (!p.status) p.status = "borrador";
+    return p;
+  }, [form]);
+
   useImperativeHandle(ref, () => ({
-    save: () => saveMutation.mutateAsync(form),
-    saveSync: () => saveMutation.mutate(form),
+    save: () => saveMutation.mutateAsync({ ...form }),
+    saveDraft: () => saveMutation.mutateAsync(getDraftPayload()),
     getId: () => informe?.id,
-  }), [form, saveMutation, informe?.id]);
+  }), [form, saveMutation, informe?.id, getDraftPayload]);
 
   if (isLoadingObras || isLoadingRecursos || isLoadingCategorias) {
     return (
@@ -697,9 +708,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado, onCancelar }, ref) 
         <Loader2 size={28} color="#667eea" style={{ animation: "spin 1s linear infinite" }} />
     </div>
   );
-});
-
-export default InformeFormulario;
+}
 
   return (
     <div>
