@@ -1006,62 +1006,6 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
             </div>
           </div>
 
-          {/* Vista previa de firmas */}
-          {(form.elaborado_por_id || form.revisado_por_id) && (
-            <div style={{
-              marginTop: "1.5rem",
-              padding: "1rem",
-              background: "#f8fafc",
-              border: "1px dashed #cbd5e1",
-              borderRadius: "8px",
-            }}>
-              <p style={{ margin: "0 0 0.75rem", fontSize: "0.78rem", color: "#64748b", fontWeight: 600 }}>
-                Vista previa de firmas en el documento:
-              </p>
-              <div style={grid2}>
-                <div style={{ textAlign: "center" }}>
-                  {(form.elaborado_por_detalle?.firma_url) ? (
-                    <img src={
-                      form.elaborado_por_detalle.firma_url.startsWith('http')
-                        ? form.elaborado_por_detalle.firma_url
-                        : (axiosInstance.defaults.baseURL || '').replace(/\/api\/?$/, '') + '/' + form.elaborado_por_detalle.firma_url.replace(/^\//, '')
-                    }
-                      alt="Firma elaborado"
-                      style={{ height: 50, maxWidth: 160, objectFit: "contain", marginBottom: "0.5rem" }}
-                      onError={(e) => { e.target.style.display = 'none' }}
-                    />
-                  ) : (
-                    <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
-                      <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
-                        {form.elaborado_por_detalle?.nombre_completo || "_________________"}
-                      </div>
-                    </div>
-                  )}
-                  <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.25rem" }}>Elaborado por</div>
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  {(form.revisado_por_detalle?.firma_url) ? (
-                    <img src={
-                      form.revisado_por_detalle.firma_url.startsWith('http')
-                        ? form.revisado_por_detalle.firma_url
-                        : (axiosInstance.defaults.baseURL || '').replace(/\/api\/?$/, '') + '/' + form.revisado_por_detalle.firma_url.replace(/^\//, '')
-                    }
-                      alt="Firma revisado"
-                      style={{ height: 50, maxWidth: 160, objectFit: "contain", marginBottom: "0.5rem" }}
-                      onError={(e) => { e.target.style.display = 'none' }}
-                    />
-                  ) : (
-                    <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
-                      <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
-                        {form.revisado_por_detalle?.nombre_completo || "_________________"}
-                      </div>
-                    </div>
-                  )}
-                  <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.25rem" }}>Revisado por</div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
