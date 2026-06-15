@@ -71,8 +71,8 @@ function InformeDiarioContent() {
   const handleTabChange = useCallback(async (tabId) => {
     if (tabId === activeTab) return;
 
-    // Auto-guardar al salir del formulario (usa saveDraft para crear borrador aunque falten campos)
-    if (activeTab === "formulario" && formRef.current) {
+    // Auto-guardar al cambiar de pestaña (form siempre montado vía display:none)
+    if (formRef.current) {
       try {
         const result = await formRef.current.saveDraft();
         if (result?.id) {
@@ -98,7 +98,13 @@ function InformeDiarioContent() {
   ];
 
   // ── Handlers de los botones de acción ────────────────────────────────────
-  const handleNuevo = () => {
+  const handleNuevo = async () => {
+    // Auto-guardar el informe actual antes de empezar uno nuevo
+    if (formRef.current) {
+      try {
+        await formRef.current.saveDraft();
+      } catch { /* ignorar */ }
+    }
     setEditingInforme(null);
     setActiveTab("formulario");
   };
