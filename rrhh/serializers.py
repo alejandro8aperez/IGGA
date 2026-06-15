@@ -95,10 +95,19 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     evaluaciones = EvaluacionDesempenoSerializer(many=True, read_only=True)
     historial_cargos = HistorialCargoSerializer(many=True, read_only=True)
     documentos = DocumentoEmpleadoSerializer(many=True, read_only=True)
+    firma_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Empleado
         fields = '__all__'
+
+    def get_firma_url(self, obj):
+        if not obj.firma:
+            return None
+        try:
+            return obj.firma.url
+        except Exception:
+            return None
 
 
 # ── Empleado Dropdown (Ligero para selects) ────────────────

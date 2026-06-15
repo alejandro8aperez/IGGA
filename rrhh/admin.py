@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import mark_safe
 from .models import (
     EPS, AFP, ARL, CajaCompensacion, Departamento, Cargo, CentroCosto,
     Empleado, ContactoEmergencia, Familiar, FormacionAcademica, Idioma,
@@ -35,6 +36,61 @@ class EmpleadoAdmin(admin.ModelAdmin):
     list_display = ('numero_documento', 'primer_nombre', 'primer_apellido', 'cargo', 'estado')
     search_fields = ('numero_documento', 'primer_nombre', 'primer_apellido')
     list_filter = ('estado', 'tipo_contrato', 'genero')
+    readonly_fields = ('foto_preview', 'firma_preview')
+    fieldsets = [
+        (None, {
+            'fields': [
+                'tipo_documento', 'numero_documento', 'fecha_expedicion_doc', 'lugar_expedicion_doc',
+            ]
+        }),
+        ('Datos personales', {
+            'fields': [
+                'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido',
+                'fecha_nacimiento', 'lugar_nacimiento', 'genero', 'estado_civil',
+                'nacionalidad', 'grupo_sanguineo', 'estrato', 'tipo_vivienda',
+                'foto', 'foto_preview', 'firma', 'firma_preview',
+            ]
+        }),
+        ('Licencia de conducción', {
+            'fields': ['tiene_licencia', 'categoria_licencia', 'vencimiento_licencia']
+        }),
+        ('Tallas (dotación)', {
+            'fields': ['talla_camisa', 'talla_pantalon', 'talla_zapatos', 'talla_casco']
+        }),
+        ('Contacto', {
+            'fields': ['correo_personal', 'correo_corporativo', 'telefono_trabajo', 'telefono_personal', 'telefono_movil']
+        }),
+        ('Dirección', {
+            'fields': ['direccion', 'barrio', 'ciudad', 'departamento_residencia', 'codigo_postal', 'pais']
+        }),
+        ('Datos laborales', {
+            'fields': [
+                'cargo', 'departamento', 'centro_costo', 'jefe_directo', 'sede',
+                'fecha_ingreso', 'fecha_fin_periodo_prueba', 'fecha_retiro', 'motivo_retiro',
+                'tipo_contrato', 'fecha_vencimiento_contrato',
+                'tipo_salario', 'salario_basico', 'auxilio_transporte', 'periodicidad_pago',
+                'horas_extras_autorizadas', 'estado', 'notas',
+            ]
+        }),
+        ('Seguridad social', {
+            'fields': ['eps', 'afp', 'arl', 'caja_compensacion', 'nivel_riesgo_arl']
+        }),
+        ('Información bancaria', {
+            'fields': ['banco', 'tipo_cuenta', 'numero_cuenta']
+        }),
+    ]
+
+    def foto_preview(self, obj):
+        if obj.foto:
+            return mark_safe(f'<img src="{obj.foto.url}" width="100" />')
+        return "Sin foto"
+    foto_preview.short_description = 'Vista previa foto'
+
+    def firma_preview(self, obj):
+        if obj.firma:
+            return mark_safe(f'<img src="{obj.firma.url}" height="50" />')
+        return "Sin firma"
+    firma_preview.short_description = 'Vista previa firma'
 
 # Registramos el resto de componentes satélites usando configuraciones básicas
 admin.site.register(ContactoEmergencia)
