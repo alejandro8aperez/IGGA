@@ -59,7 +59,6 @@ export const informeDiarioService = {
     axiosInstance.post(
       `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/subir-anexo/`,
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
     ).then(r => r.data),
 };
 
@@ -76,9 +75,7 @@ export const dashboardService = {
 export const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  const r = await axiosInstance.post('upload/', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const r = await axiosInstance.post('upload/', formData);
   return { file_url: r.data.url };
 };
 

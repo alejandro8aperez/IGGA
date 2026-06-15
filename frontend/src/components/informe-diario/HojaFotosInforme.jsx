@@ -321,9 +321,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
     formData.append('posicion', posicion);
     formData.append('seccion',  'actividades');
     try {
-      const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData);
       const updated = { ...fotos, [posicion]: res.data };
       setFotos(updated);
       onFotosChange?.(updated);

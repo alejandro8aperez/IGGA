@@ -25,7 +25,7 @@ function normalizar(data) {
     const detalles = (data.detalles || []).map(d => ({
       id: d.recurso || d.id,
       descripcion: d.recurso_nombre || d.descripcion || '',
-      categoria: d.recurso_categoria || d.categoria || '',
+      categoria: d.categoria_nombre || d.recurso_categoria || d.categoria || '',
       cantidad: parseFloat(d.cantidad) || 0,
       empresa: d.empresa || '',
       notas: d.notas || '',
@@ -125,7 +125,7 @@ function ReportesInforme({ informeId, informe }) {
           <tbody>
             <tr>
               <td style={{ border: '1px solid #1e293b', padding: '6px 10px', fontWeight: 700, fontSize: 12, background: '#f0f0f0', width: '15%' }}>OBRA:</td>
-              <td style={{ border: '1px solid #1e293b', padding: '6px 10px', fontWeight: 700, fontSize: 12, width: '35%' }}>{d?.obra_nombre || '---'}</td>
+              <td style={{ border: '1px solid #1e293b', padding: '6px 10px', fontWeight: 700, fontSize: 12, width: '35%' }}>{d?.proyecto_nombre || d?.obra_nombre || '---'}</td>
               <td style={{ border: '1px solid #1e293b', padding: '6px 10px', fontWeight: 700, fontSize: 12, background: '#f0f0f0', width: '15%' }}>CLIENTE:</td>
               <td style={{ border: '1px solid #1e293b', padding: '6px 10px', fontWeight: 700, fontSize: 12, width: '35%' }}>{d?.cliente_nombre || '---'}</td>
             </tr>

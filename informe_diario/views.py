@@ -315,7 +315,7 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
     def exportar_excel(self, request, pk=None):
         informe = self.get_object()
         content = generar_excel(informe)
-        cod = informe.proyecto.codigo if informe.proyecto else 'sin-obra'
+        cod = informe.proyecto.nombre if informe.proyecto else 'sin-obra'
         fecha_str = informe.fecha if informe.fecha else 'sin-fecha'
         fname = f'informe_{cod}_{fecha_str}.xlsx'
         resp = HttpResponse(content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -329,7 +329,7 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
         informe = self.get_object()
         content = generar_pdf(informe)
         resp = HttpResponse(content, content_type='application/pdf')
-        cod = informe.proyecto.codigo if informe.proyecto else 'sin-obra'
+        cod = informe.proyecto.nombre if informe.proyecto else 'sin-obra'
         fecha_str = informe.fecha if informe.fecha else 'sin-fecha'
         resp['Content-Disposition'] = f'attachment; filename="informe_{cod}_{fecha_str}.pdf"'
         return resp

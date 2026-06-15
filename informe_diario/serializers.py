@@ -102,9 +102,9 @@ class EmpleadoFirmaSerializer(serializers.Serializer):
         return ' '.join(p for p in partes if p).strip()
 
 class InformeDiarioListSerializer(serializers.ModelSerializer):
-    proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
-    proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
-    cliente_nombre = serializers.CharField(source='proyecto.cliente.nombre', read_only=True, default='')
+    proyecto_codigo = serializers.SerializerMethodField()
+    proyecto_nombre = serializers.SerializerMethodField()
+    cliente_nombre = serializers.SerializerMethodField()
     total_personal = serializers.ReadOnlyField()
     total_maquinaria = serializers.ReadOnlyField()
     total_horas_lluvia = serializers.ReadOnlyField()
@@ -123,6 +123,27 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
                   'total_actividades', 'creado_en', 'status', 'status_label',
                   'foto_principal']
 
+    def get_proyecto_codigo(self, obj):
+        if obj.proyecto:
+            try:
+                return getattr(obj.proyecto, 'codigo', '')
+            except Exception:
+                return ''
+        return ''
+
+    def get_proyecto_nombre(self, obj):
+        if obj.proyecto:
+            return obj.proyecto.nombre or ''
+        return ''
+
+    def get_cliente_nombre(self, obj):
+        if obj.proyecto:
+            try:
+                return obj.proyecto.cliente.nombre or ''
+            except Exception:
+                return ''
+        return ''
+
     def get_foto_principal(self, obj):
         # Retorna la primera foto del anexo para mostrarla como thumbnail en la card
         foto = obj.anexos.first()
@@ -135,9 +156,9 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
 class InformeDiarioSerializer(serializers.ModelSerializer):
     """Full nested serializer (read + write) for the daily report."""
-    proyecto_codigo = serializers.CharField(source='proyecto.codigo', read_only=True)
-    proyecto_nombre = serializers.CharField(source='proyecto.nombre', read_only=True)
-    cliente_nombre = serializers.CharField(source='proyecto.cliente.nombre', read_only=True, default='')
+    proyecto_codigo = serializers.SerializerMethodField()
+    proyecto_nombre = serializers.SerializerMethodField()
+    cliente_nombre = serializers.SerializerMethodField()
     status_label = serializers.CharField(source='get_status_display', read_only=True)
     detalles = DetalleRecursoSerializer(many=True, required=False)
     reportes_lluvia = ReporteLluviaSerializer(many=True, required=False)
@@ -171,6 +192,27 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['creado_en', 'actualizado_en', 'dia_semana',
                             'elaborado_por_detalle', 'revisado_por_detalle']
+
+    def get_proyecto_codigo(self, obj):
+        if obj.proyecto:
+            try:
+                return getattr(obj.proyecto, 'codigo', '')
+            except Exception:
+                return ''
+        return ''
+
+    def get_proyecto_nombre(self, obj):
+        if obj.proyecto:
+            return obj.proyecto.nombre or ''
+        return ''
+
+    def get_cliente_nombre(self, obj):
+        if obj.proyecto:
+            try:
+                return obj.proyecto.cliente.nombre or ''
+            except Exception:
+                return ''
+        return ''
 
     def get_elaborado_por_detalle(self, obj):
         if obj.elaborado_por:
