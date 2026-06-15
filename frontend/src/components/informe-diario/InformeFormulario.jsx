@@ -991,16 +991,6 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
                 required={true}
                 placeholder="Seleccione el responsable de elaboración"
               />
-              <div style={{ marginTop: "0.5rem" }}>
-                <label style={{  fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
-                <input
-                  type="text"
-                  value={form.cargo_elaborado || ""}
-                  onChange={e => setField("cargo_elaborado", e.target.value)}
-                  placeholder="Se autocompleta al seleccionar empleado"
-                  style={{ ...inputStyle, fontSize: "0.8rem", background: "#f8fafc" }}
-                />
-              </div>
             </div>
 
             {/* ── Revisado por ── */}
@@ -1013,16 +1003,6 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
                 required={true}
                 placeholder="Seleccione el responsable de revisión"
               />
-              <div style={{ marginTop: "0.5rem" }}>
-                <label style={{  fontSize: "0.7rem", color: "#94a3b8" }}>Cargo (desde RRHH)</label>
-                <input
-                  type="text"
-                  value={form.cargo_revisado || ""}
-                  onChange={e => setField("cargo_revisado", e.target.value)}
-                  placeholder="Se autocompleta al seleccionar empleado"
-                  style={{ ...inputStyle, fontSize: "0.8rem", background: "#f8fafc" }}
-                />
-              </div>
             </div>
           </div>
 
