@@ -25,7 +25,7 @@ const API_PRODUCTOS     = API.INVENTARIOS.PRODUCTOS;
 const API_PROYECTOS     = API.OPERACIONES.PROYECTOS;
 const API_DISEÑOS       = API.KAVE.DESIGNS;
 
-const PRIMARY_MODULES = ['Dashboard', 'CRM', 'Proveedores', 'Informe Diario Proy', 'Informe Semanal', 'Informe Mensual', 'Calidad', 'ISO 9001', 'RRHH'];
+const PRIMARY_MODULES = ['Dashboard', 'CRM', 'Proveedores', 'Operaciones', 'Informe Diario Proy', 'Informe Semanal', 'Informe Mensual', 'Calidad', 'ISO 9001', 'RRHH'];
 
 const modules = [
     {
@@ -487,7 +487,7 @@ export default function Home() {
                     </div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
                         gap: '0.65rem'
                     }}>
                         {filteredModules.filter(m => PRIMARY_MODULES.includes(m.name)).map((module) => (
@@ -563,7 +563,7 @@ export default function Home() {
                     </div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
                         gap: '0.65rem'
                     }}>
                         {filteredModules.filter(m => !PRIMARY_MODULES.includes(m.name)).map((module) => (
