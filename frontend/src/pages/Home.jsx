@@ -624,6 +624,7 @@ export default function Home() {
                             <ModuleCard key={module.name} module={module} primary={false}
                                 loading={loading} selectedModule={selectedModule} openModule={openModule} moduleStats={moduleStats} />
                         ))}
+                    </div>
                 </div>
             </div>
 
