@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'storages',  # AWS S3 storage
+    'cloudinary_storage',  # Cloudinary media storage
     # Local apps
     'erp_core.apps.ErpCoreConfig',
     'multi_empresa',
@@ -271,17 +272,26 @@ STATICFILES_DIRS = []
 
 # Media files - AWS S3 Configuration
 USE_S3 = os.getenv('USE_S3', 'False') == 'True'
+USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True'
 
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage" if USE_S3 else "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if USE_CLOUDINARY else ("storages.backends.s3boto3.S3Boto3Storage" if USE_S3 else "django.core.files.storage.FileSystemStorage"),
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
-if USE_S3:
+if USE_CLOUDINARY:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+    }
+    MEDIA_URL = f'https://res.cloudinary.com/{os.getenv("CLOUDINARY_CLOUD_NAME")}/image/upload/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+elif USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
