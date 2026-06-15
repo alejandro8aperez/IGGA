@@ -179,11 +179,18 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
                 nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
             except Exception:
                 nombre = str(emp)
+            firma_url = None
+            if hasattr(emp, 'firma') and emp.firma:
+                try:
+                    firma_url = emp.firma.url
+                except Exception:
+                    pass
             return {
                 'id': emp.id,
                 'nombre_completo': nombre,
                 'cargo_nombre': str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else '',
                 'numero_documento': getattr(emp, 'numero_documento', ''),
+                'firma_url': firma_url,
             }
         return None
 
@@ -194,11 +201,18 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
                 nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
             except Exception:
                 nombre = str(emp)
+            firma_url = None
+            if hasattr(emp, 'firma') and emp.firma:
+                try:
+                    firma_url = emp.firma.url
+                except Exception:
+                    pass
             return {
                 'id': emp.id,
                 'nombre_completo': nombre,
                 'cargo_nombre': str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else '',
                 'numero_documento': getattr(emp, 'numero_documento', ''),
+                'firma_url': firma_url,
             }
         return None
 

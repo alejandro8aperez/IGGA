@@ -225,7 +225,7 @@ class AsientoContable(models.Model):
 
     # Identificación
     numero_asiento = models.CharField(max_length=20, unique=True, verbose_name="Número Asiento")
-    periodo_contable = models.ForeignKey(PeriodoContable, on_delete=models.PROTECT, verbose_name="Período")
+    periodo_contable = models.ForeignKey(PeriodoContable, null=True, blank=True, on_delete=models.PROTECT, verbose_name="Período")
     
     # Datos principales
     fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha del Registro")

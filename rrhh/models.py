@@ -297,6 +297,7 @@ class Empleado(models.Model):
     )
     tipo_vivienda = models.CharField(max_length=3, choices=TIPO_VIVIENDA, blank=True)
     foto = models.ImageField(upload_to='rrhh/fotos/', null=True, blank=True)
+    firma = models.ImageField(upload_to='rrhh/firmas/', null=True, blank=True)
 
     # ── 3. Licencia de conducción ────────────────────
     tiene_licencia = models.BooleanField(default=False)

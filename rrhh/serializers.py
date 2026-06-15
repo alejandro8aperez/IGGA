@@ -106,10 +106,24 @@ class EmpleadoDropdownSerializer(serializers.ModelSerializer):
     """Serializer ligero para dropdowns de empleados activos"""
     nombre_completo = serializers.SerializerMethodField()
     cargo_nombre = serializers.CharField(source='cargo', read_only=True)
+    firma_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Empleado
-        fields = ['id', 'nombre_completo', 'cargo_nombre', 'numero_documento']
+        fields = ['id', 'nombre_completo', 'cargo_nombre', 'numero_documento', 'firma_url']
+
+    def get_nombre_completo(self, obj):
+        partes = [obj.primer_nombre, getattr(obj, 'segundo_nombre', ''),
+                  obj.primer_apellido, getattr(obj, 'segundo_apellido', '')]
+        return ' '.join(p for p in partes if p).strip()
+
+    def get_firma_url(self, obj):
+        if not obj.firma:
+            return None
+        try:
+            return obj.firma.url
+        except Exception:
+            return None
 
     def get_nombre_completo(self, obj):
         partes = [obj.primer_nombre, getattr(obj, 'segundo_nombre', ''),

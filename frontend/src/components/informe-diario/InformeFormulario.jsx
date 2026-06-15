@@ -140,6 +140,8 @@ function normalizarInforme(informe) {
     // ── FIRMAS RRHH ───────────────────────────────────────
     elaborado_por_id: informe.elaborado_por || null,
     revisado_por_id:  informe.revisado_por  || null,
+    elaborado_por_detalle: informe.elaborado_por_detalle || null,
+    revisado_por_detalle: informe.revisado_por_detalle || null,
     // Fallback para texto legacy
     elaborado_por_texto: informe.elaborado_por_texto || informe.elaborado_por_nombre || "",
     cargo_elaborado: informe.cargo_elaborado || "",
@@ -152,7 +154,7 @@ function normalizarInforme(informe) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTE: EmpleadoSelect (Dropdown de RRHH)
 // ═══════════════════════════════════════════════════════════════════════════════
-function EmpleadoSelect({ label, value, onChange, required = false, placeholder = "Seleccione un empleado", error = null, disabled = false }) {
+function EmpleadoSelect({ label, value, onChange, required = false, placeholder = "Seleccione un empleado", error = null, disabled = false, onDetailChange = null }) {
   const { data: empleados, isLoading, isError } = useQuery({
     queryKey: ["empleados", "activos"],
     queryFn: empleadoService.getActivos,
@@ -172,7 +174,14 @@ function EmpleadoSelect({ label, value, onChange, required = false, placeholder 
       <div style={{ position: "relative" }}>
         <select
           value={value || ""}
-          onChange={e => onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
+          onChange={e => {
+            const id = e.target.value ? parseInt(e.target.value, 10) : null;
+            onChange(id);
+            if (onDetailChange) {
+              const emp = empleados?.find(emp => emp.id === id) || null;
+              onDetailChange(emp);
+            }
+          }}
           required={required}
           disabled={disabled || isLoading}
           style={{
@@ -209,12 +218,28 @@ function EmpleadoSelect({ label, value, onChange, required = false, placeholder 
           border: "1px solid #e2e8f0",
           borderRadius: "6px",
           fontSize: "0.78rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
         }}>
-          <div style={{ fontWeight: 600, color: "#1e293b" }}>{empleadoSeleccionado.nombre_completo}</div>
-          <div style={{ color: "#64748b" }}>{empleadoSeleccionado.cargo_nombre || "Sin cargo asignado"}</div>
-          {empleadoSeleccionado.numero_documento && (
-            <div style={{ color: "#94a3b8", fontSize: "0.7rem" }}>Doc: {empleadoSeleccionado.numero_documento}</div>
+          {empleadoSeleccionado.firma_url && (
+            <img src={
+              empleadoSeleccionado.firma_url.startsWith('http')
+                ? empleadoSeleccionado.firma_url
+                : (axiosInstance.defaults.baseURL || '').replace(/\/api\/?$/, '') + '/' + empleadoSeleccionado.firma_url.replace(/^\//, '')
+            }
+              alt="Firma"
+              style={{ height: 40, maxWidth: 120, objectFit: "contain", border: "1px solid #e2e8f0", borderRadius: 4, background: "#fff" }}
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
           )}
+          <div>
+            <div style={{ fontWeight: 600, color: "#1e293b" }}>{empleadoSeleccionado.nombre_completo}</div>
+            <div style={{ color: "#64748b" }}>{empleadoSeleccionado.cargo_nombre || "Sin cargo asignado"}</div>
+            {empleadoSeleccionado.numero_documento && (
+              <div style={{ color: "#94a3b8", fontSize: "0.7rem" }}>Doc: {empleadoSeleccionado.numero_documento}</div>
+            )}
+          </div>
         </div>
       )}
 
@@ -672,6 +697,8 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
     // ── FIRMAS RRHH (nuevos campos) ──────────────────────
     elaborado_por_id: null,
     revisado_por_id: null,
+    elaborado_por_detalle: null,
+    revisado_por_detalle: null,
     elaborado_por_texto: "",
     cargo_elaborado: "",
     revisado_por_texto: "",
@@ -753,6 +780,8 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
       // Limpiar campos internos de firmas
       delete payload.elaborado_por_texto;
       delete payload.revisado_por_texto;
+      delete payload.elaborado_por_detalle;
+      delete payload.revisado_por_detalle;
 
       return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
     },
@@ -958,6 +987,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
                 label="Elaborado por"
                 value={form.elaborado_por_id}
                 onChange={(id) => setField("elaborado_por_id", id)}
+                onDetailChange={(emp) => setField("elaborado_por_detalle", emp)}
                 required={true}
                 placeholder="Seleccione el responsable de elaboración"
               />
@@ -979,6 +1009,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
                 label="Revisado por"
                 value={form.revisado_por_id}
                 onChange={(id) => setField("revisado_por_id", id)}
+                onDetailChange={(emp) => setField("revisado_por_detalle", emp)}
                 required={true}
                 placeholder="Seleccione el responsable de revisión"
               />
@@ -1009,20 +1040,44 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
               </p>
               <div style={grid2}>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
-                      {form.elaborado_por_id ? "[Empleado seleccionado]" : "_________________"}
+                  {(form.elaborado_por_detalle?.firma_url) ? (
+                    <img src={
+                      form.elaborado_por_detalle.firma_url.startsWith('http')
+                        ? form.elaborado_por_detalle.firma_url
+                        : (axiosInstance.defaults.baseURL || '').replace(/\/api\/?$/, '') + '/' + form.elaborado_por_detalle.firma_url.replace(/^\//, '')
+                    }
+                      alt="Firma elaborado"
+                      style={{ height: 50, maxWidth: 160, objectFit: "contain", marginBottom: "0.5rem" }}
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  ) : (
+                    <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
+                      <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
+                        {form.elaborado_por_detalle?.nombre_completo || "_________________"}
+                      </div>
                     </div>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Elaborado por</div>
-                  </div>
+                  )}
+                  <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.25rem" }}>Elaborado por</div>
                 </div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
-                      {form.revisado_por_id ? "[Empleado seleccionado]" : "_________________"}
+                  {(form.revisado_por_detalle?.firma_url) ? (
+                    <img src={
+                      form.revisado_por_detalle.firma_url.startsWith('http')
+                        ? form.revisado_por_detalle.firma_url
+                        : (axiosInstance.defaults.baseURL || '').replace(/\/api\/?$/, '') + '/' + form.revisado_por_detalle.firma_url.replace(/^\//, '')
+                    }
+                      alt="Firma revisado"
+                      style={{ height: 50, maxWidth: 160, objectFit: "contain", marginBottom: "0.5rem" }}
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  ) : (
+                    <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "0.5rem", marginTop: "2rem" }}>
+                      <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
+                        {form.revisado_por_detalle?.nombre_completo || "_________________"}
+                      </div>
                     </div>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Revisado por</div>
-                  </div>
+                  )}
+                  <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.25rem" }}>Revisado por</div>
                 </div>
               </div>
             </div>
