@@ -136,6 +136,7 @@ export default function Productos() {
                 axiosInstance.get(API.PRODUCTOS.FAMILIAS),
                 axiosInstance.get(API.PRODUCTOS.TIPOS_EMPAQUE),
                 axiosInstance.get(API.INVENTARIOS.ALMACENES),
+                axiosInstance.get(API.PRODUCTOS.RESUMEN),
             ]);
 
             if (results[0].status === 'fulfilled') {
@@ -166,6 +167,10 @@ export default function Productos() {
             if (results[5].status === 'fulfilled') {
                 const d = results[5].value.data;
                 setAlmacenes(Array.isArray(d) ? d : (d.results || []));
+            }
+            if (results[6].status === 'fulfilled') {
+                const d = results[6].value.data;
+                setResumen(d);
             }
 
             setError(null);
@@ -751,7 +756,7 @@ export default function Productos() {
                                                 : <span style={{ color: '#475569' }}>—</span>}
                                         </td>
                                         <td style={{ padding: '0.6rem', textAlign: 'right' }}>
-                                            ${Number(p.precio_venta).toLocaleString('es-CO')}
+                                            ${(Number(p.precio_venta) || 0).toLocaleString('es-CO')}
                                         </td>
                                         <td style={{ padding: '0.6rem', textAlign: 'center' }}>
                                             <span style={{

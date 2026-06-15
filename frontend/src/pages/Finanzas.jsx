@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { DollarSign, AlertCircle, TrendingUp, TrendingDown, Wallet, ArrowRightLeft } from 'lucide-react';
 
@@ -6,6 +7,7 @@ const API_CUENTAS = BASE_URL + '/finanzas/cuentas/';
 const API_TRANSACCIONES = BASE_URL + '/finanzas/transacciones/';
 
 function Finanzas() {
+    const navigate = useNavigate();
     const [cuentas, setCuentas] = useState([]);
     const [transacciones, setTransacciones] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,8 +30,8 @@ function Finanzas() {
         }
     };
 
-    const totalActivos = cuentas.filter(c => c.tipo === 'activo').reduce((acc, curr) => acc + parseFloat(curr.balance), 0);
-    const totalPasivos = cuentas.filter(c => c.tipo === 'pasivo').reduce((acc, curr) => acc + parseFloat(curr.balance), 0);
+    const totalActivos = cuentas.filter(c => c.tipo === 'activo').reduce((acc, curr) => acc + (parseFloat(curr.balance) || 0), 0);
+    const totalPasivos = cuentas.filter(c => c.tipo === 'pasivo').reduce((acc, curr) => acc + (parseFloat(curr.balance) || 0), 0);
 
     return (
         <div className="container" style={{ position: 'relative' }}>
@@ -135,7 +137,7 @@ function Finanzas() {
                                                         {cuenta.tipo.toUpperCase()}
                                                     </span>
                                                 </td>
-                                                <td style={{ textAlign: 'right', fontWeight: 600 }}>${parseFloat(cuenta.balance).toLocaleString()}</td>
+                                                <td style={{ textAlign: 'right', fontWeight: 600 }}>${(parseFloat(cuenta.balance) || 0).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -163,7 +165,7 @@ function Finanzas() {
                                             </div>
                                         </div>
                                         <div style={{ fontWeight: 700, color: trans.tipo === 'credito' ? 'var(--success)' : 'var(--danger)' }}>
-                                            {trans.tipo === 'credito' ? '+' : '-'}${parseFloat(trans.monto).toLocaleString()}
+                                            {trans.tipo === 'credito' ? '+' : '-'}${(parseFloat(trans.monto) || 0).toLocaleString()}
                                         </div>
                                     </div>
                                 ))}

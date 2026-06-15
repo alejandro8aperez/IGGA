@@ -97,6 +97,7 @@ export default function Dashboard() {
                         Cargando dashboard...
                     </div>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -521,7 +522,7 @@ export default function Dashboard() {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                                         <span style={{ fontSize: '0.875rem', color: '#4a5568', fontWeight: '600' }}>{cat.categoria}</span>
                                         <span style={{ fontSize: '0.875rem', color: '#2d3748', fontWeight: '700' }}>
-                                            ${cat.valor.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+                                            ${(cat.valor || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                         </span>
                                     </div>
                                     <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>

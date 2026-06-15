@@ -202,16 +202,16 @@ function Contabilidad() {
                                 <h3 style={{ color: '#166534', fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #dcfce7' }}>INGRESOS</h3>
                                 <table style={{...styles.table, marginBottom: '1rem'}}>
                                     <tbody>
-                                        {estadoResultados.ingresos.map(ing => (
+                                        {Array.isArray(estadoResultados.ingresos) ? estadoResultados.ingresos.map(ing => (
                                             <tr key={ing.id}>
                                                 <td style={{...styles.td, width: '70%'}}>{ing.codigo} - {ing.nombre}</td>
-                                                <td style={{...styles.td, textAlign: 'right', fontWeight: 600, color: '#166534'}}>${ing.saldo.toLocaleString('es-CO')}</td>
+                                                <td style={{...styles.td, textAlign: 'right', fontWeight: 600, color: '#166534'}}>${(ing.saldo || 0).toLocaleString('es-CO')}</td>
                                             </tr>
-                                        ))}
+                                        )) : null}
                                     </tbody>
                                 </table>
                                 <div style={{ textAlign: 'right', padding: '1rem', background: '#f0fdf4', borderRadius: '8px' }}>
-                                    <span style={{ fontWeight: 600, color: '#166534' }}>Total Ingresos: ${estadoResultados.total_ingresos.toLocaleString('es-CO')}</span>
+                                    <span style={{ fontWeight: 600, color: '#166534' }}>Total Ingresos: ${(estadoResultados.total_ingresos || 0).toLocaleString('es-CO')}</span>
                                 </div>
                             </div>
 
@@ -220,27 +220,27 @@ function Contabilidad() {
                                 <h3 style={{ color: '#991b1b', fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #fecaca' }}>GASTOS</h3>
                                 <table style={{...styles.table, marginBottom: '1rem'}}>
                                     <tbody>
-                                        {estadoResultados.gastos.map(gas => (
+                                        {Array.isArray(estadoResultados.gastos) ? estadoResultados.gastos.map(gas => (
                                             <tr key={gas.id}>
                                                 <td style={{...styles.td, width: '70%'}}>{gas.codigo} - {gas.nombre}</td>
-                                                <td style={{...styles.td, textAlign: 'right', fontWeight: 600, color: '#991b1b'}}>${gas.saldo.toLocaleString('es-CO')}</td>
+                                                <td style={{...styles.td, textAlign: 'right', fontWeight: 600, color: '#991b1b'}}>${(gas.saldo || 0).toLocaleString('es-CO')}</td>
                                             </tr>
-                                        ))}
+                                        )) : null}
                                     </tbody>
                                 </table>
                                 <div style={{ textAlign: 'right', padding: '1rem', background: '#fef2f2', borderRadius: '8px' }}>
-                                    <span style={{ fontWeight: 600, color: '#991b1b' }}>Total Gastos: ${estadoResultados.total_gastos.toLocaleString('es-CO')}</span>
+                                    <span style={{ fontWeight: 600, color: '#991b1b' }}>Total Gastos: ${(estadoResultados.total_gastos || 0).toLocaleString('es-CO')}</span>
                                 </div>
                             </div>
 
                             {/* Utilidad Neta */}
-                            <div style={{ padding: '1.5rem', borderRadius: '12px', background: estadoResultados.utilidad_neta >= 0 ? '#f0fdf4' : '#fef2f2', border: `2px solid ${estadoResultados.utilidad_neta >= 0 ? '#22c55e' : '#ef4444'}` }}>
+                            <div style={{ padding: '1.5rem', borderRadius: '12px', background: (estadoResultados.utilidad_neta ?? 0) >= 0 ? '#f0fdf4' : '#fef2f2', border: `2px solid ${(estadoResultados.utilidad_neta ?? 0) >= 0 ? '#22c55e' : '#ef4444'}` }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: estadoResultados.utilidad_neta >= 0 ? '#166534' : '#991b1b' }}>
-                                        {estadoResultados.utilidad_neta >= 0 ? 'UTILIDAD NETA' : 'PÉRDIDA NETA'}
+                                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: (estadoResultados.utilidad_neta ?? 0) >= 0 ? '#166534' : '#991b1b' }}>
+                                        {(estadoResultados.utilidad_neta ?? 0) >= 0 ? 'UTILIDAD NETA' : 'PÉRDIDA NETA'}
                                     </span>
-                                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: estadoResultados.utilidad_neta >= 0 ? '#166534' : '#991b1b' }}>
-                                        ${Math.abs(estadoResultados.utilidad_neta).toLocaleString('es-CO')}
+                                    <span style={{ fontSize: '1.5rem', fontWeight: 800, color: (estadoResultados.utilidad_neta ?? 0) >= 0 ? '#166534' : '#991b1b' }}>
+                                        ${Math.abs(estadoResultados.utilidad_neta ?? 0).toLocaleString('es-CO')}
                                     </span>
                                 </div>
                             </div>

@@ -910,6 +910,7 @@ function RRHH() {
                 {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
                         <div style={{ width: '40px', height: '40px', border: '4px solid rgba(236,72,153,0.3)', borderTop: '4px solid #ec4899', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                        <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
                     </div>
                 ) : (
                     <div style={styles.tableContainer}>

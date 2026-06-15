@@ -309,6 +309,7 @@ function Configuracion() {
         <div style={styles.container}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <div style={styles.spinner}></div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         </div>
     );

@@ -178,6 +178,7 @@ export default function MRP() {
                     }}></div>
                     <p style={{ color: '#718096', fontSize: '1rem' }}>Cargando MRP...</p>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }

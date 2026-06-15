@@ -75,6 +75,10 @@ export const API = {
   // ---------------------------------------------------------------------------
   PRODUCTOS: {
     RESUMEN: 'inventario/productos/resumen/',
+    GRUPOS_MATERIAL: 'inventario/grupos-material/',
+    FAMILIAS: 'inventario/familias/',
+    TIPOS_EMPAQUE: 'inventario/tipos-empaque/',
+    POR_CODIGO_BARRAS: 'inventario/productos/por-codigo-barras/',
   },
 
   // ---------------------------------------------------------------------------
@@ -114,6 +118,10 @@ export const API = {
   DASHBOARD: {
     GENERAL: 'dashboard/',
     STATS:   'dashboard/stats/',
+    CALCULAR_KPIS: 'dashboard/calcular-kpis/',
+  },
+  KPIS: {
+    CALCULAR: 'dashboard/calcular-kpis/',
   },
 
   // ---------------------------------------------------------------------------

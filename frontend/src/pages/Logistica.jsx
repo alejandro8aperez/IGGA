@@ -6,8 +6,8 @@ import {
     Search, Filter, TrendingUp, Activity
 } from 'lucide-react';
 
-const API_VEHICULOS = BASE_URL + '/logistica/vehiculos/';
-const API_ENVIOS = BASE_URL + '/logistica/envios/';
+const API_VEHICULOS = BASE_URL + 'logistica/vehiculos/';
+const API_ENVIOS = BASE_URL + 'logistica/envios/';
 
 export default function Logistica() {
     const [vehiculos, setVehiculos] = useState([]);
@@ -116,7 +116,7 @@ export default function Logistica() {
     const totalVehiculos = vehiculos.length;
     const vehiculosDisponibles = vehiculos.filter(veh => veh.estado === 'disponible').length;
     const vehiculosEnRuta = vehiculos.filter(veh => veh.estado === 'en_ruta').length;
-    const totalCapacidad = vehiculos.reduce((sum, veh) => sum + (veh.capacidad || 0), 0);
+    const totalCapacidad = vehiculos.reduce((sum, veh) => sum + (Number(veh.capacidad) || 0), 0);
     const enviosPendientes = envios.filter(env => env.estado === 'pendiente').length;
     const enviosCompletados = envios.filter(env => env.estado === 'completado').length;
 
@@ -144,6 +144,7 @@ export default function Logistica() {
                         Cargando datos de Logística...
                     </div>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -173,7 +174,7 @@ export default function Logistica() {
                         {error}
                     </p>
                     <button 
-                        onClick={() => setError(null)}
+                        onClick={() => { setError(null); fetchData(); }}
                         style={{
                             background: '#ef4444',
                             color: 'white',
@@ -766,7 +767,7 @@ export default function Logistica() {
                                             </div>
                                         </td>
                                         <td style={{ padding: '1rem', color: '#4a5568' }}>
-                                            {new Date(env.fecha_envio).toLocaleDateString()}
+                                            {env.fecha_envio ? new Date(env.fecha_envio).toLocaleDateString() : '—'}
                                         </td>
                                         <td style={{ padding: '1rem' }}>
                                             <span style={{
