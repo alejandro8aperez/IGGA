@@ -17,12 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from django.conf.urls.static import static
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 from django.views.generic.base import RedirectView
+from django.views.static import serve
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, ping, create_initial_superuser, verify_credentials, test_image, generar_comprobante_nomina_pdf, reporte_pyl_api, dashboard_stats, run_migrations, seed_informe_diario, get_operaciones_proyectos, get_master_recursos
 from .views_import import import_data_api, export_data_api, list_models
@@ -96,5 +96,8 @@ urlpatterns = [
     path('test-image/<str:filename>/', test_image, name='test_image'),
 ]
 
-# Servir archivos de media
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Servir archivos de media (siempre, incluso en producción sin S3)
+if not settings.USE_S3:
+    urlpatterns += [
+        path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
