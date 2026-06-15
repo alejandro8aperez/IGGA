@@ -623,7 +623,7 @@ export default function Home() {
                         {filteredModules.filter(m => !ROW1_MODULES.includes(m.name) && !ROW2_MODULES.includes(m.name)).map((module) => (
                             <ModuleCard key={module.name} module={module} primary={false}
                                 loading={loading} selectedModule={selectedModule} openModule={openModule} moduleStats={moduleStats} />
-                    </div>
+                        ))}
                 </div>
             </div>
 
