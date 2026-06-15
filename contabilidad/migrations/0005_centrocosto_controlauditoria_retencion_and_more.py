@@ -109,7 +109,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='asientocontable',
             name='numero_asiento',
-            field=models.CharField(default=1, max_length=20, unique=True, verbose_name='Número Asiento'),
+            field=models.CharField(default=1, max_length=20, verbose_name='Número Asiento'),
             preserve_default=False,
         ),
         migrations.AddField(

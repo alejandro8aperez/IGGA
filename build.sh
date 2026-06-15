@@ -8,7 +8,7 @@ echo "📦 Preparando archivos estáticos…"
 python manage.py collectstatic --no-input
 
 echo "🗄️  Verificando migraciones..."
-# Fake migration defensiva para usuarios
+# Fake migration defensiva para usuarios (ignore if fails)
 python manage.py migrate --fake-initial usuarios || true
 
 echo "🔄 Aplicando migraciones..."
