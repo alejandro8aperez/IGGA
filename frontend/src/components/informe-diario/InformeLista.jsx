@@ -18,7 +18,8 @@ export default function InformeLista({ onNuevo, onEditar }) {
     queryKey: ["informes-diarios"],
     queryFn: () => informeDiarioService.list({ ordering: "-fecha" }),
   });
-  const informes = Array.isArray(rawInformes) ? rawInformes : (rawInformes?.results || []);
+  const informes = (Array.isArray(rawInformes) ? rawInformes : (rawInformes?.results || []))
+    .filter(i => i.proyecto);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => informeDiarioService.delete(id),
@@ -26,7 +27,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
   });
 
   const filtered = informes.filter(i =>
-    i.obra_nombre?.toLowerCase().includes(search.toLowerCase()) ||
+    i.proyecto_nombre?.toLowerCase().includes(search.toLowerCase()) ||
     i.fecha?.includes(search)
   );
 
@@ -116,7 +117,7 @@ export default function InformeLista({ onNuevo, onEditar }) {
               >
                 <div>
                   <p style={{ margin: 0, fontWeight: 600, fontSize: "0.875rem", color: "#1e293b" }}>
-                    {inf.obra_nombre || "Sin obra"}
+                    {inf.proyecto_nombre || "Sin obra"}
                   </p>
                   {inf.dia_semana && (
                     <p style={{ margin: 0, fontSize: "0.7rem", color: "#94a3b8", textTransform: "capitalize" }}>

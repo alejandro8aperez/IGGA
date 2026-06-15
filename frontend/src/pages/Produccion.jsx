@@ -263,8 +263,8 @@ function Produccion() {
     const [ordenForm, setOrdenForm] = useState({
         receta: '',
         cantidad_a_producir: 1,
-        fecha_inicio: new Date().toISOString().split('T')[0],
-        fecha_fin_estimada: '',
+        fecha_planeada_inicio: new Date().toISOString().split('T')[0],
+        fecha_planeada_fin: '',
         observaciones: ''
     });
 
@@ -374,9 +374,8 @@ function Produccion() {
             setOrdenForm({
                 receta: '',
                 cantidad_a_producir: 1,
-                fecha_inicio: new Date().toISOString().split('T')[0],
-                fecha_fin_estimada: '',
-                observaciones: ''
+                fecha_planeada_inicio: new Date().toISOString().split('T')[0],
+                fecha_planeada_fin: '',
             });
             alert('Orden de producción creada exitosamente');
         } catch (error) {
@@ -521,7 +520,7 @@ function Produccion() {
                                         <td style={styles.td}><strong style={{ color: '#667eea' }}>#{orden.id}</strong></td>
                                         <td style={styles.td}>{orden.producto_nombre || 'N/A'}</td>
                                         <td style={styles.td}>{orden.cantidad_a_producir}</td>
-                                        <td style={styles.td}>{orden.fecha_inicio}</td>
+                                        <td style={styles.td}>{orden.fecha_planeada_inicio}</td>
                                         <td style={styles.td}>
                                             <span style={styles.badge(orden.estado)}>{orden.estado}</span>
                                         </td>
@@ -651,12 +650,12 @@ function Produccion() {
                                 </div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.formLabel}>Fecha de Inicio</label>
-                                    <input type='date' style={styles.formInput} value={ordenForm.fecha_inicio} onChange={e => setOrdenForm({...ordenForm, fecha_inicio: e.target.value})} />
+                                    <input type='date' style={styles.formInput} value={ordenForm.fecha_planeada_inicio} onChange={e => setOrdenForm({...ordenForm, fecha_planeada_inicio: e.target.value})} />
                                 </div>
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.formLabel}>Fecha Fin Estimada</label>
-                                <input type='date' style={styles.formInput} value={ordenForm.fecha_fin_estimada} onChange={e => setOrdenForm({...ordenForm, fecha_fin_estimada: e.target.value})} />
+                                <input type='date' style={styles.formInput} value={ordenForm.fecha_planeada_fin} onChange={e => setOrdenForm({...ordenForm, fecha_planeada_fin: e.target.value})} />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.formLabel}>Observaciones</label>

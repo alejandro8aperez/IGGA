@@ -125,6 +125,9 @@ function normalizarInforme(informe) {
   else if (informe.obra) {
     oid = typeof informe.obra === "object" ? String(informe.obra.id) : String(informe.obra);
   }
+  else if (informe.proyecto) {
+    oid = typeof informe.proyecto === "object" ? String(informe.proyecto.id) : String(informe.proyecto);
+  }
   const actsRaw = Array.isArray(informe.actividades) ? informe.actividades : [];
   return {
     ...informe,
@@ -690,11 +693,25 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
 
   const obras = Array.isArray(rawObras) ? rawObras : (rawObras?.results || []);
 
-  const [form, setForm] = useState(normalizarInforme(informe) || {
+  const autoIdRef = useRef(informe?.id || null);
+  const initialLoadRef = useRef(true);
+  const pendingSaveRef = useRef(null); // <-- cola secuencial
+
+  // Sincronizar ref cuando el padre cambia el informe
+  useEffect(() => { autoIdRef.current = informe?.id || null; }, [informe?.id]);
+
+  // Cargar detalle COMPLETO (con datos anidados) cuando se abre un informe existente
+  const { data: detalleCompleto } = useQuery({
+    queryKey: ['informe-detalle-form', informe?.id],
+    queryFn: () => informeDiarioService.get(informe?.id),
+    enabled: !!informe?.id,
+    staleTime: 30_000,
+  });
+
+  const formDefaults = {
     obra_id: "", obra_nombre: "", cliente_nombre: "", cliente_seleccionado_id: "", cliente_seleccionado_nombre: "", fecha: new Date().toISOString().split("T")[0],
     dia_semana: DIAS[new Date().getDay()], codigo_formato: "F-141-IN",
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
-    // ── FIRMAS RRHH (nuevos campos) ──────────────────────
     elaborado_por_id: null,
     revisado_por_id: null,
     elaborado_por_detalle: null,
@@ -703,10 +720,23 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
     cargo_elaborado: "",
     revisado_por_texto: "",
     cargo_revisado: "",
-    // ──────────────────────────────────────────────────────
     comision_topografia: false, horas_lluvia: Array(24).fill(false),
     recursos: RECURSOS_DEFAULT, actividades: ACTIVIDADES_DEFAULT, status: "borrador",
-  });
+  };
+
+  const [form, setForm] = useState(formDefaults);
+
+  // Reiniciar el formulario cuando se carga un informe distinto
+  // Usa el detalle completo del API si está disponible (evita defaults para datos anidados)
+  useEffect(() => {
+    if (detalleCompleto?.id === informe?.id) {
+      setForm(normalizarInforme(detalleCompleto) || formDefaults);
+    } else if (informe) {
+      setForm(normalizarInforme(informe) || formDefaults);
+    } else {
+      setForm(formDefaults);
+    }
+  }, [informe?.id, detalleCompleto]);
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -765,8 +795,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
 
         actividades: (data.actividades || [])
           .filter(a => (a.descripcion || "").trim())
-          .map(a => ({ categoria: lookupCatId(a.categoria_nombre), descripcion: a.descripcion }))
-          .filter(a => a.categoria != null),
+          .map(a => ({ categoria_nombre: a.categoria_nombre, descripcion: a.descripcion })),
 
         items_obra: [],
       };
@@ -783,12 +812,28 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
       delete payload.elaborado_por_detalle;
       delete payload.revisado_por_detalle;
 
-      return informe ? informeDiarioService.update(informe.id, payload) : informeDiarioService.create(payload);
+      const effectiveId = autoIdRef.current || informe?.id;
+      return effectiveId ? informeDiarioService.update(effectiveId, payload) : informeDiarioService.create(payload);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.id) autoIdRef.current = data.id;
       queryClient.invalidateQueries({ queryKey: ["informes-diarios"] });
     },
   });
+
+  // Auto-guardar cuando se completa Cliente + Obra
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (form.cliente_seleccionado_id && form.obra_id) {
+      const p = saveMutation.mutateAsync(getDraftPayload());
+      pendingSaveRef.current = p;
+      const cleanup = () => { if (pendingSaveRef.current === p) pendingSaveRef.current = null; };
+      p.then(cleanup, cleanup);
+    }
+  }, [form.cliente_seleccionado_id, form.obra_id]);
 
   const getDraftPayload = useCallback(() => {
     const p = { ...form };
@@ -815,7 +860,18 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
 
   useImperativeHandle(ref, () => ({
     save: () => saveMutation.mutateAsync({ ...form }),
-    saveDraft: () => saveMutation.mutateAsync(getDraftPayload()),
+    saveDraft: async () => {
+      if (pendingSaveRef.current) await pendingSaveRef.current;
+      const payload = getDraftPayload();
+      if (!payload.obra_id) return null;
+      return saveMutation.mutateAsync(payload);
+    },
+    getFormSnapshot: () => ({
+      ...form,
+      proyecto_nombre: form.obra_nombre,
+      proyecto: form.obra_id ? parseInt(form.obra_id, 10) : null,
+      status_label: { borrador: "Borrador", enviado: "Enviado", aprobado: "Aprobado" }[form.status] || form.status,
+    }),
     manualSave: handleManualSave,
     getId: () => informe?.id,
   }), [form, saveMutation, informe?.id, getDraftPayload, handleManualSave]);

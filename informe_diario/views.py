@@ -118,16 +118,36 @@ def _transform_frontend_data(data):
             for i, v in enumerate(horas)
         ]
 
-    # actividades: categoria_id → categoria
+    # actividades: categoria_id → categoria (con fallback por nombre)
     if 'actividades' in t:
-        t['actividades'] = [
-            {
-                'categoria':   _get_id(a.get('categoria_id') or a.get('categoria')),
-                'descripcion': a.get('descripcion', ''),
-                'orden':       idx,
-            }
-            for idx, a in enumerate(t.get('actividades') or [])
-        ]
+        from .models import CategoriaActividad
+        all_cats = list(CategoriaActividad.objects.all())
+        t['actividades'] = []
+        for idx, a in enumerate(t.get('actividades') or []):
+            cat_id = _get_id(a.get('categoria_id') or a.get('categoria'))
+            if not cat_id:
+                cat_nombre = a.get('categoria_nombre', '')
+                if cat_nombre:
+                    n = cat_nombre.lower()
+                    for cat in all_cats:
+                        cn = cat.nombre.lower()
+                        if any(k in cn for k in ['admin', 'documental']) and ('admin' in n or 'documental' in n):
+                            cat_id = cat.id; break
+                        if any(k in cn for k in ['cableado', 'conexionado']) and ('cableado' in n or 'conexionado' in n):
+                            cat_id = cat.id; break
+                        if any(k in cn for k in ['montaje', 'reactor']) and ('montaje' in n or 'reactor' in n or 'pruebas' in n):
+                            cat_id = cat.id; break
+                        if any(k in cn for k in ['civil', 'edemsa']) and ('civil' in n or 'edemsa' in n):
+                            cat_id = cat.id; break
+                        if any(k in cn for k in ['seguridad', 'salud']) and ('seguridad' in n or 'salud' in n or 'sst' in n):
+                            cat_id = cat.id; break
+                        if any(k in cn for k in ['ambiental', 'social']) and ('ambiental' in n or 'social' in n):
+                            cat_id = cat.id; break
+            t['actividades'].append({
+                'categoria':    cat_id,
+                'descripcion':  a.get('descripcion', ''),
+                'orden':        idx,
+            })
 
     # items_obra: responsable no existe en el modelo → se descarta
     if 'items_obra' in t:

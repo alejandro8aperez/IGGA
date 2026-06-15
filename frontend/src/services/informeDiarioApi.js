@@ -59,6 +59,7 @@ export const informeDiarioService = {
     axiosInstance.post(
       `${ENDPOINTS.INFORME_DIARIO.INFORMES}${id}/subir-anexo/`,
       formData,
+      { headers: { 'Content-Type': undefined } }
     ).then(r => r.data),
 };
 
@@ -75,7 +76,9 @@ export const dashboardService = {
 export const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  const r = await axiosInstance.post('upload/', formData);
+  const r = await axiosInstance.post('upload/', formData, {
+    headers: { 'Content-Type': undefined },
+  });
   return { file_url: r.data.url };
 };
 

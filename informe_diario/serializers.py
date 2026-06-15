@@ -258,6 +258,11 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             }
         return None
 
+    def validate(self, data):
+        if not data.get('proyecto'):
+            raise serializers.ValidationError({"proyecto": "Debe seleccionar una obra/proyecto."})
+        return data
+
     def create(self, validated_data):
         detalles = validated_data.pop('detalles', [])
         lluvias = validated_data.pop('reportes_lluvia', [])

@@ -169,7 +169,7 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
 
   const es4x12 = layout === '4x12';
   const fecha = informe?.fecha       || new Date().toLocaleDateString('es-CO');
-  const obra  = informe?.obra_nombre || 'Informe Diario';
+  const obra  = informe?.proyecto_nombre || 'Informe Diario';
   const cod   = 'F-141-IN';
 
   function chunkFotos(arr, size) {
@@ -321,13 +321,16 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
     formData.append('posicion', posicion);
     formData.append('seccion',  'actividades');
     try {
-      const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData);
+      const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData, {
+        headers: { 'Content-Type': undefined },
+      });
       const updated = { ...fotos, [posicion]: res.data };
       setFotos(updated);
       onFotosChange?.(updated);
       toast.success(`Foto ${posicion} subida correctamente`);
-    } catch {
-      toast.error(`Error al subir la foto en posición ${posicion}`);
+    } catch (err) {
+      const detail = err?.response?.data ? JSON.stringify(err.response.data) : err.message;
+      toast.error(`Error al subir la foto en posición ${posicion}: ${detail}`);
     } finally {
       setLoading(prev => ({ ...prev, [posicion]: false }));
     }

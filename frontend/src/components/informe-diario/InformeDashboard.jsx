@@ -15,7 +15,8 @@ export default function InformeDashboard({ onNuevoInforme }) {
     queryKey: ["informes-diarios"],
     queryFn: () => informeDiarioService.list({ ordering: "-fecha", limit: 200 }),
   });
-  const informes = Array.isArray(rawInformes) ? rawInformes : (rawInformes?.results || []);
+  const informes = (Array.isArray(rawInformes) ? rawInformes : (rawInformes?.results || []))
+    .filter(i => i.proyecto);
 
   const { data: rawObras = [] } = useQuery({
     queryKey: ["obras"],
@@ -25,7 +26,7 @@ export default function InformeDashboard({ onNuevoInforme }) {
 
   const filtrados = useMemo(() => {
     if (obraFiltro === "todas") return informes;
-    return informes.filter(i => String(i.obra_id) === String(obraFiltro));
+    return informes.filter(i => String(i.proyecto) === String(obraFiltro));
   }, [informes, obraFiltro]);
 
   const totalInformes = filtrados.length;
@@ -117,7 +118,7 @@ export default function InformeDashboard({ onNuevoInforme }) {
               {filtrados.slice(0, 8).map(inf => (
                 <div key={inf.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                   <div>
-                    <p className="text-sm font-medium">{inf.obra_codigo} — {inf.obra_nombre}</p>
+                    <p className="text-sm font-medium">{inf.proyecto_codigo} — {inf.proyecto_nombre}</p>
                     <p className="text-xs text-muted-foreground">{inf.fecha} · {inf.dia_semana}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${

@@ -17,7 +17,7 @@ import InformeDashboard  from "@/components/informe-diario/InformeDashboard";
 import InformeLista      from "@/components/informe-diario/InformeLista";
 import InformeFormulario from "@/components/informe-diario/InformeFormulario";
 import HojaFotosInforme, { imprimirFotos } from "@/components/informe-diario/HojaFotosInforme";
-import ReportesInforme   from "@/components/informe-diario/ReportesInforme";
+import ReportesInforme, { exportarPDFReporte } from "@/components/informe-diario/ReportesInforme";
 
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -59,6 +59,7 @@ function InformeDiarioContent() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab]         = useState("dashboard");
   const [editingInforme, setEditingInforme] = useState(null);
+  const [formSnapshot, setFormSnapshot]     = useState(null); // radiografia del form para Reportes
 
   // Fotos levantadas aquí para que los botones del top bar puedan acceder
   const [fotosActuales, setFotosActuales] = useState({});
@@ -82,12 +83,21 @@ function InformeDiarioContent() {
         // Si falla el auto-save, igual permitimos cambiar de tab
       }
     }
+
+    // Si es la pestaña Reportes, tomar radiografía del form
+    if (tabId === "reportes" && formRef.current) {
+      setFormSnapshot(formRef.current.getFormSnapshot());
+    } else if (tabId !== "reportes") {
+      // Limpiar snapshot al salir de Reportes
+      setFormSnapshot(null);
+    }
+
     setActiveTab(tabId);
   }, [activeTab]);
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const formSublabel = editingInforme
-    ? (editingInforme.obra_nombre || (editingInforme.id ? `# ${editingInforme.id}` : null))
+    ? (editingInforme.proyecto_nombre || (editingInforme.id ? `# ${editingInforme.id}` : null))
     : null;
 
   const tabs = [
@@ -128,7 +138,14 @@ function InformeDiarioContent() {
   };
 
   const handleExportarPDF = async () => {
-    if (!hasInforme) return;
+    if (!hasInforme && !formSnapshot) return;
+
+    // Usar formSnapshot si está disponible (reportes basado en el formulario actual)
+    if (formSnapshot) {
+      exportarPDFReporte(formSnapshot);
+      return;
+    }
+
     const toastId = toast.loading("Generando PDF...");
     try {
       const blob = await informeDiarioService.downloadPdf(editingInforme.id);
@@ -188,7 +205,7 @@ function InformeDiarioContent() {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0, pointerEvents: "none" }}>
             <span style={{ fontSize: "0.68rem", fontWeight: 600, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proyecto en edición</span>
             <span style={{ fontSize: "1rem", fontWeight: 800, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>
-              {editingInforme.obra_nombre || `Informe #${editingInforme.id}`}
+              {editingInforme.proyecto_nombre || `Informe #${editingInforme.id}`}
             </span>
             <span style={{ fontSize: "0.72rem", color: C.textMuted }}>{editingInforme.fecha}</span>
           </div>
@@ -309,7 +326,7 @@ function InformeDiarioContent() {
 
           {/* Reportes */}
           {activeTab === "reportes" && (
-            <ReportesInforme informeId={editingInforme?.id} informe={editingInforme} />
+            <ReportesInforme informeId={editingInforme?.id} informe={editingInforme} formSnapshot={formSnapshot} />
           )}
 
           {/* Formulario — siempre montado para conservar estado */}
@@ -353,6 +370,7 @@ function InformeDiarioContent() {
               obraId={editingInforme?.obra}
               informe={editingInforme}
               startSlot={25}
+              onFotosChange={(nuevas) => setFotosActuales(prev => ({ ...prev, ...nuevas }))}
               onAutoSave={async () => {
                 if (formRef.current) {
                   const result = await formRef.current.saveDraft();

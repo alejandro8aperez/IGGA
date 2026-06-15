@@ -143,7 +143,13 @@ export const API = {
   // PRODUCCIÓN
   // ---------------------------------------------------------------------------
   PRODUCCION: {
+    RECETAS: 'produccion/recetas/',
+    INSUMOS: 'produccion/insumos/',
     ORDENES: 'produccion/ordenes/',
+    FASES:   'produccion/fases/',
+    CONSUMOS:'produccion/consumos/',
+    MERMAS:  'produccion/mermas/',
+    COSTOS:  'produccion/costos/',
   },
 
   // ---------------------------------------------------------------------------
