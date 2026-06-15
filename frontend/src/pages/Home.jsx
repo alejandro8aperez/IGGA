@@ -293,17 +293,18 @@ const modules = [
         stats: { total: 0, growth: 'Nuevo' }
     }
 ];
-
 export default function Home() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [selectedModule, setSelectedModule] = useState(null);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [stats, setStats] = useState({
         clientes: 0,
         cotizaciones: 0,
         pedidos: 0,
+
         facturas: 0,
         proveedores: 0,
         ordenes: 0,
@@ -311,6 +312,13 @@ export default function Home() {
         proyectos: 0,
         diseños: 0
     });
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 767px)');
+        const handler = e => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
 
     useEffect(() => {
         fetchStats();
@@ -430,19 +438,27 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* ── Layout 3 columnas ────────────────────────────────────── */}
-            <div className="home-grid" style={{
+            {/* ── Layout ──────────────────────────────────────────────── */}
+            <div style={{
                 position: 'relative',
                 zIndex: 10,
-                display: 'grid',
-                gridTemplateColumns: '170px 1fr 2px 1fr',
-                gap: '0 1.5rem',
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: '1.5rem',
                 maxWidth: '1500px',
                 margin: '0 auto',
                 alignItems: 'start'
-            }}>            
+            }}>
                 {/* ── COLUMNA 1: KPIs ──────────────────────────────────── */}
-                <div className="home-kpis" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: isMobile ? 'row' : 'column',
+                    flexWrap: 'wrap',
+                    gap: '0.75rem',
+                    minWidth: isMobile ? '100%' : '170px',
+                    width: isMobile ? '100%' : '170px',
+                    flexShrink: 0,
+                }}>
                     {[
                         { icon: Users,        label: 'Clientes',    value: stats.clientes },
                         { icon: FileText,     label: 'Cotizaciones',value: stats.cotizaciones },
@@ -450,6 +466,7 @@ export default function Home() {
                         { icon: Package,      label: 'Proveedores', value: stats.proveedores },
                     ].map(({ icon: Icon, label, value }) => (
                         <div key={label} style={{
+                            flex: isMobile ? '1 1 calc(50% - 0.75rem)' : 'none',
                             background: 'rgba(255,255,255,0.1)',
                             backdropFilter: 'blur(10px)',
                             borderRadius: '12px',
@@ -473,7 +490,7 @@ export default function Home() {
                 </div>
 
                 {/* ── COLUMNA 2: Módulos principales ───────────────────── */}
-                <div>
+                <div style={{ flex: 1, width: isMobile ? '100%' : 'auto' }}>
                     <div style={{
                         fontSize: '0.7rem',
                         fontWeight: '700',
@@ -486,7 +503,7 @@ export default function Home() {
                     </div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(130px, 1fr))',
                         gap: '0.65rem'
                     }}>
                         {filteredModules.filter(m => PRIMARY_MODULES.includes(m.name)).map((module) => (
@@ -542,14 +559,16 @@ export default function Home() {
                 </div>
 
                 {/* ── DIVISOR VERTICAL ─────────────────────────────────── */}
-                <div className="home-divider" style={{
+                {!isMobile && <div style={{
+                    width: '2px', minHeight: '200px',
                     background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.4) 85%, transparent)',
                     borderRadius: '2px',
-                    alignSelf: 'stretch'
-                }} />
+                    alignSelf: 'stretch',
+                    flexShrink: 0,
+                }} />}
 
                 {/* ── COLUMNA 3: Resto de módulos ───────────────────────── */}
-                <div>
+                <div style={{ flex: 1, width: isMobile ? '100%' : 'auto' }}>
                     <div style={{
                         fontSize: '0.7rem',
                         fontWeight: '700',
@@ -562,7 +581,7 @@ export default function Home() {
                     </div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(130px, 1fr))',
                         gap: '0.65rem'
                     }}>
                         {filteredModules.filter(m => !PRIMARY_MODULES.includes(m.name)).map((module) => (
@@ -617,26 +636,6 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-
-            <style>{`
-              @media (max-width: 768px) {
-                .home-grid {
-                  grid-template-columns: 1fr !important;
-                  gap: 1rem !important;
-                }
-                .home-grid > .home-kpis {
-                  flex-direction: row !important;
-                  flex-wrap: wrap !important;
-                }
-                .home-grid > .home-kpis > * {
-                  flex: 1 1 calc(50% - 0.75rem) !important;
-                  min-width: 0 !important;
-                }
-                .home-grid > .home-divider {
-                  display: none !important;
-                }
-              }
-            `}</style>
 
             {/* Loading Overlay */}
             {loading && (
