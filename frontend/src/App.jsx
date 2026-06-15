@@ -8,6 +8,7 @@ import {
     FolderOpen, Zap, Factory, MapPin, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { MobileModeProvider } from './context/MobileModeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DemoBanner from './components/DemoBanner';
 import { initializeDemoData } from './components/DemoDataSeeder';
@@ -419,9 +420,11 @@ function AppContent() {
 function App() {
     return (
         <AuthProvider>
-            <Router>
-                <AppContent/>
-            </Router>
+            <MobileModeProvider>
+                <Router>
+                    <AppContent/>
+                </Router>
+            </MobileModeProvider>
         </AuthProvider>
     );
 }

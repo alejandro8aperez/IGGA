@@ -10,6 +10,7 @@ import {
     CreditCard, Megaphone, MonitorSmartphone, HeartHandshake, FolderOpen, Boxes
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useMobileMode } from '../context/MobileModeContext';
 import { API } from '../config/api';
 
 // =============================================================================
@@ -363,6 +364,7 @@ function ModuleCard({ module, primary, loading, selectedModule, openModule, modu
 export default function Home() {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { isMobileMode, setMobileMode } = useMobileMode();
     const [selectedModule, setSelectedModule] = useState(null);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -484,25 +486,55 @@ export default function Home() {
                 zIndex: 10,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: '2rem',
+                justifyContent: 'space-between',
+                gap: '1rem',
                 marginBottom: '3rem',
                 flexWrap: 'wrap'
             }}>
-                <img
-                    src="/logo.png"
-                    alt="IGGA"
-                    style={{
-                        maxHeight: '120px',
-                        width: 'auto',
-                        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
-                    }}
-                />
-                <div style={{ width: '2px', height: '80px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }} />
-                <div style={{ color: 'white', textAlign: 'left' }}>
-                    <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 900 }}>IGGA</h1>
-                    <p style={{ margin: 0, fontSize: '1.1rem', opacity: 0.8 }}>INGENIERIA Y GESTION ADMINISTRATIVA</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flex: 1 }}>
+                    <img
+                        src="/logo.png"
+                        alt="IGGA"
+                        style={{
+                            maxHeight: '120px',
+                            width: 'auto',
+                            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+                        }}
+                    />
+                    <div style={{ width: '2px', height: '80px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }} />
+                    <div style={{ color: 'white', textAlign: 'left' }}>
+                        <h1 style={{ margin: 0, fontSize: isMobileMode ? '1.6rem' : '2.5rem', fontWeight: 900 }}>IGGA</h1>
+                        <p style={{ margin: 0, fontSize: isMobileMode ? '0.85rem' : '1.1rem', opacity: 0.8 }}>INGENIERIA Y GESTION ADMINISTRATIVA</p>
+                    </div>
                 </div>
+                <button
+                    onClick={() => {
+                        setMobileMode(!isMobileMode);
+                        if (!isMobileMode) navigate('/informe-diario-proy');
+                    }}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: isMobileMode ? '0.6rem 1.2rem' : '0.75rem 1.5rem',
+                        borderRadius: 50,
+                        border: isMobileMode ? '2px solid #fbbf24' : 'none',
+                        background: isMobileMode ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.15)',
+                        backdropFilter: 'blur(10px)',
+                        color: isMobileMode ? '#fbbf24' : 'white',
+                        fontWeight: 700,
+                        fontSize: isMobileMode ? '0.85rem' : '0.95rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        boxShadow: isMobileMode ? '0 0 20px rgba(251,191,36,0.3)' : 'none',
+                        flexShrink: 0
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = isMobileMode ? 'rgba(251,191,36,0.25)' : 'rgba(255,255,255,0.25)'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = isMobileMode ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.15)'; }}
+                >
+                    <MonitorSmartphone size={isMobileMode ? 18 : 20} />
+                    {isMobileMode ? 'MODO CELULAR ✓' : '📱 CELULAR'}
+                </button>
             </div>
 
             {/* ── Layout ──────────────────────────────────────────────── */}

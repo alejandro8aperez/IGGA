@@ -11,6 +11,7 @@ import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
   Image as ImageIcon, ArrowLeft, X,
   BarChart2, FileSpreadsheet, Printer, FileText, Grid3x3,
+  ChevronDown, ChevronUp, MonitorSmartphone,
 } from "lucide-react";
 
 import InformeDashboard  from "@/components/informe-diario/InformeDashboard";
@@ -22,6 +23,7 @@ import ReportesInforme, { exportarPDFReporte } from "@/components/informe-diario
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { informeDiarioService } from "@/services/informeDiarioApi";
+import { useMobileMode } from "@/context/MobileModeContext";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,24 @@ const actionBtn = (disabled = false) => ({
   boxShadow:      disabled ? "none" : "0 2px 8px rgba(27,58,92,0.25)",
 });
 
+// Estilo para botones de acción en modo celular
+const mobileActionBtn = (disabled = false) => ({
+  display:        "flex",
+  alignItems:     "center",
+  gap:            "0.25rem",
+  padding:        "0.35rem 0.65rem",
+  borderRadius:   8,
+  border:         `1px solid ${C.border}`,
+  background:     disabled ? "#f8fafc" : C.white,
+  color:          disabled ? C.btnDisabled : C.text,
+  fontSize:       "0.7rem",
+  fontWeight:     600,
+  cursor:         disabled ? "not-allowed" : "pointer",
+  whiteSpace:     "nowrap",
+  transition:     "all 0.15s",
+  opacity:        disabled ? 0.5 : 1,
+});
+
 // ── Contenido principal ───────────────────────────────────────────────────────
 function InformeDiarioContent() {
   const navigate = useNavigate();
@@ -64,7 +84,9 @@ function InformeDiarioContent() {
   // Fotos levantadas aquí para que los botones del top bar puedan acceder
   const [fotosActuales, setFotosActuales] = useState({});
   const [showMatrizModal, setShowMatrizModal] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
 
+  const { isMobileMode } = useMobileMode();
   const formRef = useRef(null);
 
   const hasInforme = !!editingInforme?.id;
@@ -170,7 +192,7 @@ function InformeDiarioContent() {
       {/* ── TOP BAR ───────────────────────────────────────────────────────── */}
       <div style={{
         background: C.topBar,
-        padding: "0.75rem 1.5rem",
+        padding: isMobileMode ? "0.5rem 0.75rem" : "0.75rem 1.5rem",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -178,30 +200,30 @@ function InformeDiarioContent() {
         position: "sticky",
         top: 0,
         zIndex: 50,
-        gap: "1rem",
-        flexWrap: "wrap",
+        gap: isMobileMode ? "0.5rem" : "1rem",
+        flexWrap: isMobileMode ? "nowrap" : "wrap",
       }}>
 
         {/* Izquierda: nav + título */}
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isMobileMode ? "0.5rem" : "1rem", flexShrink: 0, minWidth: 0 }}>
           <button
             onClick={() => navigate("/")}
-            style={{ background: C.borderLight, border: "none", borderRadius: 10, padding: "0.5rem", cursor: "pointer", color: C.textMuted, display: "flex", alignItems: "center" }}
+            style={{ background: C.borderLight, border: "none", borderRadius: 10, padding: "0.4rem", cursor: "pointer", color: C.textMuted, display: "flex", alignItems: "center", flexShrink: 0 }}
             title="Regresar"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={isMobileMode ? 18 : 20} />
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <ClipboardList size={24} style={{ color: C.primary }} />
-            <div>
-              <h1 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: C.text }}>INFORME DIARIO</h1>
-              <span style={{ fontSize: "0.75rem", color: C.textMuted }}>Terminal de Control Proyectivo F-141-IN</span>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobileMode ? "0.35rem" : "0.5rem", minWidth: 0 }}>
+            <ClipboardList size={isMobileMode ? 20 : 24} style={{ color: C.primary, flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ margin: 0, fontSize: isMobileMode ? "0.9rem" : "1.2rem", fontWeight: 800, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>INFORME DIARIO</h1>
+              {!isMobileMode && <span style={{ fontSize: "0.75rem", color: C.textMuted }}>Terminal de Control Proyectivo F-141-IN</span>}
             </div>
           </div>
         </div>
 
         {/* Centro: informe en edición */}
-        {editingInforme && (
+        {editingInforme && !isMobileMode && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0, pointerEvents: "none" }}>
             <span style={{ fontSize: "0.68rem", fontWeight: 600, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proyecto en edición</span>
             <span style={{ fontSize: "1rem", fontWeight: 800, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>
@@ -211,64 +233,123 @@ function InformeDiarioContent() {
           </div>
         )}
 
-        {/* Derecha: botones de acción — mismo color y tamaño */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, flexWrap: "wrap" }}>
-
-          <button onClick={handleNuevo} style={actionBtn(false)}>
-            <Plus size={15} />
-            NUEVO REGISTRO
-          </button>
-
-          <div style={{ width: 1, height: 28, background: C.border, margin: "0 0.25rem" }} />
-
+        {/* Derecha: botones de acción */}
+        {isMobileMode ? (
           <button
-            onClick={handleExportarExcel}
-            disabled={!hasInforme}
-            title={hasInforme ? "Exportar informe a Excel" : "Selecciona un informe primero"}
-            style={actionBtn(!hasInforme)}
+            onClick={() => setShowMobileActions(s => !s)}
+            style={{
+              background: showMobileActions ? C.primary : C.borderLight,
+              border: "none", borderRadius: 10, padding: "0.4rem 0.6rem",
+              cursor: "pointer", color: showMobileActions ? "#fff" : C.textMuted,
+              display: "flex", alignItems: "center", gap: "0.3rem",
+              fontSize: "0.7rem", fontWeight: 700, flexShrink: 0,
+            }}
           >
-            <FileSpreadsheet size={15} />
-            EXPORTAR EXCEL
+            <MonitorSmartphone size={16} />
+            {showMobileActions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, flexWrap: "wrap" }}>
 
-          <button
-            onClick={() => handleImprimirFotosImprimir('4x6')}
-            disabled={!hasInforme}
-            title={hasInforme ? "Imprimir registro fotográfico 4x6" : "Selecciona un informe primero"}
-            style={actionBtn(!hasInforme)}
-          >
-            <Printer size={15} />
-            FOTOS IMPRIMIR
-          </button>
+            <button onClick={handleNuevo} style={actionBtn(false)}>
+              <Plus size={15} />
+              NUEVO REGISTRO
+            </button>
 
-          <button
-            onClick={() => setShowMatrizModal(true)}
-            disabled={!hasInforme}
-            title={hasInforme ? "Abrir matriz de fotos 4x6" : "Selecciona un informe primero"}
-            style={actionBtn(!hasInforme)}
-          >
-            <Grid3x3 size={15} />
-            MATRIZ 4x12
-          </button>
+            <div style={{ width: 1, height: 28, background: C.border, margin: "0 0.25rem" }} />
 
-          <button
-            onClick={handleExportarPDF}
-            disabled={!hasInforme}
-            title={hasInforme ? "Exportar informe completo a PDF" : "Selecciona un informe primero"}
-            style={actionBtn(!hasInforme)}
-          >
-            <FileText size={15} />
-            EXPORTA PDF
-          </button>
+            <button
+              onClick={handleExportarExcel}
+              disabled={!hasInforme}
+              title={hasInforme ? "Exportar informe a Excel" : "Selecciona un informe primero"}
+              style={actionBtn(!hasInforme)}
+            >
+              <FileSpreadsheet size={15} />
+              EXPORTAR EXCEL
+            </button>
 
-        </div>
+            <button
+              onClick={() => handleImprimirFotosImprimir('4x6')}
+              disabled={!hasInforme}
+              title={hasInforme ? "Imprimir registro fotográfico 4x6" : "Selecciona un informe primero"}
+              style={actionBtn(!hasInforme)}
+            >
+              <Printer size={15} />
+              FOTOS IMPRIMIR
+            </button>
+
+            <button
+              onClick={() => setShowMatrizModal(true)}
+              disabled={!hasInforme}
+              title={hasInforme ? "Abrir matriz de fotos 4x6" : "Selecciona un informe primero"}
+              style={actionBtn(!hasInforme)}
+            >
+              <Grid3x3 size={15} />
+              MATRIZ 4x12
+            </button>
+
+            <button
+              onClick={handleExportarPDF}
+              disabled={!hasInforme}
+              title={hasInforme ? "Exportar informe completo a PDF" : "Selecciona un informe primero"}
+              style={actionBtn(!hasInforme)}
+            >
+              <FileText size={15} />
+              EXPORTA PDF
+            </button>
+
+          </div>
+        )}
       </div>
 
+      {/* ── MOBILE ACTIONS DRAWER ─────────────────────────────────────────── */}
+      {isMobileMode && showMobileActions && (
+        <div style={{
+          background: C.topBar,
+          borderBottom: `1px solid ${C.border}`,
+          padding: "0.5rem 0.75rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.4rem",
+          flexWrap: "wrap",
+          position: "sticky",
+          top: isMobileMode ? "52px" : 0,
+          zIndex: 49,
+          boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
+        }}>
+          <button onClick={handleNuevo} style={mobileActionBtn(false)}>
+            <Plus size={14} /> NUEVO
+          </button>
+          <button onClick={handleExportarExcel} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
+            <FileSpreadsheet size={14} /> EXCEL
+          </button>
+          <button onClick={() => handleImprimirFotosImprimir('4x6')} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
+            <Printer size={14} /> FOTOS
+          </button>
+          <button onClick={() => setShowMatrizModal(true)} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
+            <Grid3x3 size={14} /> MATRIZ
+          </button>
+          <button onClick={handleExportarPDF} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
+            <FileText size={14} /> PDF
+          </button>
+
+          {editingInforme && (
+            <span style={{
+              marginLeft: "auto", fontSize: "0.6rem", color: C.textFaint,
+              maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis",
+              whiteSpace: "nowrap", textAlign: "right",
+            }}>
+              {editingInforme.proyecto_nombre || `#${editingInforme.id}`}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* ── CONTENIDO ────────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1600, margin: "0 auto", padding: "1.5rem" }}>
+      <div style={{ maxWidth: 1600, margin: "0 auto", padding: isMobileMode ? "0.75rem" : "1.5rem" }}>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.5rem", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: isMobileMode ? "0.4rem" : "0.75rem", marginBottom: "1rem", overflowX: "auto", paddingBottom: "0.5rem", alignItems: "center" }}>
           {tabs.map(t => (
             <TabChip
               key={t.id}
@@ -277,11 +358,12 @@ function InformeDiarioContent() {
               label={t.label}
               sublabel={t.sublabel}
               icon={t.icon}
+              mobile={isMobileMode}
             />
           ))}
         </div>
 
-        <div style={{ background: C.white, borderRadius: 24, border: `1px solid ${C.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)", padding: "1.5rem", minHeight: 600 }}>
+        <div style={{ background: C.white, borderRadius: 24, border: `1px solid ${C.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)", padding: isMobileMode ? "0.75rem" : "1.5rem", minHeight: isMobileMode ? 300 : 600 }}>
 
           {/* Panel */}
           {activeTab === "dashboard" && (
@@ -391,22 +473,22 @@ function InformeDiarioContent() {
   );
 }
 
-function TabChip({ active, onClick, label, sublabel, icon: Icon }) {
+function TabChip({ active, onClick, label, sublabel, icon: Icon, mobile }) {
   return (
     <button onClick={onClick} style={{
-      padding: "0.5rem 1.2rem", borderRadius: 25, display: "flex", alignItems: "center",
-      gap: "0.5rem", border: active ? "none" : `1px solid ${C.border}`,
+      padding: mobile ? "0.35rem 0.75rem" : "0.5rem 1.2rem", borderRadius: 25, display: "flex", alignItems: "center",
+      gap: mobile ? "0.3rem" : "0.5rem", border: active ? "none" : `1px solid ${C.border}`,
       background: active ? C.indigo : C.white, color: active ? C.white : C.textMuted,
       fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s",
-      fontSize: "0.9rem",
+      fontSize: mobile ? "0.75rem" : "0.9rem", flexShrink: 0,
     }}>
-      <Icon size={16} />
+      <Icon size={mobile ? 14 : 16} />
       <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.25 }}>
         <span>{label}</span>
         {sublabel && (
           <span style={{
             fontSize: "0.62rem", fontWeight: 500, opacity: 0.85,
-            maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis",
+            maxWidth: mobile ? 80 : 130, overflow: "hidden", textOverflow: "ellipsis",
             whiteSpace: "nowrap", marginTop: 1,
           }}>{sublabel}</span>
         )}
