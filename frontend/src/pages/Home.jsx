@@ -431,7 +431,7 @@ export default function Home() {
             </div>
 
             {/* ── Layout 3 columnas ────────────────────────────────────── */}
-            <div style={{
+            <div className="home-grid" style={{
                 position: 'relative',
                 zIndex: 10,
                 display: 'grid',
@@ -440,10 +440,9 @@ export default function Home() {
                 maxWidth: '1500px',
                 margin: '0 auto',
                 alignItems: 'start'
-            }}>
-
+            }}>            
                 {/* ── COLUMNA 1: KPIs ──────────────────────────────────── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="home-kpis" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {[
                         { icon: Users,        label: 'Clientes',    value: stats.clientes },
                         { icon: FileText,     label: 'Cotizaciones',value: stats.cotizaciones },
@@ -543,7 +542,7 @@ export default function Home() {
                 </div>
 
                 {/* ── DIVISOR VERTICAL ─────────────────────────────────── */}
-                <div style={{
+                <div className="home-divider" style={{
                     background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.4) 85%, transparent)',
                     borderRadius: '2px',
                     alignSelf: 'stretch'
@@ -618,6 +617,26 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+
+            <style>{`
+              @media (max-width: 768px) {
+                .home-grid {
+                  grid-template-columns: 1fr !important;
+                  gap: 1rem !important;
+                }
+                .home-grid > .home-kpis {
+                  flex-direction: row !important;
+                  flex-wrap: wrap !important;
+                }
+                .home-grid > .home-kpis > * {
+                  flex: 1 1 calc(50% - 0.75rem) !important;
+                  min-width: 0 !important;
+                }
+                .home-grid > .home-divider {
+                  display: none !important;
+                }
+              }
+            `}</style>
 
             {/* Loading Overlay */}
             {loading && (
