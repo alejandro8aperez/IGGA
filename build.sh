@@ -2,7 +2,7 @@
 set -e
 
 echo "🔧 Instalando dependencias…"
-pip install -r requirements-prod.txt
+pip install -r requirements.txt
 
 echo "📦 Preparando archivos estáticos…"
 python manage.py collectstatic --no-input
