@@ -1,4 +1,5 @@
 """PDF & Excel exports replicating the original Informe Diario layout."""
+import os
 from io import BytesIO
 
 from openpyxl import Workbook
@@ -10,7 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import (
-    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak,
+    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image,
 )
 
 
@@ -181,16 +182,29 @@ def generar_pdf(informe) -> bytes:
                             leftMargin=1 * cm, rightMargin=1 * cm,
                             topMargin=1 * cm, bottomMargin=1 * cm)
     styles = getSampleStyleSheet()
+    HEADER_BG = colors.HexColor('#1e3a8a')  # azul oscuro IGGA
     h1 = ParagraphStyle('h1', parent=styles['Heading1'], fontSize=12,
                         alignment=1, spaceAfter=4)
     h2 = ParagraphStyle('h2', parent=styles['Heading3'], fontSize=9,
-                        backColor=colors.lightgrey, leading=11,
+                        backColor=HEADER_BG, textColor=colors.white, leading=11,
                         spaceBefore=4, spaceAfter=2)
     body = ParagraphStyle('body', parent=styles['BodyText'], fontSize=8,
                           leading=10)
 
     flow = []
-    flow.append(Paragraph('CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA / INTERVENTORÍA', h1))
+
+    # ── Logo IGGA (esquina superior izquierda) ──────────────────────────────
+    logo_path = os.path.join(os.path.dirname(__file__), 'static', 'informe_diario', 'logo.png')
+    if os.path.isfile(logo_path):
+        logo_img = Image(logo_path, width=3.5*cm, height=1.5*cm)
+        header_table = Table([[logo_img, Paragraph('CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA / INTERVENTORÍA', h1)]],
+                             colWidths=[4*cm, 20*cm])
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        flow.append(header_table)
+    else:
+        flow.append(Paragraph('CONSTRUCCIÓN DE OBRA – LIBRO DIARIO DE OBRA / INTERVENTORÍA', h1))
 
     info = [
         ['OBRA:', (informe.proyecto.nombre if informe.proyecto else '—'), 'FECHA:', (informe.fecha.strftime('%d/%m/%Y') if informe.fecha else '—'),
@@ -216,7 +230,8 @@ def generar_pdf(informe) -> bytes:
     t.setStyle(TableStyle([
         ('FONT', (0, 0), (-1, -1), 'Helvetica', 7),
         ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 7),
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('BACKGROUND', (0, 0), (-1, 0), HEADER_BG),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
     ]))
@@ -261,8 +276,10 @@ def generar_pdf(informe) -> bytes:
         ('FONT', (0, 0), (-1, -1), 'Helvetica', 7),
         ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 7),
         ('FONT', (0, -1), (-1, -1), 'Helvetica-Bold', 7),
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-        ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+        ('BACKGROUND', (0, 0), (-1, 0), HEADER_BG),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('BACKGROUND', (0, -1), (-1, -1), HEADER_BG),
+        ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
         ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
@@ -282,7 +299,8 @@ def generar_pdf(informe) -> bytes:
     ], colWidths=[12 * cm, 12 * cm])
     t.setStyle(TableStyle([
         ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 8),
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('BACKGROUND', (0, 0), (-1, 0), HEADER_BG),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
@@ -315,7 +333,8 @@ def generar_pdf(informe) -> bytes:
         t_items.setStyle(TableStyle([
             ('FONT', (0, 0), (-1, -1), 'Helvetica', 7),
             ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 7),
-            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('BACKGROUND', (0, 0), (-1, 0), HEADER_BG),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ]))
