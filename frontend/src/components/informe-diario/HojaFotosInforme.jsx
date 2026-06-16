@@ -41,7 +41,7 @@ const S = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
+    gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '0.5rem',
     background: '#020617',
     padding: '0.75rem',
@@ -358,7 +358,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
       <div style={S.header}>
         <div>
           <h2 style={S.title}>F-141-IN: Registro Fotográfico</h2>
-          <p style={S.subtitle}>Standard Grid Layout 4×6 — {fotasLlenas}/24 fotos (slots {startSlot}–{startSlot + 23})</p>
+          <p style={S.subtitle}>Grid 3×8 — {fotasLlenas}/24 fotos (slots {startSlot}–{startSlot + 23})</p>
         </div>
         <Camera color="#3b82f6" size={32} />
       </div>
