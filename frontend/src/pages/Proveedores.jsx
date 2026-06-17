@@ -401,162 +401,178 @@ function Proveedores() {
             </div>
 
             <form onSubmit={handleSubmit}>
-              {/* ── INFORMACIÓN BÁSICA ── */}
-              <div style={S.section}><div style={S.sectionTitle}>🏢 Información Básica</div></div>
-              <div style={S.grid3}>
-                <FormField label="Razón Social *">
-                  <InputF name="razon_social" value={formData.razon_social} onChange={handleChange} required placeholder="Nombre o razón social" />
+              {/* ── CAMPOS PRINCIPALES (siempre visibles) ── */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <FormField label="Razón Social">
+                  <InputF name="razon_social" value={formData.razon_social} onChange={handleChange} placeholder="Nombre o razón social" />
                 </FormField>
                 <FormField label="Nombre Comercial">
                   <InputF name="nombre_comercial" value={formData.nombre_comercial} onChange={handleChange} placeholder="Nombre comercial" />
                 </FormField>
-                <FormField label="Tipo de Proveedor">
-                  <SelectF name="tipo_proveedor" value={formData.tipo_proveedor} onChange={handleChange}
-                    options={[{ value: 'empresa', label: 'Empresa' }, { value: 'persona_natural', label: 'Persona Natural' }, { value: 'empresa_unipersonal', label: 'Empresa Unipersonal' }, { value: 'cooperativa', label: 'Cooperativa' }]} />
+                <FormField label="NIT / Documento">
+                  <InputF name="nit" value={formData.nit} onChange={handleChange} placeholder="900.123.456" />
                 </FormField>
-                <FormField label="Tipo de Documento">
-                  <SelectF name="tipo_documento" value={formData.tipo_documento} onChange={handleChange}
-                    options={[{ value: 'NIT', label: 'NIT' }, { value: 'CC', label: 'Cédula de Ciudadanía' }, { value: 'CE', label: 'Cédula de Extranjería' }, { value: 'PAS', label: 'Pasaporte' }]} />
-                </FormField>
-                <FormField label="NIT / Documento *">
-                  <InputF name="nit" value={formData.nit} onChange={handleChange} required placeholder="900.123.456" />
-                </FormField>
-                <FormField label="Dígito Verificación">
-                  <InputF name="digito_verificacion" value={formData.digito_verificacion} onChange={handleChange} placeholder="0" />
-                </FormField>
-                <FormField label="Estado">
-                  <SelectF name="estado" value={formData.estado} onChange={handleChange}
-                    options={[{ value: 'activo', label: 'Activo' }, { value: 'inactivo', label: 'Inactivo' }, { value: 'bloqueado', label: 'Bloqueado' }, { value: 'en_evaluacion', label: 'En Evaluación' }]} />
-                </FormField>
-                <FormField label="Clasificación">
-                  <SelectF name="clasificacion" value={formData.clasificacion} onChange={handleChange}
-                    options={[{ value: 'A', label: 'A — Premium' }, { value: 'B', label: 'B — Estándar' }, { value: 'C', label: 'C — Básico' }]} />
-                </FormField>
-                <FormField label="Categoría">
-                  <SelectF name="categoria" value={formData.categoria} onChange={handleChange}
-                    options={[
-                      { value: 'materias_primas', label: 'Materias Primas' }, { value: 'insumos', label: 'Insumos/Consumibles' },
-                      { value: 'maquinaria', label: 'Maquinaria y Equipos' }, { value: 'servicios', label: 'Servicios' },
-                      { value: 'empaques', label: 'Empaques' }, { value: 'transporte', label: 'Transporte/Logística' },
-                      { value: 'tecnologia', label: 'Tecnología' }, { value: 'otro', label: 'Otro' },
-                    ]} />
-                </FormField>
-              </div>
-
-              {/* ── TRIBUTACIÓN DIAN ── */}
-              <div style={S.section}><div style={S.sectionTitle}><Shield size={12} style={{ display: 'inline', marginRight: 4 }} />Tributación DIAN</div></div>
-              <div style={S.grid3}>
-                <FormField label="Régimen Tributario">
-                  <SelectF name="regimen_tributario" value={formData.regimen_tributario} onChange={handleChange}
-                    options={[{ value: 'comun', label: 'Régimen Común' }, { value: 'simplificado', label: 'Régimen Simplificado' }, { value: 'especial', label: 'Régimen Especial' }]} />
-                </FormField>
-                <FormField label="Código de Barras">
-                  <InputF name="codigo_barras" value={formData.codigo_barras} onChange={handleChange} placeholder="Código de barras" />
-                </FormField>
-                <FormField label="Actividad Económica (CIIU)">
-                  <InputF name="actividad_economica_ciiu" value={formData.actividad_economica_ciiu} onChange={handleChange} placeholder="4321" />
-                </FormField>
-                <FormField label="Resolución DIAN">
-                  <InputF name="numero_resolucion_dian" value={formData.numero_resolucion_dian} onChange={handleChange} />
-                </FormField>
-                <FormField label="Fecha Resolución DIAN">
-                  <InputF name="fecha_resolucion_dian" value={formData.fecha_resolucion_dian} onChange={handleChange} type="date" />
-                </FormField>
-                <FormField label="Responsabilidades Fiscales">
-                  <InputF name="responsabilidades_fiscales" value={formData.responsabilidades_fiscales} onChange={handleChange} placeholder="O-13, O-15..." />
-                </FormField>
-                <FormField label="Matrícula Mercantil">
-                  <InputF name="matricula_mercantil" value={formData.matricula_mercantil} onChange={handleChange} />
-                </FormField>
-                <FormField label="Correo Facturación Electrónica">
-                  <InputF name="correo_facturacion_electronica" value={formData.correo_facturacion_electronica} onChange={handleChange} type="email" />
-                </FormField>
-              </div>
-              <div style={S.checkRow}>
-                {[['responsable_iva', 'Responsable de IVA'], ['gran_contribuyente', 'Gran Contribuyente'], ['agente_retenedor', 'Agente Retenedor']].map(([f, lbl]) => (
-                  <label key={f} style={S.checkLabel}>
-                    <input type="checkbox" name={f} checked={!!formData[f]} onChange={handleChange} style={{ width: '1rem', height: '1rem' }} />
-                    {lbl}
-                  </label>
-                ))}
-              </div>
-
-              {/* ── CONTACTO PRINCIPAL ── */}
-              <div style={S.section}><div style={S.sectionTitle}><Mail size={12} style={{ display: 'inline', marginRight: 4 }} />Contacto Principal</div></div>
-              <div style={S.grid3}>
                 <FormField label="Email Principal">
                   <InputF name="email" value={formData.email} onChange={handleChange} type="email" placeholder="empresa@dominio.com" />
                 </FormField>
                 <FormField label="Teléfono Principal">
                   <InputF name="telefono" value={formData.telefono} onChange={handleChange} type="tel" placeholder="+57 600 1234567" />
                 </FormField>
-                <FormField label="Teléfono Alterno">
-                  <InputF name="telefono_alterno" value={formData.telefono_alterno} onChange={handleChange} type="tel" />
-                </FormField>
-                <FormField label="Fax">
-                  <InputF name="fax" value={formData.fax} onChange={handleChange} type="tel" />
-                </FormField>
-                <FormField label="Nombre del Contacto">
-                  <InputF name="contacto_nombre" value={formData.contacto_nombre} onChange={handleChange} placeholder="Nombre completo" />
-                </FormField>
-                <FormField label="Cargo del Contacto">
-                  <InputF name="cargo_contacto" value={formData.cargo_contacto} onChange={handleChange} placeholder="Gerente, Director..." />
-                </FormField>
-                <FormField label="Email del Contacto">
-                  <InputF name="contacto_email" value={formData.contacto_email} onChange={handleChange} type="email" />
-                </FormField>
-                <FormField label="Teléfono Contacto">
-                  <InputF name="contacto_telefono" value={formData.contacto_telefono} onChange={handleChange} type="tel" />
-                </FormField>
-                <FormField label="Tel. Alternativo Contacto">
-                  <InputF name="contacto_telefono_alt" value={formData.contacto_telefono_alt} onChange={handleChange} type="tel" />
-                </FormField>
-                <FormField label="Representante Legal">
-                  <InputF name="representante_legal" value={formData.representante_legal} onChange={handleChange} />
-                </FormField>
-                <FormField label="Cédula Representante">
-                  <InputF name="cedula_representante" value={formData.cedula_representante} onChange={handleChange} />
-                </FormField>
-              </div>
-
-              {/* ── DIRECCIÓN ── */}
-              <div style={S.section}><div style={S.sectionTitle}><MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />Dirección</div></div>
-              <div style={{ ...S.grid2, marginBottom: '1rem' }}>
                 <FormField label="Dirección de Facturación">
                   <textarea name="direccion" value={formData.direccion} onChange={handleChange} rows={2} style={S.textarea} placeholder="Calle, carrera, #..." />
                 </FormField>
-                <FormField label="Dirección de Entrega">
-                  <textarea name="direccion_entrega" value={formData.direccion_entrega} onChange={handleChange} rows={2} style={S.textarea} placeholder="Si difiere de facturación..." />
+              </div>
+              <div style={{ marginTop: '1rem' }}>
+                <FormField label="Notas Internas">
+                  <textarea name="notas" value={formData.notas} onChange={handleChange} rows={3} style={S.textarea} placeholder="Observaciones, condiciones especiales..." />
                 </FormField>
               </div>
-              <div style={S.grid3}>
-                <FormField label="Ciudad">
-                  <InputF name="ciudad" value={formData.ciudad} onChange={handleChange} placeholder="Bogotá, Medellín..." />
-                </FormField>
-                <FormField label="Departamento">
-                  <InputF name="departamento" value={formData.departamento} onChange={handleChange} />
-                </FormField>
-                <FormField label="País">
-                  <InputF name="pais" value={formData.pais} onChange={handleChange} />
-                </FormField>
-                <FormField label="Código Postal">
-                  <InputF name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} />
-                </FormField>
-                <FormField label="Ciudad de Entrega">
-                  <InputF name="ciudad_entrega" value={formData.ciudad_entrega} onChange={handleChange} />
-                </FormField>
-                <FormField label="Sitio Web">
-                  <InputF name="sitio_web" value={formData.sitio_web} onChange={handleChange} placeholder="https://www.empresa.com" />
+              <div style={{ marginTop: '1rem' }}>
+                <FormField label="Adjunto (contrato, RUT, etc.)">
+                  <input type="file" name="adjunto_archivos" onChange={handleChange} style={{ width: '100%', padding: '.4rem 0' }} />
                 </FormField>
               </div>
 
               {/* ── Toggle datos adicionales ── */}
-              <button type="button" onClick={() => setShowExtra(v => !v)} style={{ ...S.toggleBtn, margin: '1rem 0' }}>
-                {showExtra ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                {showExtra ? 'Ocultar' : 'Mostrar'} datos comerciales, bancarios y adicionales
-              </button>
+              <div style={{ marginTop: '1rem' }}>
+                <button type="button" onClick={() => setShowExtra(v => !v)} style={S.toggleBtn}>
+                  {showExtra ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                  {showExtra ? 'Ocultar Datos Adicionales' : 'Mostrar Datos Adicionales'}
+                </button>
+              </div>
 
               {showExtra && (<>
+                {/* ── INFORMACIÓN BÁSICA EXTENDIDA ── */}
+                <div style={S.section}><div style={S.sectionTitle}>🏢 Información Básica</div></div>
+                <div style={S.grid3}>
+                  <FormField label="Tipo de Proveedor">
+                    <SelectF name="tipo_proveedor" value={formData.tipo_proveedor} onChange={handleChange}
+                      options={[{ value: 'empresa', label: 'Empresa' }, { value: 'persona_natural', label: 'Persona Natural' }, { value: 'empresa_unipersonal', label: 'Empresa Unipersonal' }, { value: 'cooperativa', label: 'Cooperativa' }]} />
+                  </FormField>
+                  <FormField label="Tipo de Documento">
+                    <SelectF name="tipo_documento" value={formData.tipo_documento} onChange={handleChange}
+                      options={[{ value: 'NIT', label: 'NIT' }, { value: 'CC', label: 'Cédula de Ciudadanía' }, { value: 'CE', label: 'Cédula de Extranjería' }, { value: 'PAS', label: 'Pasaporte' }]} />
+                  </FormField>
+                  <FormField label="Dígito Verificación">
+                    <InputF name="digito_verificacion" value={formData.digito_verificacion} onChange={handleChange} placeholder="0" />
+                  </FormField>
+                  <FormField label="Estado">
+                    <SelectF name="estado" value={formData.estado} onChange={handleChange}
+                      options={[{ value: 'activo', label: 'Activo' }, { value: 'inactivo', label: 'Inactivo' }, { value: 'bloqueado', label: 'Bloqueado' }, { value: 'en_evaluacion', label: 'En Evaluación' }]} />
+                  </FormField>
+                  <FormField label="Clasificación">
+                    <SelectF name="clasificacion" value={formData.clasificacion} onChange={handleChange}
+                      options={[{ value: 'A', label: 'A — Premium' }, { value: 'B', label: 'B — Estándar' }, { value: 'C', label: 'C — Básico' }]} />
+                  </FormField>
+                  <FormField label="Categoría">
+                    <SelectF name="categoria" value={formData.categoria} onChange={handleChange}
+                      options={[
+                        { value: 'materias_primas', label: 'Materias Primas' }, { value: 'insumos', label: 'Insumos/Consumibles' },
+                        { value: 'maquinaria', label: 'Maquinaria y Equipos' }, { value: 'servicios', label: 'Servicios' },
+                        { value: 'empaques', label: 'Empaques' }, { value: 'transporte', label: 'Transporte/Logística' },
+                        { value: 'tecnologia', label: 'Tecnología' }, { value: 'otro', label: 'Otro' },
+                      ]} />
+                  </FormField>
+                </div>
+
+                {/* ── TRIBUTACIÓN DIAN ── */}
+                <div style={S.section}><div style={S.sectionTitle}><Shield size={12} style={{ display: 'inline', marginRight: 4 }} />Tributación DIAN</div></div>
+                <div style={S.grid3}>
+                  <FormField label="Régimen Tributario">
+                    <SelectF name="regimen_tributario" value={formData.regimen_tributario} onChange={handleChange}
+                      options={[{ value: 'comun', label: 'Régimen Común' }, { value: 'simplificado', label: 'Régimen Simplificado' }, { value: 'especial', label: 'Régimen Especial' }]} />
+                  </FormField>
+                  <FormField label="Código de Barras">
+                    <InputF name="codigo_barras" value={formData.codigo_barras} onChange={handleChange} placeholder="Código de barras" />
+                  </FormField>
+                  <FormField label="Actividad Económica (CIIU)">
+                    <InputF name="actividad_economica_ciiu" value={formData.actividad_economica_ciiu} onChange={handleChange} placeholder="4321" />
+                  </FormField>
+                  <FormField label="Resolución DIAN">
+                    <InputF name="numero_resolucion_dian" value={formData.numero_resolucion_dian} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Fecha Resolución DIAN">
+                    <InputF name="fecha_resolucion_dian" value={formData.fecha_resolucion_dian} onChange={handleChange} type="date" />
+                  </FormField>
+                  <FormField label="Responsabilidades Fiscales">
+                    <InputF name="responsabilidades_fiscales" value={formData.responsabilidades_fiscales} onChange={handleChange} placeholder="O-13, O-15..." />
+                  </FormField>
+                  <FormField label="Matrícula Mercantil">
+                    <InputF name="matricula_mercantil" value={formData.matricula_mercantil} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Correo Facturación Electrónica">
+                    <InputF name="correo_facturacion_electronica" value={formData.correo_facturacion_electronica} onChange={handleChange} type="email" />
+                  </FormField>
+                </div>
+                <div style={S.checkRow}>
+                  {[['responsable_iva', 'Responsable de IVA'], ['gran_contribuyente', 'Gran Contribuyente'], ['agente_retenedor', 'Agente Retenedor']].map(([f, lbl]) => (
+                    <label key={f} style={S.checkLabel}>
+                      <input type="checkbox" name={f} checked={!!formData[f]} onChange={handleChange} style={{ width: '1rem', height: '1rem' }} />
+                      {lbl}
+                    </label>
+                  ))}
+                </div>
+
+                {/* ── CONTACTO PRINCIPAL ── */}
+                <div style={S.section}><div style={S.sectionTitle}><Mail size={12} style={{ display: 'inline', marginRight: 4 }} />Contacto Principal</div></div>
+                <div style={S.grid3}>
+                  <FormField label="Teléfono Alterno">
+                    <InputF name="telefono_alterno" value={formData.telefono_alterno} onChange={handleChange} type="tel" />
+                  </FormField>
+                  <FormField label="Fax">
+                    <InputF name="fax" value={formData.fax} onChange={handleChange} type="tel" />
+                  </FormField>
+                  <FormField label="Nombre del Contacto">
+                    <InputF name="contacto_nombre" value={formData.contacto_nombre} onChange={handleChange} placeholder="Nombre completo" />
+                  </FormField>
+                  <FormField label="Cargo del Contacto">
+                    <InputF name="cargo_contacto" value={formData.cargo_contacto} onChange={handleChange} placeholder="Gerente, Director..." />
+                  </FormField>
+                  <FormField label="Email del Contacto">
+                    <InputF name="contacto_email" value={formData.contacto_email} onChange={handleChange} type="email" />
+                  </FormField>
+                  <FormField label="Teléfono Contacto">
+                    <InputF name="contacto_telefono" value={formData.contacto_telefono} onChange={handleChange} type="tel" />
+                  </FormField>
+                  <FormField label="Tel. Alternativo Contacto">
+                    <InputF name="contacto_telefono_alt" value={formData.contacto_telefono_alt} onChange={handleChange} type="tel" />
+                  </FormField>
+                  <FormField label="Representante Legal">
+                    <InputF name="representante_legal" value={formData.representante_legal} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Cédula Representante">
+                    <InputF name="cedula_representante" value={formData.cedula_representante} onChange={handleChange} />
+                  </FormField>
+                </div>
+
+                {/* ── DIRECCIÓN ── */}
+                <div style={S.section}><div style={S.sectionTitle}><MapPin size={12} style={{ display: 'inline', marginRight: 4 }} />Dirección</div></div>
+                <div style={{ ...S.grid2, marginBottom: '1rem' }}>
+                  <FormField label="Dirección de Entrega">
+                    <textarea name="direccion_entrega" value={formData.direccion_entrega} onChange={handleChange} rows={2} style={S.textarea} placeholder="Si difiere de facturación..." />
+                  </FormField>
+                </div>
+                <div style={S.grid3}>
+                  <FormField label="Ciudad">
+                    <InputF name="ciudad" value={formData.ciudad} onChange={handleChange} placeholder="Bogotá, Medellín..." />
+                  </FormField>
+                  <FormField label="Departamento">
+                    <InputF name="departamento" value={formData.departamento} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="País">
+                    <InputF name="pais" value={formData.pais} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Código Postal">
+                    <InputF name="codigo_postal" value={formData.codigo_postal} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Ciudad de Entrega">
+                    <InputF name="ciudad_entrega" value={formData.ciudad_entrega} onChange={handleChange} />
+                  </FormField>
+                  <FormField label="Sitio Web">
+                    <InputF name="sitio_web" value={formData.sitio_web} onChange={handleChange} placeholder="https://www.empresa.com" />
+                  </FormField>
+                </div>
+
                 {/* ── CONDICIONES COMERCIALES ── */}
                 <div style={S.section}><div style={S.sectionTitle}><Star size={12} style={{ display: 'inline', marginRight: 4 }} />Condiciones Comerciales</div></div>
                 <div style={S.grid3}>
@@ -621,15 +637,9 @@ function Proveedores() {
                     <InputF name="fecha_ultimo_contacto" value={formData.fecha_ultimo_contacto} onChange={handleChange} type="date" />
                   </FormField>
                 </div>
-                <FormField label="Notas Internas">
-                  <textarea name="notas" value={formData.notas} onChange={handleChange} rows={3} style={S.textarea} placeholder="Observaciones, condiciones especiales..." />
-                </FormField>
                 <div style={{ ...S.grid2, marginTop: '1rem' }}>
                   <FormField label="Logotipo">
                     <input type="file" name="logotipo" accept="image/*" onChange={handleChange} style={{ width: '100%', padding: '.4rem 0' }} />
-                  </FormField>
-                  <FormField label="Adjunto (contrato, RUT, etc.)">
-                    <input type="file" name="adjunto_archivos" onChange={handleChange} style={{ width: '100%', padding: '.4rem 0' }} />
                   </FormField>
                 </div>
               </>)}

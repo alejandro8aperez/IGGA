@@ -129,11 +129,54 @@ function normalizarInforme(informe) {
     oid = typeof informe.proyecto === "object" ? String(informe.proyecto.id) : String(informe.proyecto);
   }
   const actsRaw = Array.isArray(informe.actividades) ? informe.actividades : [];
+
+  // Reconstruir recursos desde los campos separados del backend
+  let recursos = informe.recursos;
+  if (!Array.isArray(recursos) || recursos.length === 0) {
+    recursos = [];
+    if (Array.isArray(informe.detalles)) {
+      recursos.push(...informe.detalles.map(d => ({
+        recurso_id: String(d.recurso || d.id),
+        recurso_nombre: d.recurso_nombre || d.descripcion || "",
+        categoria: d.categoria_nombre || "",
+        descripcion: d.descripcion || d.recurso_nombre || "",
+        cantidad: d.cantidad || 1,
+        empresa: d.empresa || "",
+        notas: d.notas || "",
+        es_libre: false,
+      })));
+    }
+    if (Array.isArray(informe.maquinaria_libre)) {
+      recursos.push(...informe.maquinaria_libre.map((m, i) => ({
+        recurso_id: `libre-m-${m.id || i}`,
+        recurso_nombre: m.descripcion || "",
+        categoria: "MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS",
+        descripcion: m.descripcion || "",
+        cantidad: m.cantidad || 1,
+        empresa: m.empresa || "",
+        notas: m.notas || "",
+        es_libre: true,
+      })));
+    }
+    if (Array.isArray(informe.personal_libre)) {
+      recursos.push(...informe.personal_libre.map((p, i) => ({
+        recurso_id: `libre-p-${p.id || i}`,
+        recurso_nombre: p.descripcion || "",
+        categoria: "PERSONAL DE OBRA",
+        descripcion: p.descripcion || "",
+        cantidad: p.cantidad || 1,
+        empresa: p.empresa || "",
+        notas: p.notas || "",
+        es_libre: true,
+      })));
+    }
+  }
+
   return {
     ...informe,
     obra_id:      oid,
     horas_lluvia: Array.isArray(informe.horas_lluvia) ? informe.horas_lluvia.map(Boolean) : Array(24).fill(false),
-    recursos:     informe.recursos || [],
+    recursos:     recursos,
     actividades:  actsRaw.length > 0
       ? actsRaw.map(a => ({
           categoria_nombre: normalizarCatNombre(a.categoria_nombre || a.categoria_display || ""),
