@@ -208,7 +208,7 @@ function Proveedores() {
     e.preventDefault();
     const data = new FormData();
     Object.entries(formData).forEach(([k, v]) => {
-      if (v !== null && v !== undefined) data.append(k, v);
+      if (v !== null && v !== undefined && v !== '') data.append(k, v);
     });
     try {
       if (currentProv) {
