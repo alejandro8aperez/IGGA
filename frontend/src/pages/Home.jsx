@@ -124,6 +124,7 @@ const modules = [
         icon: ClipboardList,
         color: '#7c3aed',
         path: '/interventoria',
+        stats: { total: 0, growth: 'Nuevo' }
     },
     {
         name: 'Informe Diario Proy',
@@ -456,7 +457,7 @@ export default function Home() {
         if (module.path === '/proveedores') {
             return { total: stats.proveedores, growth: 'Nuevo' };
         }
-        return module.stats;
+        return module.stats || { total: '—', growth: '' };
     };
 
     const openModule = (module) => {
