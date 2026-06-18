@@ -775,14 +775,29 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
   // Reiniciar el formulario cuando se carga un informe distinto
   // Usa el detalle completo del API si está disponible (evita defaults para datos anidados)
   useEffect(() => {
+    let base;
     if (detalleCompleto?.id === informe?.id) {
-      setForm(normalizarInforme(detalleCompleto) || formDefaults);
+      base = normalizarInforme(detalleCompleto);
     } else if (informe) {
-      setForm(normalizarInforme(informe) || formDefaults);
+      base = normalizarInforme(informe);
+    } else {
+      base = null;
+    }
+
+    if (base) {
+      // Fallback cliente_seleccionado_id desde obra (API de proyectos ya incluye cliente FK)
+      if (!base.cliente_seleccionado_id && base.obra_id && obras.length > 0) {
+        const obra = obras.find(o => String(o.id) === String(base.obra_id));
+        if (obra?.cliente != null) {
+          base.cliente_seleccionado_id = String(obra.cliente);
+          base.cliente_seleccionado_nombre = base.cliente_seleccionado_nombre || obra.cliente_nombre || '';
+        }
+      }
+      setForm(base);
     } else {
       setForm(formDefaults);
     }
-  }, [informe?.id, detalleCompleto]);
+  }, [informe?.id, detalleCompleto, obras]);
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
