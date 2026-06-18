@@ -26,18 +26,10 @@ const API_PRODUCTOS     = API.INVENTARIOS.PRODUCTOS;
 const API_PROYECTOS     = API.OPERACIONES.PROYECTOS;
 const API_DISEÑOS       = API.KAVE.DESIGNS;
 
-const ROW1_MODULES = ['Dashboard', 'CRM', 'Proveedores', 'Operaciones'];
+const ROW1_MODULES = ['CRM', 'Proveedores', 'Operaciones', 'Interventoría'];
 const ROW2_MODULES = ['Informe Diario Proy', 'Informe Semanal', 'Informe Mensual', 'Calidad', 'RRHH', 'ISO 9001'];
 
 const modules = [
-    {
-        name: 'Dashboard',
-        description: 'Panel de control y métricas',
-        icon: LayoutDashboard,
-        color: '#3b82f6',
-        path: '/dashboard',
-        stats: { total: 24, growth: '+5%' }
-    },
     {
         name: 'CRM',
         description: 'Gestión de relaciones con clientes',
@@ -47,68 +39,12 @@ const modules = [
         stats: { total: 150, growth: '+12%' }
     },
     {
-        name: 'Multi-Empresa',
-        description: 'Gestión de múltiples empresas',
-        icon: Building2,
-        color: '#6366f1',
-        path: '/multi-empresa',
-        stats: { total: 3, growth: '+0%' }
-    },
-    {
-        name: 'Ventas',
-        description: 'Gestión de ventas y facturación',
-        icon: ShoppingCart,
-        color: '#10b981',
-        path: '/ventas',
-        stats: { total: 89, growth: '+8%' }
-    },
-    {
-        name: 'Compras',
-        description: 'Gestión de proveedores y compras',
-        icon: Package,
-        color: '#f59e0b',
-        path: '/compras',
-        stats: { total: 67, growth: '+15%' }
-    },
-    {
-        name: 'Logística',
-        description: 'Gestión de envíos y transporte',
-        icon: Truck,
-        color: '#ef4444',
-        path: '/logistica',
-        stats: { total: 45, growth: '+5%' }
-    },
-    {
-        name: 'Inventario',
-        description: 'Control de existencias y movimientos',
-        icon: Database,
-        color: '#8b5cf6',
-        path: '/inventario',
-        stats: { total: 234, growth: '+18%' }
-    },
-    {
-        name: 'Productos',
-        description: 'Maestro de materiales SAP — barras, empaque, MRP',
-        icon: Boxes,
-        color: '#7c3aed',
-        path: '/productos',
-        stats: { total: 0, growth: 'SAP MM' }
-    },
-    {
         name: 'Proveedores',
         description: 'Maestro de proveedores',
         icon: Users,
         color: '#0d9488',
         path: '/proveedores',
         stats: { total: 0, growth: 'Nuevo' }
-    },
-    {
-        name: 'Activos',
-        description: 'Gestión de activos fijos',
-        icon: Settings,
-        color: '#06b6d4',
-        path: '/activos',
-        stats: { total: 78, growth: '+3%' }
     },
     {
         name: 'Operaciones',
@@ -151,62 +87,6 @@ const modules = [
         stats: { total: 0, growth: 'Próximo' }
     },
     {
-        name: 'Mantenimiento',
-        description: 'Gestión de mantenimiento',
-        icon: Wrench,
-        color: '#f97316',
-        path: '/mantenimiento',
-        stats: { total: 34, growth: '+10%' }
-    },
-    {
-        name: 'KAVE',
-        description: 'Diseñador de transformadores',
-        icon: Zap,
-        color: '#a855f7',
-        path: '/kave',
-        stats: { total: 12, growth: '+42%' }
-    },
-    {
-        name: 'MRP',
-        description: 'Planificación de recursos',
-        icon: BarChart3,
-        color: '#0ea5e9',
-        path: '/mrp',
-        stats: { total: 156, growth: '+7%' }
-    },
-    {
-        name: 'Finanzas',
-        description: 'Gestión financiera',
-        icon: DollarSign,
-        color: '#22c55e',
-        path: '/finanzas',
-        stats: { total: 98, growth: '+11%' }
-    },
-    {
-        name: 'Cotizador',
-        description: 'Cotizaciones profesionales',
-        icon: FileText,
-        color: '#f43f5e',
-        path: '/cotizador',
-        stats: { total: 45, growth: '+20%' }
-    },
-    {
-        name: 'Diseñador Formularios',
-        description: 'Creador de formularios personalizados',
-        icon: FormInput,
-        color: '#14b8a6',
-        path: '/form-designer',
-        stats: { total: 8, growth: '+33%' }
-    },
-    {
-        name: 'Producción',
-        description: 'Control de producción y manufactura',
-        icon: Factory,
-        color: '#ec4899',
-        path: '/produccion',
-        stats: { total: 56, growth: '+12%' }
-    },
-    {
         name: 'Calidad',
         description: 'Gestión de calidad ISO 9001',
         icon: Shield,
@@ -221,78 +101,6 @@ const modules = [
         color: '#f97316',
         path: '/rrhh',
         stats: { total: 45, growth: '+8%' }
-    },
-    {
-        name: 'Reportes',
-        description: 'Reportes y análisis de datos',
-        icon: ClipboardList,
-        color: '#64748b',
-        path: '/reportes',
-        stats: { total: 89, growth: '+15%' }
-    },
-    {
-        name: 'Configuración',
-        description: 'Configuración del sistema',
-        icon: Cog,
-        color: '#475569',
-        path: '/configuracion',
-        stats: { total: 12, growth: '+2%' }
-    },
-    {
-        name: 'Contabilidad',
-        description: 'Gestión contable y fiscal',
-        icon: CalcIcon,
-        color: '#8b5cf6',
-        path: '/contabilidad',
-        stats: { total: 234, growth: '+7%' }
-    },
-    {
-        name: 'Tesorería',
-        description: 'Gestión de tesorería y bancos',
-        icon: DollarSign,
-        color: '#06b6d4',
-        path: '/tesoreria',
-        stats: { total: 67, growth: '+9%' }
-    },
-    {
-        name: 'Facturación',
-        description: 'Facturación electrónica',
-        icon: CreditCard,
-        color: '#10b981',
-        path: '/facturacion',
-        stats: { total: 123, growth: '+11%' }
-    },
-    {
-        name: 'Marketing',
-        description: 'Campañas y estrategia de marketing',
-        icon: Megaphone,
-        color: '#f43f5e',
-        path: '/marketing',
-        stats: { total: 15, growth: '+25%' }
-    },
-    {
-        name: 'POS Panadería',
-        description: 'Punto de venta táctil rápido',
-        icon: MonitorSmartphone,
-        color: '#ec4899',
-        path: '/pos',
-        stats: { total: 0, growth: 'Nuevo' }
-    },
-    {
-        name: 'Facturación Electrónica',
-        description: 'Facturación electrónica DIAN (Colombia)',
-        icon: FileText,
-        color: '#0ea5e9',
-        path: '/facturacion-electronica',
-        stats: { total: 0, growth: 'Nuevo' }
-    },
-    {
-        name: 'Nómina',
-        description: 'Liquidación de nómina colombiana',
-        icon: HeartHandshake,
-        color: '#16a34a',
-        path: '/nomina',
-        stats: { total: 0, growth: 'Nuevo' }
     },
     {
         name: 'ISO 9001',
@@ -609,7 +417,7 @@ export default function Home() {
                         Módulos principales
                     </div>
 
-                    {/* Primera fila: Dashboard, CRM, Proveedores, Operaciones */}
+                    {/* Primera fila: CRM, Proveedores, Operaciones, Interventoría */}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
@@ -634,38 +442,6 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* ── DIVISOR VERTICAL ─────────────────────────────────── */}
-                {!isMobile && <div style={{
-                    width: '2px', minHeight: '200px',
-                    background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.4) 85%, transparent)',
-                    borderRadius: '2px',
-                    alignSelf: 'stretch',
-                    flexShrink: 0,
-                }} />}
-
-                {/* ── COLUMNA 3: Resto de módulos ───────────────────────── */}
-                <div style={{ flex: 1, width: isMobile ? '100%' : 'auto' }}>
-                    <div style={{
-                        fontSize: '0.7rem',
-                        fontWeight: '700',
-                        color: 'rgba(255,255,255,0.4)',
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        marginBottom: '0.6rem'
-                    }}>
-                        Todos los módulos
-                    </div>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(130px, 1fr))',
-                        gap: '0.65rem'
-                    }}>
-                        {filteredModules.filter(m => !ROW1_MODULES.includes(m.name) && !ROW2_MODULES.includes(m.name)).map((module) => (
-                            <ModuleCard key={module.name} module={module} primary={false}
-                                loading={loading} selectedModule={selectedModule} openModule={openModule} moduleStats={moduleStats} />
-                        ))}
-                    </div>
-                </div>
             </div>
 
             {/* Loading Overlay */}
