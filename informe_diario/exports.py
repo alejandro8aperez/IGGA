@@ -4,7 +4,6 @@ from io import BytesIO
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-from openpyxl.utils import get_column_letter
 
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
@@ -19,13 +18,6 @@ from reportlab.platypus import (
 # Excel export
 # --------------------------------------------------------------------------
 
-def _apply_border(ws, row, col_start, col_end, style='thin', color='CBD5E1'):
-    """Apply border to a single cell or range."""
-    side = Side(border_style=style, color=color)
-    border = Border(left=side, right=side, top=side, bottom=side)
-    for c in range(col_start, col_end + 1):
-        ws.cell(row, c).border = border
-
 def _write_cell(ws, row, col, value, font=None, fill=None, alignment=None, border=None, number_format=None):
     cell = ws.cell(row, col, value)
     if font: cell.font = font
@@ -35,13 +27,25 @@ def _write_cell(ws, row, col, value, font=None, fill=None, alignment=None, borde
     if number_format: cell.number_format = number_format
     return cell
 
+
+def _merge_and_write(ws, row, col_start, col_end, value, font=None, fill=None, alignment=None, border=None):
+    """Merge cells and write value/styles to the anchor (top-left) cell only."""
+    ws.merge_cells(start_row=row, start_column=col_start, end_row=row, end_column=col_end)
+    return _write_cell(ws, row, col_start, value, font, fill, alignment, border)
+
+
+def _fill_range(ws, row, col_start, col_end, font=None, fill=None, alignment=None, border=None):
+    """Pre-fill a range of cells with styles BEFORE merging."""
+    for c in range(col_start, col_end + 1):
+        _write_cell(ws, row, c, '', font=font, fill=fill, alignment=alignment, border=border)
+
+
 def generar_excel(informe) -> bytes:
     wb = Workbook()
     ws = wb.active
     ws.title = 'INFORME DIARIO'
     ws.sheet_properties.tabColor = '1E3A8A'
 
-    # ── Color palette ──
     NAVY = '1E3A8A'
     LIGHT_BLUE = 'DBEAFE'
     VERY_LIGHT = 'F8FAFC'
@@ -49,16 +53,13 @@ def generar_excel(informe) -> bytes:
     BORDER_COLOR = 'CBD5E1'
     MUTED_TEXT = '64748B'
 
-    # ── Reusable styles ──
     title_font = Font(bold=True, size=14, color=NAVY, name='Calibri')
     subtitle_font = Font(size=9, color=MUTED_TEXT, name='Calibri')
     label_font = Font(bold=True, size=10, color='475569', name='Calibri')
     value_font = Font(bold=True, size=10, color='1E293B', name='Calibri')
     section_font = Font(bold=True, size=10, color=WHITE, name='Calibri')
-    header_font = Font(bold=True, size=10, color=WHITE, name='Calibri')
     body_font = Font(size=10, color='1E293B', name='Calibri')
     body_bold = Font(bold=True, size=10, color='1E293B', name='Calibri')
-    small_font = Font(size=9, color='1E293B', name='Calibri')
     total_font = Font(bold=True, size=10, color=NAVY, name='Calibri')
     signature_label = Font(bold=True, size=9, color='475569', name='Calibri')
     signature_name = Font(bold=True, size=10, color='1E293B', name='Calibri')
@@ -77,9 +78,6 @@ def generar_excel(informe) -> bytes:
     left_wrap = Alignment(horizontal='left', vertical='center', wrap_text=True)
     center_mid = Alignment(horizontal='center', vertical='center')
 
-    # ═══════════════════════════════════════════════════════════════════════
-    # COLUMN WIDTHS
-    # ═══════════════════════════════════════════════════════════════════════
     col_widths = {
         'A': 4.5, 'B': 32, 'C': 12, 'D': 14, 'E': 14,
         'F': 4.5, 'G': 12, 'H': 14, 'I': 14, 'J': 4,
@@ -92,15 +90,13 @@ def generar_excel(informe) -> bytes:
     # ═══════════════════════════════════════════════════════════════════════
     # HEADER
     # ═══════════════════════════════════════════════════════════════════════
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, 'LIBRO DIARIO DE OBRA — INTERVENTORÍA', title_font,
-                alignment=center_wrap)
+    _merge_and_write(ws, row, 1, 9, 'LIBRO DIARIO DE OBRA — INTERVENTORÍA', title_font, alignment=center_wrap)
     row += 1
 
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
     cod = informe.codigo_formato or 'F-141-IN'
-    _write_cell(ws, row, 1, f'Código: {cod}  |  Emisión: 27/08/2009  |  Mod: 00  |  Versión: 1',
-                subtitle_font, alignment=center_wrap)
+    _merge_and_write(ws, row, 1, 9,
+                     f'Código: {cod}  |  Emisión: 27/08/2009  |  Mod: 00  |  Versión: 1',
+                     subtitle_font, alignment=center_wrap)
     row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -112,71 +108,50 @@ def generar_excel(informe) -> bytes:
     dia_semana = informe.dia_semana or '—'
     status = informe.get_status_display() if hasattr(informe, 'get_status_display') else (informe.status or '—')
     topografia = 'Sí' if informe.comision_topografia else 'No'
-    # Row 1: OBRA only (full width)
+
+    # Row 1: OBRA
+    info_start = row
     _write_cell(ws, row, 1, 'OBRA:', label_font, light_fill, left_wrap, cell_border)
-    ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=9)
-    _write_cell(ws, row, 2, proyecto_nombre, value_font, white_fill, left_wrap, cell_border)
-    for c in range(3, 10):
-        _write_cell(ws, row, c, '', border=cell_border)
+    _merge_and_write(ws, row, 2, 9, proyecto_nombre, value_font, white_fill, left_wrap, cell_border)
     row += 1
 
     # Row 2: CLIENTE | FECHA | ESTADO
     _write_cell(ws, row, 1, 'CLIENTE:', label_font, light_fill, left_wrap, cell_border)
-    ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=3)
-    _write_cell(ws, row, 2, cliente_nombre, value_font, white_fill, left_wrap, cell_border)
-    _write_cell(ws, row, 3, '', border=cell_border)
-
+    _merge_and_write(ws, row, 2, 3, cliente_nombre, value_font, white_fill, left_wrap, cell_border)
     _write_cell(ws, row, 4, 'FECHA:', label_font, light_fill, center_wrap, cell_border)
     _write_cell(ws, row, 5, fecha_str, value_font, white_fill, center_wrap, cell_border)
-
     _write_cell(ws, row, 6, 'ESTADO:', label_font, light_fill, center_wrap, cell_border)
-    ws.merge_cells(start_row=row, start_column=7, end_row=row, end_column=9)
-    _write_cell(ws, row, 7, status, value_font, white_fill, center_wrap, cell_border)
-    for c in range(8, 10):
-        _write_cell(ws, row, c, '', border=cell_border)
+    _merge_and_write(ws, row, 7, 9, status, value_font, white_fill, center_wrap, cell_border)
     row += 1
 
     # Row 3: DÍA | COM. TOPOGRAFÍA
     _write_cell(ws, row, 1, 'DÍA:', label_font, light_fill, left_wrap, cell_border)
-    ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=3)
-    _write_cell(ws, row, 2, dia_semana, value_font, white_fill, left_wrap, cell_border)
-    _write_cell(ws, row, 3, '', border=cell_border)
-
+    _merge_and_write(ws, row, 2, 3, dia_semana, value_font, white_fill, left_wrap, cell_border)
     _write_cell(ws, row, 4, 'COM. TOPOGRAFÍA:', label_font, light_fill, center_wrap, cell_border)
-    ws.merge_cells(start_row=row, start_column=5, end_row=row, end_column=6)
-    _write_cell(ws, row, 5, topografia, value_font, white_fill, center_wrap, cell_border)
-    _write_cell(ws, row, 6, '', border=cell_border)
-
-    # Blank remaining cells
+    _merge_and_write(ws, row, 5, 6, topografia, value_font, white_fill, center_wrap, cell_border)
     for c in range(7, 10):
         _write_cell(ws, row, c, '', border=cell_border)
-    row += 1
-
-    row += 1  # spacer
+    row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
     # RAIN REPORT
     # ═══════════════════════════════════════════════════════════════════════
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, 'REPORTE DE LLUVIA', Font(bold=True, size=10, color=NAVY, name='Calibri'),
-                alignment=left_wrap)
+    _merge_and_write(ws, row, 1, 9, 'REPORTE DE LLUVIA',
+                     Font(bold=True, size=10, color=NAVY, name='Calibri'), alignment=left_wrap)
     row += 1
 
     horas_lluvia = {r.hora: r.con_lluvia for r in informe.reportes_lluvia.all()}
     rain_count = sum(1 for h in range(24) if horas_lluvia.get(h))
 
-    # Header row: hour numbers
-    _write_cell(ws, row, 1, 'Hora', Font(bold=True, size=8, color=WHITE, name='Calibri'),
-                navy_fill, center_mid, cell_border)
+    # Header row
+    rain_font = Font(bold=True, size=8, color=WHITE, name='Calibri')
+    _write_cell(ws, row, 1, 'Hora', rain_font, navy_fill, center_mid, cell_border)
     for h in range(24):
-        c = h + 2
-        _write_cell(ws, row, c, h, Font(bold=True, size=8, color=WHITE, name='Calibri'),
-                    navy_fill, center_mid, cell_border)
+        _write_cell(ws, row, h + 2, h, rain_font, navy_fill, center_mid, cell_border)
     row += 1
 
-    # Data row: /// or ---
-    _write_cell(ws, row, 1, 'Lluvia', Font(bold=True, size=8, color=WHITE, name='Calibri'),
-                navy_fill, center_mid, cell_border)
+    # Data row
+    _write_cell(ws, row, 1, 'Lluvia', rain_font, navy_fill, center_mid, cell_border)
     for h in range(24):
         c = h + 2
         has_rain = horas_lluvia.get(h, False)
@@ -187,12 +162,9 @@ def generar_excel(informe) -> bytes:
                     fill, center_mid, cell_border)
     row += 1
 
-    # Summary
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, f'Horas con lluvia: {rain_count} de 24',
-                Font(size=9, color=MUTED_TEXT, name='Calibri'), alignment=left_wrap)
-    row += 1
-    row += 1  # spacer
+    _merge_and_write(ws, row, 1, 9, f'Horas con lluvia: {rain_count} de 24',
+                     Font(size=9, color=MUTED_TEXT, name='Calibri'), alignment=left_wrap)
+    row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
     # TERRAIN STATUS
@@ -201,12 +173,10 @@ def generar_excel(informe) -> bytes:
     final = informe.estado_terreno_final or '—'
 
     _write_cell(ws, row, 1, 'Estado Terreno Inicio:', body_bold, alignment=left_wrap)
-    ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=4)
-    _write_cell(ws, row, 2, inicio, body_font, alignment=left_wrap)
+    _merge_and_write(ws, row, 2, 4, inicio, body_font, alignment=left_wrap)
     _write_cell(ws, row, 5, '', border=no_border)
     _write_cell(ws, row, 6, 'Estado Terreno Final:', body_bold, alignment=left_wrap)
-    ws.merge_cells(start_row=row, start_column=7, end_row=row, end_column=9)
-    _write_cell(ws, row, 7, final, body_font, alignment=left_wrap)
+    _merge_and_write(ws, row, 7, 9, final, body_font, alignment=left_wrap)
     row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -218,29 +188,18 @@ def generar_excel(informe) -> bytes:
     maquinaria += list(informe.maquinaria_libre.all().order_by('orden'))
     personal += list(informe.personal_libre.all().order_by('orden'))
 
-    # Section header bar
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, 'MAQUINARIA — EQUIPOS — HERRAMIENTAS DE PODER Y VEHÍCULOS',
-                section_font, navy_fill, left_wrap, cell_border)
-    for c in range(2, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
+    _fill_range(ws, row, 1, 9, section_font, navy_fill, left_wrap, cell_border)
+    _merge_and_write(ws, row, 1, 9, 'MAQUINARIA — EQUIPOS — HERRAMIENTAS DE PODER Y VEHÍCULOS',
+                     section_font, navy_fill, left_wrap, cell_border)
     row += 1
 
-    # Table header
-    headers = ['DESCRIPCIÓN', 'CANT.', 'EMPRESA', 'NOTAS']
-    header_cols = [(1, 1), (2, 2), (3, 3), (4, 4)]
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-
-    _write_cell(ws, row, 1, 'DESCRIPCIÓN', header_font, navy_fill, left_wrap, cell_border)
-    _write_cell(ws, row, 2, 'CANT.', header_font, navy_fill, center_mid, cell_border)
-    _write_cell(ws, row, 3, 'EMPRESA', header_font, navy_fill, center_mid, cell_border)
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-    _write_cell(ws, row, 4, 'NOTAS', header_font, navy_fill, left_wrap, cell_border)
-    for c in range(5, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
+    _write_cell(ws, row, 1, 'DESCRIPCIÓN', section_font, navy_fill, left_wrap, cell_border)
+    _write_cell(ws, row, 2, 'CANT.', section_font, navy_fill, center_mid, cell_border)
+    _write_cell(ws, row, 3, 'EMPRESA', section_font, navy_fill, center_mid, cell_border)
+    _fill_range(ws, row, 4, 9, section_font, navy_fill, left_wrap, cell_border)
+    _merge_and_write(ws, row, 4, 9, 'NOTAS', section_font, navy_fill, left_wrap, cell_border)
     row += 1
 
-    # Data rows
     total_maq = 0
     for i, item in enumerate(maquinaria):
         fill = light_fill if i % 2 == 1 else white_fill
@@ -251,53 +210,37 @@ def generar_excel(informe) -> bytes:
         notas = getattr(item, 'notas', '') or '—'
 
         _write_cell(ws, row, 1, nombre, body_font, fill, left_wrap, cell_border)
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=1)
         _write_cell(ws, row, 2, cant, body_bold, fill, center_mid, cell_border)
         _write_cell(ws, row, 3, empresa, body_font, fill, left_wrap, cell_border)
-        ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-        _write_cell(ws, row, 4, notas, Font(size=9, color=MUTED_TEXT, name='Calibri'), fill, left_wrap, cell_border)
-        for c in range(5, 10):
-            _write_cell(ws, row, c, '', font=body_font, fill=fill, border=cell_border)
+        _fill_range(ws, row, 4, 9, Font(size=9, color=MUTED_TEXT, name='Calibri'), fill, left_wrap, cell_border)
+        _merge_and_write(ws, row, 4, 9, notas, Font(size=9, color=MUTED_TEXT, name='Calibri'), fill, left_wrap, cell_border)
         row += 1
 
     if not maquinaria:
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-        _write_cell(ws, row, 1, 'Sin maquinaria registrada',
-                    Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'),
-                    alignment=center_wrap, border=cell_border)
-        for c in range(2, 10):
-            _write_cell(ws, row, c, '', border=cell_border)
+        _fill_range(ws, row, 1, 9, Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'), alignment=center_wrap, border=cell_border)
+        _merge_and_write(ws, row, 1, 9, 'Sin maquinaria registrada',
+                         Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'), alignment=center_wrap, border=cell_border)
         row += 1
 
-    # Total row
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
-    _write_cell(ws, row, 1, 'TOTAL MAQUINARIA', total_font, light_blue_fill, left_wrap, cell_border)
-    _write_cell(ws, row, 2, '', font=body_font, fill=light_blue_fill, border=cell_border)
-    _write_cell(ws, row, 3, '', font=body_font, fill=light_blue_fill, border=cell_border)
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-    _write_cell(ws, row, 4, total_maq, Font(bold=True, size=11, color=NAVY, name='Calibri'),
-                light_blue_fill, center_mid, cell_border)
-    for c in range(5, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=light_blue_fill, border=cell_border)
+    _fill_range(ws, row, 1, 3, border=cell_border)
+    _merge_and_write(ws, row, 1, 3, 'TOTAL MAQUINARIA', total_font, light_blue_fill, left_wrap, cell_border)
+    _fill_range(ws, row, 4, 9, border=cell_border)
+    _merge_and_write(ws, row, 4, 9, total_maq, Font(bold=True, size=11, color=NAVY, name='Calibri'),
+                     light_blue_fill, center_mid, cell_border)
     row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
     # PERSONAL
     # ═══════════════════════════════════════════════════════════════════════
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, 'PERSONAL DE OBRA',
-                section_font, navy_fill, left_wrap, cell_border)
-    for c in range(2, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
+    _fill_range(ws, row, 1, 9, section_font, navy_fill, left_wrap, cell_border)
+    _merge_and_write(ws, row, 1, 9, 'PERSONAL DE OBRA', section_font, navy_fill, left_wrap, cell_border)
     row += 1
 
-    _write_cell(ws, row, 1, 'CARGO / DESCRIPCIÓN', header_font, navy_fill, left_wrap, cell_border)
-    _write_cell(ws, row, 2, 'CANT.', header_font, navy_fill, center_mid, cell_border)
-    _write_cell(ws, row, 3, 'EMPRESA', header_font, navy_fill, center_mid, cell_border)
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-    _write_cell(ws, row, 4, 'NOTAS', header_font, navy_fill, left_wrap, cell_border)
-    for c in range(5, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
+    _write_cell(ws, row, 1, 'CARGO / DESCRIPCIÓN', section_font, navy_fill, left_wrap, cell_border)
+    _write_cell(ws, row, 2, 'CANT.', section_font, navy_fill, center_mid, cell_border)
+    _write_cell(ws, row, 3, 'EMPRESA', section_font, navy_fill, center_mid, cell_border)
+    _fill_range(ws, row, 4, 9, section_font, navy_fill, left_wrap, cell_border)
+    _merge_and_write(ws, row, 4, 9, 'NOTAS', section_font, navy_fill, left_wrap, cell_border)
     row += 1
 
     total_per = 0
@@ -312,40 +255,28 @@ def generar_excel(informe) -> bytes:
         _write_cell(ws, row, 1, nombre, body_font, fill, left_wrap, cell_border)
         _write_cell(ws, row, 2, cant, body_bold, fill, center_mid, cell_border)
         _write_cell(ws, row, 3, empresa, body_font, fill, left_wrap, cell_border)
-        ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-        _write_cell(ws, row, 4, notas, Font(size=9, color=MUTED_TEXT, name='Calibri'), fill, left_wrap, cell_border)
-        for c in range(5, 10):
-            _write_cell(ws, row, c, '', font=body_font, fill=fill, border=cell_border)
+        _fill_range(ws, row, 4, 9, Font(size=9, color=MUTED_TEXT, name='Calibri'), fill, left_wrap, cell_border)
+        _merge_and_write(ws, row, 4, 9, notas, Font(size=9, color=MUTED_TEXT, name='Calibri'), fill, left_wrap, cell_border)
         row += 1
 
     if not personal:
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-        _write_cell(ws, row, 1, 'Sin personal registrado',
-                    Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'),
-                    alignment=center_wrap, border=cell_border)
-        for c in range(2, 10):
-            _write_cell(ws, row, c, '', border=cell_border)
+        _fill_range(ws, row, 1, 9, Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'), alignment=center_wrap, border=cell_border)
+        _merge_and_write(ws, row, 1, 9, 'Sin personal registrado',
+                         Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'), alignment=center_wrap, border=cell_border)
         row += 1
 
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
-    _write_cell(ws, row, 1, 'TOTAL PERSONAL', total_font, light_blue_fill, left_wrap, cell_border)
-    _write_cell(ws, row, 2, '', font=body_font, fill=light_blue_fill, border=cell_border)
-    _write_cell(ws, row, 3, '', font=body_font, fill=light_blue_fill, border=cell_border)
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=9)
-    _write_cell(ws, row, 4, total_per, Font(bold=True, size=11, color=NAVY, name='Calibri'),
-                light_blue_fill, center_mid, cell_border)
-    for c in range(5, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=light_blue_fill, border=cell_border)
+    _fill_range(ws, row, 1, 3, border=cell_border)
+    _merge_and_write(ws, row, 1, 3, 'TOTAL PERSONAL', total_font, light_blue_fill, left_wrap, cell_border)
+    _fill_range(ws, row, 4, 9, border=cell_border)
+    _merge_and_write(ws, row, 4, 9, total_per, Font(bold=True, size=11, color=NAVY, name='Calibri'),
+                     light_blue_fill, center_mid, cell_border)
     row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
     # ACTIVIDADES
     # ═══════════════════════════════════════════════════════════════════════
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, 'ACTIVIDADES DEL DÍA',
-                section_font, navy_fill, left_wrap, cell_border)
-    for c in range(2, 10):
-        _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
+    _fill_range(ws, row, 1, 9, section_font, navy_fill, left_wrap, cell_border)
+    _merge_and_write(ws, row, 1, 9, 'ACTIVIDADES DEL DÍA', section_font, navy_fill, left_wrap, cell_border)
     row += 1
 
     cats = {}
@@ -353,98 +284,72 @@ def generar_excel(informe) -> bytes:
         cats.setdefault(act.categoria.nombre, []).append(act.descripcion)
 
     if not cats:
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-        _write_cell(ws, row, 1, 'Sin actividades registradas',
-                    Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'),
-                    alignment=center_wrap, border=cell_border)
-        for c in range(2, 10):
-            _write_cell(ws, row, c, '', border=cell_border)
+        _fill_range(ws, row, 1, 9, Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'), alignment=center_wrap, border=cell_border)
+        _merge_and_write(ws, row, 1, 9, 'Sin actividades registradas',
+                         Font(size=9, color=MUTED_TEXT, italic=True, name='Calibri'), alignment=center_wrap, border=cell_border)
         row += 1
     else:
         for cat_nombre, items in cats.items():
-            # Category header with left accent bar
             _write_cell(ws, row, 1, '', fill=PatternFill('solid', fgColor=NAVY), border=cell_border)
-            ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=9)
-            _write_cell(ws, row, 2, cat_nombre,
-                        Font(bold=True, size=10, color='475569', name='Calibri'),
-                        light_fill, left_wrap, cell_border)
-            for c in range(3, 10):
-                _write_cell(ws, row, c, '', font=body_font, fill=light_fill, border=cell_border)
+            _fill_range(ws, row, 2, 9, Font(bold=True, size=10, color='475569', name='Calibri'), light_fill, left_wrap, cell_border)
+            _merge_and_write(ws, row, 2, 9, cat_nombre,
+                             Font(bold=True, size=10, color='475569', name='Calibri'), light_fill, left_wrap, cell_border)
             row += 1
 
             for idx, item in enumerate(items, 1):
-                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-                _write_cell(ws, row, 1, f'{idx}. {item}',
-                            body_font, alignment=left_wrap)
-                for c in range(2, 10):
-                    _write_cell(ws, row, c, '', border=no_border)
+                _merge_and_write(ws, row, 1, 9, f'{idx}. {item}', body_font, alignment=left_wrap)
                 row += 1
-            row += 1  # spacing between categories
+            row += 1
 
     row += 1
 
     # ═══════════════════════════════════════════════════════════════════════
     # OBSERVACIONES
     # ═══════════════════════════════════════════════════════════════════════
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, 'OBSERVACIONES GENERALES',
-                Font(bold=True, size=10, color=NAVY, name='Calibri'), alignment=left_wrap)
+    _merge_and_write(ws, row, 1, 9, 'OBSERVACIONES GENERALES',
+                     Font(bold=True, size=10, color=NAVY, name='Calibri'), alignment=left_wrap)
     row += 1
 
     obs = informe.observaciones_generales or 'Sin observaciones'
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-    _write_cell(ws, row, 1, obs, Font(size=10, color='1E293B', name='Calibri'),
-                PatternFill('solid', fgColor='FAFBFC'), left_wrap,
-                Border(left=Side(style='thin', color=NAVY),
-                       right=Side(style='thin', color=BORDER_COLOR),
-                       top=Side(style='thin', color=BORDER_COLOR),
-                       bottom=Side(style='thin', color=BORDER_COLOR)))
-    for c in range(2, 10):
-        _write_cell(ws, row, c, '',
-                    fill=PatternFill('solid', fgColor='FAFBFC'),
-                    border=Border(left=Side(style='thin', color=BORDER_COLOR),
-                                 right=Side(style='thin', color=BORDER_COLOR),
-                                 top=Side(style='thin', color=BORDER_COLOR),
-                                 bottom=Side(style='thin', color=BORDER_COLOR)))
+    obs_border = Border(left=Side(style='thin', color=NAVY),
+                        right=Side(style='thin', color=BORDER_COLOR),
+                        top=Side(style='thin', color=BORDER_COLOR),
+                        bottom=Side(style='thin', color=BORDER_COLOR))
+    obs_border_rest = Border(left=Side(style='thin', color=BORDER_COLOR),
+                             right=Side(style='thin', color=BORDER_COLOR),
+                             top=Side(style='thin', color=BORDER_COLOR),
+                             bottom=Side(style='thin', color=BORDER_COLOR))
+    _fill_range(ws, row, 1, 9, Font(size=10, color='1E293B', name='Calibri'),
+                PatternFill('solid', fgColor='FAFBFC'), left_wrap, obs_border_rest)
+    _merge_and_write(ws, row, 1, 9, obs, Font(size=10, color='1E293B', name='Calibri'),
+                     PatternFill('solid', fgColor='FAFBFC'), left_wrap, obs_border)
     ws.row_dimensions[row].height = max(30, min(120, len(obs or '') // 2))
     row += 2
 
     # ═══════════════════════════════════════════════════════════════════════
-    # ITEMS DE OBRA (if any)
+    # ITEMS DE OBRA
     # ═══════════════════════════════════════════════════════════════════════
     items_obra = list(informe.items_obra.all().order_by('orden'))
     if items_obra:
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=9)
-        _write_cell(ws, row, 1, 'ÍTEMS DE OBRA',
-                    section_font, navy_fill, left_wrap, cell_border)
-        for c in range(2, 10):
-            _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
+        _fill_range(ws, row, 1, 9, section_font, navy_fill, left_wrap, cell_border)
+        _merge_and_write(ws, row, 1, 9, 'ÍTEMS DE OBRA', section_font, navy_fill, left_wrap, cell_border)
         row += 1
 
-        # Headers
-        _write_cell(ws, row, 1, 'ITEM', header_font, navy_fill, center_mid, cell_border)
-        ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=5)
-        _write_cell(ws, row, 2, 'DESCRIPCIÓN', header_font, navy_fill, left_wrap, cell_border)
-        for c in range(3, 6):
-            _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
-        ws.merge_cells(start_row=row, start_column=6, end_row=row, end_column=8)
-        _write_cell(ws, row, 6, 'EMPRESA', header_font, navy_fill, center_mid, cell_border)
-        for c in range(7, 9):
-            _write_cell(ws, row, c, '', font=body_font, fill=navy_fill, border=cell_border)
-        _write_cell(ws, row, 9, 'CANT.', header_font, navy_fill, center_mid, cell_border)
+        _write_cell(ws, row, 1, 'ITEM', section_font, navy_fill, center_mid, cell_border)
+        _fill_range(ws, row, 2, 5, section_font, navy_fill, left_wrap, cell_border)
+        _merge_and_write(ws, row, 2, 5, 'DESCRIPCIÓN', section_font, navy_fill, left_wrap, cell_border)
+        _fill_range(ws, row, 6, 8, section_font, navy_fill, center_mid, cell_border)
+        _merge_and_write(ws, row, 6, 8, 'EMPRESA', section_font, navy_fill, center_mid, cell_border)
+        _write_cell(ws, row, 9, 'CANT.', section_font, navy_fill, center_mid, cell_border)
         row += 1
 
         for i, it in enumerate(items_obra):
             fill = light_fill if i % 2 == 1 else white_fill
             _write_cell(ws, row, 1, it.item or '—', body_bold, fill, center_mid, cell_border)
-            ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=5)
-            _write_cell(ws, row, 2, it.descripcion or '—', body_font, fill, left_wrap, cell_border)
-            for c in range(3, 6):
-                _write_cell(ws, row, c, '', font=body_font, fill=fill, border=cell_border)
-            ws.merge_cells(start_row=row, start_column=6, end_row=row, end_column=8)
-            _write_cell(ws, row, 6, it.empresa or '—', body_font, fill, left_wrap, cell_border)
-            for c in range(7, 9):
-                _write_cell(ws, row, c, '', font=body_font, fill=fill, border=cell_border)
+            _fill_range(ws, row, 2, 5, body_font, fill, left_wrap, cell_border)
+            _merge_and_write(ws, row, 2, 5, it.descripcion or '—', body_font, fill, left_wrap, cell_border)
+            _fill_range(ws, row, 6, 8, body_font, fill, left_wrap, cell_border)
+            _merge_and_write(ws, row, 6, 8, it.empresa or '—', body_font, fill, left_wrap, cell_border)
             _write_cell(ws, row, 9, float(it.cantidad) if it.cantidad else 0, body_bold, fill, center_mid, cell_border)
             row += 1
 
@@ -454,12 +359,10 @@ def generar_excel(informe) -> bytes:
     # FIRMAS
     # ═══════════════════════════════════════════════════════════════════════
     row += 1
-    # Top border line
     for c in range(1, 10):
         _write_cell(ws, row, c, '', border=Border(top=Side(style='medium', color=NAVY)))
     row += 1
 
-    # Signature columns
     elaborado_nombre = '____________________'
     elaborado_cargo = ''
     revisado_nombre = '____________________'
@@ -489,54 +392,28 @@ def generar_excel(informe) -> bytes:
         except Exception:
             revisado_cargo = ''
 
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
-    _write_cell(ws, row, 1, 'ELABORADO POR', signature_label, light_fill, center_mid, cell_border)
-    _write_cell(ws, row, 2, '', fill=light_fill, border=cell_border)
-    _write_cell(ws, row, 3, '', fill=light_fill, border=cell_border)
-
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=6)
-    _write_cell(ws, row, 4, 'REVISADO POR', signature_label, light_fill, center_mid, cell_border)
-    _write_cell(ws, row, 5, '', fill=light_fill, border=cell_border)
-    _write_cell(ws, row, 6, '', fill=light_fill, border=cell_border)
-
-    ws.merge_cells(start_row=row, start_column=7, end_row=row, end_column=9)
-    _write_cell(ws, row, 7, 'APROBADO POR', signature_label, light_fill, center_mid, cell_border)
-    _write_cell(ws, row, 8, '', fill=light_fill, border=cell_border)
-    _write_cell(ws, row, 9, '', fill=light_fill, border=cell_border)
+    _fill_range(ws, row, 1, 3, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 1, 3, 'ELABORADO POR', signature_label, light_fill, center_mid, cell_border)
+    _fill_range(ws, row, 4, 6, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 4, 6, 'REVISADO POR', signature_label, light_fill, center_mid, cell_border)
+    _fill_range(ws, row, 7, 9, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 7, 9, 'APROBADO POR', signature_label, light_fill, center_mid, cell_border)
     row += 1
 
-    # Signature names
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
-    _write_cell(ws, row, 1, elaborado_nombre, signature_name, white_fill, center_mid, cell_border)
-    _write_cell(ws, row, 2, '', border=cell_border)
-    _write_cell(ws, row, 3, '', border=cell_border)
-
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=6)
-    _write_cell(ws, row, 4, revisado_nombre, signature_name, white_fill, center_mid, cell_border)
-    _write_cell(ws, row, 5, '', border=cell_border)
-    _write_cell(ws, row, 6, '', border=cell_border)
-
-    ws.merge_cells(start_row=row, start_column=7, end_row=row, end_column=9)
-    _write_cell(ws, row, 7, '____________________', signature_name, white_fill, center_mid, cell_border)
-    _write_cell(ws, row, 8, '', border=cell_border)
-    _write_cell(ws, row, 9, '', border=cell_border)
+    _fill_range(ws, row, 1, 3, border=cell_border)
+    _merge_and_write(ws, row, 1, 3, elaborado_nombre, signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 4, 6, border=cell_border)
+    _merge_and_write(ws, row, 4, 6, revisado_nombre, signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 7, 9, border=cell_border)
+    _merge_and_write(ws, row, 7, 9, '____________________', signature_name, white_fill, center_mid, cell_border)
     row += 1
 
-    # Cargos
-    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
-    _write_cell(ws, row, 1, elaborado_cargo, signature_cargo, white_fill, center_mid, cell_border)
-    _write_cell(ws, row, 2, '', border=cell_border)
-    _write_cell(ws, row, 3, '', border=cell_border)
-
-    ws.merge_cells(start_row=row, start_column=4, end_row=row, end_column=6)
-    _write_cell(ws, row, 4, revisado_cargo, signature_cargo, white_fill, center_mid, cell_border)
-    _write_cell(ws, row, 5, '', border=cell_border)
-    _write_cell(ws, row, 6, '', border=cell_border)
-
-    ws.merge_cells(start_row=row, start_column=7, end_row=row, end_column=9)
-    _write_cell(ws, row, 7, '', signature_cargo, white_fill, center_mid, cell_border)
-    _write_cell(ws, row, 8, '', border=cell_border)
-    _write_cell(ws, row, 9, '', border=cell_border)
+    _fill_range(ws, row, 1, 3, border=cell_border)
+    _merge_and_write(ws, row, 1, 3, elaborado_cargo, signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 4, 6, border=cell_border)
+    _merge_and_write(ws, row, 4, 6, revisado_cargo, signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 7, 9, border=cell_border)
+    _merge_and_write(ws, row, 7, 9, '', signature_cargo, white_fill, center_mid, cell_border)
 
     # ═══════════════════════════════════════════════════════════════════════
     # PRINT SETTINGS
@@ -563,7 +440,7 @@ def generar_pdf(informe) -> bytes:
                             leftMargin=1 * cm, rightMargin=1 * cm,
                             topMargin=1 * cm, bottomMargin=1 * cm)
     styles = getSampleStyleSheet()
-    HEADER_BG = colors.HexColor('#1e3a8a')  # azul oscuro IGGA
+    HEADER_BG = colors.HexColor('#1e3a8a')
     h1 = ParagraphStyle('h1', parent=styles['Heading1'], fontSize=12,
                         alignment=1, spaceAfter=4)
     h2 = ParagraphStyle('h2', parent=styles['Heading3'], fontSize=9,
@@ -574,7 +451,6 @@ def generar_pdf(informe) -> bytes:
 
     flow = []
 
-    # ── Logo IGGA (esquina superior izquierda) ──────────────────────────────
     logo_path = os.path.join(os.path.dirname(__file__), 'static', 'informe_diario', 'logo.png')
     if os.path.isfile(logo_path):
         logo_img = Image(logo_path, width=3.5*cm, height=1.5*cm)
@@ -602,7 +478,6 @@ def generar_pdf(informe) -> bytes:
     flow.append(t)
     flow.append(Spacer(1, 6))
 
-    # Reporte lluvia
     flow.append(Paragraph('REPORTE DE LLUVIA (horas con lluvia)', h2))
     horas_lluvia = {r.hora: r.con_lluvia for r in informe.reportes_lluvia.all()}
     fila_h = ['Hora'] + [str(h) for h in range(24)]
@@ -619,12 +494,10 @@ def generar_pdf(informe) -> bytes:
     flow.append(t)
     flow.append(Spacer(1, 6))
 
-    # Maquinaria + Personal en dos columnas
     detalles = list(informe.detalles.select_related('recurso__categoria'))
     maquinaria = [d for d in detalles if not d.recurso.categoria.nombre.upper().startswith('PERSONAL')]
     personal = [d for d in detalles if d.recurso.categoria.nombre.upper().startswith('PERSONAL')]
-    
-    # Unificar con recursos libres (manuales)
+
     maquinaria += list(informe.maquinaria_libre.all().order_by('orden'))
     personal += list(informe.personal_libre.all().order_by('orden'))
 
@@ -632,14 +505,12 @@ def generar_pdf(informe) -> bytes:
     data = [['MAQUINARIA - EQUIPOS - HERRAMIENTAS - VEHÍCULOS', 'CANT.',
              'PERSONAL DE OBRA', 'CANT.']]
     for i in range(max_rows):
-        # Maquinaria (Izquierda)
         if i < len(maquinaria):
             item = maquinaria[i]
             l_name = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
             l_qty = str(item.cantidad)
         else:
             l_name = l_qty = ''
-        # Personal (Derecha)
         if i < len(personal):
             item = personal[i]
             r_name = item.recurso.nombre if hasattr(item, 'recurso') else item.descripcion
@@ -667,12 +538,10 @@ def generar_pdf(informe) -> bytes:
     flow.append(t)
     flow.append(Spacer(1, 6))
 
-    # Observaciones generales
     flow.append(Paragraph('OBSERVACIONES GENERALES', h2))
     flow.append(Paragraph((informe.observaciones_generales or '—').replace('\n', '<br/>'), body))
     flow.append(Spacer(1, 4))
 
-    # Estado del terreno
     t = Table([
         ['ESTADO DEL TERRENO AL INICIO', 'ESTADO DEL TERRENO AL FINAL'],
         [Paragraph((informe.estado_terreno_inicio or '—').replace('\n', '<br/>'), body),
@@ -688,7 +557,6 @@ def generar_pdf(informe) -> bytes:
     flow.append(t)
     flow.append(Spacer(1, 6))
 
-    # Actividades
     cats = {}
     for act in informe.actividades.select_related('categoria').order_by('categoria__orden', 'orden'):
         cats.setdefault(act.categoria.nombre, []).append(act.descripcion)
@@ -698,7 +566,6 @@ def generar_pdf(informe) -> bytes:
             flow.append(Paragraph(f"{idx}. {item}".replace('\n', '<br/>'), body))
         flow.append(Spacer(1, 4))
 
-    # Items de obra
     items_obra = list(informe.items_obra.all().order_by('orden'))
     if items_obra:
         flow.append(Paragraph('ÍTEMS DE OBRA', h2))
@@ -722,14 +589,12 @@ def generar_pdf(informe) -> bytes:
         flow.append(t_items)
         flow.append(Spacer(1, 6))
 
-    # Anexos
     anexos = list(informe.anexos.all())
     if anexos:
         flow.append(PageBreak())
         flow.append(Paragraph('ANEXOS FOTOGRÁFICOS', h1))
         for a in anexos:
             try:
-                from reportlab.platypus import Image as RLImage
                 img_path = a.imagen.url if a.imagen else None
                 if img_path and img_path.startswith('http'):
                     flow.append(Paragraph(f"<b>Sección:</b> {a.get_seccion_display()}", body))
