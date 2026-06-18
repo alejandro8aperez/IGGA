@@ -97,9 +97,17 @@ function InformeDiarioContent() {
     // Auto-guardar al cambiar de pestaña (form siempre montado vía display:none)
     if (formRef.current) {
       try {
+        // Capturar campos frontend antes del save (backend no los devuelve)
+        const snapshot = formRef.current.getFormSnapshot();
         const result = await formRef.current.saveDraft();
         if (result?.id) {
-          setEditingInforme(prev => ({ ...prev, ...result }));
+          setEditingInforme(prev => ({
+            ...prev,
+            ...result,
+            cliente_seleccionado_id: snapshot.cliente_seleccionado_id || prev.cliente_seleccionado_id || '',
+            cliente_seleccionado_nombre: snapshot.cliente_seleccionado_nombre || prev.cliente_seleccionado_nombre || '',
+            obra_nombre: snapshot.obra_nombre || prev.obra_nombre || '',
+          }));
         }
       } catch {
         // Si falla el auto-save, igual permitimos cambiar de tab
@@ -395,9 +403,16 @@ function InformeDiarioContent() {
               onFotosChange={setFotosActuales}
               onAutoSave={async () => {
                 if (formRef.current) {
+                  const snapshot = formRef.current.getFormSnapshot();
                   const result = await formRef.current.saveDraft();
                   if (result?.id) {
-                    setEditingInforme(prev => ({ ...prev, ...result }));
+                    setEditingInforme(prev => ({
+                      ...prev,
+                      ...result,
+                      cliente_seleccionado_id: snapshot.cliente_seleccionado_id || prev.cliente_seleccionado_id || '',
+                      cliente_seleccionado_nombre: snapshot.cliente_seleccionado_nombre || prev.cliente_seleccionado_nombre || '',
+                      obra_nombre: snapshot.obra_nombre || prev.obra_nombre || '',
+                    }));
                     return result.id;
                   }
                 }
@@ -455,9 +470,16 @@ function InformeDiarioContent() {
               onFotosChange={(nuevas) => setFotosActuales(prev => ({ ...prev, ...nuevas }))}
               onAutoSave={async () => {
                 if (formRef.current) {
+                  const snapshot = formRef.current.getFormSnapshot();
                   const result = await formRef.current.saveDraft();
                   if (result?.id) {
-                    setEditingInforme(prev => ({ ...prev, ...result }));
+                    setEditingInforme(prev => ({
+                      ...prev,
+                      ...result,
+                      cliente_seleccionado_id: snapshot.cliente_seleccionado_id || prev.cliente_seleccionado_id || '',
+                      cliente_seleccionado_nombre: snapshot.cliente_seleccionado_nombre || prev.cliente_seleccionado_nombre || '',
+                      obra_nombre: snapshot.obra_nombre || prev.obra_nombre || '',
+                    }));
                     return result.id;
                   }
                 }
