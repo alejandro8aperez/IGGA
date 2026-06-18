@@ -317,7 +317,10 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
   const [loading, setLoading]    = useState({});
   const [hovered, setHovered]    = useState(null);
   const [savingDesc, setSavingDesc] = useState({});
+  const [errored, setErrored]    = useState({});
+  const [cols, setCols]          = useState(3);
   const descTimers = useRef({});
+  const fileRefs = useRef({});
 
   useEffect(() => {
     const cargarFotos = async () => {
@@ -336,6 +339,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
         const mapa = {};
         res.data.forEach(f => { if (f.posicion > 0) mapa[f.posicion] = f; });
         setFotos(mapa);
+        setErrored({});
         onFotosChange?.(mapa);
       } catch (err) {
         console.error('Error cargando fotos:', err);
@@ -343,6 +347,14 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
     };
     cargarFotos();
   }, [informeId, obraId]);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const handler = e => setCols(e.matches ? 2 : 3);
+    handler(mq);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const handleUpload = async (posicion, file) => {
     if (!file) return;
@@ -365,6 +377,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
       });
       const updated = { ...fotos, [posicion]: res.data };
       setFotos(updated);
+      setErrored(prev => { const n = { ...prev }; delete n[posicion]; return n; });
       onFotosChange?.(updated);
       toast.success(`Foto ${posicion} subida correctamente`);
     } catch (err) {
@@ -427,7 +440,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
         <Camera color="#3b82f6" size={32} />
       </div>
 
-      <div style={S.grid}>
+      <div style={{ ...S.grid, gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
         {slots.map(num => {
           const isFilled  = !!fotos[num];
           const isLoading = !!loading[num];
@@ -454,11 +467,20 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
               ) : isFilled ? (
                 <>
                   <div style={S.imgWrap}>
-                    <img
-                      src={getImageUrl(fotoData.imagen_url || fotoData.imagen)}
-                      alt={`Foto ${num}`}
-                      style={S.img}
-                    />
+                    {errored[num] ? (
+                      <div style={{ ...S.loadingBox, minHeight: '100%' }}>
+                        <UploadCloud color="#ef4444" size={22} />
+                        <span style={{ ...S.loadingText, color: '#ef4444' }}>Foto no disponible</span>
+                      </div>
+                    ) : (
+                      <img
+                        src={getImageUrl(fotoData.imagen_url || fotoData.imagen)}
+                        alt={`Foto ${num}`}
+                        style={S.img}
+                        loading="lazy"
+                        onError={() => setErrored(prev => ({ ...prev, [num]: true }))}
+                      />
+                    )}
                     <div style={{ ...S.overlay, background: isHov ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)' }}>
                       <button
                         onClick={() => handleDelete(num, fotoData.id)}
@@ -486,18 +508,28 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
                   <div style={S.badge}>{String(num).padStart(2, '0')}</div>
                 </>
               ) : (
-                <label style={S.uploadLabel}>
+                <div
+                  style={S.uploadLabel}
+                  onClick={() => fileRefs.current[num]?.click()}
+                >
                   <UploadCloud color={isHov ? '#3b82f6' : '#334155'} size={22} />
                   <span style={{ ...S.uploadText, color: isHov ? '#60a5fa' : '#475569' }}>
                     Subir {num}
                   </span>
                   <input
+                    ref={el => { if (el) fileRefs.current[num] = el; }}
                     type="file"
                     accept="image/*"
                     style={{ display: 'none' }}
-                    onChange={e => handleUpload(num, e.target.files[0])}
+                    onChange={e => {
+                      if (e.target.files?.[0]) {
+                        handleUpload(num, e.target.files[0]);
+                        // Reset value so mobile fires change event next time
+                        e.target.value = '';
+                      }
+                    }}
                   />
-                </label>
+                </div>
               )}
             </div>
           );

@@ -31,7 +31,7 @@ class Hallazgo(models.Model):
         ('alto', 'Alto'),
         ('critico', 'Crítico'),
     )
-    visita = models.ForeignKey(VisitaInterventoria, on_delete=models.CASCADE, related_name='hallagzos')
+    visita = models.ForeignKey(VisitaInterventoria, on_delete=models.CASCADE, related_name='hallazgos')
     descripcion = models.TextField()
     nivel_riesgo = models.CharField(max_length=10, choices=NIVEL_CHOICES, default='bajo')
     plan_accion = models.TextField(blank=True)
