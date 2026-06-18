@@ -189,7 +189,7 @@ const S = {
 function getImageUrl(src) {
   if (!src) return null;
   if (src.startsWith('http://') || src.startsWith('https://')) return src;
-  const base = BASE_URL.replace(/\/api\/$/, '');
+  const base = BASE_URL.replace(/\/api\/?$/, '').replace(/\/+$/, '');
   const path = src.startsWith('/') ? src : '/' + src;
   return base + path;
 }
