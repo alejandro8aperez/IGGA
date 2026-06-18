@@ -112,44 +112,6 @@ def generar_excel(informe) -> bytes:
     dia_semana = informe.dia_semana or '—'
     status = informe.get_status_display() if hasattr(informe, 'get_status_display') else (informe.status or '—')
     topografia = 'Sí' if informe.comision_topografia else 'No'
-
-    info_data = [
-        ('OBRA:', proyecto_nombre, '', '', ''),
-        ('CLIENTE:', cliente_nombre, 'FECHA:', fecha_str, 'ESTADO:', status),
-        ('DÍA:', dia_semana, 'COM. TOPOGRAFÍA:', topografia, '', ''),
-    ]
-
-    info_row = row
-    for i, (label1, val1, label2, val2, label3, val3) in enumerate(info_data):
-        r = info_row + i
-        h = r
-        # Label 1
-        _write_cell(ws, r, 1, label1, label_font, light_fill, left_wrap, cell_border)
-        # Value 1
-        ws.merge_cells(start_row=r, start_column=2, end_row=r, end_column=5)
-        _write_cell(ws, r, 2, val1, value_font, white_fill, left_wrap, cell_border)
-        _write_cell(ws, r, 3, '', font=body_font, border=cell_border)
-        _write_cell(ws, r, 4, '', font=body_font, border=cell_border)
-        _write_cell(ws, r, 5, '', font=body_font, border=cell_border)
-
-        if label2:
-            _write_cell(ws, r, 6, label2, label_font, light_fill, left_wrap, cell_border)
-            _write_cell(ws, r, 7, val2, value_font, white_fill, left_wrap, cell_border)
-            ws.merge_cells(start_row=r, start_column=7, end_row=r, end_column=9)
-
-        if label3:
-            ws.merge_cells(start_row=r, start_column=8, end_row=r, end_column=9) if not label2 else None
-            # For the rows with 6 fields (row 2), we need special handling
-            if label3 == 'ESTADO:' and label2 == 'FECHA:':
-                # This is the row with OBRA, CLIENTE, FECHA, ESTADO - already handled
-                pass
-            elif label3 == '':
-                pass
-    row = info_row + len(info_data)
-
-    # Fix: the third row has DIA and COM.TOPOGRAFIA, no more labels after
-    # Let me rewrite the info section more carefully
-    row = info_row
     # Row 1: OBRA only (full width)
     _write_cell(ws, row, 1, 'OBRA:', label_font, light_fill, left_wrap, cell_border)
     ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=9)
