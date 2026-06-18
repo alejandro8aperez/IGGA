@@ -104,6 +104,7 @@ class EmpleadoFirmaSerializer(serializers.Serializer):
 class InformeDiarioListSerializer(serializers.ModelSerializer):
     proyecto_codigo = serializers.SerializerMethodField()
     proyecto_nombre = serializers.SerializerMethodField()
+    cliente = serializers.IntegerField(read_only=True, source='proyecto.cliente_id', allow_null=True)
     cliente_nombre = serializers.SerializerMethodField()
     total_personal = serializers.ReadOnlyField()
     total_maquinaria = serializers.ReadOnlyField()
@@ -117,7 +118,7 @@ class InformeDiarioListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InformeDiario
-        fields = ['id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'cliente_nombre', 'fecha',
+        fields = ['id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'cliente', 'cliente_nombre', 'fecha',
                   'dia_semana', 'elaborado_por_nombre', 'revisado_por_nombre',
                   'total_personal', 'total_maquinaria', 'total_horas_lluvia',
                   'total_actividades', 'creado_en', 'status', 'status_label',
@@ -158,6 +159,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     """Full nested serializer (read + write) for the daily report."""
     proyecto_codigo = serializers.SerializerMethodField()
     proyecto_nombre = serializers.SerializerMethodField()
+    cliente = serializers.IntegerField(read_only=True, source='proyecto.cliente_id', allow_null=True)
     cliente_nombre = serializers.SerializerMethodField()
     status_label = serializers.CharField(source='get_status_display', read_only=True)
     detalles = DetalleRecursoSerializer(many=True, required=False)
@@ -175,7 +177,7 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = InformeDiario
         fields = [
-            'id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'cliente_nombre', 'fecha', 'dia_semana',
+            'id', 'proyecto', 'proyecto_nombre', 'proyecto_codigo', 'cliente', 'cliente_nombre', 'fecha', 'dia_semana',
             'numero_paginas', 'codigo_formato',
             'observaciones_generales', 'estado_terreno_inicio',
             'estado_terreno_final',

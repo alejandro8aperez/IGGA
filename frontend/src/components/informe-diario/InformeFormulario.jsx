@@ -183,6 +183,9 @@ function normalizarInforme(informe) {
           descripcion:      a.descripcion || "",
         }))
       : ACTIVIDADES_DEFAULT,
+    // ── Cliente CRM (backend devuelve cliente=proyecto.cliente_id) ──
+    cliente_seleccionado_id: informe.cliente_seleccionado_id || (informe.cliente != null ? String(informe.cliente) : ''),
+    cliente_seleccionado_nombre: informe.cliente_seleccionado_nombre || informe.cliente_nombre || '',
     // ── FIRMAS RRHH ───────────────────────────────────────
     elaborado_por_id: informe.elaborado_por || null,
     revisado_por_id:  informe.revisado_por  || null,
