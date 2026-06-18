@@ -168,9 +168,8 @@ function InformeDiarioContent() {
   };
 
   const handleExportarPDF = async () => {
-    if (!hasInforme && !formSnapshot) return;
+    if (!hasInforme) return;
 
-    // Usar formSnapshot si está disponible (reportes basado en el formulario actual)
     if (formSnapshot) {
       exportarPDFReporte(formSnapshot);
       return;
@@ -178,10 +177,8 @@ function InformeDiarioContent() {
 
     const toastId = toast.loading("Generando PDF...");
     try {
-      const blob = await informeDiarioService.downloadPdf(editingInforme.id);
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      const detalle = await informeDiarioService.get(editingInforme.id);
+      exportarPDFReporte(detalle);
       toast.success("PDF listo ✓", { id: toastId });
     } catch (error) {
       toast.error("Error al generar PDF", { id: toastId });

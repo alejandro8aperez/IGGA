@@ -359,7 +359,6 @@ const CAT_PER_PDF = 'PERSONAL DE OBRA';
 export function exportarPDFReporte(data) {
   if (!data) { toast.warning('No hay datos para exportar'); return; }
 
-  // Normalizar igual que el componente
   const horasLluvia = Array.isArray(data.horas_lluvia)
     ? data.horas_lluvia.map(h => (typeof h === 'boolean' ? h : Boolean(h?.con_lluvia ?? h)))
     : Array.isArray(data.reportes_lluvia)
@@ -411,176 +410,307 @@ export function exportarPDFReporte(data) {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Informe Diario</title>
+<title>Informe Diario - ${data.proyecto_nombre || data.obra_nombre || ''}</title>
 <style>
-  @page { margin: 1.2cm; size: A4; }
-  * { box-sizing: border-box; }
-  body { font-family: 'Courier New', Courier, monospace; color: #1e293b; font-size: 11px; line-height: 1.4; margin: 0; padding: 0; }
-  .page { max-width: 900px; margin: 0 auto; }
-  .report { border: 2px solid #1e293b; padding: 20px 24px; background: white; }
-  .header { margin-bottom: 16px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; display: flex; align-items: center; gap: 16px; }
-  .header-logo img { height: 50px; width: auto; flex-shrink: 0; }
-  .header-title { flex: 1; text-align: center; }
-  .header-title h1 { font-size: 13px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; margin: 0; }
-  .header-title p { font-size: 10px; color: #475569; margin: 2px 0 0; }
-  table.info { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-  table.info td { border: 1px solid #1e293b; padding: 6px 10px; font-size: 12px; }
-  table.info .label { font-weight: 700; background: #f0f0f0; }
-  .section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .section-title-dark { background: #1e293b; color: white; padding: 4px 8px; margin-bottom: 0; }
-  .section-title-dark + * { margin-top: 4px; }
-  .lluvia-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 1px; border: 1px solid #94a3b8; }
-  .lluvia-cell { text-align: center; padding: 2px 0; font-size: 8px; font-weight: 600; }
-  .lluvia-cell.lluvia { background: #3b82f6; color: white; }
-  .lluvia-cell.nolluvia { background: #f8fafc; color: #94a3b8; }
-  .lluvia-total { font-size: 9px; color: #64748b; margin-top: 2px; }
-  .terreno { margin-bottom: 14px; display: flex; gap: 24px; font-size: 11px; }
-  .terreno span { font-weight: 700; }
-  table.data { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 14px; }
-  table.data th { padding: 4px 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; text-align: left; border: 1px solid #94a3b8; background: #f0f0f0; }
-  table.data td { padding: 4px 8px; font-size: 10px; border: 1px solid #e2e8f0; }
-  table.data .total-row { background: #f0f0f0; font-weight: 700; }
-  .actividades { margin-bottom: 14px; }
-  .actividad-cat { font-weight: 800; font-size: 10px; color: #475569; border-bottom: 1px solid #cbd5e1; padding: 3px 6px; background: #f8fafc; margin-bottom: 2px; }
-  .actividad-list { margin: 4px 0 8px 16px; padding: 0; list-style: none; }
-  .actividad-list li { padding: 1px 0; font-size: 10px; line-height: 1.5; }
-  .obs { padding: 6px 8px; font-size: 10px; line-height: 1.6; white-space: pre-wrap; border: 1px solid #e2e8f0; margin-bottom: 14px; }
-  .firmas { margin-top: 20px; border-top: 2px solid #1e293b; padding-top: 12px; }
-  .firmas-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
-  table.firmas { width: 100%; border-collapse: collapse; font-size: 10px; }
-  table.firmas td { width: 33%; text-align: center; border: 1px solid #94a3b8; padding: 6px 8px; }
-  table.firmas .firma-label { font-weight: 700; margin-bottom: 4px; }
-  table.firmas .firma-img { max-height: 40px; margin-bottom: 4px; }
-  table.firmas .firma-nombre { font-weight: 600; font-size: 10px; }
-  table.firmas .firma-cargo { font-size: 9px; color: #64748b; }
+  @page {
+    margin: 1.8cm 1.5cm 2.2cm;
+    size: A4;
+    @bottom-center { content: counter(page) " / " counter(pages); font: 8px 'Segoe UI', system-ui, sans-serif; color: #94a3b8; }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #1e293b; font-size: 9.5px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Page wrapper ── */
+  .page { max-width: 100%; padding: 0; }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 3px solid #1e3a8a;
+  }
+  .header-logo { flex-shrink: 0; }
+  .header-logo img { height: 54px; width: auto; display: block; }
+  .header-body { flex: 1; }
+  .header-body h1 {
+    font-size: 14px; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #1e3a8a; margin: 0 0 2px;
+  }
+  .header-body .subtitle {
+    font-size: 8.5px; color: #64748b; letter-spacing: 0.03em;
+  }
+  .header-badge {
+    flex-shrink: 0; text-align: right;
+  }
+  .header-badge .badge {
+    display: inline-block; background: #1e3a8a; color: #fff;
+    font-size: 8px; font-weight: 700; letter-spacing: 0.05em;
+    padding: 4px 12px; border-radius: 3px; text-transform: uppercase;
+  }
+
+  /* ── Info table ── */
+  .info-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .info-table td {
+    border: 1px solid #cbd5e1; padding: 5px 9px; font-size: 9.5px;
+    vertical-align: middle;
+  }
+  .info-table .lbl {
+    font-weight: 700; background: #f1f5f9; color: #475569;
+    width: 12%; text-transform: uppercase; font-size: 8px; letter-spacing: 0.04em;
+  }
+  .info-table .val { font-weight: 600; width: 38%; }
+  .info-table .val.highlight { color: #1e3a8a; }
+
+  /* ── Section titles ── */
+  .sec-title {
+    font-size: 8.5px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; color: #1e3a8a;
+    border-bottom: 1.5px solid #1e3a8a;
+    padding: 0 0 3px; margin-bottom: 6px;
+  }
+  .sec-title-bar {
+    background: #1e3a8a; color: #fff; padding: 4px 9px;
+    font-size: 8.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 0; border-radius: 2px 2px 0 0;
+  }
+
+  /* ── Rain grid ── */
+  .rain-grid { border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; }
+  .rain-row { display: flex; }
+  .rain-cell {
+    flex: 1; text-align: center; padding: 2px 0;
+    font-size: 7px; font-weight: 600;
+    border-right: 1px solid #e2e8f0;
+  }
+  .rain-cell:last-child { border-right: none; }
+  .rain-cell.rain { background: #3b82f6; color: #fff; }
+  .rain-cell.dry { background: #f8fafc; color: #94a3b8; }
+  .rain-label { font-size: 6.5px; color: #94a3b8; }
+  .rain-summary { font-size: 8.5px; color: #64748b; margin-top: 4px; }
+
+  /* ── Terreno ── */
+  .terreno-grid { display: flex; gap: 18px; margin-bottom: 16px; }
+  .terreno-item { font-size: 9px; }
+  .terreno-item strong { font-weight: 700; color: #475569; }
+
+  /* ── Data tables ── */
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 9px; }
+  .data-table thead th {
+    background: #1e3a8a; color: #fff; padding: 4px 8px;
+    font-size: 7.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; text-align: left; border: 1px solid #1e3a8a;
+  }
+  .data-table tbody td {
+    padding: 3px 8px; border: 1px solid #e2e8f0; vertical-align: top;
+  }
+  .data-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .data-table tfoot td {
+    background: #f1f5f9; font-weight: 700; padding: 4px 8px;
+    border: 1px solid #cbd5e1; font-size: 8.5px;
+  }
+  .data-table .num { text-align: center; font-weight: 700; }
+  .data-table .muted { color: #94a3b8; }
+
+  /* ── Actividades ── */
+  .act-group { margin-bottom: 8px; }
+  .act-cat {
+    font-weight: 700; font-size: 8.5px; color: #475569;
+    background: #f1f5f9; padding: 3px 8px; border-left: 3px solid #1e3a8a;
+    margin-bottom: 3px;
+  }
+  .act-list { margin: 2px 0 4px 20px; padding: 0; list-style: none; }
+  .act-list li { padding: 1px 0; font-size: 9px; line-height: 1.5; position: relative; }
+  .act-list li::before { content: "\\2022"; color: #1e3a8a; font-weight: 700; position: absolute; left: -11px; }
+
+  /* ── Observaciones ── */
+  .obs-box {
+    padding: 6px 9px; font-size: 9px; line-height: 1.7;
+    border: 1px solid #e2e8f0; border-radius: 3px;
+    background: #fafbfc; margin-bottom: 14px;
+  }
+
+  /* ── Firmas ── */
+  .firmas-section { margin-top: 22px; border-top: 3px solid #1e3a8a; padding-top: 12px; }
+  .firmas-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+  .firmas-table td {
+    width: 33.33%; text-align: center;
+    border: 1px solid #cbd5e1; padding: 10px 8px 8px;
+    vertical-align: top;
+  }
+  .firmas-table .label {
+    font-weight: 700; font-size: 8px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #475569; margin-bottom: 6px;
+  }
+  .firmas-table .sig-img { max-height: 38px; margin-bottom: 4px; }
+  .firmas-table .name { font-weight: 600; font-size: 9px; color: #1e293b; }
+  .firmas-table .cargo { font-size: 8px; color: #94a3b8; }
+
+  /* ── Print ── */
   @media print {
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .lluvia-cell.lluvia { background: #3b82f6 !important; color: white !important; }
+    .rain-cell.rain { background: #3b82f6 !important; color: #fff !important; }
+    .data-table thead th { background: #1e3a8a !important; color: #fff !important; }
+    .sec-title-bar { background: #1e3a8a !important; color: #fff !important; }
+    .header-body h1 { color: #1e3a8a !important; }
   }
 </style>
 </head>
 <body>
 <div class="page">
-<div class="report">
 
-<div class="header">
-  <div class="header-logo"><img src="/logotipo.png" alt="Logo" onerror="this.style.display='none'" /></div>
-  <div class="header-title">
-    <h1>Construccion de Obra — Libro Diario de Obra</h1>
-    <p>INTERVENTORIA — COD: ${data.codigo_formato || 'F-141-IN'} — Emision: 27/08/2009 — Mod: 00</p>
+  <!-- ═══ HEADER ═══ -->
+  <div class="header">
+    <div class="header-logo">
+      <img src="/logotipo.png" alt="Logo" onerror="this.style.display='none'" />
+    </div>
+    <div class="header-body">
+      <h1>Libro Diario de Obra — Interventor&iacute;a</h1>
+      <div class="subtitle">
+        C&oacute;digo: ${data.codigo_formato || 'F-141-IN'} &nbsp;|&nbsp;
+        Emisi&oacute;n: 27/08/2009 &nbsp;|&nbsp; Mod: 00 &nbsp;|&nbsp;
+        Versi&oacute;n: 1
+      </div>
+    </div>
+    <div class="header-badge">
+      <div class="badge">${data.status_label || data.status || 'BORRADOR'}</div>
+    </div>
   </div>
-</div>
 
-<table class="info">
-  <tr>
-    <td class="label" style="width:15%">OBRA:</td>
-    <td style="font-weight:700;width:35%">${data.proyecto_nombre || data.obra_nombre || '---'}</td>
-    <td class="label" style="width:15%">CLIENTE:</td>
-    <td style="font-weight:700;width:35%">${data.cliente_nombre || '---'}</td>
-  </tr>
-  <tr>
-    <td class="label" style="width:20%">DIA:</td>
-    <td>${data.dia_semana || '---'}</td>
-    <td class="label" style="width:20%">FECHA:</td>
-    <td>${data.fecha || '---'}</td>
-  </tr>
-  <tr>
-    <td class="label">ESTADO:</td>
-    <td>${data.status_label || data.status || '---'}</td>
-    <td class="label"></td>
-    <td></td>
-  </tr>
-</table>
-
-<div style="margin-bottom:14px">
-  <div class="section-title">Reporte de Lluvia</div>
-  <div class="lluvia-grid">
-    ${horasLluvia.map((conLluvia, h) =>
-      `<div class="lluvia-cell ${conLluvia ? 'lluvia' : 'nolluvia'}"><div>${h}</div><div>${conLluvia ? '///' : '---'}</div></div>`
-    ).join('')}
-  </div>
-  <div class="lluvia-total">Horas con lluvia: <strong>${lluvia}</strong> de 24</div>
-</div>
-
-<div class="terreno">
-  <div><span>Comision Topografia:</span> ${topografia ? 'Si' : 'No'}</div>
-  <div><span>Estado Terreno Inicio:</span> ${data.estado_terreno_inicio || '---'}</div>
-  <div><span>Estado Terreno Final:</span> ${data.estado_terreno_final || '---'}</div>
-</div>
-
-<div style="margin-bottom:14px">
-  <div class="section-title section-title-dark">Maquinaria — Equipos — Herramientas de Poder y Vehiculos</div>
-  <table class="data">
-    <thead><tr><th>DESCRIPCION</th><th style="width:60px;text-align:center">CANT.</th><th style="width:120px">EMPRESA</th><th>NOTAS</th></tr></thead>
-    <tbody>
-      ${maquinaria.length === 0
-        ? '<tr><td colspan="4">Sin maquinaria registrada</td></tr>'
-        : maquinaria.map(m => `<tr><td>${m.descripcion || '---'}</td><td style="text-align:center;font-weight:700">${m.cantidad}</td><td>${m.empresa || '---'}</td><td style="color:#64748b">${m.notas || '---'}</td></tr>`).join('')
-      }
-    </tbody>
-    <tfoot><tr class="total-row"><td colspan="3">TOTAL MAQUINARIA</td><td style="text-align:center;font-weight:900">${totalMaq}</td></tr></tfoot>
-  </table>
-</div>
-
-<div style="margin-bottom:14px">
-  <div class="section-title section-title-dark">Personal de Obra</div>
-  <table class="data">
-    <thead><tr><th>CARGO / DESCRIPCION</th><th style="width:60px;text-align:center">CANT.</th><th style="width:120px">EMPRESA</th><th>NOTAS</th></tr></thead>
-    <tbody>
-      ${personal.length === 0
-        ? '<tr><td colspan="4">Sin personal registrado</td></tr>'
-        : personal.map(p => `<tr><td>${p.descripcion || '---'}</td><td style="text-align:center;font-weight:700">${p.cantidad}</td><td>${p.empresa || '---'}</td><td style="color:#64748b">${p.notas || '---'}</td></tr>`).join('')
-      }
-    </tbody>
-    <tfoot><tr class="total-row"><td colspan="3">TOTAL PERSONAL</td><td style="text-align:center;font-weight:900">${totalPers}</td></tr></tfoot>
-  </table>
-</div>
-
-<div class="actividades">
-  <div class="section-title section-title-dark">Actividades del Dia</div>
-  ${Object.keys(actsMap).length === 0
-    ? '<div style="padding:4px 8px;color:#94a3b8">Sin actividades registradas</div>'
-    : Object.values(actsMap).map((grupo, gi) =>
-        `<div style="margin-bottom:${gi < Object.keys(actsMap).length - 1 ? 8 : 0}px">
-          <div class="actividad-cat">${grupo.categoria}</div>
-          <ul class="actividad-list">
-            ${grupo.actividades.map(a => `<li>&bull; ${a}</li>`).join('')}
-          </ul>
-        </div>`
-      ).join('')
-  }
-</div>
-
-<div style="margin-bottom:14px">
-  <div class="section-title section-title-dark">Observaciones Generales</div>
-  <div class="obs">${(data.observaciones_generales || '---').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</div>
-</div>
-
-<div class="firmas">
-  <div class="firmas-title">Recursos Control Obra</div>
-  <table class="firmas">
+  <!-- ═══ INFO TABLE ═══ -->
+  <table class="info-table">
     <tr>
-      <td>
-        <div class="firma-label">Elaborado por</div>
-        ${data.elaborado_por_detalle?.firma_url ? `<img class="firma-img" src="${data.elaborado_por_detalle.firma_url}" />` : ''}
-        <div class="firma-nombre">${data.elaborado_por_detalle?.nombre_completo || data.elaborado_por_texto || '_______________'}</div>
-        <div class="firma-cargo">${data.elaborado_por_detalle?.cargo_nombre || data.cargo_elaborado || ''}</div>
-      </td>
-      <td>
-        <div class="firma-label">Revisado por</div>
-        ${data.revisado_por_detalle?.firma_url ? `<img class="firma-img" src="${data.revisado_por_detalle.firma_url}" />` : ''}
-        <div class="firma-nombre">${data.revisado_por_detalle?.nombre_completo || data.revisado_por_texto || '_______________'}</div>
-        <div class="firma-cargo">${data.revisado_por_detalle?.cargo_nombre || data.cargo_revisado || ''}</div>
-      </td>
-      <td>
-        <div class="firma-label">Aprobado por</div>
-        <div class="firma-nombre">_______________</div>
-      </td>
+      <td class="lbl">Obra</td>
+      <td class="val highlight" colspan="3">${(data.proyecto_nombre || data.obra_nombre || '---').replace(/</g, '&lt;')}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Cliente</td>
+      <td class="val">${data.cliente_nombre || '---'}</td>
+      <td class="lbl" style="width:10%">Fecha</td>
+      <td class="val" style="width:28%">${data.fecha || '---'}</td>
+    </tr>
+    <tr>
+      <td class="lbl">D&iacute;a</td>
+      <td class="val">${data.dia_semana || '---'}</td>
+      <td class="lbl">Comisi&oacute;n Topograf&iacute;a</td>
+      <td class="val">${topografia ? 'S&iacute;' : 'No'}</td>
     </tr>
   </table>
-</div>
 
-</div>
+  <!-- ═══ RAIN REPORT ═══ -->
+  <div style="margin-bottom:14px">
+    <div class="sec-title">Reporte de Lluvia</div>
+    <div class="rain-grid">
+      <div class="rain-row">
+        ${horasLluvia.map((conLluvia, h) =>
+          `<div class="rain-cell ${conLluvia ? 'rain' : 'dry'}"><div>${h}</div></div>`
+        ).join('')}
+      </div>
+      <div class="rain-row">
+        ${horasLluvia.map((conLluvia, h) =>
+          `<div class="rain-cell ${conLluvia ? 'rain' : 'dry'}" style="font-size:6.5px">${conLluvia ? '///' : '---'}</div>`
+        ).join('')}
+      </div>
+    </div>
+    <div class="rain-summary">
+      Horas con lluvia: <strong>${lluvia}</strong> de 24
+      &nbsp;&middot;&nbsp;
+      <span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px;vertical-align:middle;margin-right:2px"></span> Lluvia
+      <span style="display:inline-block;width:10px;height:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:2px;vertical-align:middle;margin:0 2px 0 8px"></span> Sin lluvia
+    </div>
+  </div>
+
+  <!-- ═══ TERRAIN STATUS ═══ -->
+  <div class="terreno-grid">
+    <div class="terreno-item"><strong>Estado Terreno Inicio:</strong> ${data.estado_terreno_inicio || '---'}</div>
+    <div class="terreno-item"><strong>Estado Terreno Final:</strong> ${data.estado_terreno_final || '---'}</div>
+  </div>
+
+  <!-- ═══ MAQUINARIA ═══ -->
+  <div style="margin-bottom:14px">
+    <div class="sec-title-bar">Maquinaria — Equipos — Herramientas de Poder y Veh&iacute;culos</div>
+    <table class="data-table">
+      <thead><tr><th style="width:42%">Descripci&oacute;n</th><th style="width:10%;text-align:center">Cant.</th><th style="width:22%">Empresa</th><th>Notas</th></tr></thead>
+      <tbody>
+        ${maquinaria.length === 0
+          ? '<tr><td colspan="4" class="muted" style="padding:8px;text-align:center">Sin maquinaria registrada</td></tr>'
+          : maquinaria.map(m =>
+              `<tr><td>${m.descripcion || '---'}</td><td class="num">${m.cantidad}</td><td>${m.empresa || '---'}</td><td class="muted">${m.notas || '---'}</td></tr>`
+            ).join('')
+        }
+      </tbody>
+      <tfoot><tr><td colspan="3">TOTAL MAQUINARIA</td><td class="num">${totalMaq}</td></tr></tfoot>
+    </table>
+  </div>
+
+  <!-- ═══ PERSONAL ═══ -->
+  <div style="margin-bottom:14px">
+    <div class="sec-title-bar">Personal de Obra</div>
+    <table class="data-table">
+      <thead><tr><th style="width:42%">Cargo / Descripci&oacute;n</th><th style="width:10%;text-align:center">Cant.</th><th style="width:22%">Empresa</th><th>Notas</th></tr></thead>
+      <tbody>
+        ${personal.length === 0
+          ? '<tr><td colspan="4" class="muted" style="padding:8px;text-align:center">Sin personal registrado</td></tr>'
+          : personal.map(p =>
+              `<tr><td>${p.descripcion || '---'}</td><td class="num">${p.cantidad}</td><td>${p.empresa || '---'}</td><td class="muted">${p.notas || '---'}</td></tr>`
+            ).join('')
+        }
+      </tbody>
+      <tfoot><tr><td colspan="3">TOTAL PERSONAL</td><td class="num">${totalPers}</td></tr></tfoot>
+    </table>
+  </div>
+
+  <!-- ═══ ACTIVITIES ═══ -->
+  <div style="margin-bottom:14px">
+    <div class="sec-title-bar">Actividades del D&iacute;a</div>
+    ${Object.keys(actsMap).length === 0
+      ? '<div style="padding:6px 9px;color:#94a3b8;font-size:9px">Sin actividades registradas</div>'
+      : Object.values(actsMap).map(grupo =>
+          `<div class="act-group">
+            <div class="act-cat">${grupo.categoria}</div>
+            <ul class="act-list">
+              ${grupo.actividades.map(a => `<li>${a.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</li>`).join('')}
+            </ul>
+          </div>`
+        ).join('')
+    }
+  </div>
+
+  <!-- ═══ OBSERVACIONES ═══ -->
+  <div style="margin-bottom:14px">
+    <div class="sec-title">Observaciones Generales</div>
+    <div class="obs-box">${(data.observaciones_generales || 'Sin observaciones').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\n/g, '<br>')}</div>
+  </div>
+
+  <!-- ═══ FIRMAS ═══ -->
+  <div class="firmas-section">
+    <table class="firmas-table">
+      <tr>
+        <td>
+          <div class="label">Elaborado por</div>
+          ${data.elaborado_por_detalle?.firma_url ? `<div><img class="sig-img" src="${data.elaborado_por_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
+          <div class="name">${data.elaborado_por_detalle?.nombre_completo || data.elaborado_por_texto || '____________________'}</div>
+          <div class="cargo">${data.elaborado_por_detalle?.cargo_nombre || data.cargo_elaborado || ''}</div>
+        </td>
+        <td>
+          <div class="label">Revisado por</div>
+          ${data.revisado_por_detalle?.firma_url ? `<div><img class="sig-img" src="${data.revisado_por_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
+          <div class="name">${data.revisado_por_detalle?.nombre_completo || data.revisado_por_texto || '____________________'}</div>
+          <div class="cargo">${data.revisado_por_detalle?.cargo_nombre || data.cargo_revisado || ''}</div>
+        </td>
+        <td>
+          <div class="label">Aprobado por</div>
+          <div style="height:38px;margin-bottom:4px"></div>
+          <div class="name">____________________</div>
+          <div class="cargo">&nbsp;</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
 </div>
 </body>
 </html>`;
@@ -590,5 +720,5 @@ export function exportarPDFReporte(data) {
   w.document.write(html);
   w.document.close();
   w.focus();
-  setTimeout(() => { w.print(); }, 500);
+  setTimeout(() => { w.print(); }, 600);
 }
