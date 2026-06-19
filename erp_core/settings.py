@@ -284,17 +284,22 @@ STORAGES = {
 
 if USE_CLOUDINARY:
     import cloudinary
+
+    _secret = os.getenv('CLOUDINARY_API_SECRET', '')
+    print(f"  CLOUDINARY_API_SECRET starts_with=[{_secret[:2] if _secret else 'EMPTY'}] "
+          f"ends_with=[{_secret[-2:] if _secret else 'EMPTY'}] "
+          f"len=[{len(_secret)}]", flush=True)
+
     cloudinary.config(
         cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
         api_key=os.getenv('CLOUDINARY_API_KEY'),
-        api_secret=os.getenv('CLOUDINARY_API_SECRET'),
-        signature_algorithm='sha256',
+        api_secret=_secret,
         secure=True,
     )
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
         'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+        'API_SECRET': _secret,
         'PREFIX': '',
     }
     MEDIA_URL = f'https://res.cloudinary.com/{os.getenv("CLOUDINARY_CLOUD_NAME")}/image/upload/'
