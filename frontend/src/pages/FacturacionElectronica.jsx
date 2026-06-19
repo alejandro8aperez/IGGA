@@ -159,6 +159,7 @@ function FacturacionElectronica() {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
                 <Activity size={48} style={{ animation: 'spin 1s linear infinite', color: '#667eea' }} />
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -300,7 +301,7 @@ function FacturacionElectronica() {
                                             <td style={styles.td}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <Clock size={14} color="#64748b" />
-                                                    {new Date(log.fecha_envio).toLocaleString()}
+                                                    {log.fecha_envio ? new Date(log.fecha_envio).toLocaleString() : '—'}
                                                 </div>
                                             </td>
                                             <td style={styles.td}>
@@ -345,7 +346,7 @@ function FacturacionElectronica() {
                                         <span style={{ fontSize: '0.875rem', color: '#64748b', textTransform: 'capitalize' }}>{item.estado_interno}</span>
                                         <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b', marginTop: '0.25rem' }}>{item.cantidad}</div>
                                     </div>
-                                    <span style={styles.badge(item.estado_interno)}>{Math.round((item.cantidad / estadisticas.total_facturas) * 100)}%</span>
+                                    <span style={styles.badge(item.estado_interno)}>{Math.round(((item.cantidad || 0) / (estadisticas.total_facturas || 1)) * 100)}%</span>
                                 </div>
                             ))}
                         </div>

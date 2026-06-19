@@ -112,11 +112,18 @@ const modules = [
     },
     {
         name: 'Operaciones',
-        description: 'Gestión de proyectos',
+        description: 'Gestión de proyectos y obras',
         icon: Wrench,
-        color: '#84cc16',
+        color: '#1e293b',
         path: '/operaciones',
-        stats: { total: 23, growth: '+25%' }
+        stats: { total: 12, growth: '+25%' }
+    },
+    {
+        name: 'Interventoría',
+        description: 'Contratos, visitas y hallazgos',
+        icon: ClipboardList,
+        color: '#7c3aed',
+        path: '/interventoria',
     },
     {
         name: 'Informe Diario Proy',
@@ -694,6 +701,7 @@ export default function Home() {
                             Cargando {selectedModule?.name}...
                         </p>
                     </div>
+                    <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
                 </div>
             )}
         </div>

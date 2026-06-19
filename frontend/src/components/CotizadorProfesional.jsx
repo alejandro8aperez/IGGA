@@ -181,6 +181,7 @@ export default function CotizadorProfesional() {
                         Cargando cotizador profesional...
                     </div>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }

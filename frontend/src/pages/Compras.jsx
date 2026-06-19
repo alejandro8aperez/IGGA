@@ -11,7 +11,7 @@ const API_ORD = BASE_URL + '/compras/ordenes/';
 const API_RECEPCION = BASE_URL + '/compras/recepciones/';
 const API_PAGO = BASE_URL + '/compras/pagos/';
 const API_PROD_PROV = BASE_URL + '/compras/productos-proveedor/';
-const API_PRODUCTOS = BASE_URL + '/inventarios/productos/';
+const API_PRODUCTOS = BASE_URL + 'inventario/productos/';
 
 export default function Compras() {
     const [proveedores, setProveedores] = useState([]);
@@ -505,8 +505,8 @@ export default function Compras() {
             // Limpiar detalles para el backend
             const cleanDetalles = ordForm.detalles.map(d => ({
                 producto: parseInt(d.producto),
-                cantidad: parseFloat(d.cantidad),
-                precio_unitario: parseFloat(d.precio_unitario),
+                cantidad: parseFloat(d.cantidad) || 0,
+                precio_unitario: parseFloat(d.precio_unitario) || 0,
                 notas: d.notas || ''
             }));
 
@@ -605,6 +605,7 @@ export default function Compras() {
                         Cargando datos de Compras...
                     </div>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -1651,7 +1652,7 @@ export default function Compras() {
                                         const orden = ordenes.find(o => o.id === pago.orden);
                                         return (
                                             <tr key={pago.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                <td style={{ padding: '1rem', color: '#4a5568' }}>{new Date(pago.fecha).toLocaleDateString()}</td>
+                                                <td style={{ padding: '1rem', color: '#4a5568' }}>{pago.fecha ? new Date(pago.fecha).toLocaleDateString() : '—'}</td>
                                                 <td style={{ padding: '1rem', fontWeight: '600', color: '#2d3748' }}>OC-{pago.orden}</td>
                                                 <td style={{ padding: '1rem' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1659,7 +1660,7 @@ export default function Compras() {
                                                         {orden?.proveedor_nombre || 'Desconocido'}
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '700', color: '#2d3748' }}>${Number(pago.monto).toLocaleString()}</td>
+                                                <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '700', color: '#2d3748' }}>${(Number(pago.monto) || 0).toLocaleString()}</td>
                                                 <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                     <span style={{
                                                         padding: '4px 12px',
@@ -2184,7 +2185,7 @@ export default function Compras() {
                                                         {pp.codigo_proveedor || '-'}
                                                     </td>
                                                     <td style={{ padding: '1rem', textAlign: 'right', color: '#2d3748', fontWeight: '600' }}>
-                                                        {pp.precio_proveedor ? `$${parseFloat(pp.precio_proveedor).toLocaleString()}` : '-'}
+                                                        {pp.precio_proveedor ? `$${(Number(pp.precio_proveedor) || 0).toLocaleString()}` : '-'}
                                                     </td>
                                                     <td style={{ padding: '1rem', textAlign: 'center', color: '#4a5568' }}>
                                                         {pp.tiempo_entrega_dias} días
@@ -2337,7 +2338,7 @@ export default function Compras() {
                                         <option value="">Seleccione una orden...</option>
                                         {ordenes.filter(o => o.estado !== 'cancelada').map(o => (
                                             <option key={o.id} value={o.id}>
-                                                OC-{o.id} - {o.proveedor_nombre || 'Proveedor'} (${Number(o.total).toLocaleString()})
+                                                OC-{o.id} - {o.proveedor_nombre || 'Proveedor'} (${(Number(o.total) || 0).toLocaleString()})
                                             </option>
                                         ))}
                                     </select>
@@ -2761,7 +2762,7 @@ export default function Compras() {
                                                         {soloProductosProveedor ? (
                                                             productosProveedorActual.map(pp => (
                                                                 <option key={pp.producto} value={pp.producto}>
-                                                                    {pp.producto_nombre} ({pp.producto_codigo_sku}) - ${parseFloat(pp.precio_proveedor).toLocaleString()}
+                                                                        {pp.producto_nombre} ({pp.producto_codigo_sku}) - ${(Number(pp.precio_proveedor) || 0).toLocaleString()}
                                                                 </option>
                                                             ))
                                                         ) : (
@@ -2797,7 +2798,7 @@ export default function Compras() {
                                                     />
                                                 </td>
                                                 <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: '600' }}>
-                                                    ${(det.cantidad * det.precio_unitario).toLocaleString()}
+                                                    ${((det.cantidad || 0) * (det.precio_unitario || 0)).toLocaleString()}
                                                 </td>
                                                 <td style={{ padding: '0.5rem', textAlign: 'center' }}>
                                                     <button type="button" onClick={() => removeProductoFromOrden(det.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
@@ -2830,15 +2831,15 @@ export default function Compras() {
                                 <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                         <span>Subtotal:</span>
-                                        <span style={{ fontWeight: '600' }}>${ordForm.detalles.reduce((s, d) => s + (d.cantidad * d.precio_unitario), 0).toLocaleString()}</span>
+                                        <span style={{ fontWeight: '600' }}>${ordForm.detalles.reduce((s, d) => s + ((d.cantidad || 0) * (d.precio_unitario || 0)), 0).toLocaleString()}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                         <span>IVA ({ordForm.porcentaje_iva}%):</span>
-                                        <span style={{ fontWeight: '600' }}>${(ordForm.detalles.reduce((s, d) => s + (d.cantidad * d.precio_unitario), 0) * (ordForm.porcentaje_iva / 100)).toLocaleString()}</span>
+                                        <span style={{ fontWeight: '600' }}>${(ordForm.detalles.reduce((s, d) => s + ((d.cantidad || 0) * (d.precio_unitario || 0)), 0) * ((ordForm.porcentaje_iva || 0) / 100)).toLocaleString()}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #e2e8f0', marginTop: '1rem', paddingTop: '1rem', fontSize: '1.2rem', color: '#1a202c' }}>
                                         <strong>Total:</strong>
-                                        <strong>${(ordForm.detalles.reduce((s, d) => s + (d.cantidad * d.precio_unitario), 0) * (1 + ordForm.porcentaje_iva / 100)).toLocaleString()}</strong>
+                                        <strong>${(ordForm.detalles.reduce((s, d) => s + ((d.cantidad || 0) * (d.precio_unitario || 0)), 0) * (1 + (ordForm.porcentaje_iva || 0) / 100)).toLocaleString()}</strong>
                                     </div>
                                 </div>
                             </div>

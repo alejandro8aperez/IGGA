@@ -753,6 +753,7 @@ function VistaHistorial({ refresh }) {
         <div style={{ fontSize: '0.8rem', marginTop: '0.5rem', opacity: 0.7 }}>
           Conectando con el servidor...
         </div>
+        <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
@@ -951,7 +952,7 @@ function VistaProyectos() {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', fontSize: '0.85rem', color: '#64748B' }}>
               <span>Deadline: {p.fecha_entrega}</span>
               <span>{p.dias_restantes} días</span>
-              <span>${p.presupuesto.toLocaleString()}</span>
+              <span>${(p.presupuesto || 0).toLocaleString()}</span>
             </div>
           </div>
         ))}

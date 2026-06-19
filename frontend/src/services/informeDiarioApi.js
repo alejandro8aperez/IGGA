@@ -65,6 +65,7 @@ export const informeDiarioService = {
 
 export const anexoService = {
   list:   (params) => axiosInstance.get(ENDPOINTS.INFORME_DIARIO.ANEXOS, { params }).then(r => toArray(r.data)),
+  update: (id, data) => axiosInstance.patch(`${ENDPOINTS.INFORME_DIARIO.ANEXOS}${id}/`, data).then(r => r.data),
   delete: (id)     => axiosInstance.delete(`${ENDPOINTS.INFORME_DIARIO.ANEXOS}${id}/`),
 };
 

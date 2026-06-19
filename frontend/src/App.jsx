@@ -51,6 +51,7 @@ const FormatosISO9001      = lazy(() => import('./pages/FormatosISO9001'));
 const Nomina               = lazy(() => import('./pages/Nomina'));
 const FacturacionElectronica = lazy(() => import('./pages/FacturacionElectronica'));
 const Informediarioproy     = lazy(() => import('./pages/Informediarioproy'));
+const Interventoria         = lazy(() => import('./pages/Interventoria'));
 
 // ─── Estructura del sidebar ───────────────────────────────────────────────────
 const NAV_GROUPS = [
@@ -394,6 +395,8 @@ function AppContent() {
                         <Route path="/activos"       element={<P><Activos/></P>}/>
                         <Route path="/operaciones"   element={<P><Operaciones/></P>}/>
                         <Route path="/informe-diario-proy" element={<P><Informediarioproy/></P>}/>
+                        <Route path="/interventoria" element={<P><Interventoria/></P>}/>
+                        <Route path="/interventoria/actividades-del-dia" element={<P><Interventoria/></P>}/>
                         <Route path="/mantenimiento" element={<P><Mantenimiento/></P>}/>
                         <Route path="/finanzas"      element={<P><Finanzas_Moderno/></P>}/>
                         <Route path="/produccion"    element={<P><Produccion/></P>}/>

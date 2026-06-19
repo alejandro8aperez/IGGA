@@ -223,7 +223,8 @@ export default function DemoLogin({ onLogin }) {
                                     borderTop: '2px solid white',
                                     borderRadius: '50%',
                                     animation: 'spin 1s linear infinite'
-                                }}></div>
+                                }                                }></div>
+                                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
                                 Iniciando sesión...
                             </>
                         ) : (

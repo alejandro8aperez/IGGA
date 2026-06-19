@@ -261,9 +261,12 @@ export default function Inventario() {
     // Calculate statistics
     const totalProductos = productos.length;
     const productosBajoStock = productos.filter(p => p.stock_actual <= p.stock_minimo).length;
-    const valorTotalInventario = productos.reduce((sum, p) => sum + (p.precio_venta * p.stock_actual), 0);
+    const valorTotalInventario = productos.reduce((sum, p) => sum + (Number(p.precio_venta) || 0) * (Number(p.stock_actual) || 0), 0);
     const margenPromedio = productos.length > 0 
-        ? Math.round(productos.reduce((sum, p) => sum + ((p.precio_venta - p.precio_compra) / p.precio_compra * 100), 0) / productos.length)
+        ? Math.round(productos.reduce((sum, p) => {
+            const pCompra = Number(p.precio_compra) || 0;
+            return sum + (pCompra ? ((Number(p.precio_venta) || 0) - pCompra) / pCompra * 100 : 0);
+        }, 0) / productos.length)
         : 0;
 
     // Filter products
@@ -278,7 +281,7 @@ export default function Inventario() {
         return matchesSearch && matchesCategory && matchesStock;
     });
 
-    const totalVentas = productos.reduce((sum, p) => sum + (p.precio_venta * p.stock_actual), 0);
+    const totalVentas = productos.reduce((sum, p) => sum + (Number(p.precio_venta) || 0) * (Number(p.stock_actual) || 0), 0);
     const ordenesPendientes = productos.filter(p => p.stock_actual <= p.stock_minimo).length;
 
     if (loading) {
@@ -303,6 +306,7 @@ export default function Inventario() {
                     }}></div>
                     <p style={{ color: '#718096', fontSize: '1rem' }}>Cargando inventario...</p>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -856,7 +860,7 @@ export default function Inventario() {
                                         </td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', color: '#718096', fontSize: '0.85rem' }}>{product.stock_minimo}</td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle', color: '#718096', fontSize: '0.85rem', textTransform: 'capitalize' }}>{product.unidad_medida || 'unidad'}</td>
-                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: 600, fontSize: '0.85rem' }}>${product.precio_venta?.toLocaleString() || 0}</td>
+                                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: 600, fontSize: '0.85rem' }}>${(Number(product.precio_venta) || 0).toLocaleString()}</td>
                                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
                                             <span style={{
                                                 background: stockStatus.bg,

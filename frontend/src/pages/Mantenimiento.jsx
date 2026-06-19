@@ -269,6 +269,7 @@ export default function Mantenimiento() {
                     }}></div>
                     <p style={{ color: '#718096', fontSize: '1rem' }}>Cargando Mantenimiento...</p>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }

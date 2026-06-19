@@ -1,13 +1,9 @@
-// ============================================================
-//  HojaFotosInforme.jsx  –  ERP-8AMPERIOS  (CORREGIDO)
-//  Fix: URLs de imagen absolutas con getImageUrl helper
-//  Fix v2: Botón imprimir movido al top bar de Informediarioproy
-// ============================================================
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axiosInstance, { BASE_URL } from '../../config/axiosConfig';
-import { Camera, X, UploadCloud, Loader2 } from 'lucide-react';
+import { Camera, X, UploadCloud, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '@/config/api';
+import { anexoService } from '@/services/informeDiarioApi';
 
 const S = {
   wrapper: {
@@ -41,42 +37,36 @@ const S = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '0.5rem',
-    background: '#020617',
-    padding: '0.75rem',
-    borderRadius: '12px',
-    border: '1px solid #1e293b',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.75rem',
   },
-  slotBase: {
+  slot: {
     position: 'relative',
-    aspectRatio: '1 / 1',
     borderRadius: '8px',
     border: '2px dashed #1e293b',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'column',
     overflow: 'hidden',
     cursor: 'pointer',
     background: 'rgba(15,23,42,0.4)',
     transition: 'border-color 0.2s, background 0.2s',
+    minHeight: 0,
   },
   slotFilled: {
     border: '2px solid #334155',
     background: '#1e293b',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    cursor: 'default',
   },
-  loadingBox: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.5rem',
+  slotEmpty: {
+    aspectRatio: '1 / 1',
   },
-  loadingText: {
-    fontSize: '0.5rem',
-    color: '#60a5fa',
-    fontWeight: 700,
-    textTransform: 'uppercase',
+  imgWrap: {
+    width: '100%',
+    aspectRatio: '1 / 1',
+    overflow: 'hidden',
+    flexShrink: 0,
+    position: 'relative',
   },
   img: {
     width: '100%',
@@ -108,22 +98,22 @@ const S = {
     opacity: 0,
     transition: 'opacity 0.2s',
   },
-  uploadLabel: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+  descArea: {
     width: '100%',
-    height: '100%',
-    cursor: 'pointer',
-    gap: '0.25rem',
-  },
-  uploadText: {
-    fontSize: '0.5rem',
-    fontWeight: 700,
-    color: '#475569',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    border: 'none',
+    borderTop: '1px solid #1e293b',
+    background: '#0f172a',
+    color: '#cbd5e1',
+    fontSize: '0.55rem',
+    padding: '0.3rem 0.4rem',
+    outline: 'none',
+    resize: 'none',
+    fontFamily: 'inherit',
+    lineHeight: 1.3,
+    minHeight: '2.2rem',
+    maxHeight: '2.2rem',
+    boxSizing: 'border-box',
+    cursor: 'text',
   },
   badge: {
     position: 'absolute',
@@ -138,6 +128,55 @@ const S = {
     zIndex: 10,
     pointerEvents: 'none',
   },
+  savedBadge: {
+    position: 'absolute',
+    bottom: '2.5rem',
+    right: '4px',
+    background: 'rgba(22,163,74,0.9)',
+    padding: '1px 5px',
+    borderRadius: '4px',
+    fontSize: '0.4rem',
+    color: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2px',
+    zIndex: 10,
+    pointerEvents: 'none',
+  },
+  loadingBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    width: '100%',
+    height: '100%',
+    minHeight: '120px',
+  },
+  loadingText: {
+    fontSize: '0.5rem',
+    color: '#60a5fa',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+  },
+  uploadLabel: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    minHeight: '120px',
+    cursor: 'pointer',
+    gap: '0.25rem',
+  },
+  uploadText: {
+    fontSize: '0.5rem',
+    fontWeight: 700,
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
   footer: {
     marginTop: '1rem',
     fontSize: '0.6rem',
@@ -147,8 +186,7 @@ const S = {
   },
 };
 
-// ── Helper: URL absoluta de imagen ─────────────────────────────────────────
-export function getImageUrl(src) {
+function getImageUrl(src) {
   if (!src) return null;
   if (src.startsWith('http://') || src.startsWith('https://')) return src;
   const base = BASE_URL.replace(/\/api\/$/, '');
@@ -156,7 +194,6 @@ export function getImageUrl(src) {
   return base + path;
 }
 
-// ── Función de impresión — exportada para usarla desde el top bar ──────────
 export function imprimirFotos(fotos, informe, layout = '4x6') {
   const fotosLlenas = Object.entries(fotos)
     .sort(([a], [b]) => Number(a) - Number(b))
@@ -275,11 +312,12 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
   ventana.document.close();
 }
 
-// ── Componente ────────────────────────────────────────────────────────────────
 const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSave, startSlot = 1 }) => {
-  const [fotos, setFotos]     = useState({});
-  const [loading, setLoading] = useState({});
-  const [hovered, setHovered] = useState(null);
+  const [fotos, setFotos]        = useState({});
+  const [loading, setLoading]    = useState({});
+  const [hovered, setHovered]    = useState(null);
+  const [savingDesc, setSavingDesc] = useState({});
+  const descTimers = useRef({});
 
   useEffect(() => {
     const cargarFotos = async () => {
@@ -320,6 +358,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
     formData.append('informe',  id);
     formData.append('posicion', posicion);
     formData.append('seccion',  'actividades');
+    formData.append('descripcion', '');
     try {
       const res = await axiosInstance.post(API.INFORME_DIARIO.ANEXOS, formData, {
         headers: { 'Content-Type': undefined },
@@ -350,6 +389,31 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
     }
   };
 
+  const handleDescChange = useCallback((posicion, value) => {
+    const updated = { ...fotos, [posicion]: { ...fotos[posicion], descripcion: value } };
+    setFotos(updated);
+
+    if (descTimers.current[posicion]) {
+      clearTimeout(descTimers.current[posicion]);
+    }
+    descTimers.current[posicion] = setTimeout(() => {
+      const foto = updated[posicion];
+      if (foto?.id) {
+        setSavingDesc(prev => ({ ...prev, [posicion]: true }));
+        anexoService.update(foto.id, { descripcion: value })
+          .then(() => {
+            setTimeout(() => {
+              setSavingDesc(prev => ({ ...prev, [posicion]: false }));
+            }, 800);
+          })
+          .catch(() => {
+            setSavingDesc(prev => ({ ...prev, [posicion]: false }));
+            toast.error('Error al guardar la descripción');
+          });
+      }
+    }, 1200);
+  }, [fotos]);
+
   const fotasLlenas = Object.keys(fotos).length;
   const slots = Array.from({ length: 24 }, (_, i) => startSlot + i);
 
@@ -358,7 +422,7 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
       <div style={S.header}>
         <div>
           <h2 style={S.title}>F-141-IN: Registro Fotográfico</h2>
-          <p style={S.subtitle}>Standard Grid Layout 4×6 — {fotasLlenas}/24 fotos (slots {startSlot}–{startSlot + 23})</p>
+          <p style={S.subtitle}>Grid 3×8 — {fotasLlenas}/24 fotos (slots {startSlot}–{startSlot + 23})</p>
         </div>
         <Camera color="#3b82f6" size={32} />
       </div>
@@ -368,11 +432,17 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
           const isFilled  = !!fotos[num];
           const isLoading = !!loading[num];
           const isHov     = hovered === num;
+          const fotoData  = fotos[num];
+          const isSaving  = !!savingDesc[num];
 
           return (
             <div
               key={num}
-              style={{ ...S.slotBase, ...(isFilled ? S.slotFilled : {}) }}
+              style={{
+                ...S.slot,
+                ...(isFilled ? S.slotFilled : {}),
+                ...(!isFilled && !isLoading ? S.slotEmpty : {}),
+              }}
               onMouseEnter={() => setHovered(num)}
               onMouseLeave={() => setHovered(null)}
             >
@@ -383,20 +453,37 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
                 </div>
               ) : isFilled ? (
                 <>
-                  <img
-                    src={getImageUrl(fotos[num].imagen_url || fotos[num].imagen)}
-                    alt={`Foto ${num}`}
-                    style={S.img}
-                  />
-                  <div style={{ ...S.overlay, background: isHov ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)' }}>
-                    <button
-                      onClick={() => handleDelete(num, fotos[num].id)}
-                      style={{ ...S.deleteBtn, opacity: isHov ? 1 : 0 }}
-                      title="Eliminar"
-                    >
-                      <X size={14} />
-                    </button>
+                  <div style={S.imgWrap}>
+                    <img
+                      src={getImageUrl(fotoData.imagen_url || fotoData.imagen)}
+                      alt={`Foto ${num}`}
+                      style={S.img}
+                    />
+                    <div style={{ ...S.overlay, background: isHov ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)' }}>
+                      <button
+                        onClick={() => handleDelete(num, fotoData.id)}
+                        style={{ ...S.deleteBtn, opacity: isHov ? 1 : 0 }}
+                        title="Eliminar"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
                   </div>
+                  <textarea
+                    value={fotoData.descripcion || ''}
+                    onChange={e => handleDescChange(num, e.target.value)}
+                    onClick={e => e.stopPropagation()}
+                    placeholder="Descripción..."
+                    style={S.descArea}
+                    rows={1}
+                  />
+                  {isSaving && (
+                    <div style={S.savedBadge}>
+                      <Loader2 size={8} style={{ animation: 'spin 1s linear infinite' }} />
+                      Guardando
+                    </div>
+                  )}
+                  <div style={S.badge}>{String(num).padStart(2, '0')}</div>
                 </>
               ) : (
                 <label style={S.uploadLabel}>
@@ -412,14 +499,13 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
                   />
                 </label>
               )}
-              <div style={S.badge}>{String(num).padStart(2, '0')}</div>
             </div>
           );
         })}
       </div>
 
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-      <p style={S.footer}>* Las imágenes se guardan automáticamente al ser seleccionadas.</p>
+      <p style={S.footer}>* Las imágenes se guardan automáticamente al ser seleccionadas. Escribí la descripción y se guarda automáticamente.</p>
     </div>
   );
 };

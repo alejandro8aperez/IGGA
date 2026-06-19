@@ -213,9 +213,9 @@ function Proveedores() {
     try {
       if (currentProv) {
         const url = `${API_URL}${currentProv.id}/`;
-        await axiosInstance.patch(url, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await axiosInstance.patch(url, data);
       } else {
-        await axiosInstance.post(API_URL, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await axiosInstance.post(API_URL, data);
       }
       closeModal();
       fetchProveedores();

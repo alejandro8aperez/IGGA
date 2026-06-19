@@ -172,7 +172,7 @@ function Contratos() {
                                 <td>{c.proveedor_nombre}</td>
                                 <td>{c.tipo}</td>
                                 <td>{c.estado}</td>
-                                <td>{Number(c.valor_contrato).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</td>
+                                <td>{(Number(c.valor_contrato) || 0).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</td>
                                 <td>{c.fecha_inicio}</td>
                                 <td>{c.fecha_fin || '-'}</td>
                                 <td>{c.duracion_dias || '-'}</td>

@@ -53,13 +53,19 @@ export default function Activos() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.post(API_BASE, {
+            const payload = {
                 ...form,
-                valor_adquisicion: Number(form.valor_adquisicion),
-                vida_util_meses: Number(form.vida_util_meses),
-            });
+                valor_adquisicion: Number(form.valor_adquisicion) || 0,
+                vida_util_meses: Number(form.vida_util_meses) || 0,
+            };
+            if (currentActivo) {
+                await axiosInstance.put(`${API_BASE}${currentActivo.id}/`, payload);
+            } else {
+                await axiosInstance.post(API_BASE, payload);
+            }
             fetchActivos();
             setShowModal(false);
+            setCurrentActivo(null);
             setForm({ 
                 codigo: '', 
                 descripcion: '', 
@@ -69,8 +75,8 @@ export default function Activos() {
                 estado: 'activo' 
             });
         } catch (err) {
-            console.error('Error creating activo:', err);
-            setError('No se pudo crear el activo fijo.');
+            console.error('Error saving activo:', err);
+            setError('No se pudo guardar el activo fijo.');
         }
     };
 
@@ -155,6 +161,7 @@ export default function Activos() {
                     }}></div>
                     <p style={{ color: '#718096', fontSize: '1rem' }}>Cargando Activos Fijos...</p>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -658,13 +665,13 @@ export default function Activos() {
                                         <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activo.descripcion}</span>
                                     </td>
                                     <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: '600', fontSize: '0.85rem' }}>
-                                        ${Number(activo.valor_adquisicion).toLocaleString()}
+                                        ${(Number(activo.valor_adquisicion) || 0).toLocaleString()}
                                     </td>
                                     <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: '600', fontSize: '0.85rem' }}>
-                                        ${Number(activo.depreciacion_acumulada).toLocaleString()}
+                                        ${(Number(activo.depreciacion_acumulada) || 0).toLocaleString()}
                                     </td>
                                     <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', verticalAlign: 'middle', fontWeight: '600', fontSize: '0.85rem' }}>
-                                        ${Number(activo.valor_neto).toLocaleString()}
+                                        ${(Number(activo.valor_neto) || 0).toLocaleString()}
                                     </td>
                                     <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', verticalAlign: 'middle' }}>
                                         <span style={{

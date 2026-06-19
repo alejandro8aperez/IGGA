@@ -291,6 +291,7 @@ function CRM() {
                     }}></div>
                     <div style={{ fontSize: '1.2rem', fontWeight: '500' }}>Cargando CRM...</div>
                 </div>
+                <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
