@@ -288,6 +288,7 @@ if USE_CLOUDINARY:
         cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
         api_key=os.getenv('CLOUDINARY_API_KEY'),
         api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+        signature_algorithm='sha256',
         secure=True,
     )
     CLOUDINARY_STORAGE = {
