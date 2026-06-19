@@ -9,7 +9,7 @@ from facturacion.models import Factura, DetalleFactura, ResolucionFacturacion
 from crm.models import Cliente
 from inventarios.models import Producto, Categoria, MovimientoInventario
 import uuid
-import traceback
+
 from decimal import Decimal
 from django.db.models import Sum
 from rest_framework.decorators import api_view
@@ -218,8 +218,7 @@ class VentaPOSViewSet(viewsets.ModelViewSet):
 
             return Response(self.get_serializer(venta_pos).data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            # ⚠️ MODO DEBUG TEMPORAL — quitar antes de producción real
-            return Response({
-                "error": f"Error interno: {str(e)}",
-                "traceback": traceback.format_exc()
-            }, status=500)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception("Error al crear venta POS")
+            return Response({"error": "Error interno del servidor"}, status=500)

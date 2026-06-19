@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import {
   Type,
@@ -48,6 +49,7 @@ const propInputStyle = {
 };
 
 function FormDesigner() {
+  const { user } = useAuth();
   const [components, setComponents] = useState([]);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -108,7 +110,7 @@ function FormDesigner() {
       await axiosInstance.post(API_BASE, {
         nombre: name,
         json_design: design,
-        creado_por: 1 // TODO: Get current user ID
+        creado_por: user?.id || 1
       });
 
       setCurrentFormatName(name);

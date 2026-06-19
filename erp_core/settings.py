@@ -31,10 +31,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8amp-local-dev-key-fallback')
-
-if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
-    print("WARNING: La variable SECRET_KEY no está en el entorno. Se usará un valor fallback inseguro temporalmente.", file=sys.stderr)
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-8amp-local-dev-key-fallback'
+    else:
+        raise RuntimeError(
+            "SECRET_KEY no está configurado. "
+            "Define la variable de entorno SECRET_KEY en Render."
+        )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
