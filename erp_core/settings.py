@@ -285,21 +285,24 @@ STORAGES = {
 if USE_CLOUDINARY:
     import cloudinary
 
-    _secret = os.getenv('CLOUDINARY_API_SECRET', '')
+    _secret = os.getenv('CLOUDINARY_API_SECRET', '').strip()
+    # Normaliza 'WX' → 'wx' si el secret está capitalizado incorrectamente en Render
+    _secret_normalized = 'wx' + _secret[2:] if len(_secret) >= 2 and _secret[:2] == 'WX' else _secret
     print(f"  CLOUDINARY_API_SECRET starts_with=[{_secret[:2] if _secret else 'EMPTY'}] "
           f"ends_with=[{_secret[-2:] if _secret else 'EMPTY'}] "
-          f"len=[{len(_secret)}]", flush=True)
+          f"len=[{len(_secret)}] "
+          f"normalized_prefix=[{_secret_normalized[:2]}]", flush=True)
 
     cloudinary.config(
         cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
         api_key=os.getenv('CLOUDINARY_API_KEY'),
-        api_secret=_secret,
+        api_secret=_secret_normalized,
         secure=True,
     )
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
         'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': _secret,
+        'API_SECRET': _secret_normalized,
         'PREFIX': '',
     }
     MEDIA_URL = f'https://res.cloudinary.com/{os.getenv("CLOUDINARY_CLOUD_NAME")}/image/upload/'
