@@ -103,6 +103,18 @@ export const API = {
   },
 
   // ---------------------------------------------------------------------------
+  // INFORME PERIODICO (Semanal / Mensual)
+  // ---------------------------------------------------------------------------
+  INFORME_PERIODICO: {
+    SEMANALES: 'informe-periodico/informes-semanales/',
+    GENERAR_SEMANAL: 'informe-periodico/informes-semanales/generar_desde_diarios/',
+    SEMANAL_DETAIL: (id) => `informe-periodico/informes-semanales/${id}/`,
+    MENSUALES: 'informe-periodico/informes-mensuales/',
+    GENERAR_MENSUAL: 'informe-periodico/informes-mensuales/generar_desde_semanales/',
+    MENSUAL_DETAIL: (id) => `informe-periodico/informes-mensuales/${id}/`,
+  },
+
+  // ---------------------------------------------------------------------------
   // INTERVENTORIA
   // ---------------------------------------------------------------------------
   INTERVENTORIA: {

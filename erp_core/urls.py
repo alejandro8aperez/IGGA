@@ -78,6 +78,7 @@ urlpatterns = [
     path('api/pos/', include('pos.urls')),
     path('api/facturacion-electronica/', include('facturacion_electronica.urls')),
     path('api/informe-diario/', include('informe_diario.urls')),
+    path('api/informe-periodico/', include('informe_periodico.urls')),
 
     # ✅ AGREGADO: Rutas faltantes
     path('api/interventoria/', include('interventoria.urls')),  # Interventoria

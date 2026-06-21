@@ -52,6 +52,8 @@ const Nomina               = lazy(() => import('./pages/Nomina'));
 const FacturacionElectronica = lazy(() => import('./pages/FacturacionElectronica'));
 const Informediarioproy     = lazy(() => import('./pages/Informediarioproy'));
 const Interventoria         = lazy(() => import('./pages/Interventoria'));
+const InformeSemanalPage    = lazy(() => import('./pages/InformeSemanalPage'));
+const InformeMensualPage    = lazy(() => import('./pages/InformeMensualPage'));
 
 // ─── Estructura del sidebar ───────────────────────────────────────────────────
 const NAV_GROUPS = [
@@ -85,6 +87,8 @@ const NAV_GROUPS = [
             { path: '/logistica',     name: 'Logística',     icon: Truck },
             { path: '/operaciones',   name: 'Operaciones',   icon: ClipboardList },
             { path: '/informe-diario-proy', name: 'Informe Diario Proy', icon: FileText },
+            { path: '/informe-semanal',    name: 'Informe Semanal',   icon: FileText },
+            { path: '/informe-mensual',    name: 'Informe Mensual',   icon: FileText },
             { path: '/mantenimiento', name: 'Mantenimiento', icon: Wrench },
             { path: '/activos',       name: 'Activos',       icon: MapPin },
         ]
@@ -395,6 +399,8 @@ function AppContent() {
                         <Route path="/activos"       element={<P><Activos/></P>}/>
                         <Route path="/operaciones"   element={<P><Operaciones/></P>}/>
                         <Route path="/informe-diario-proy" element={<P><Informediarioproy/></P>}/>
+                        <Route path="/informe-semanal" element={<P><InformeSemanalPage/></P>}/>
+                        <Route path="/informe-mensual" element={<P><InformeMensualPage/></P>}/>
                         <Route path="/interventoria" element={<P><Interventoria/></P>}/>
                         <Route path="/interventoria/actividades-del-dia" element={<P><Interventoria/></P>}/>
                         <Route path="/mantenimiento" element={<P><Mantenimiento/></P>}/>

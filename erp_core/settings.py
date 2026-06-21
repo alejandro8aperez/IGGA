@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'interventoria',
     'usuarios',
     'informe_diario',  # ← Módulo Informe Diario de Obra (F-141-IN)
+    'informe_periodico',  # ← Módulo Informe Semanal y Mensual con Curva S
 ]
 
 MIDDLEWARE = [
