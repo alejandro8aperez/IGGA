@@ -359,7 +359,7 @@ def generar_excel(informe) -> bytes:
     # FIRMAS
     # ═══════════════════════════════════════════════════════════════════════
     row += 1
-    for c in range(1, 10):
+    for c in range(1, 11):
         _write_cell(ws, row, c, '', border=Border(top=Side(style='medium', color=NAVY)))
     row += 1
 
@@ -367,6 +367,10 @@ def generar_excel(informe) -> bytes:
     elaborado_cargo = ''
     revisado_nombre = '____________________'
     revisado_cargo = ''
+    profesional1_nombre = '____________________'
+    profesional1_cargo = ''
+    profesional2_nombre = '____________________'
+    profesional2_cargo = ''
 
     if hasattr(informe, 'elaborado_por') and informe.elaborado_por:
         emp = informe.elaborado_por
@@ -392,28 +396,64 @@ def generar_excel(informe) -> bytes:
         except Exception:
             revisado_cargo = ''
 
-    _fill_range(ws, row, 1, 3, fill=light_fill, border=cell_border)
-    _merge_and_write(ws, row, 1, 3, 'ELABORADO POR', signature_label, light_fill, center_mid, cell_border)
-    _fill_range(ws, row, 4, 6, fill=light_fill, border=cell_border)
-    _merge_and_write(ws, row, 4, 6, 'REVISADO POR', signature_label, light_fill, center_mid, cell_border)
-    _fill_range(ws, row, 7, 9, fill=light_fill, border=cell_border)
-    _merge_and_write(ws, row, 7, 9, 'APROBADO POR', signature_label, light_fill, center_mid, cell_border)
+    if hasattr(informe, 'profesional_1') and informe.profesional_1:
+        emp = informe.profesional_1
+        try:
+            nombre = (f"{emp.primer_nombre} {emp.primer_apellido}").strip()
+            profesional1_nombre = nombre or str(emp)
+        except Exception:
+            profesional1_nombre = str(emp) or '____________________'
+        try:
+            profesional1_cargo = str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else ''
+        except Exception:
+            profesional1_cargo = ''
+
+    if hasattr(informe, 'profesional_2') and informe.profesional_2:
+        emp = informe.profesional_2
+        try:
+            nombre = (f"{emp.primer_nombre} {emp.primer_apellido}").strip()
+            profesional2_nombre = nombre or str(emp)
+        except Exception:
+            profesional2_nombre = str(emp) or '____________________'
+        try:
+            profesional2_cargo = str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else ''
+        except Exception:
+            profesional2_cargo = ''
+
+    _fill_range(ws, row, 1, 2, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 1, 2, 'ELABORADO POR', signature_label, light_fill, center_mid, cell_border)
+    _fill_range(ws, row, 3, 4, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 3, 4, 'REVISADO POR', signature_label, light_fill, center_mid, cell_border)
+    _fill_range(ws, row, 5, 6, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 5, 6, 'PROFESIONAL No 1', signature_label, light_fill, center_mid, cell_border)
+    _fill_range(ws, row, 7, 8, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 7, 8, 'PROFESIONAL No 2', signature_label, light_fill, center_mid, cell_border)
+    _fill_range(ws, row, 9, 10, fill=light_fill, border=cell_border)
+    _merge_and_write(ws, row, 9, 10, 'APROBADO POR', signature_label, light_fill, center_mid, cell_border)
     row += 1
 
-    _fill_range(ws, row, 1, 3, border=cell_border)
-    _merge_and_write(ws, row, 1, 3, elaborado_nombre, signature_name, white_fill, center_mid, cell_border)
-    _fill_range(ws, row, 4, 6, border=cell_border)
-    _merge_and_write(ws, row, 4, 6, revisado_nombre, signature_name, white_fill, center_mid, cell_border)
-    _fill_range(ws, row, 7, 9, border=cell_border)
-    _merge_and_write(ws, row, 7, 9, '____________________', signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 1, 2, border=cell_border)
+    _merge_and_write(ws, row, 1, 2, elaborado_nombre, signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 3, 4, border=cell_border)
+    _merge_and_write(ws, row, 3, 4, revisado_nombre, signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 5, 6, border=cell_border)
+    _merge_and_write(ws, row, 5, 6, profesional1_nombre, signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 7, 8, border=cell_border)
+    _merge_and_write(ws, row, 7, 8, profesional2_nombre, signature_name, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 9, 10, border=cell_border)
+    _merge_and_write(ws, row, 9, 10, '____________________', signature_name, white_fill, center_mid, cell_border)
     row += 1
 
-    _fill_range(ws, row, 1, 3, border=cell_border)
-    _merge_and_write(ws, row, 1, 3, elaborado_cargo, signature_cargo, white_fill, center_mid, cell_border)
-    _fill_range(ws, row, 4, 6, border=cell_border)
-    _merge_and_write(ws, row, 4, 6, revisado_cargo, signature_cargo, white_fill, center_mid, cell_border)
-    _fill_range(ws, row, 7, 9, border=cell_border)
-    _merge_and_write(ws, row, 7, 9, '', signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 1, 2, border=cell_border)
+    _merge_and_write(ws, row, 1, 2, elaborado_cargo, signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 3, 4, border=cell_border)
+    _merge_and_write(ws, row, 3, 4, revisado_cargo, signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 5, 6, border=cell_border)
+    _merge_and_write(ws, row, 5, 6, profesional1_cargo, signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 7, 8, border=cell_border)
+    _merge_and_write(ws, row, 7, 8, profesional2_cargo, signature_cargo, white_fill, center_mid, cell_border)
+    _fill_range(ws, row, 9, 10, border=cell_border)
+    _merge_and_write(ws, row, 9, 10, '', signature_cargo, white_fill, center_mid, cell_border)
 
     # ═══════════════════════════════════════════════════════════════════════
     # PRINT SETTINGS

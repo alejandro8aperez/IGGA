@@ -105,6 +105,23 @@ class InformeDiario(models.Model):
     cargo_revisado = models.CharField(max_length=200, blank=True)
     # ─────────────────────────────────────────────────────────
 
+    # ── PROFESIONALES ──────────────────────────────────────
+    profesional_1 = models.ForeignKey(
+        'rrhh.Empleado',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='informes_profesional_1',
+        verbose_name='Profesional No 1'
+    )
+    profesional_2 = models.ForeignKey(
+        'rrhh.Empleado',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='informes_profesional_2',
+        verbose_name='Profesional No 2'
+    )
+    # ─────────────────────────────────────────────────────────
+
     comision_topografia = models.BooleanField(default=False, help_text="Comisión de Topografía presente")
 
     status = models.CharField(max_length=20, default='borrador', choices=[

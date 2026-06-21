@@ -65,6 +65,8 @@ def _transform_frontend_data(data):
     Firmas RRHH:
         elaborado_por_id (int)              → elaborado_por
         revisado_por_id (int)               → revisado_por
+        profesional_1_id (int)              → profesional_1
+        profesional_2_id (int)              → profesional_2
     """
     t = dict(data)
 
@@ -94,6 +96,18 @@ def _transform_frontend_data(data):
         t['revisado_por'] = _get_id(revisado_id)
     else:
         t.pop('revisado_por', None)
+
+    profesional1_id = t.pop('profesional_1_id', None)
+    if profesional1_id:
+        t['profesional_1'] = _get_id(profesional1_id)
+    else:
+        t.pop('profesional_1', None)
+
+    profesional2_id = t.pop('profesional_2_id', None)
+    if profesional2_id:
+        t['profesional_2'] = _get_id(profesional2_id)
+    else:
+        t.pop('profesional_2', None)
     # ─────────────────────────────────────────────────────────
 
     # recursos → detalles
@@ -251,7 +265,9 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields   = ['proyecto__codigo', 'proyecto__nombre', 'elaborado_por__primer_nombre', 
                        'elaborado_por__primer_apellido', 'revisado_por__primer_nombre',
-                       'revisado_por__primer_apellido']
+                       'revisado_por__primer_apellido',
+                       'profesional_1__primer_nombre', 'profesional_1__primer_apellido',
+                       'profesional_2__primer_nombre', 'profesional_2__primer_apellido']
     ordering_fields = ['fecha', 'creado_en', 'status']
 
     def get_serializer_class(self):
@@ -262,7 +278,7 @@ class InformeDiarioViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = (
             InformeDiario.objects
-            .select_related('proyecto', 'elaborado_por', 'revisado_por')
+            .select_related('proyecto', 'elaborado_por', 'revisado_por', 'profesional_1', 'profesional_2')
             .prefetch_related(
                 'detalles__recurso__categoria',
                 'reportes_lluvia',

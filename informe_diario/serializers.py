@@ -173,6 +173,8 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
     # Firmas - datos de empleado para lectura
     elaborado_por_detalle = serializers.SerializerMethodField()
     revisado_por_detalle = serializers.SerializerMethodField()
+    profesional_1_detalle = serializers.SerializerMethodField()
+    profesional_2_detalle = serializers.SerializerMethodField()
 
     class Meta:
         model = InformeDiario
@@ -183,7 +185,9 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'estado_terreno_final',
             # Firmas - FK para escritura, detalle para lectura
             'elaborado_por', 'revisado_por',
+            'profesional_1', 'profesional_2',
             'elaborado_por_detalle', 'revisado_por_detalle',
+            'profesional_1_detalle', 'profesional_2_detalle',
             # Campos de respaldo (legacy)
             'elaborado_por_texto', 'cargo_elaborado',
             'revisado_por_texto', 'cargo_revisado', 'status_label',
@@ -193,7 +197,8 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
             'creado_en', 'actualizado_en',
         ]
         read_only_fields = ['creado_en', 'actualizado_en', 'dia_semana',
-                            'elaborado_por_detalle', 'revisado_por_detalle']
+                            'elaborado_por_detalle', 'revisado_por_detalle',
+                            'profesional_1_detalle', 'profesional_2_detalle']
 
     def get_proyecto_codigo(self, obj):
         if obj.proyecto:
@@ -259,6 +264,33 @@ class InformeDiarioSerializer(serializers.ModelSerializer):
                 'firma_url': firma_url,
             }
         return None
+
+    def get_profesional_1_detalle(self, obj):
+        return self._empleado_detalle(obj.profesional_1)
+
+    def get_profesional_2_detalle(self, obj):
+        return self._empleado_detalle(obj.profesional_2)
+
+    def _empleado_detalle(self, emp):
+        if not emp:
+            return None
+        try:
+            nombre = emp.nombre_completo if hasattr(emp, 'nombre_completo') and callable(getattr(type(emp), 'nombre_completo', None)) else f"{emp.primer_nombre} {emp.primer_apellido}".strip()
+        except Exception:
+            nombre = str(emp)
+        firma_url = None
+        if hasattr(emp, 'firma') and emp.firma:
+            try:
+                firma_url = emp.firma.url
+            except Exception:
+                pass
+        return {
+            'id': emp.id,
+            'nombre_completo': nombre,
+            'cargo_nombre': str(emp.cargo) if hasattr(emp, 'cargo') and emp.cargo else '',
+            'numero_documento': getattr(emp, 'numero_documento', ''),
+            'firma_url': firma_url,
+        }
 
     def validate(self, data):
         if not data.get('proyecto'):

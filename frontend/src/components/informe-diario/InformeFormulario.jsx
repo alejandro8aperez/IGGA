@@ -194,8 +194,12 @@ function normalizarInforme(informe) {
     // ── FIRMAS RRHH ───────────────────────────────────────
     elaborado_por_id: informe.elaborado_por || null,
     revisado_por_id:  informe.revisado_por  || null,
+    profesional_1_id: informe.profesional_1 || null,
+    profesional_2_id: informe.profesional_2 || null,
     elaborado_por_detalle: informe.elaborado_por_detalle || null,
     revisado_por_detalle: informe.revisado_por_detalle || null,
+    profesional_1_detalle: informe.profesional_1_detalle || null,
+    profesional_2_detalle: informe.profesional_2_detalle || null,
     // Fallback para texto legacy
     elaborado_por_texto: informe.elaborado_por_texto || informe.elaborado_por_nombre || "",
     cargo_elaborado: informe.cargo_elaborado || "",
@@ -766,8 +770,12 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
     observaciones_generales: "", estado_terreno_inicio: "", estado_terreno_final: "",
     elaborado_por_id: null,
     revisado_por_id: null,
+    profesional_1_id: null,
+    profesional_2_id: null,
     elaborado_por_detalle: null,
     revisado_por_detalle: null,
+    profesional_1_detalle: null,
+    profesional_2_detalle: null,
     elaborado_por_texto: "",
     cargo_elaborado: "",
     revisado_por_texto: "",
@@ -844,6 +852,8 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
         // ── FIRMAS RRHH ───────────────────────────────────
         elaborado_por_id: data.elaborado_por_id,
         revisado_por_id: data.revisado_por_id,
+        profesional_1_id: data.profesional_1_id,
+        profesional_2_id: data.profesional_2_id,
         // ───────────────────────────────────────────────────
 
         detalles: (data.recursos || [])
@@ -878,6 +888,8 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
       delete payload.revisado_por_texto;
       delete payload.elaborado_por_detalle;
       delete payload.revisado_por_detalle;
+      delete payload.profesional_1_detalle;
+      delete payload.profesional_2_detalle;
 
       const effectiveId = autoIdRef.current || informe?.id;
       return effectiveId ? informeDiarioService.update(effectiveId, payload) : informeDiarioService.create(payload);
@@ -1149,6 +1161,30 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
                 onDetailChange={(emp) => setField("revisado_por_detalle", emp)}
                 required={true}
                 placeholder="Seleccione el responsable de revisión"
+              />
+            </div>
+          </div>
+
+          <div style={{ ...grid2, marginTop: "0.75rem" }}>
+            {/* ── Profesional No 1 ── */}
+            <div>
+              <EmpleadoSelect
+                label="Profesional No 1"
+                value={form.profesional_1_id}
+                onChange={(id) => setField("profesional_1_id", id)}
+                onDetailChange={(emp) => setField("profesional_1_detalle", emp)}
+                placeholder="Seleccione el profesional No 1"
+              />
+            </div>
+
+            {/* ── Profesional No 2 ── */}
+            <div>
+              <EmpleadoSelect
+                label="Profesional No 2"
+                value={form.profesional_2_id}
+                onChange={(id) => setField("profesional_2_id", id)}
+                onDetailChange={(emp) => setField("profesional_2_detalle", emp)}
+                placeholder="Seleccione el profesional No 2"
               />
             </div>
           </div>
