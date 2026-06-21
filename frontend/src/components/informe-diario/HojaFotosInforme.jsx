@@ -484,9 +484,21 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
                         style={{ ...S.img, cursor: 'zoom-in' }}
                         loading="lazy"
                         onError={() => setErrored(prev => ({ ...prev, [num]: true }))}
-                        onDoubleClick={() => window.open(getImageUrl(fotoData.imagen_url || fotoData.imagen), '_blank')}
+                        onDoubleClick={() => fileRefs.current[num]?.click()}
                       />
                     )}
+                    <input
+                      ref={el => { if (el) fileRefs.current[num] = el; }}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={e => {
+                        if (e.target.files?.[0]) {
+                          handleUpload(num, e.target.files[0]);
+                          e.target.value = '';
+                        }
+                      }}
+                    />
                     <div style={{ ...S.overlay, background: isHov ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)' }}>
                       <button
                         onClick={() => handleDelete(num, fotoData.id)}
