@@ -305,22 +305,6 @@ function ReportesInforme({ informeId, informe, formSnapshot }) {
             <tbody>
               <tr>
                 <td style={{ width: '20%', textAlign: 'center', border: '1px solid #94a3b8', padding: '6px 8px' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>Elaborado por</div>
-                  {d?.elaborado_por_detalle?.firma_url && (
-                    <img src={d.elaborado_por_detalle.firma_url} alt="Firma" style={{ maxHeight: 40, marginBottom: 4 }} />
-                  )}
-                  <div style={{ fontWeight: 600, fontSize: 10 }}>{d?.elaborado_por_detalle?.nombre_completo || d?.elaborado_por_texto || d?.nombre_elaborado || '_______________'}</div>
-                  <div style={{ fontSize: 9, color: '#64748b' }}>{d?.elaborado_por_detalle?.cargo_nombre || d?.cargo_elaborado || ''}</div>
-                </td>
-                <td style={{ width: '20%', textAlign: 'center', border: '1px solid #94a3b8', padding: '6px 8px' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>Revisado por</div>
-                  {d?.revisado_por_detalle?.firma_url && (
-                    <img src={d.revisado_por_detalle.firma_url} alt="Firma" style={{ maxHeight: 40, marginBottom: 4 }} />
-                  )}
-                  <div style={{ fontWeight: 600, fontSize: 10 }}>{d?.revisado_por_detalle?.nombre_completo || d?.revisado_por_texto || d?.nombre_revisado || '_______________'}</div>
-                  <div style={{ fontSize: 9, color: '#64748b' }}>{d?.revisado_por_detalle?.cargo_nombre || d?.cargo_revisado || ''}</div>
-                </td>
-                <td style={{ width: '20%', textAlign: 'center', border: '1px solid #94a3b8', padding: '6px 8px' }}>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>Profesional No 1</div>
                   {d?.profesional_1_detalle?.firma_url && (
                     <img src={d.profesional_1_detalle.firma_url} alt="Firma" style={{ maxHeight: 40, marginBottom: 4 }} />
@@ -335,6 +319,22 @@ function ReportesInforme({ informeId, informe, formSnapshot }) {
                   )}
                   <div style={{ fontWeight: 600, fontSize: 10 }}>{d?.profesional_2_detalle?.nombre_completo || '_______________'}</div>
                   <div style={{ fontSize: 9, color: '#64748b' }}>{d?.profesional_2_detalle?.cargo_nombre || ''}</div>
+                </td>
+                <td style={{ width: '20%', textAlign: 'center', border: '1px solid #94a3b8', padding: '6px 8px' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>Elaborado por</div>
+                  {d?.elaborado_por_detalle?.firma_url && (
+                    <img src={d.elaborado_por_detalle.firma_url} alt="Firma" style={{ maxHeight: 40, marginBottom: 4 }} />
+                  )}
+                  <div style={{ fontWeight: 600, fontSize: 10 }}>{d?.elaborado_por_detalle?.nombre_completo || d?.elaborado_por_texto || d?.nombre_elaborado || '_______________'}</div>
+                  <div style={{ fontSize: 9, color: '#64748b' }}>{d?.elaborado_por_detalle?.cargo_nombre || d?.cargo_elaborado || ''}</div>
+                </td>
+                <td style={{ width: '20%', textAlign: 'center', border: '1px solid #94a3b8', padding: '6px 8px' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>Revisado por</div>
+                  {d?.revisado_por_detalle?.firma_url && (
+                    <img src={d.revisado_por_detalle.firma_url} alt="Firma" style={{ maxHeight: 40, marginBottom: 4 }} />
+                  )}
+                  <div style={{ fontWeight: 600, fontSize: 10 }}>{d?.revisado_por_detalle?.nombre_completo || d?.revisado_por_texto || d?.nombre_revisado || '_______________'}</div>
+                  <div style={{ fontSize: 9, color: '#64748b' }}>{d?.revisado_por_detalle?.cargo_nombre || d?.cargo_revisado || ''}</div>
                 </td>
                 <td style={{ width: '20%', textAlign: 'center', border: '1px solid #94a3b8', padding: '6px 8px' }}>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>Aprobado por</div>
@@ -755,18 +755,6 @@ export function exportarPDFReporte(data, fotos = []) {
     <table class="firmas-table">
       <tr>
         <td>
-          <div class="label">Elaborado por</div>
-          ${data.elaborado_por_detalle?.firma_url ? `<div><img class="sig-img" src="${data.elaborado_por_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
-          <div class="name">${data.elaborado_por_detalle?.nombre_completo || data.elaborado_por_texto || '____________________'}</div>
-          <div class="cargo">${data.elaborado_por_detalle?.cargo_nombre || data.cargo_elaborado || ''}</div>
-        </td>
-        <td>
-          <div class="label">Revisado por</div>
-          ${data.revisado_por_detalle?.firma_url ? `<div><img class="sig-img" src="${data.revisado_por_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
-          <div class="name">${data.revisado_por_detalle?.nombre_completo || data.revisado_por_texto || '____________________'}</div>
-          <div class="cargo">${data.revisado_por_detalle?.cargo_nombre || data.cargo_revisado || ''}</div>
-        </td>
-        <td>
           <div class="label">Profesional No 1</div>
           ${data.profesional_1_detalle?.firma_url ? `<div><img class="sig-img" src="${data.profesional_1_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
           <div class="name">${data.profesional_1_detalle?.nombre_completo || '____________________'}</div>
@@ -777,6 +765,18 @@ export function exportarPDFReporte(data, fotos = []) {
           ${data.profesional_2_detalle?.firma_url ? `<div><img class="sig-img" src="${data.profesional_2_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
           <div class="name">${data.profesional_2_detalle?.nombre_completo || '____________________'}</div>
           <div class="cargo">${data.profesional_2_detalle?.cargo_nombre || ''}</div>
+        </td>
+        <td>
+          <div class="label">Elaborado por</div>
+          ${data.elaborado_por_detalle?.firma_url ? `<div><img class="sig-img" src="${data.elaborado_por_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
+          <div class="name">${data.elaborado_por_detalle?.nombre_completo || data.elaborado_por_texto || '____________________'}</div>
+          <div class="cargo">${data.elaborado_por_detalle?.cargo_nombre || data.cargo_elaborado || ''}</div>
+        </td>
+        <td>
+          <div class="label">Revisado por</div>
+          ${data.revisado_por_detalle?.firma_url ? `<div><img class="sig-img" src="${data.revisado_por_detalle.firma_url}" /></div>` : '<div style="height:38px;margin-bottom:4px"></div>'}
+          <div class="name">${data.revisado_por_detalle?.nombre_completo || data.revisado_por_texto || '____________________'}</div>
+          <div class="cargo">${data.revisado_por_detalle?.cargo_nombre || data.cargo_revisado || ''}</div>
         </td>
         <td>
           <div class="label">Aprobado por</div>
