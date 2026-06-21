@@ -38,7 +38,7 @@ const modules = [
         icon: Users,
         color: '#667eea',
         path: '/crm',
-        stats: { total: 150, growth: '+12%' }
+        stats: { total: 0, growth: '' }
     },
     {
         name: 'Proveedores',
@@ -267,6 +267,9 @@ export default function Home() {
     );
 
     const moduleStats = (module) => {
+        if (module.path === '/crm') {
+            return { total: stats.clientes, growth: `${stats.cotizaciones} cotizaciones` };
+        }
         if (module.path === '/productos') {
             return { total: stats.productos, growth: 'SAP MM' };
         }
