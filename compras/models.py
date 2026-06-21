@@ -63,7 +63,7 @@ class Proveedor(models.Model):
         max_length=50, unique=True, blank=True, null=True,
         verbose_name="Código Proveedor"
     )
-    razon_social = models.CharField(max_length=200, verbose_name="Razón Social")
+    razon_social = models.CharField(max_length=200, blank=True, null=True, verbose_name="Razón Social")
     nombre_comercial = models.CharField(max_length=200, blank=True, verbose_name="Nombre Comercial")
     logotipo = models.ImageField(
         upload_to='compras/logotipos/', blank=True, null=True,
@@ -73,7 +73,7 @@ class Proveedor(models.Model):
         max_length=25, choices=TIPO_PROVEEDOR_CHOICES,
         default='empresa', blank=True, verbose_name="Tipo de Proveedor"
     )
-    nit = models.CharField(max_length=50, unique=True, verbose_name="NIT / Documento")
+    nit = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name="NIT / Documento")
     
     # ═══════════════════════════════════════════════════════════════
     # IDENTIFICACIÓN Y TRIBUTACIÓN (DIAN - COLOMBIA)
@@ -214,17 +214,21 @@ class Proveedor(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.razon_social} ({self.nit})"
+        rs = self.razon_social or "(sin razón social)"
+        ni = self.nit or "(sin NIT)"
+        return f"{rs} ({ni})"
 
     def save(self, *args, **kwargs):
         # Normalizar campos únicos vacíos a None
+        if self.razon_social == '': self.razon_social = None
+        if self.nit == '': self.nit = None
         if self.codigo_barras == '': self.codigo_barras = None
         if self.correo_facturacion_electronica == '': self.correo_facturacion_electronica = None
 
         # Auto-generar código de proveedor si no existe
         if not self.codigo_proveedor:
             from django.utils.text import slugify
-            nombre_slug = slugify(self.razon_social)
+            nombre_slug = slugify(self.razon_social or '')
             base_code = nombre_slug[:8].upper() if nombre_slug else "PRV"
             count = Proveedor.objects.filter(codigo_proveedor__startswith=base_code).count()
             self.codigo_proveedor = f"{base_code}{count + 1:04d}"

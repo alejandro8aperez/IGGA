@@ -25,6 +25,7 @@ class VisitaInterventoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = VisitaInterventoria
         fields = '__all__'
+        read_only_fields = ['registrado_por']
 
 class HallazgoSerializer(serializers.ModelSerializer):
     class Meta:

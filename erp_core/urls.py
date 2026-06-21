@@ -96,8 +96,8 @@ urlpatterns = [
     path('test-image/<str:filename>/', test_image, name='test_image'),
 ]
 
-# Servir archivos de media localmente (solo cuando no se usa nube)
-if not settings.USE_S3 and not settings.USE_CLOUDINARY:
+# Servir archivos de media localmente (cuando no se usa Cloudinary)
+if not getattr(settings, 'USE_CLOUDINARY', False):
     urlpatterns += [
         path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
     ]

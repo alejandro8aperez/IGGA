@@ -10,6 +10,9 @@ class VisitaInterventoriaViewSet(viewsets.ModelViewSet):
     queryset = VisitaInterventoria.objects.all().order_by('-fecha')
     serializer_class = VisitaInterventoriaSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(registrado_por=self.request.user)
+
 class HallazgoViewSet(viewsets.ModelViewSet):
-    queryset = Hallazgo.objects.all()
+    queryset = Hallazgo.objects.all().order_by('-visita__fecha', 'nivel_riesgo')
     serializer_class = HallazgoSerializer

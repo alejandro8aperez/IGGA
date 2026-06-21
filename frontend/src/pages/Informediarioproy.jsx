@@ -5,19 +5,20 @@
 //  Fix v4: Tab "FORM" con sublabel de proyecto
 //  Fix v3: HojaFotosInforme en tab Fotos
 // ============================================================
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   ClipboardList, LayoutDashboard, BookOpen, Plus,
   Image as ImageIcon, ArrowLeft, X,
-  BarChart2, FileSpreadsheet, Printer, FileText, Grid3x3,
+  BarChart2, FileSpreadsheet, FileText, Grid3x3,
   ChevronDown, ChevronUp, MonitorSmartphone,
 } from "lucide-react";
 
 import InformeDashboard  from "@/components/informe-diario/InformeDashboard";
 import InformeLista      from "@/components/informe-diario/InformeLista";
 import InformeFormulario from "@/components/informe-diario/InformeFormulario";
-import HojaFotosInforme, { imprimirFotos } from "@/components/informe-diario/HojaFotosInforme";
+import HojaFotosInforme from "@/components/informe-diario/HojaFotosInforme";
+import { anexoService } from "@/services/informeDiarioApi";
 import ReportesInforme, { exportarPDFReporte } from "@/components/informe-diario/ReportesInforme";
 
 import { toast, Toaster } from "sonner";
@@ -89,6 +90,31 @@ function InformeDiarioContent() {
   const { isMobileMode } = useMobileMode();
   const formRef = useRef(null);
 
+  // ── Drag para modal MATRIZ ─────────────────────────────────
+  const [modalPos, setModalPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ startX: 0, startY: 0, posX: 0, posY: 0 });
+
+  const handleModalMouseDown = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: modalPos.x, posY: modalPos.y };
+  }, [modalPos]);
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const onMove = (e) => {
+      setModalPos({
+        x: dragRef.current.posX + (e.clientX - dragRef.current.startX),
+        y: dragRef.current.posY + (e.clientY - dragRef.current.startY),
+      });
+    };
+    const onUp = () => setIsDragging(false);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+  }, [isDragging]);
+
   const hasInforme = !!editingInforme?.id;
 
   const handleTabChange = useCallback(async (tabId) => {
@@ -97,9 +123,17 @@ function InformeDiarioContent() {
     // Auto-guardar al cambiar de pestaña (form siempre montado vía display:none)
     if (formRef.current) {
       try {
+        // Capturar campos frontend antes del save (backend no los devuelve)
+        const snapshot = formRef.current.getFormSnapshot();
         const result = await formRef.current.saveDraft();
         if (result?.id) {
-          setEditingInforme(prev => ({ ...prev, ...result }));
+          setEditingInforme(prev => ({
+            ...prev,
+            ...result,
+            cliente_seleccionado_id: snapshot.cliente_seleccionado_id || prev.cliente_seleccionado_id || '',
+            cliente_seleccionado_nombre: snapshot.cliente_seleccionado_nombre || prev.cliente_seleccionado_nombre || '',
+            obra_nombre: snapshot.obra_nombre || prev.obra_nombre || '',
+          }));
         }
       } catch {
         // Si falla el auto-save, igual permitimos cambiar de tab
@@ -160,29 +194,20 @@ function InformeDiarioContent() {
   };
 
   const handleExportarPDF = async () => {
-    if (!hasInforme && !formSnapshot) return;
-
-    // Usar formSnapshot si está disponible (reportes basado en el formulario actual)
-    if (formSnapshot) {
-      exportarPDFReporte(formSnapshot);
-      return;
-    }
+    if (!hasInforme) return;
 
     const toastId = toast.loading("Generando PDF...");
     try {
-      const blob = await informeDiarioService.downloadPdf(editingInforme.id);
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      let detalle = formSnapshot;
+      if (!detalle) detalle = await informeDiarioService.get(editingInforme.id);
+
+      const fotos = await anexoService.list({ informe: editingInforme.id });
+
+      exportarPDFReporte(detalle, fotos);
       toast.success("PDF listo ✓", { id: toastId });
     } catch (error) {
       toast.error("Error al generar PDF", { id: toastId });
     }
-  };
-
-  const handleImprimirFotosImprimir = (layout = '4x6') => {
-    if (!hasInforme) return;
-    imprimirFotos(fotosActuales, editingInforme, layout);
   };
 
   return (
@@ -269,16 +294,6 @@ function InformeDiarioContent() {
             </button>
 
             <button
-              onClick={() => handleImprimirFotosImprimir('4x6')}
-              disabled={!hasInforme}
-              title={hasInforme ? "Imprimir registro fotográfico 4x6" : "Selecciona un informe primero"}
-              style={actionBtn(!hasInforme)}
-            >
-              <Printer size={15} />
-              FOTOS IMPRIMIR
-            </button>
-
-            <button
               onClick={() => setShowMatrizModal(true)}
               disabled={!hasInforme}
               title={hasInforme ? "Abrir matriz de fotos 4x6" : "Selecciona un informe primero"}
@@ -322,9 +337,6 @@ function InformeDiarioContent() {
           </button>
           <button onClick={handleExportarExcel} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
             <FileSpreadsheet size={14} /> EXCEL
-          </button>
-          <button onClick={() => handleImprimirFotosImprimir('4x6')} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
-            <Printer size={14} /> FOTOS
           </button>
           <button onClick={() => setShowMatrizModal(true)} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
             <Grid3x3 size={14} /> MATRIZ
@@ -395,9 +407,16 @@ function InformeDiarioContent() {
               onFotosChange={setFotosActuales}
               onAutoSave={async () => {
                 if (formRef.current) {
+                  const snapshot = formRef.current.getFormSnapshot();
                   const result = await formRef.current.saveDraft();
                   if (result?.id) {
-                    setEditingInforme(prev => ({ ...prev, ...result }));
+                    setEditingInforme(prev => ({
+                      ...prev,
+                      ...result,
+                      cliente_seleccionado_id: snapshot.cliente_seleccionado_id || prev.cliente_seleccionado_id || '',
+                      cliente_seleccionado_nombre: snapshot.cliente_seleccionado_nombre || prev.cliente_seleccionado_nombre || '',
+                      obra_nombre: snapshot.obra_nombre || prev.obra_nombre || '',
+                    }));
                     return result.id;
                   }
                 }
@@ -426,24 +445,29 @@ function InformeDiarioContent() {
         </div>
       </div>
 
-      {/* ── Modal MATRIZ 4x12 ──────────────────────────────────────────── */}
+      {/* ── Modal MATRIZ 4x12 (draggable) ──────────────────────────────── */}
       {showMatrizModal && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(0,0,0,0.75)",
           padding: "2rem",
         }} onClick={() => setShowMatrizModal(false)}>
           <div style={{
             background: "#0f172a", borderRadius: 16, maxWidth: 900, width: "100%",
             maxHeight: "90vh", overflow: "auto", padding: "1.5rem",
-            border: "1px solid #1e293b", position: "relative",
+            border: "1px solid #1e293b", position: "absolute",
+            left: `calc(50% + ${modalPos.x}px)`, top: `calc(50% + ${modalPos.y}px)`,
+            transform: "translate(-50%, -50%)",
           }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <div
+              onMouseDown={handleModalMouseDown}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", cursor: "move", userSelect: "none" }}
+            >
               <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 <Grid3x3 size={16} style={{ marginRight: "0.5rem", verticalAlign: "middle" }} />
                 Matriz Fotográfica 4×6
               </h3>
-              <button onClick={() => setShowMatrizModal(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: "0.25rem" }}>
+              <button onClick={() => { setShowMatrizModal(false); setModalPos({ x: 0, y: 0 }); }} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: "0.25rem" }}>
                 <X size={20} />
               </button>
             </div>
@@ -455,9 +479,16 @@ function InformeDiarioContent() {
               onFotosChange={(nuevas) => setFotosActuales(prev => ({ ...prev, ...nuevas }))}
               onAutoSave={async () => {
                 if (formRef.current) {
+                  const snapshot = formRef.current.getFormSnapshot();
                   const result = await formRef.current.saveDraft();
                   if (result?.id) {
-                    setEditingInforme(prev => ({ ...prev, ...result }));
+                    setEditingInforme(prev => ({
+                      ...prev,
+                      ...result,
+                      cliente_seleccionado_id: snapshot.cliente_seleccionado_id || prev.cliente_seleccionado_id || '',
+                      cliente_seleccionado_nombre: snapshot.cliente_seleccionado_nombre || prev.cliente_seleccionado_nombre || '',
+                      obra_nombre: snapshot.obra_nombre || prev.obra_nombre || '',
+                    }));
                     return result.id;
                   }
                 }

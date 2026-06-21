@@ -55,16 +55,15 @@ export const AuthProvider = ({ children }) => {
 
   // ── loginUser: compatible con Login.jsx ──────────────────────
   const loginUser = (userData) => {
-    if (userData.access) {
-      localStorage.setItem('access_token', userData.access);
+    const { access, refresh, refreshToken, ...cleanUser } = userData;
+    if (access) {
+      localStorage.setItem('access_token', access);
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access}`;
     }
-    if (userData.refresh || userData.refreshToken) {
-      localStorage.setItem('refresh_token', userData.refresh || userData.refreshToken);
+    if (refresh || refreshToken) {
+      localStorage.setItem('refresh_token', refresh || refreshToken);
     }
-    if (userData.access) {
-      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${userData.access}`;
-    }
-    setUser(userData);
+    setUser(Object.keys(cleanUser).length ? cleanUser : null);
   };
 
   return (

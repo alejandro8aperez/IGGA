@@ -8,9 +8,10 @@ import cloudinary.api
 
 # ── 1. Configurar Cloudinary (credenciales inline) ──────────────────────────
 cloudinary.config(
-    cloud_name="do78tgt1v",          # ← tu cloud name
-    api_key="582319849841712",        # ← tu api key
-    api_secret="wx-5ffNPJGsL2DCw7EANkBRkh6c",  # ← tu api secret
+    cloud_name="do78tgt1v",
+    api_key="582319849841712",
+    api_secret="WX-5ffNPJGsL2DCw7EANkBRkh6c",
+    signature_algorithm="sha256",
     secure=True,
 )
 

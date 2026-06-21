@@ -31,10 +31,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-8amp-local-dev-key-fallback')
-
-if not os.getenv('SECRET_KEY') and os.getenv('DEBUG', 'False') != 'True':
-    print("WARNING: La variable SECRET_KEY no está en el entorno. Se usará un valor fallback inseguro temporalmente.", file=sys.stderr)
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-8amp-local-dev-key-fallback'
+    else:
+        raise RuntimeError(
+            "SECRET_KEY no está configurado. "
+            "Define la variable de entorno SECRET_KEY en Render."
+        )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
@@ -270,13 +275,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = []
 
-# Media files - AWS S3 Configuration
-USE_S3 = os.getenv('USE_S3', 'False') == 'True'
+# Media files - Cloudinary (free tier, persists across deploys)
 USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True'
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if USE_CLOUDINARY else ("storages.backends.s3boto3.S3Boto3Storage" if USE_S3 else "django.core.files.storage.FileSystemStorage"),
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if USE_CLOUDINARY else "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -284,29 +288,33 @@ STORAGES = {
 }
 
 if USE_CLOUDINARY:
+    import cloudinary
+
+    _secret = os.getenv('CLOUDINARY_API_SECRET', '').strip()
+    # Normaliza 'WX' → 'wx' si el secret está capitalizado incorrectamente en Render
+    _secret_normalized = 'wx' + _secret[2:] if len(_secret) >= 2 and _secret[:2] == 'WX' else _secret
+    print(f"  CLOUDINARY_API_SECRET starts_with=[{_secret[:2] if _secret else 'EMPTY'}] "
+          f"ends_with=[{_secret[-2:] if _secret else 'EMPTY'}] "
+          f"len=[{len(_secret)}] "
+          f"normalized_prefix=[{_secret_normalized[:2]}]", flush=True)
+
+    cloudinary.config(
+        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.getenv('CLOUDINARY_API_KEY'),
+        api_secret=_secret_normalized,
+        secure=True,
+    )
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
         'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+        'API_SECRET': _secret_normalized,
+        'PREFIX': '',
     }
     MEDIA_URL = f'https://res.cloudinary.com/{os.getenv("CLOUDINARY_CLOUD_NAME")}/image/upload/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-elif USE_S3:
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-    AWS_DEFAULT_ACL = 'public-read'
-    AWS_S3_OBJECT_PARAMETERS = {
-        'CacheControl': 'max-age=86400',
-    }
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    # ✅ CONFIGURACIÓN LOCAL: Imágenes se guardan en disco
     MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
