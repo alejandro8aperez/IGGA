@@ -202,6 +202,7 @@ const EMPTY_FORM = {
     eps: '', afp: '', arl: '', nivel_riesgo_arl: '', caja_compensacion: '', fondo_cesantias: '',
     // Bancario
     banco: '', tipo_cuenta: '', numero_cuenta: '',
+    firma: null,
 };
 
 // ── Estilos base ──────────────────────────────────────
@@ -404,6 +405,12 @@ function EmpleadoDetalle({ empleado, onBack, onEdit }) {
                         <Row label="Tipo cuenta" value={empleado.tipo_cuenta} />
                         <Row label="Número cuenta" value={empleado.numero_cuenta} />
                     </div>
+                    {empleado.firma_url && (
+                        <div style={{ ...S.section, gridColumn: '1 / -1' }}>
+                            <SectionTitle>Firma digital</SectionTitle>
+                            <img src={empleado.firma_url} alt="Firma del empleado" style={{ maxHeight: 60, border: '1px solid #ddd', borderRadius: 4, padding: 4 }} />
+                        </div>
+                    )}
                 </Grid>
             )}
 
@@ -443,11 +450,20 @@ function EmpleadoDetalle({ empleado, onBack, onEdit }) {
 
 function EmpleadoModal({ empleado, onClose, onSaved }) {
     const [formData, setFormData] = useState(empleado ? { ...EMPTY_FORM, ...empleado } : { ...EMPTY_FORM });
+    const [firmaFile, setFirmaFile] = useState(null);
     const [tab, setTab] = useState('personal');
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    };
+
+    const handleFirmaChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFirmaFile(file);
+            setFormData(prev => ({ ...prev, firma: URL.createObjectURL(file) }));
+        }
     };
 
     const f = (name) => ({ name, value: formData[name], onChange: handleChange });
@@ -465,22 +481,42 @@ function EmpleadoModal({ empleado, onClose, onSaved }) {
         if (formData.salario_basico === '' || formData.salario_basico === null) return alert("Error: El salario básico es obligatorio (Pestaña Laboral).");
 
         try {
-            const payload = {
-                ...formData,
-                salario_basico: parseFloat(formData.salario_basico) || 0,
-                eps: formData.eps || null, afp: formData.afp || null,
-                arl: formData.arl || null, caja_compensacion: formData.caja_compensacion || null,
-                fecha_retiro: formData.fecha_retiro || null,
-                fecha_fin_periodo_prueba: formData.fecha_fin_periodo_prueba || null,
-                fecha_vencimiento_contrato: formData.fecha_vencimiento_contrato || null,
-                fecha_expedicion_doc: formData.fecha_expedicion_doc || null,
-                vencimiento_licencia: formData.vencimiento_licencia || null,
-                estrato: formData.estrato || null,
-            };
-            if (empleado) {
-                await axiosInstance.put(`${API_RRHH}/empleados/${empleado.id}/`, payload);
+            let payload;
+            let config = {};
+
+            if (firmaFile) {
+                const fd = new FormData();
+                Object.entries(formData).forEach(([key, val]) => {
+                    if (key === 'firma') return;
+                    if (val !== null && val !== undefined && val !== '') {
+                        fd.append(key, val);
+                    }
+                });
+                fd.append('salario_basico', parseFloat(formData.salario_basico) || 0);
+                fd.append('firma', firmaFile);
+                payload = fd;
+                config = { headers: { 'Content-Type': 'multipart/form-data' } };
             } else {
-                await axiosInstance.post(`${API_RRHH}/empleados/`, payload);
+                payload = {
+                    ...formData,
+                    salario_basico: parseFloat(formData.salario_basico) || 0,
+                    eps: formData.eps || null, afp: formData.afp || null,
+                    arl: formData.arl || null, caja_compensacion: formData.caja_compensacion || null,
+                    fecha_retiro: formData.fecha_retiro || null,
+                    fecha_fin_periodo_prueba: formData.fecha_fin_periodo_prueba || null,
+                    fecha_vencimiento_contrato: formData.fecha_vencimiento_contrato || null,
+                    fecha_expedicion_doc: formData.fecha_expedicion_doc || null,
+                    vencimiento_licencia: formData.vencimiento_licencia || null,
+                    estrato: formData.estrato || null,
+                };
+                if ('firma' in payload && typeof payload.firma === 'string') {
+                    delete payload.firma;
+                }
+            }
+            if (empleado) {
+                await axiosInstance.put(`${API_RRHH}/empleados/${empleado.id}/`, payload, config);
+            } else {
+                await axiosInstance.post(`${API_RRHH}/empleados/`, payload, config);
             }
             onSaved();
         } catch (err) {
@@ -588,6 +624,20 @@ function EmpleadoModal({ empleado, onClose, onSaved }) {
                                 <FInput label="Categoría" {...f('categoria_licencia')} />
                                 <FInput label="Vencimiento" {...f('vencimiento_licencia')} type="date" />
                             </Grid>
+                        </div>
+                        <div style={S.section}>
+                            <SectionTitle>Firma digital</SectionTitle>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <input type="file" accept="image/*" onChange={handleFirmaChange} style={{ flex: 1 }} />
+                                {(firmaFile || formData.firma) && (
+                                    <div style={{ position: 'relative' }}>
+                                        <img src={formData.firma} alt="Firma" style={{ maxHeight: 50, border: '1px solid #ddd', borderRadius: 4, padding: 4 }} />
+                                        <button type="button" onClick={() => { setFirmaFile(null); setFormData(prev => ({ ...prev, firma: null })); }}
+                                            style={{ position: 'absolute', top: -8, right: -8, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                                    </div>
+                                )}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Sube una imagen PNG/JPEG con la firma del empleado. Aparecerá en los informes diarios.</div>
                         </div>
                     </>)}
 
