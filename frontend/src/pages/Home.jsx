@@ -26,6 +26,7 @@ const API_PRODUCTOS     = API.INVENTARIOS.PRODUCTOS;
 const API_PROYECTOS     = API.OPERACIONES.PROYECTOS;
 const API_DISEÑOS       = API.KAVE.DESIGNS;
 const API_INFORMES      = API.INFORME_DIARIO.INFORMES;
+const API_EMPLEADOS     = API.RRHH.EMPLEADOS;
 
 const ROW1_MODULES = ['CRM', 'Proveedores', 'Operaciones', 'Interventoría'];
 const ROW2_MODULES = ['Informe Diario Proy', 'Informe Semanal', 'Informe Mensual', 'Calidad', 'RRHH', 'ISO 9001'];
@@ -197,7 +198,8 @@ export default function Home() {
         productos: 0,
         proyectos: 0,
         diseños: 0,
-        informes: 0
+        informes: 0,
+        empleados: 0
     });
 
     useEffect(() => {
@@ -226,7 +228,8 @@ export default function Home() {
                 axiosInstance.get(API_PRODUCTOS),
                 axiosInstance.get(API_PROYECTOS),
                 axiosInstance.get(API_DISEÑOS),
-                axiosInstance.get(API_INFORMES)
+                axiosInstance.get(API_INFORMES),
+                axiosInstance.get(API_EMPLEADOS)
             ]);
 
             const getValue = (result) => 
@@ -250,7 +253,8 @@ export default function Home() {
                 productos: totalProductosMaestro,
                 proyectos: getValue(results[7]),
                 diseños: getValue(results[8]),
-                informes: getValue(results[9])
+                informes: getValue(results[9]),
+                empleados: getValue(results[10])
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -271,6 +275,9 @@ export default function Home() {
         }
         if (module.path === '/informe-diario-proy') {
             return { total: stats.informes, growth: 'Registros' };
+        }
+        if (module.path === '/rrhh') {
+            return { total: stats.empleados, growth: 'Empleados' };
         }
         return module.stats || { total: '—', growth: '' };
     };
