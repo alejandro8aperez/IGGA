@@ -25,6 +25,7 @@ const API_ORDENES       = API.COMPRAS.ORDENES;
 const API_PRODUCTOS     = API.INVENTARIOS.PRODUCTOS;
 const API_PROYECTOS     = API.OPERACIONES.PROYECTOS;
 const API_DISEÑOS       = API.KAVE.DESIGNS;
+const API_INFORMES      = API.INFORME_DIARIO.INFORMES;
 
 const ROW1_MODULES = ['CRM', 'Proveedores', 'Operaciones', 'Interventoría'];
 const ROW2_MODULES = ['Informe Diario Proy', 'Informe Semanal', 'Informe Mensual', 'Calidad', 'RRHH', 'ISO 9001'];
@@ -195,7 +196,8 @@ export default function Home() {
         ordenes: 0,
         productos: 0,
         proyectos: 0,
-        diseños: 0
+        diseños: 0,
+        informes: 0
     });
 
     useEffect(() => {
@@ -223,7 +225,8 @@ export default function Home() {
                 axiosInstance.get(API_ORDENES),
                 axiosInstance.get(API_PRODUCTOS),
                 axiosInstance.get(API_PROYECTOS),
-                axiosInstance.get(API_DISEÑOS)
+                axiosInstance.get(API_DISEÑOS),
+                axiosInstance.get(API_INFORMES)
             ]);
 
             const getValue = (result) => 
@@ -246,7 +249,8 @@ export default function Home() {
                 ordenes: getValue(results[5]),
                 productos: totalProductosMaestro,
                 proyectos: getValue(results[7]),
-                diseños: getValue(results[8])
+                diseños: getValue(results[8]),
+                informes: getValue(results[9])
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -264,6 +268,9 @@ export default function Home() {
         }
         if (module.path === '/proveedores') {
             return { total: stats.proveedores, growth: 'Nuevo' };
+        }
+        if (module.path === '/informe-diario-proy') {
+            return { total: stats.informes, growth: 'Registros' };
         }
         return module.stats || { total: '—', growth: '' };
     };
