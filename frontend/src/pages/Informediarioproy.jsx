@@ -258,8 +258,8 @@ function InformeDiarioContent() {
           </div>
         )}
 
-        {/* Derecha: botones de acción */}
-        {isMobileMode ? (
+        {/* Derecha: botón mobile */}
+        {isMobileMode && (
           <button
             onClick={() => setShowMobileActions(s => !s)}
             style={{
@@ -273,47 +273,6 @@ function InformeDiarioContent() {
             <MonitorSmartphone size={16} />
             {showMobileActions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
-        ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, flexWrap: "wrap" }}>
-
-            <button onClick={handleNuevo} style={actionBtn(false)}>
-              <Plus size={15} />
-              NUEVO REGISTRO
-            </button>
-
-            <div style={{ width: 1, height: 28, background: C.border, margin: "0 0.25rem" }} />
-
-            <button
-              onClick={handleExportarExcel}
-              disabled={!hasInforme}
-              title={hasInforme ? "Exportar informe a Excel" : "Selecciona un informe primero"}
-              style={actionBtn(!hasInforme)}
-            >
-              <FileSpreadsheet size={15} />
-              EXPORTAR EXCEL
-            </button>
-
-            <button
-              onClick={() => setShowMatrizModal(true)}
-              disabled={!hasInforme}
-              title={hasInforme ? "Abrir matriz de fotos 4x6" : "Selecciona un informe primero"}
-              style={actionBtn(!hasInforme)}
-            >
-              <Grid3x3 size={15} />
-              MATRIZ 4x12
-            </button>
-
-            <button
-              onClick={handleExportarPDF}
-              disabled={!hasInforme}
-              title={hasInforme ? "Exportar informe completo a PDF" : "Selecciona un informe primero"}
-              style={actionBtn(!hasInforme)}
-            >
-              <FileText size={15} />
-              EXPORTA PDF
-            </button>
-
-          </div>
         )}
       </div>
 
@@ -360,7 +319,7 @@ function InformeDiarioContent() {
       {/* ── CONTENIDO ────────────────────────────────────────────────────────── */}
       <div style={{ maxWidth: 1600, margin: "0 auto", padding: isMobileMode ? "0.75rem" : "1.5rem" }}>
 
-        {/* Tabs */}
+        {/* Tabs + Acciones */}
         <div style={{ display: "flex", gap: isMobileMode ? "0.4rem" : "0.75rem", marginBottom: "1rem", overflowX: "auto", paddingBottom: "0.5rem", alignItems: "center" }}>
           {tabs.map(t => (
             <TabChip
@@ -373,6 +332,42 @@ function InformeDiarioContent() {
               mobile={isMobileMode}
             />
           ))}
+          {!isMobileMode && (
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+              <button onClick={handleNuevo} style={actionBtn(false)}>
+                <Plus size={15} />
+                NUEVO REGISTRO
+              </button>
+              <div style={{ width: 1, height: 28, background: C.border, margin: "0 0.25rem" }} />
+              <button
+                onClick={handleExportarExcel}
+                disabled={!hasInforme}
+                title={hasInforme ? "Exportar informe a Excel" : "Selecciona un informe primero"}
+                style={actionBtn(!hasInforme)}
+              >
+                <FileSpreadsheet size={15} />
+                EXPORTAR EXCEL
+              </button>
+              <button
+                onClick={() => setShowMatrizModal(true)}
+                disabled={!hasInforme}
+                title={hasInforme ? "Abrir matriz de fotos 4x6" : "Selecciona un informe primero"}
+                style={actionBtn(!hasInforme)}
+              >
+                <Grid3x3 size={15} />
+                MATRIZ 4x12
+              </button>
+              <button
+                onClick={handleExportarPDF}
+                disabled={!hasInforme}
+                title={hasInforme ? "Exportar informe completo a PDF" : "Selecciona un informe primero"}
+                style={actionBtn(!hasInforme)}
+              >
+                <FileText size={15} />
+                EXPORTA PDF
+              </button>
+            </div>
+          )}
         </div>
 
         <div style={{ background: C.white, borderRadius: 24, border: `1px solid ${C.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)", padding: isMobileMode ? "0.75rem" : "1.5rem", minHeight: isMobileMode ? 300 : 600 }}>
