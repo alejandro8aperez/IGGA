@@ -4,7 +4,7 @@ import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { TrendingUp, AlertCircle, BarChart3, PieChart as PieChartIcon, Activity } from 'lucide-react';
 
-const API_BASE = BASE_URL + '/reportes-avanzados/';
+const API_BASE = BASE_URL + 'reportes-avanzados/';
 
 // Datos de ejemplo para demostración
 const SAMPLE_DATA = {

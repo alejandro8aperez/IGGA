@@ -9,7 +9,7 @@ import {
     ShoppingCart, Calendar, FileText, Search, Filter
 } from 'lucide-react';
 
-const API_BASE = BASE_URL + '/mrp/';
+const API_BASE = BASE_URL + 'mrp/';
 
 export default function MRP() {
     const navigate = useNavigate();

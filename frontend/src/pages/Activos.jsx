@@ -7,7 +7,7 @@ import {
     Package, BarChart3, CheckCircle, Clock, Wrench, Archive
 } from 'lucide-react';
 
-const API_BASE = BASE_URL + '/finanzas/activos-fijos/';
+const API_BASE = BASE_URL + 'finanzas/activos-fijos/';
 
 export default function Activos() {
     const navigate = useNavigate();

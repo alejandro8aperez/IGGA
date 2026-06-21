@@ -2,7 +2,7 @@
 import axiosInstance, { BASE_URL } from '../config/axiosConfig';
 import { ShieldCheck, BookOpen, AlertOctagon, ClipboardCheck, Users, Search, Plus, Filter, FileText, CheckCircle, Clock, AlertTriangle, Palette } from 'lucide-react';
 
-const API_BASE = BASE_URL + '/calidad/';
+const API_BASE = BASE_URL + 'calidad/';
 
 const s = {
   page: { background: '#0F172A', minHeight: '100vh', color: '#F8FAFC', fontFamily: 'Inter, sans-serif' },

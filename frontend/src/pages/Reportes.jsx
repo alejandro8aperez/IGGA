@@ -4,7 +4,7 @@ import { Download, BarChart2, PieChart, TrendingUp, Users, Package, DollarSign, 
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-const API_BASE = BASE_URL + '/';
+const API_BASE = BASE_URL;
 
 function Reportes() {
     const [data, setData] = useState(null);
