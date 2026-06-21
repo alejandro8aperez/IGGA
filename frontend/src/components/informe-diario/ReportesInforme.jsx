@@ -356,7 +356,14 @@ export default ReportesInforme;
 const CAT_MAQ_PDF = 'MAQUINARIA-EQUIPOS-HERRAMIENTAS-VEHICULOS';
 const CAT_PER_PDF = 'PERSONAL DE OBRA';
 
-export function exportarPDFReporte(data) {
+const _imgUrl = (src) => {
+  if (!src) return '';
+  if (src.startsWith('http://') || src.startsWith('https://')) return src;
+  const raw = import.meta.env.VITE_API_URL || 'https://erp-backend-a37b.onrender.com/api/';
+  return raw.replace(/\/api\/?$/, '').replace(/\/+$/, '') + (src.startsWith('/') ? src : '/' + src);
+};
+
+export function exportarPDFReporte(data, fotos = []) {
   if (!data) { toast.warning('No hay datos para exportar'); return; }
 
   const horasLluvia = Array.isArray(data.horas_lluvia)
@@ -405,6 +412,30 @@ export function exportarPDFReporte(data) {
       actsMap[cat].actividades.push(desc);
     }
   });
+
+  // ── Anexo Fotográfico ──
+  let fotosHTML = '';
+  const fotosArr = Array.isArray(fotos) ? fotos.filter(f => f?.imagen_url || f?.imagen) : [];
+  if (fotosArr.length > 0) {
+    const sorted = fotosArr.sort((a, b) => (a.posicion || 0) - (b.posicion || 0));
+    const chunk = (arr, sz) => { const r = []; for (let i = 0; i < arr.length; i += sz) r.push(arr.slice(i, i + sz)); return r; };
+    const pages = chunk(sorted, 24);
+    fotosHTML = pages.map((page, idx) => `
+    <div class="foto-cover">
+      ${idx === 0 ? '<h1>Anexo Fotográfico</h1><div class="sub">Registro Fotográfico de Obra</div>' : ''}
+      <div class="foto-grid">
+        ${page.map(f => `
+          <div class="foto-card">
+            <img src="${_imgUrl(f.imagen_url || f.imagen)}" alt="" />
+            <div class="foto-info">
+              <span class="num">${String(f.posicion || '').padStart(2, '0')}</span>
+              ${f.seccion_display ? `<span class="sec">${f.seccion_display}</span>` : ''}
+              ${f.descripcion ? `<span class="desc">${f.descripcion}</span>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  }
 
   const html = `<!DOCTYPE html>
 <html lang="es">
@@ -557,6 +588,24 @@ export function exportarPDFReporte(data) {
     .sec-title-bar { background: #1e3a8a !important; color: #fff !important; }
     .header-body h1 { color: #1e3a8a !important; }
   }
+
+  /* ── Anexo Fotográfico ── */
+  .foto-cover { page-break-before: always; }
+  .foto-cover h1 {
+    font-size: 18px; font-weight: 900; text-align: center;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #1e3a8a; margin: 40px 0 6px;
+  }
+  .foto-cover .sub {
+    text-align: center; font-size: 10px; color: #64748b; margin-bottom: 20px;
+  }
+  .foto-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .foto-card { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; break-inside: avoid; }
+  .foto-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .foto-info { padding: 3px 5px; background: #f8fafc; font-size: 7.5px; }
+  .foto-info .num { font-weight: 700; color: #1e3a8a; font-family: monospace; }
+  .foto-info .sec { font-weight: 600; text-transform: uppercase; color: #7c3aed; font-size: 6.5px; }
+  .foto-info .desc { color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
@@ -712,6 +761,7 @@ export function exportarPDFReporte(data) {
   </div>
 
 </div>
+${fotosHTML}
 </body>
 </html>`;
 

@@ -175,7 +175,12 @@ function normalizarInforme(informe) {
   return {
     ...informe,
     obra_id:      oid,
-    horas_lluvia: Array.isArray(informe.horas_lluvia) ? informe.horas_lluvia.map(Boolean) : Array(24).fill(false),
+    horas_lluvia: Array.isArray(informe.reportes_lluvia)
+      ? Array.from({ length: 24 }, (_, h) => {
+          const r = informe.reportes_lluvia.find(r => r.hora === h);
+          return r ? Boolean(r.con_lluvia) : false;
+        })
+      : Array(24).fill(false),
     recursos:     recursos,
     actividades:  actsRaw.length > 0
       ? actsRaw.map(a => ({
@@ -741,7 +746,8 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
 
   const autoIdRef = useRef(informe?.id || null);
   const initialLoadRef = useRef(true);
-  const pendingSaveRef = useRef(null); // <-- cola secuencial
+  const pendingSaveRef = useRef(null);
+  const debounceTimerRef = useRef(null);
 
   // Sincronizar ref cuando el padre cambia el informe
   useEffect(() => { autoIdRef.current = informe?.id || null; }, [informe?.id]);
@@ -882,7 +888,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
     },
   });
 
-  // Auto-guardar cuando se completa Cliente + Obra
+  // Auto-save inmediato cuando se completa Cliente + Obra (crea el registro)
   useEffect(() => {
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
@@ -895,6 +901,28 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
       p.then(cleanup, cleanup);
     }
   }, [form.cliente_seleccionado_id, form.obra_id]);
+
+  // Auto-save debounced para cambios en datos del formulario (lluvia, recursos, etc.)
+  useEffect(() => {
+    if (initialLoadRef.current) return;
+    if (!form.cliente_seleccionado_id || !form.obra_id) return;
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null;
+      const payload = getDraftPayload();
+      saveMutation.mutateAsync(payload)
+        .then(data => {
+          if (data?.id) autoIdRef.current = data.id;
+        })
+        .catch(() => {});
+    }, 1200);
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+    };
+  }, [form.horas_lluvia, form.recursos, form.actividades, form.estado_terreno_inicio, form.estado_terreno_final, form.observaciones_generales, form.comision_topografia, form.status]);
 
   const getDraftPayload = useCallback(() => {
     const p = { ...form };
@@ -909,6 +937,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
 
   const handleManualSave = useCallback(async () => {
     try {
+      if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); debounceTimerRef.current = null; }
       await saveMutation.mutateAsync({ ...form });
       toast.success(informe ? "Informe actualizado ✓" : "Informe creado ✓");
       onGuardado();
@@ -922,6 +951,7 @@ const InformeFormulario = forwardRef(({ informe, onGuardado }, ref) => {
   useImperativeHandle(ref, () => ({
     save: () => saveMutation.mutateAsync({ ...form }),
     saveDraft: async () => {
+      if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); debounceTimerRef.current = null; }
       if (pendingSaveRef.current) await pendingSaveRef.current;
       const payload = getDraftPayload();
       if (!payload.obra_id) return null;

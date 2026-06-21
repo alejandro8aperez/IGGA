@@ -221,7 +221,7 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
     const sec  = f.seccion_display || '';
     return `
       <div class="foto-card${es4x12 ? ' compact' : ''}">
-        <img loading="lazy" src="${src}" alt="Foto ${num}" />
+        <img src="${src}" alt="Foto ${num}" />
         <div class="foto-info${es4x12 ? ' compact' : ''}">
           <span class="foto-num">${String(num).padStart(2, '0')}</span>
           ${sec  ? `<span class="foto-sec">${sec}</span>`  : ''}
@@ -299,7 +299,12 @@ export function imprimirFotos(fotos, informe, layout = '4x6') {
 </head>
 <body>
   ${paginaHTML}
-  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); };<\/script>
+  <script>
+    var _impreso = false;
+    function _print() { if (_impreso) return; _impreso = true; window.print(); window.onafterprint = function() { window.close(); }; }
+    window.onload = _print;
+    setTimeout(_print, 5000);
+  <\/script>
 </body>
 </html>`;
 
@@ -476,9 +481,10 @@ const HojaFotosInforme = ({ informeId, obraId, informe, onFotosChange, onAutoSav
                       <img
                         src={getImageUrl(fotoData.imagen_url || fotoData.imagen)}
                         alt={`Foto ${num}`}
-                        style={S.img}
+                        style={{ ...S.img, cursor: 'zoom-in' }}
                         loading="lazy"
                         onError={() => setErrored(prev => ({ ...prev, [num]: true }))}
+                        onDoubleClick={() => window.open(getImageUrl(fotoData.imagen_url || fotoData.imagen), '_blank')}
                       />
                     )}
                     <div style={{ ...S.overlay, background: isHov ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)' }}>
