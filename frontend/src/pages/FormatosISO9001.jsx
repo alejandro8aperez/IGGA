@@ -107,78 +107,8 @@ function DashboardISO() {
     }
   };
 
-  if (loading) return <div style={{ position: 'relative', color: '#94A3B8', textAlign: 'center', padding: '2rem' }}>
-                <button 
-                    onClick={() => window.location.href = '/'} 
-                    className="btn btn-ghost modal-close-btn" 
-                    title="Cerrar Módulo"
-                    style={{ 
-                        position: 'absolute', 
-                        top: '1rem', 
-                        right: '1rem',
-                        background: '#ff0000',
-                        backgroundColor: '#ff0000',
-                        color: '#ffffff',
-                        fontSize: '2rem',
-                        padding: '0.75rem',
-                        border: '2px solid #ff0000',
-                        borderRadius: '8px',
-                        zIndex: 999999999,
-                        width: '60px',
-                        height: '60px',
-                        minWidth: '60px',
-                        minHeight: '60px',
-                        maxWidth: '60px',
-                        maxHeight: '60px',
-                        visibility: 'visible',
-                        opacity: 1,
-                        display: 'block',
-                        pointerEvents: 'auto',
-                        transform: 'none',
-                        transition: 'none',
-                        animation: 'none',
-                        textAlign: 'center',
-                        lineHeight: '60px'
-                    }}
-                >
-                    X
-                </button>Cargando dashboard ISO 9001...</div>;
-  if (!stats) return <div style={{ position: 'relative', color: '#EF4444', textAlign: 'center', padding: '2rem' }}>
-                <button 
-                    onClick={() => window.location.href = '/'} 
-                    className="btn btn-ghost modal-close-btn" 
-                    title="Cerrar Módulo"
-                    style={{ 
-                        position: 'absolute', 
-                        top: '1rem', 
-                        right: '1rem',
-                        background: '#ff0000',
-                        backgroundColor: '#ff0000',
-                        color: '#ffffff',
-                        fontSize: '2rem',
-                        padding: '0.75rem',
-                        border: '2px solid #ff0000',
-                        borderRadius: '8px',
-                        zIndex: 999999999,
-                        width: '60px',
-                        height: '60px',
-                        minWidth: '60px',
-                        minHeight: '60px',
-                        maxWidth: '60px',
-                        maxHeight: '60px',
-                        visibility: 'visible',
-                        opacity: 1,
-                        display: 'block',
-                        pointerEvents: 'auto',
-                        transform: 'none',
-                        transition: 'none',
-                        animation: 'none',
-                        textAlign: 'center',
-                        lineHeight: '60px'
-                    }}
-                >
-                    X
-                </button>Error cargando dashboard</div>;
+  if (loading) return <div style={{ color: '#94A3B8', textAlign: 'center', padding: '2rem' }}>Cargando dashboard ISO 9001...</div>;
+  if (!stats) return <div style={{ color: '#EF4444', textAlign: 'center', padding: '2rem' }}>Error cargando dashboard</div>;
 
   return (
     <div>
@@ -338,42 +268,7 @@ function ListaFormatos() {
     return estadoInfo || { value: estado, label: estado, color: '#6B7280' };
   };
 
-  if (loading) return <div style={{ position: 'relative', color: '#94A3B8', textAlign: 'center', padding: '2rem' }}>
-                <button 
-                    onClick={() => window.location.href = '/'} 
-                    className="btn btn-ghost modal-close-btn" 
-                    title="Cerrar Módulo"
-                    style={{ 
-                        position: 'absolute', 
-                        top: '1rem', 
-                        right: '1rem',
-                        background: '#ff0000',
-                        backgroundColor: '#ff0000',
-                        color: '#ffffff',
-                        fontSize: '2rem',
-                        padding: '0.75rem',
-                        border: '2px solid #ff0000',
-                        borderRadius: '8px',
-                        zIndex: 999999999,
-                        width: '60px',
-                        height: '60px',
-                        minWidth: '60px',
-                        minHeight: '60px',
-                        maxWidth: '60px',
-                        maxHeight: '60px',
-                        visibility: 'visible',
-                        opacity: 1,
-                        display: 'block',
-                        pointerEvents: 'auto',
-                        transform: 'none',
-                        transition: 'none',
-                        animation: 'none',
-                        textAlign: 'center',
-                        lineHeight: '60px'
-                    }}
-                >
-                    X
-                </button>Cargando formatos ISO 9001...</div>;
+  if (loading) return <div style={{ color: '#94A3B8', textAlign: 'center', padding: '2rem' }}>Cargando formatos ISO 9001...</div>;
 
   return (
     <div>
@@ -494,44 +389,7 @@ function ListaFormatos() {
       {mostrarModal && (
         <div style={s.modal}>
           <div style={s.modalContent}>
-            {/* Botón de cierre en esquina superior derecha */}
-            <button 
-                onClick={() => window.location.href = '/'} 
-                className="btn btn-ghost modal-close-btn" 
-                title="Cerrar Módulo"
-                style={{ 
-                    position: 'absolute', 
-                    top: '1rem', 
-                    right: '1rem',
-                    background: '#ff0000',
-                    backgroundColor: '#ff0000',
-                    color: '#ffffff',
-                    fontSize: '2rem',
-                    padding: '0.75rem',
-                    border: '2px solid #ff0000',
-                    borderRadius: '8px',
-                    zIndex: 999999999,
-                    width: '60px',
-                    height: '60px',
-                    minWidth: '60px',
-                    minHeight: '60px',
-                    maxWidth: '60px',
-                    maxHeight: '60px',
-                    visibility: 'visible',
-                    opacity: 1,
-                    display: 'block',
-                    pointerEvents: 'auto',
-                    transform: 'none',
-                    transition: 'none',
-                    animation: 'none',
-                    textAlign: 'center',
-                    lineHeight: '60px'
-                }}
-            >
-              X
-            </button>
-            
-            <h2 style={{ color: '#fff', marginBottom: '1.5rem', paddingRight: '2rem' }}>
+            <h2 style={{ color: '#fff', marginBottom: '1.5rem' }}>
               {formatoSeleccionado ? 'Editar Formato' : 'Nuevo Formato ISO 9001'}
             </h2>
             
@@ -632,42 +490,7 @@ export default function FormatosISO9001() {
   const [tabActiva, setTabActiva] = useState('dashboard');
 
   return (
-    <div style={{ ...s.page, position: 'relative' }}>
-      <button 
-        onClick={() => navigate('/')} 
-        className="btn btn-ghost modal-close-btn" 
-        title="Cerrar Módulo"
-        style={{ 
-          position: 'absolute', 
-          top: '1rem', 
-          right: '1rem',
-          background: '#ff0000',
-          backgroundColor: '#ff0000',
-          color: '#ffffff',
-          fontSize: '2rem',
-          padding: '0.75rem',
-          border: '2px solid #ff0000',
-          borderRadius: '8px',
-          zIndex: 999999999,
-          width: '60px',
-          height: '60px',
-          minWidth: '60px',
-          minHeight: '60px',
-          maxWidth: '60px',
-          maxHeight: '60px',
-          visibility: 'visible',
-          opacity: 1,
-          display: 'block',
-          pointerEvents: 'auto',
-          transform: 'none',
-          transition: 'none',
-          animation: 'none',
-          textAlign: 'center',
-          lineHeight: '60px'
-        }}
-      >
-        X
-      </button>
+    <div style={s.page}>
       <div style={s.header}>
         <h1 style={s.title}>
           <ShieldCheck color="#10B981" size={28} />
