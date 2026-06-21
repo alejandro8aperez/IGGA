@@ -54,7 +54,7 @@ const modules = [
         icon: Wrench,
         color: '#1e293b',
         path: '/operaciones',
-        stats: { total: 12, growth: '+25%' }
+        stats: { total: 0, growth: '' }
     },
     {
         name: 'Interventoría',
@@ -275,6 +275,9 @@ export default function Home() {
         }
         if (module.path === '/proveedores') {
             return { total: stats.proveedores, growth: 'Nuevo' };
+        }
+        if (module.path === '/operaciones') {
+            return { total: stats.proyectos, growth: 'Proyectos' };
         }
         if (module.path === '/informe-diario-proy') {
             return { total: stats.informes, growth: 'Registros' };
