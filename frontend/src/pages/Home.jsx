@@ -213,6 +213,9 @@ export default function Home() {
 
     useEffect(() => {
         fetchStats();
+        const onFocus = () => fetchStats();
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
     }, []);
 
     const fetchStats = async () => {
