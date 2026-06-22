@@ -355,7 +355,7 @@ function InformeDiarioContent() {
                 style={actionBtn(!hasInforme)}
               >
                 <Grid3x3 size={15} />
-                MATRIZ 4x12
+MATRIZ
               </button>
               <button
                 onClick={handleExportarPDF}
