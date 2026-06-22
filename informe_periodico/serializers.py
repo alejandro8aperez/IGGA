@@ -8,11 +8,25 @@ class InformeSemanalSerializer(serializers.ModelSerializer):
     revisado_por_info = serializers.SerializerMethodField()
     profesional_1_info = serializers.SerializerMethodField()
     profesional_2_info = serializers.SerializerMethodField()
+    avance_programado = serializers.SerializerMethodField()
+    avance_ejecutado = serializers.SerializerMethodField()
 
     class Meta:
         model = InformeSemanal
         fields = '__all__'
         read_only_fields = ['creado_en', 'actualizado_en']
+
+    def get_avance_programado(self, obj):
+        data = obj.curva_s_data
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[-1].get('programado', 0)
+        return None
+
+    def get_avance_ejecutado(self, obj):
+        data = obj.curva_s_data
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[-1].get('ejecutado', 0)
+        return None
 
     def get_elaborado_por_info(self, obj):
         if obj.elaborado_por:
@@ -51,11 +65,25 @@ class InformeMensualSerializer(serializers.ModelSerializer):
     revisado_por_info = serializers.SerializerMethodField()
     profesional_1_info = serializers.SerializerMethodField()
     profesional_2_info = serializers.SerializerMethodField()
+    avance_programado = serializers.SerializerMethodField()
+    avance_ejecutado = serializers.SerializerMethodField()
 
     class Meta:
         model = InformeMensual
         fields = '__all__'
         read_only_fields = ['creado_en', 'actualizado_en']
+
+    def get_avance_programado(self, obj):
+        data = obj.curva_s_data
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[-1].get('programado', 0)
+        return None
+
+    def get_avance_ejecutado(self, obj):
+        data = obj.curva_s_data
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[-1].get('ejecutado', 0)
+        return None
 
     def get_elaborado_por_info(self, obj):
         if obj.elaborado_por:

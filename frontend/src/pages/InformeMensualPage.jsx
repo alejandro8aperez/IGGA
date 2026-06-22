@@ -19,9 +19,8 @@ const mesNames = [
 
 const statusOptions = [
     { value: 'borrador', label: 'Borrador' },
-    { value: 'en_revision', label: 'En Revisión' },
+    { value: 'enviado', label: 'Enviado' },
     { value: 'aprobado', label: 'Aprobado' },
-    { value: 'cerrado', label: 'Cerrado' },
 ];
 
 const s = {
@@ -106,12 +105,12 @@ export default function InformeMensualPage() {
                 observaciones: report.observaciones || '',
                 estado_terreno: report.estado_terreno || '',
                 status: report.status || 'borrador',
-                firma_elabora: report.firma_elabora || '',
-                firma_revisa: report.firma_revisa || '',
-                firma_aprueba: report.firma_aprueba || '',
-                firma_autoriza: report.firma_autoriza || '',
+                elaborado_por: report.elaborado_por || '',
+                revisado_por: report.revisado_por || '',
+                profesional_1: report.profesional_1 || '',
+                profesional_2: report.profesional_2 || '',
             });
-            setSCurveData(Array.isArray(report.curva_s) ? report.curva_s : []);
+            setSCurveData(Array.isArray(report.curva_s_data) ? report.curva_s_data : []);
             setMode('view');
             setError(null);
         } catch (err) {
@@ -136,7 +135,7 @@ export default function InformeMensualPage() {
             });
             await fetchReports();
             setGenerating(false);
-            fetchReportDetail(res.data.id || res.data.id);
+            fetchReportDetail(res.data.id);
         } catch (err) {
             setGenerating(false);
             const detail = err?.response?.data ? JSON.stringify(err.response.data) : err.message;
@@ -176,9 +175,8 @@ export default function InformeMensualPage() {
     const getStatusBadge = (status) => {
         const map = {
             borrador: { color: '#94a3b8', bg: '#1e293b', icon: Clock },
-            en_revision: { color: '#f59e0b', bg: '#451a03', icon: FileText },
+            enviado: { color: '#3b82f6', bg: '#172554', icon: Clock },
             aprobado: { color: '#22c55e', bg: '#052e16', icon: CheckCircle },
-            cerrado: { color: '#3b82f6', bg: '#172554', icon: CheckCircle },
         };
         const s2 = map[status] || map.borrador;
         const Icon = s2.icon;
@@ -362,10 +360,10 @@ export default function InformeMensualPage() {
         const formatMesAnio = `${mesNames[r.mes] || r.mes} ${r.anio}`;
 
         const firmasRoles = [
-            { field: 'firma_elabora', label: 'Elabora' },
-            { field: 'firma_revisa', label: 'Revisa' },
-            { field: 'firma_aprueba', label: 'Aprueba' },
-            { field: 'firma_autoriza', label: 'Autoriza' },
+            { field: 'elaborado_por', label: 'Elabora' },
+            { field: 'revisado_por', label: 'Revisa' },
+            { field: 'profesional_1', label: 'Profesional 1' },
+            { field: 'profesional_2', label: 'Profesional 2' },
         ];
 
         return (

@@ -1,8 +1,5 @@
-from datetime import date, timedelta
+from datetime import date
 from collections import defaultdict
-
-from django.db.models import Sum, Count
-from django.utils import timezone
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -10,25 +7,35 @@ from rest_framework.response import Response
 
 from .models import InformeSemanal, InformeMensual
 from .serializers import InformeSemanalSerializer, InformeMensualSerializer
-from informe_diario.models import InformeDiario
+from informe_diario.models import InformeDiario, ItemObra
 from operaciones.models import Proyecto
 
 
 def _build_s_curve_from_diarios(diarios):
     """
     Aggregate daily reports into S-Curve data points.
-    Each point: {fecha, programado (avance_esperado), ejecutado (avance_real)}
-    Values are running totals in % (or raw units).
+    Each point: {fecha, programado, ejecutado}
+    - ejecutado: cumulative sum of items_obra.cantidad per day
+    - programado: linear planned distribution across the period
     """
     sorted_diarios = sorted(diarios, key=lambda d: d.fecha)
+    diario_ids = [d.id for d in sorted_diarios]
+    items = ItemObra.objects.filter(informe_id__in=diario_ids).values('informe_id', 'cantidad')
+    items_by_informe = defaultdict(float)
+    for item in items:
+        items_by_informe[item['informe_id']] += float(item['cantidad'])
+
+    total_period = sum(items_by_informe.values())
+    n = len(sorted_diarios)
+    daily_planned = total_period / n if n > 0 else 0
+
     data = []
     prog_acc = 0.0
     ejec_acc = 0.0
     for d in sorted_diarios:
-        prog = float(d.avance_esperado or 0)
-        ejec = float(d.avance_real or 0)
-        prog_acc += prog
-        ejec_acc += ejec
+        day_ejec = items_by_informe.get(d.id, 0)
+        ejec_acc += day_ejec
+        prog_acc += daily_planned
         data.append({
             'fecha': d.fecha.isoformat(),
             'programado': round(prog_acc, 2),
@@ -40,32 +47,17 @@ def _build_s_curve_from_diarios(diarios):
 def _calc_labor_summary(diarios):
     """
     Aggregate labor and machinery from daily reports into JSON summary.
+    Uses the existing model properties total_personal, total_maquinaria, total_horas_lluvia.
     """
-    personal = set()
-    maquinaria = set()
-    total_horas = 0
-    dias_lluvia = 0
-
-    for d in diarios:
-        try:
-            personal_data = d.resumen_personal or {}
-            if 'personal' in personal_data:
-                for p in personal_data.get('personal', []):
-                    personal.add(p.get('nombre', p.get('id', '')))
-            if 'maquinaria' in d.resumen_maquinaria or 'maquinaria' in str(d.resumen_maquinaria):
-                m_data = d.resumen_maquinaria or {}
-                for m in m_data.get('maquinaria', []):
-                    maquinaria.add(m.get('nombre', m.get('id', '')))
-            total_horas += float(d.horas_trabajadas or 0)
-            dias_lluvia += 1 if d.condiciones_climaticas and 'lluvia' in d.condiciones_climaticas.lower() else 0
-        except Exception:
-            pass
-
+    total_personal = sum(d.total_personal for d in diarios)
+    total_maquinaria = sum(d.total_maquinaria for d in diarios)
+    total_actividades = sum(d.total_actividades for d in diarios)
+    total_lluvia = sum(d.total_horas_lluvia for d in diarios)
     return {
-        'total_personal': len(personal),
-        'total_maquinaria': len(maquinaria),
-        'total_horas': round(total_horas, 2),
-        'dias_lluvia': dias_lluvia,
+        'total_personal': total_personal,
+        'total_maquinaria': total_maquinaria,
+        'total_actividades': total_actividades,
+        'dias_lluvia': total_lluvia,
     }
 
 
@@ -97,13 +89,13 @@ class InformeSemanalViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Formato de fecha inválido (YYYY-MM-DD)'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        diarios = InformeDiario.objects.filter(
+        diarios = list(InformeDiario.objects.filter(
             proyecto_id=proyecto_id,
             fecha__gte=fecha_inicio,
             fecha__lte=fecha_fin,
-        ).order_by('fecha')
+        ).order_by('fecha'))
 
-        if not diarios.exists():
+        if not diarios:
             return Response({'error': 'No hay informes diarios en el rango seleccionado'},
                             status=status.HTTP_404_NOT_FOUND)
 

@@ -154,12 +154,12 @@ export default function InformeSemanalPage() {
         logros_principales: editData.logros_principales || '',
         dificultades: editData.dificultades || '',
         observaciones: editData.observaciones || '',
-        estado_del_terreno: editData.estado_del_terreno || '',
+        estado_terreno: editData.estado_terreno || '',
         status: editData.status || 'borrador',
-        firma_elaborado: editData.firma_elaborado || null,
-        firma_revisado: editData.firma_revisado || null,
-        firma_profesional1: editData.firma_profesional1 || null,
-        firma_profesional2: editData.firma_profesional2 || null,
+        elaborado_por: editData.elaborado_por || null,
+        revisado_por: editData.revisado_por || null,
+        profesional_1: editData.profesional_1 || null,
+        profesional_2: editData.profesional_2 || null,
       };
       const res = await axiosInstance.put(API.INFORME_PERIODICO.SEMANAL_DETAIL(selectedReport.id), payload);
       setSelectedReport(res.data);
@@ -266,7 +266,7 @@ export default function InformeSemanalPage() {
                       borderBottom: `1px solid ${C.border}33`,
                       background: i % 2 === 1 ? '#ffffff04' : 'transparent',
                     }}>
-                      <td style={{ padding: '0.7rem 1rem', fontWeight: 700 }}>{r.semana || '-'}</td>
+                      <td style={{ padding: '0.7rem 1rem', fontWeight: 700 }}>{r.semana_numero != null ? `Sem ${r.semana_numero}` : '-'}</td>
                       <td style={{ padding: '0.7rem 1rem', color: C.textSec }}>{r.proyecto_nombre || r.proyecto || '-'}</td>
                       <td style={{ padding: '0.7rem 1rem' }}>{r.fecha_inicio || '-'}</td>
                       <td style={{ padding: '0.7rem 1rem' }}>{r.fecha_fin || '-'}</td>
@@ -399,7 +399,7 @@ export default function InformeSemanalPage() {
             <div>
               <h1 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <FileText size={24} style={{ color: '#667eea' }} />
-                Informe Semanal {selectedReport?.semana ? `#${selectedReport.semana}` : ''}
+                Informe Semanal {selectedReport?.semana_numero ? `#${selectedReport.semana_numero}` : ''}
               </h1>
               <p style={{ margin: '2px 0 0', color: C.textSec, fontSize: '0.8rem' }}>
                 {selectedReport?.proyecto_nombre || selectedReport?.proyecto || ''}
@@ -479,8 +479,8 @@ export default function InformeSemanalPage() {
                 <label style={labelStyle}>Estado del terreno</label>
                 <textarea
                   rows={3}
-                  value={editData.estado_del_terreno || ''}
-                  onChange={e => handleEditChange('estado_del_terreno', e.target.value)}
+                  value={editData.estado_terreno || ''}
+                  onChange={e => handleEditChange('estado_terreno', e.target.value)}
                   style={{ ...inpStyle, resize: 'vertical' }}
                 />
               </div>
@@ -535,8 +535,8 @@ export default function InformeSemanalPage() {
               <div>
                 <label style={labelStyle}>Elaborado por</label>
                 <select
-                  value={editData.firma_elaborado || ''}
-                  onChange={e => handleEditChange('firma_elaborado', e.target.value || null)}
+                  value={editData.elaborado_por || ''}
+                  onChange={e => handleEditChange('elaborado_por', e.target.value || null)}
                   style={inpStyle}
                 >
                   <option value="">Seleccionar...</option>
@@ -548,8 +548,8 @@ export default function InformeSemanalPage() {
               <div>
                 <label style={labelStyle}>Revisado por</label>
                 <select
-                  value={editData.firma_revisado || ''}
-                  onChange={e => handleEditChange('firma_revisado', e.target.value || null)}
+                  value={editData.revisado_por || ''}
+                  onChange={e => handleEditChange('revisado_por', e.target.value || null)}
                   style={inpStyle}
                 >
                   <option value="">Seleccionar...</option>
@@ -561,8 +561,8 @@ export default function InformeSemanalPage() {
               <div>
                 <label style={labelStyle}>Profesional 1</label>
                 <select
-                  value={editData.firma_profesional1 || ''}
-                  onChange={e => handleEditChange('firma_profesional1', e.target.value || null)}
+                  value={editData.profesional_1 || ''}
+                  onChange={e => handleEditChange('profesional_1', e.target.value || null)}
                   style={inpStyle}
                 >
                   <option value="">Seleccionar...</option>
@@ -574,8 +574,8 @@ export default function InformeSemanalPage() {
               <div>
                 <label style={labelStyle}>Profesional 2</label>
                 <select
-                  value={editData.firma_profesional2 || ''}
-                  onChange={e => handleEditChange('firma_profesional2', e.target.value || null)}
+                  value={editData.profesional_2 || ''}
+                  onChange={e => handleEditChange('profesional_2', e.target.value || null)}
                   style={inpStyle}
                 >
                   <option value="">Seleccionar...</option>
