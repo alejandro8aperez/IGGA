@@ -295,7 +295,7 @@ function InformeDiarioContent() {
             <Plus size={14} /> NUEVO
           </button>
           <button onClick={handleExportarExcel} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
-            <FileSpreadsheet size={14} /> EXCEL
+            <FileSpreadsheet size={14} /> EXP-EXCEL
           </button>
           <button onClick={() => setShowMatrizModal(true)} disabled={!hasInforme} style={mobileActionBtn(!hasInforme)}>
             <Grid3x3 size={14} /> MATRIZ
@@ -346,7 +346,7 @@ function InformeDiarioContent() {
                 style={actionBtn(!hasInforme)}
               >
                 <FileSpreadsheet size={15} />
-                EXPORTAR EXCEL
+                EXP-EXCEL
               </button>
               <button
                 onClick={() => setShowMatrizModal(true)}
@@ -364,7 +364,7 @@ function InformeDiarioContent() {
                 style={actionBtn(!hasInforme)}
               >
                 <FileText size={15} />
-                EXPORTA PDF
+                EXP-PDF
               </button>
             </div>
           )}
