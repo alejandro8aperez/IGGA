@@ -49,8 +49,12 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     h.strip()
-    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,.railway.app').split(',')
+    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,.railway.app,.vercel.app').split(',')
 ]
+# Añadir explícitamente los hosts de dev y prod para seguridad
+for _h in ['erp-backend-a37b.onrender.com', 'erp-backend-dev.onrender.com']:
+    if _h not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_h)
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
@@ -133,6 +137,7 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 _base_cors = [
     "https://erp-frontend-7798.onrender.com",
+    "https://erp-8amperios-dev.vercel.app",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5173",
@@ -152,6 +157,7 @@ CSRF_TRUSTED_ORIGINS = _base_cors.copy()
 if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}")
 CSRF_TRUSTED_ORIGINS.append("https://erp-backend-a37b.onrender.com")
+CSRF_TRUSTED_ORIGINS.append("https://erp-backend-dev.onrender.com")
 # ─────────────────────────────────────────────────────────────────────────────
 
 CORS_ALLOW_CREDENTIALS = True
@@ -242,10 +248,15 @@ if DATABASE_URL and '@' in DATABASE_URL:
     print(f"[DB CONFIG] DB host={_host}", file=sys.stderr, flush=True)
 
 if DATABASE_URL:
-    # Producción / Render — usar PostgreSQL vía DATABASE_URL
+    # Forzar SSL para Supabase (pooler session requiere SSL)
+    _db_url = DATABASE_URL
+    if 'sslmode' not in _db_url and 'supabase.com' in _db_url:
+        _db_url += '?' if '?' not in _db_url else '&'
+        _db_url += 'sslmode=require'
+
     DATABASES = {
         'default': dj_database_url.parse(
-            DATABASE_URL,
+            _db_url,
             conn_max_age=600,
             conn_health_checks=True,
         )
