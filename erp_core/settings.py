@@ -16,10 +16,13 @@ import sys
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
-# Solo cargar .env en desarrollo local (Render inyecta RENDER=true automáticamente)
-# Esto evita que el archivo .env local sobreescriba las variables de entorno de Render
+# Solo cargar .env en desarrollo local
+# Render inyecta RENDER=true automáticamente
+# Railway inyecta RAILWAY_ENVIRONMENT automáticamente
 IS_RENDER = os.environ.get('RENDER') is not None
-if not IS_RENDER:
+IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+IS_PRODUCTION = IS_RENDER or IS_RAILWAY or bool(os.environ.get('DATABASE_URL', '').strip())
+if not IS_PRODUCTION:
     from dotenv import load_dotenv
     load_dotenv()
 
@@ -38,7 +41,7 @@ if not SECRET_KEY:
     else:
         raise RuntimeError(
             "SECRET_KEY no está configurado. "
-            "Define la variable de entorno SECRET_KEY en Render."
+            "Define la variable de entorno SECRET_KEY en Render o Railway."
         )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -46,10 +49,12 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     h.strip()
-    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,.railway.app').split(',')
 ]
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
+if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
+    ALLOWED_HOSTS.append(os.getenv('RAILWAY_PUBLIC_DOMAIN'))
 
 # Configuración necesaria para Render (detrás de un balanceador de carga)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -126,7 +131,7 @@ MIDDLEWARE = [
 # Permitir todos los orígenes solo si estamos en modo DEBUG para facilitar desarrollo
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
-CORS_ALLOWED_ORIGINS = [
+_base_cors = [
     "https://erp-frontend-7798.onrender.com",
     "http://localhost:5173",
     "http://localhost:5174",
@@ -135,17 +140,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
+if os.getenv('RAILWAY_FRONTEND_DOMAIN'):
+    _base_cors.append(f"https://{os.getenv('RAILWAY_FRONTEND_DOMAIN')}")
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://erp-frontend-7798.onrender.com",
-    "https://erp-backend-a37b.onrender.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-]
+CORS_ALLOWED_ORIGINS = _base_cors.copy()
+
+CSRF_TRUSTED_ORIGINS = _base_cors.copy()
+if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}")
+CSRF_TRUSTED_ORIGINS.append("https://erp-backend-a37b.onrender.com")
 # ─────────────────────────────────────────────────────────────────────────────
 
 CORS_ALLOW_CREDENTIALS = True
@@ -230,7 +233,7 @@ WSGI_APPLICATION = 'erp_core.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 
 # Debug: confirmar en logs de Render qué URL se está usando
-print(f"[DB CONFIG] IS_RENDER={IS_RENDER} | DATABASE_URL presente={bool(DATABASE_URL)}", file=sys.stderr, flush=True)
+print(f"[DB CONFIG] IS_RENDER={IS_RENDER} IS_RAILWAY={IS_RAILWAY} | DATABASE_URL presente={bool(DATABASE_URL)}", file=sys.stderr, flush=True)
 if DATABASE_URL and '@' in DATABASE_URL:
     _host = DATABASE_URL.split('@')[-1].split('/')[0]
     print(f"[DB CONFIG] DB host={_host}", file=sys.stderr, flush=True)
