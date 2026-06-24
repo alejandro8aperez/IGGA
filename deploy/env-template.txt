@@ -1,0 +1,25 @@
+# =============================================================================
+# ERP-8AMPERIOS - Oracle Cloud VM Environment Variables
+# =============================================================================
+# Copy this file to /opt/erp/.env and fill in your values
+# This is read by systemd via EnvironmentFile
+# =============================================================================
+
+# --- Django ---
+SECRET_KEY=genera-uno-con-python3-c-secrets-token-urlsafe-50
+DEBUG=False
+ALLOWED_HOSTS=localhost,127.0.0.1,<VM_PUBLIC_IP>,<TU_DOMINIO>
+CORS_ALLOW_ALL_ORIGINS=False
+
+# --- PostgreSQL ---
+DATABASE_URL=postgresql://erp_user:tu_password_123@localhost:5432/erp_db
+
+# --- CORS (opcional: orígenes extra separados por coma) ---
+# Solo necesario si frontend y backend están en dominios distintos
+# CORS_EXTRA_ORIGINS=https://otro-frontend.vercel.app
+
+# --- Cloudinary (media files) ---
+USE_CLOUDINARY=True
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_API_KEY=tu_api_key
+CLOUDINARY_API_SECRET=tu_api_secret

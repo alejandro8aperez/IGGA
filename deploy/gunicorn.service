@@ -1,0 +1,27 @@
+[Unit]
+Description=ERP-8AMPERIOS Gunicorn daemon
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=erp
+Group=erp
+WorkingDirectory=/opt/erp/backend
+EnvironmentFile=/opt/erp/.env
+ExecStart=/opt/erp/backend/venv/bin/gunicorn \
+    --workers 3 \
+    --threads 4 \
+    --worker-class sync \
+    --bind 127.0.0.1:8000 \
+    --timeout 120 \
+    --access-logfile /var/log/erp/gunicorn-access.log \
+    --error-logfile /var/log/erp/gunicorn-error.log \
+    --log-level info \
+    erp_core.wsgi:application
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

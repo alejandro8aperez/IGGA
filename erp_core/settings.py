@@ -142,6 +142,9 @@ _base_cors = [
 ]
 if os.getenv('RAILWAY_FRONTEND_DOMAIN'):
     _base_cors.append(f"https://{os.getenv('RAILWAY_FRONTEND_DOMAIN')}")
+if os.getenv('CORS_EXTRA_ORIGINS'):
+    for origin in os.getenv('CORS_EXTRA_ORIGINS').split(','):
+        _base_cors.append(origin.strip())
 
 CORS_ALLOWED_ORIGINS = _base_cors.copy()
 
