@@ -1,0 +1,24 @@
+name: Migrate DB Render → Supabase
+on:
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Dump public schema from Render
+        run: pg_dump --no-owner --no-acl --inserts --schema=public "${{ secrets.RENDER_DB_URL }}" > /tmp/dump.sql
+
+      - name: Strip psql meta-commands
+        run: sed -i '/^\\/d' /tmp/dump.sql
+
+      - name: Import to Supabase
+        run: psql "${{ secrets.SUPABASE_DB_URL }}" < /tmp/dump.sql
+
+      - name: Verify import
+        run: psql "${{ secrets.SUPABASE_DB_URL }}" -c "SELECT count(*) as total_tables FROM information_schema.tables WHERE table_schema='public';"
