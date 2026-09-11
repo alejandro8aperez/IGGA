@@ -78,7 +78,7 @@ function CRM() {
         fetchClientes();
     }, []);
 
-    const fetchClientes = async () => {
+    const fetchClientes = async (isRetry = false) => {
         try {
             console.log('CRM: Cargando clientes desde:', API_URL);
             const response = await axiosInstance.get(API_URL);
@@ -86,6 +86,12 @@ function CRM() {
             setClientes(response.data);
             setLoading(false);
         } catch (err) {
+            const isRecoverable = err.code === 'ECONNABORTED' || !err.response || err.response.status >= 500;
+            if (isRecoverable && !isRetry) {
+                console.warn('CRM: Error recuperable, reintentando...');
+                await new Promise(r => setTimeout(r, 1500));
+                return fetchClientes(true);
+            }
             console.error('CRM: Error al cargar clientes:', err);
             console.error('CRM: Detalles del error:', {
                 message: err.message,

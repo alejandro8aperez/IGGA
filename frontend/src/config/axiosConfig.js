@@ -1,5 +1,5 @@
 // ============================================================
-//  axiosConfig.js  –  ERP-8AMPERIOS
+//  axiosConfig.js  ï¿½  ERP-8AMPERIOS
 // ============================================================
 import axios from 'axios';
 
@@ -13,7 +13,7 @@ console.log('[ERP] Conectando al Backend en:', BASE_URL);
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000,
+  timeout: 90000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -29,7 +29,7 @@ const processQueue = (error, token = null) => {
 };
 
 const performLogout = () => {
-  console.warn('[ERP] Refresh token inválido o expirado. Cerrando sesión.');
+  console.warn('[ERP] Refresh token invï¿½lido o expirado. Cerrando sesiï¿½n.');
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   if (window.location.pathname !== '/login') {
