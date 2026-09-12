@@ -44,7 +44,7 @@ class ProductosMasVendidosView(APIView):
     def get(self, request):
         limit = int(request.GET.get('limit', 10))
         data = Producto.objects.annotate(
-            total_vendido=Sum('venta_detalle__cantidad')
+            total_vendido=Sum('detalleordenventa__cantidad')
         ).filter(total_vendido__gt=0).order_by('-total_vendido')[:limit].values(
             'nombre', 'total_vendido'
         )
@@ -127,7 +127,7 @@ class DashboardCompletoView(APIView):
         ).aggregate(total=Sum('total'))['total'] or 0
         
         # Productos bajo stock
-        productos_bajo_stock = Producto.objects.filter(stock__lt=10).count()
+        productos_bajo_stock = Producto.objects.filter(stock_actual__lt=10).count()
         
         # Proyectos activos
         proyectos_activos = Proyecto.objects.filter(estado='en_progreso').count()

@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'venta',
     'workflow',
     'reportes',
+    'reportes_avanzados',
     'configuracion',
     'planeacion',
     'kpis',

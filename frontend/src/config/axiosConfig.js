@@ -39,6 +39,10 @@ const performLogout = () => {
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Normalizar dobles slashes en la URL (p.ej. BASE_URL + '/compras/' => /api//compras/)
+    if (config.url) {
+      config.url = config.url.replace(/([^:/])\/{2,}/g, '$1/');
+    }
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

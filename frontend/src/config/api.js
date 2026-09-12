@@ -19,7 +19,6 @@ export const API = {
   // ---------------------------------------------------------------------------
   CRM: {
     CLIENTES:      'crm/clientes/',
-    CONTACTOS:     'crm/contactos/',
     COTIZACIONES:  'crm/cotizaciones/',
     OPORTUNIDADES: 'crm/oportunidades/',
   },
@@ -75,10 +74,10 @@ export const API = {
   // ---------------------------------------------------------------------------
   PRODUCTOS: {
     RESUMEN: 'inventario/productos/resumen/',
-    GRUPOS_MATERIAL: 'inventario/grupos-material/',
-    FAMILIAS: 'inventario/familias/',
-    TIPOS_EMPAQUE: 'inventario/tipos-empaque/',
-    POR_CODIGO_BARRAS: 'inventario/productos/por-codigo-barras/',
+    GRUPOS_MATERIAL: 'productos/grupos-material/',
+    FAMILIAS: 'productos/familias/',
+    TIPOS_EMPAQUE: 'productos/tipos-empaque/',
+    POR_CODIGO_BARRAS: 'productos/maestro/por-codigo-barras/',
   },
 
   // ---------------------------------------------------------------------------
@@ -139,10 +138,10 @@ export const API = {
   DASHBOARD: {
     GENERAL: 'dashboard/',
     STATS:   'dashboard/stats/',
-    CALCULAR_KPIS: 'dashboard/calcular-kpis/',
+    CALCULAR_KPIS: 'kpis/kpis/calcular_todos/',
   },
   KPIS: {
-    CALCULAR: 'dashboard/calcular-kpis/',
+    CALCULAR: 'kpis/kpis/calcular_todos/',
   },
 
   // ---------------------------------------------------------------------------
@@ -186,7 +185,11 @@ export const API = {
   // ---------------------------------------------------------------------------
   RRHH: {
     EMPLEADOS: 'rrhh/empleados/',
-    NOMINA:    'rrhh/nomina/',
+    NOMINA:    'rrhh/nominas/',
+  },
+  NOMINA: {
+    PERIODOS: 'rrhh/periodos-nomina/',
+    NOMINAS:  'rrhh/nominas/',
   },
 
   // ---------------------------------------------------------------------------
@@ -202,7 +205,7 @@ export const API = {
   // ---------------------------------------------------------------------------
   CONTABILIDAD: {
     ASIENTOS: 'contabilidad/asientos/',
-    PUC:      'contabilidad/puc/',
+    PUC:      'contabilidad/cuentas/',
   },
 
   // ---------------------------------------------------------------------------
@@ -210,7 +213,7 @@ export const API = {
   // ---------------------------------------------------------------------------
   POS: {
     VENTAS:    'pos/ventas/',
-    PRODUCTOS: 'pos/productos/',
+    PRODUCTOS: 'inventario/productos/',
   },
 
   // ---------------------------------------------------------------------------
@@ -226,7 +229,7 @@ export const API = {
   // ---------------------------------------------------------------------------
   CALIDAD: {
     INSPECCIONES: 'calidad/inspecciones/',
-    NO_CONFORMIDADES: 'calidad/no-conformidades/',
+    NO_CONFORMIDADES: 'calidad/noconformidades/',
   },
 
   // ---------------------------------------------------------------------------
@@ -242,7 +245,7 @@ export const API = {
   // ---------------------------------------------------------------------------
   MARKETING: {
     CAMPANAS:  'marketing/campanas/',
-    CONTACTOS: 'marketing/contactos/',
+    CONTACTOS: 'marketing/leads/',
   },
 
   // ---------------------------------------------------------------------------
@@ -264,8 +267,8 @@ export const API = {
   // MRP
   // ---------------------------------------------------------------------------
   MRP: {
-    PLANES:      'mrp/planes/',
-    REQUISICION: 'mrp/requisiciones/',
+    PLANES:   'mrp/plan-maestro-produccion/',
+    REQUISICION: 'mrp/requerimientos-materiales/',
   },
 
 };

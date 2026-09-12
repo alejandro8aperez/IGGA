@@ -58,6 +58,8 @@ urlpatterns = [
     path('api/rrhh/', include('rrhh.urls')),
     path('api/configuracion/', include('configuracion.urls')),
     path('api/reportes/', include('reportes.urls')),
+    path('api/reportes-avanzados/', include('reportes_avanzados.urls')),
+    path('api/reportes/pyl/', reporte_pyl_api, name='reporte_pyl'),
     path('api/facturacion/', include('facturacion.urls')),
     path('api/produccion/', include('produccion.urls')),
     path('api/venta/', include('venta.urls')),

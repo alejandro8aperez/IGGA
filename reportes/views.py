@@ -25,7 +25,7 @@ class ReporteGeneralView(APIView):
             valor_inventario = sum(p.precio_venta * p.stock_actual for p in productos)
             total_transacciones = Transaccion.objects.aggregate(Sum('monto'))['monto__sum'] or 0
             valor_oportunidades = Oportunidad.objects.aggregate(Sum('valor_estimado'))['valor_estimado__sum'] or 0
-            proyectos_activos = Proyecto.objects.filter(estado__in=['planificacion', 'ejecucion']).count()
+            proyectos_activos = Proyecto.objects.filter(estado__in=['planificado', 'en_progreso']).count()
             data = {
                 "total_clientes": total_clientes,
                 "valor_inventario": valor_inventario,
@@ -121,10 +121,10 @@ class PowerBIReportView(APIView):
             ]
 
             # ---------- PRODUCCIÓN ----------
-            ops = OrdenProduccion.objects.filter(fecha_inicio__gte=inicio_12m)
+            ops = OrdenProduccion.objects.filter(fecha_planeada_inicio__gte=inicio_12m)
             produccion_mensual = defaultdict(lambda: {"cantidad": 0, "ordenes": 0})
             for op in ops:
-                mes = op.fecha_inicio.strftime("%Y-%m")
+                mes = op.fecha_planeada_inicio.strftime("%Y-%m")
                 produccion_mensual[mes]["cantidad"] += op.cantidad_a_producir or 0
                 produccion_mensual[mes]["ordenes"] += 1
             produccion_mensual_list = [
@@ -221,7 +221,7 @@ class PowerBIReportView(APIView):
                     "valor_inventario": round(valor_inventario_total, 2),
                     "productos_bajo_stock": productos_bajo_stock,
                     "total_productos": total_productos,
-                    "proyectos_activos": Proyecto.objects.filter(estado__in=['planificacion', 'ejecucion']).count(),
+                    "proyectos_activos": Proyecto.objects.filter(estado__in=['planificado', 'en_progreso']).count(),
                     "total_facturas": Factura.objects.count(),
                     "total_ordenes_compra": OrdenCompra.objects.count(),
                     "ordenes_pendientes": OrdenCompra.objects.filter(estado__in=['borrador', 'enviada', 'recibida_parcial']).count(),

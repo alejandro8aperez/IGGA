@@ -59,7 +59,7 @@ export default function Dashboard() {
         setCalculatingKPIs(true);
         try {
             // URL relativa
-            await axiosInstance.post('kpis/calcular/');
+            await axiosInstance.post('kpis/kpis/calcular_todos/');
             await fetchDashboardData();
         } catch (err) {
             console.error('Error calculating KPIs:', err);
