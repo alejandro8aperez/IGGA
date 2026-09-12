@@ -173,7 +173,7 @@ class PowerBIReportView(APIView):
             productos_bajo_stock = Producto.objects.filter(stock_actual__lte=F('stock_minimo')).count()
             total_productos = Producto.objects.count()
             valor_inventario_total = sum(
-                float(p.precio_compra or 0) * p.stock_actual for p in Producto.objects.all()
+                float(p.precio_compra or 0) * float(p.stock_actual or 0) for p in Producto.objects.all()
             )
             categorias_inv = (
                 Producto.objects.values('categoria__nombre')

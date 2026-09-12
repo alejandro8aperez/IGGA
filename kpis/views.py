@@ -47,17 +47,17 @@ class KPIViewSet(viewsets.ModelViewSet):
     def calcular_dias_cobrar(self):
         # Días por cobrar = cuentas por cobrar / ventas diarias
         cuentas_cobrar = MovimientoContable.objects.filter(cuenta__codigo__startswith='120').aggregate(total=Sum('debe'))['total'] or 0
-        ventas_diarias = FacturaVenta.objects.filter(fecha_emision__gte=timezone.now() - timedelta(days=30)).aggregate(total=Sum('total'))['total'] or 1
-        ventas_diarias = ventas_diarias / 30
-        dias = cuentas_cobrar / ventas_diarias if ventas_diarias > 0 else 0
+        ventas_diarias = FacturaVenta.objects.filter(fecha_emision__gte=timezone.now() - timedelta(days=30)).aggregate(total=Sum('total'))['total'] or 0
+        ventas_diarias = Decimal(str(ventas_diarias)) / 30
+        dias = Decimal(str(cuentas_cobrar)) / ventas_diarias if ventas_diarias > 0 else 0
         KPI.objects.update_or_create(nombre='dias_por_cobrar', defaults={'descripcion': 'Días promedio por cobrar', 'valor': dias})
 
     def calcular_dias_pagar(self):
         # Días por pagar = cuentas por pagar / compras diarias
         cuentas_pagar = MovimientoContable.objects.filter(cuenta__codigo__startswith='210').aggregate(total=Sum('haber'))['total'] or 0
-        compras_diarias = PagoCompra.objects.filter(fecha__gte=timezone.now() - timedelta(days=30)).aggregate(total=Sum('monto'))['total'] or 1
-        compras_diarias = compras_diarias / 30
-        dias = cuentas_pagar / compras_diarias if compras_diarias > 0 else 0
+        compras_diarias = PagoCompra.objects.filter(fecha__gte=timezone.now() - timedelta(days=30)).aggregate(total=Sum('monto'))['total'] or 0
+        compras_diarias = Decimal(str(compras_diarias)) / 30
+        dias = Decimal(str(cuentas_pagar)) / compras_diarias if compras_diarias > 0 else 0
         KPI.objects.update_or_create(nombre='dias_por_pagar', defaults={'descripcion': 'Días promedio por pagar', 'valor': dias})
 
     def _add_months_to_date(self, source_date, months):
